@@ -402,3 +402,137 @@ body.kiosk .main{grid-column:1/-1}
 /* ── ป้ายเจ้าของตาราง ── */
 .owner{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--faint);white-space:nowrap}
 .owner::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--brand)}
+
+/* ════════════════════════════════════════════════════
+   v0.7 · ปุ่มพับเมนู · ฟุตเตอร์ · tooltip กราฟ · จอเล็ก
+   ════════════════════════════════════════════════════ */
+
+/* ── ปุ่มพับเมนู ── */
+.railbtn{display:flex;align-items:center;gap:12px;width:100%;padding:8px 11px;border-radius:10px;
+  color:var(--sidedim);margin-bottom:6px;transition:.14s;position:relative;
+  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+.railbtn:hover{background:rgba(255,255,255,.12);color:#fff}
+.railbtn svg{width:17px;height:17px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .22s}
+.railbtn span{font-size:12.5px}
+.app.narrow .railbtn{justify-content:center;padding:10px 0}
+.app.narrow .railbtn span{display:none}
+.app.narrow .railbtn svg{transform:rotate(180deg)}
+.app.narrow .railbtn::after{content:"ขยายเมนู";position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);
+  background:var(--side2);color:#fff;padding:6px 10px;border-radius:8px;font-size:12px;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:.14s;z-index:60}
+.app.narrow .railbtn:hover::after{opacity:1}
+.app{transition:grid-template-columns .24s cubic-bezier(.3,.8,.4,1)}
+
+/* ── ฟุตเตอร์สำนักงาน ── */
+.pgfoot{margin-top:26px;border-top:1px solid var(--line);padding-top:20px}
+.pf-in{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;justify-content:space-between}
+.pf-brand{display:flex;gap:13px;align-items:flex-start;max-width:460px}
+.pf-brand img{width:46px;height:46px;object-fit:contain;flex:none;border-radius:50%;background:#fff;padding:2px;
+  border:1px solid var(--line)}
+.pf-brand b{display:block;font-family:var(--fd);font-size:14px;margin-bottom:3px}
+.pf-brand span{font-size:11.5px;color:var(--faint);line-height:1.7}
+.pf-links{display:flex;gap:9px;flex-wrap:wrap}
+.pf-links a{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--dim);text-decoration:none;
+  border:1px solid var(--line);background:var(--card);border-radius:9px;padding:7px 12px;transition:.15s}
+.pf-links a:hover{border-color:var(--brand);color:var(--brand);transform:translateY(-1px)}
+.pf-links svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.pf-copy{margin-top:16px;padding-top:13px;border-top:1px dashed var(--line);font-size:11px;color:var(--faint);text-align:center;line-height:1.7}
+body.cover .pgfoot{margin-top:0;border-top:0;padding:0 6vw 34px;background:var(--bg)}
+
+/* ── tooltip กราฟ ── */
+#chtip{position:fixed;z-index:9997;pointer-events:none;opacity:0;transform:translateY(3px);
+  transition:opacity .13s,transform .13s;min-width:150px;max-width:290px;
+  background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 13px;
+  box-shadow:0 24px 52px -22px rgba(6,35,29,.55),0 2px 6px rgba(6,35,29,.08);
+  backdrop-filter:blur(10px)}
+#chtip.on{opacity:1;transform:translateY(0)}
+#chtip .cht-t{font-family:var(--fd);font-size:12.5px;font-weight:600;color:var(--ink);
+  padding-bottom:7px;margin-bottom:7px;border-bottom:1px solid var(--line2)}
+#chtip .cht-r{display:flex;align-items:baseline;gap:8px;padding:2.5px 0}
+#chtip .cht-r i{width:8px;height:8px;border-radius:3px;flex:none;transform:translateY(-1px)}
+#chtip .cht-l{font-size:11.5px;color:var(--dim);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#chtip .cht-v{font-family:var(--fn);font-size:14.5px;font-weight:600;color:var(--ink);margin-left:auto;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+[data-theme="dark"] #chtip{background:rgba(19,36,32,.96)}
+
+/* ── การ์ดค่อย ๆ ปรากฏ ── */
+@keyframes riseIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ── แถบหัวหน้าเหนียว ── */
+.ph{position:sticky;top:0;z-index:20;background:linear-gradient(var(--bg) 72%,transparent);
+  padding-top:2px;padding-bottom:9px;margin-bottom:11px}
+body.cover .ph{position:static}
+
+/* ── ตารางเลื่อนแนวนอนบนจอเล็ก ── */
+.sc{ -webkit-overflow-scrolling:touch }
+@media (max-width:900px){
+  .sc table.t{min-width:560px}
+  .sc{overflow-x:auto}
+}
+
+/* ════════ แท็บเล็ต 768–1150 ════════ */
+@media (max-width:1150px){
+  .main{padding:14px 15px 24px}
+  .ph .t h2{font-size:21px}
+  .grid{gap:11px}
+  .ch{height:250px}.ch.lg{height:280px}.ch.sm{height:190px}
+  .kpi .v{font-size:23px}
+  #map{height:340px}
+  .pf-in{gap:16px}
+}
+@media (min-width:768px) and (max-width:1150px){
+  /* แท็บเล็ต: KPI 3 คอลัมน์อ่านง่ายกว่า 2 */
+  .grid.g4,.grid.g5,.grid.g6{grid-template-columns:repeat(3,1fr)}
+  .grid.g21,.grid.g12{grid-template-columns:1fr}
+  .pgrid{grid-template-columns:repeat(2,1fr)}
+}
+
+/* ════════ มือถือ ≤767 ════════ */
+@media (max-width:767px){
+  .top{gap:8px;padding:0 11px}
+  .tb{height:33px;padding:0 9px}
+  .tb span{display:none}
+  .tb#btnKiosk span,.tb#btnPinLogin{display:inline}
+  .main{padding:11px 11px 22px}
+  .ph{padding-bottom:7px;margin-bottom:9px}
+  .ph .t h2{font-size:18.5px;line-height:1.25}
+  .ph .t p{font-size:12px}
+  .ph .r{margin-left:0;width:100%}
+  .grid.g4,.grid.g5,.grid.g6{grid-template-columns:repeat(2,1fr)}
+  .kpi{padding:11px 12px 10px}
+  .kpi .v{font-size:20px;letter-spacing:-.6px}
+  .kpi .v small{font-size:10px}
+  .kpi .h{font-size:11px}
+  .kpi .ic{width:24px;height:24px;border-radius:7px}
+  .kpi .ic svg{width:13px;height:13px}
+  .spark{height:20px}
+  .ch{height:230px}.ch.lg{height:250px}.ch.sm{height:190px}
+  .segs{width:100%;overflow-x:auto;flex-wrap:nowrap}
+  .segs button{flex:none}
+  .c>header{flex-wrap:wrap;gap:5px}
+  .c>header .r{margin-left:0;width:100%}
+  .sel,.inp{width:100%}
+  .pf-in{flex-direction:column}
+  .pf-links{width:100%}
+  .pf-links a{flex:1;justify-content:center}
+  .mbox{padding:18px 17px}
+  #chtip{max-width:220px;padding:9px 11px}
+  #chtip .cht-v{font-size:13px}
+  .gau .arc svg{width:64px;height:39px}
+  .gau .nums .pc{font-size:20px}
+  .fruit .fh{font-size:13.5px}
+  .rbanner{height:112px}
+  .rbanner b{font-size:16px}
+}
+@media (max-width:400px){
+  .grid.g4,.grid.g5,.grid.g6{grid-template-columns:1fr}
+  .cv h1{font-size:23px}
+}
+
+/* ── ปุ่มลอยกลับขึ้นบน ── */
+.totop{position:fixed;right:16px;bottom:18px;z-index:60;width:42px;height:42px;border-radius:14px;
+  background:var(--brand);color:#fff;display:grid;place-items:center;box-shadow:0 12px 26px -12px rgba(13,146,104,.8);
+  opacity:0;pointer-events:none;transition:.2s;transform:translateY(8px)}
+.totop.on{opacity:1;pointer-events:auto;transform:none}
+.totop svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+@media print{.totop,.pgfoot .pf-links{display:none}}

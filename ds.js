@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'0.6.2', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'0.7.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -331,20 +331,51 @@ function moveTip(e){
 /* ─────────────── 7) charts ─────────────── */
 function chDefaults(){
   if(typeof Chart==='undefined')return;
+  const small=innerWidth<768;
   Chart.defaults.font.family="'IBM Plex Sans Thai',system-ui,sans-serif";
-  Chart.defaults.font.size=11;Chart.defaults.color=cv('--dim');
-  Chart.defaults.plugins.legend.labels.boxWidth=9;
-  Chart.defaults.plugins.legend.labels.boxHeight=9;
+  Chart.defaults.font.size=small?10:11;
+  Chart.defaults.color=cv('--dim');
+  const dd=Chart.defaults;
+  dd.layout=dd.layout||{}; dd.layout.padding={top:8,right:12,bottom:2,left:2};
+  dd.elements=dd.elements||{}; dd.elements.bar=dd.elements.bar||{}; dd.elements.point=dd.elements.point||{};
+  dd.animation=(typeof dd.animation==='object'&&dd.animation)||{};
+  Chart.defaults.plugins.legend.position='bottom';
+  Chart.defaults.plugins.legend.labels.boxWidth=8;
+  Chart.defaults.plugins.legend.labels.boxHeight=8;
+  Chart.defaults.plugins.legend.labels.padding=12;
   Chart.defaults.plugins.legend.labels.usePointStyle=true;
-  Chart.defaults.plugins.tooltip.backgroundColor=cv('--ink');
-  Chart.defaults.plugins.tooltip.padding=10;
-  Chart.defaults.plugins.tooltip.cornerRadius=9;
-  Chart.defaults.plugins.tooltip.titleFont={size:12.5,family:"'Anuphan',sans-serif",weight:'600'};
+  Chart.defaults.plugins.legend.labels.font={size:small?10:10.5};
+  Chart.defaults.plugins.tooltip.enabled=false;
+  Chart.defaults.plugins.tooltip.external=externalTip;
+  dd.elements.bar.borderRadius=5;
+  dd.elements.point.hoverRadius=5;
+  dd.elements.point.hitRadius=12;
+  dd.animation.duration=700;
+  dd.animation.easing='easeOutCubic';
   Chart.defaults.maintainAspectRatio=false;
 }
 const CH={};
-function mk(id,cfg){const el=document.getElementById(id);if(!el||typeof Chart==='undefined')return;
-  try{if(CH[id])CH[id].destroy();CH[id]=new Chart(el,cfg)}catch(e){console.warn('chart',id,e)}}
+function mk(id,cfg){
+  const el=document.getElementById(id);if(!el||typeof Chart==='undefined')return;
+  const small=innerWidth<768;
+  try{
+    const o=cfg.options=cfg.options||{};
+    o.scales=o.scales||{};
+    if(o.indexAxis==='y'&&o.scales.y){
+      o.scales.y.ticks=Object.assign({autoSkip:false,crossAlign:'far',padding:4},o.scales.y.ticks||{});
+      o.scales.y.afterFit=function(sc){sc.width=Math.min(sc.width+6, small?128:210)};
+    }
+    if(o.scales.x&&o.indexAxis!=='y'){
+      o.scales.x.ticks=Object.assign({autoSkip:true,maxRotation:small?40:0,minRotation:0},o.scales.x.ticks||{});
+    }
+    if(cfg.type==='doughnut'||cfg.type==='pie'){
+      o.plugins=o.plugins||{}; o.plugins.legend=o.plugins.legend||{};
+      if(small||o.plugins.legend.position==='right'&&el.clientWidth<420)o.plugins.legend.position='bottom';
+      o.plugins.legend.labels=Object.assign({boxWidth:8,boxHeight:8,padding:9,font:{size:small?9.5:10.5}},o.plugins.legend.labels||{});
+    }
+    if(CH[id])CH[id].destroy();
+    CH[id]=new Chart(el,cfg);
+  }catch(e){console.warn('chart',id,e)}}
 const ax=(e={})=>({grid:{color:cv('--grid'),drawTicks:false},border:{display:false},
   ticks:{padding:6,maxRotation:0,autoSkipPadding:14},...e});
 const PAL=()=>[cv('--brand'),cv('--blue'),cv('--gold'),cv('--coral'),cv('--leaf'),cv('--brand2'),cv('--plum')];
@@ -576,6 +607,103 @@ async function loadLive(){
   }catch(e){}
 }
 
+
+/* ─────────────── 23) Tooltip กราฟแบบการ์ดลอย ─────────────── */
+function chartTipEl(){
+  let el=document.getElementById('chtip');
+  if(!el){el=document.createElement('div');el.id='chtip';document.body.appendChild(el)}
+  return el;
+}
+function externalTip(ctx){
+  const el=chartTipEl(), tt=ctx.tooltip;
+  if(!tt||tt.opacity===0){el.classList.remove('on');return}
+  const title=(tt.title||[]).join(' ');
+  const colors=tt.labelColors||[];
+  const lines=(tt.body||[]).map(b=>b.lines).flat();
+  let html=title?`<div class="cht-t">${title}</div>`:'';
+  html+=lines.map((raw,i)=>{
+    const c=colors[i]||{};
+    const col=c.backgroundColor||c.borderColor||'var(--brand)';
+    const str=String(raw);
+    const k=str.lastIndexOf(':');
+    if(k>0){
+      const lab=str.slice(0,k).trim(), val=str.slice(k+1).trim();
+      return `<div class="cht-r"><i style="background:${col}"></i><span class="cht-l">${lab}</span><b class="cht-v">${val}</b></div>`;
+    }
+    return `<div class="cht-r"><i style="background:${col}"></i><b class="cht-v" style="margin-left:0">${str}</b></div>`;
+  }).join('');
+  el.innerHTML=html;
+  el.classList.add('on');
+  const r=ctx.chart.canvas.getBoundingClientRect();
+  const w=el.offsetWidth,h=el.offsetHeight;
+  let x=r.left+tt.caretX+16, y=r.top+tt.caretY-h/2;
+  if(x+w>innerWidth-10)x=r.left+tt.caretX-w-16;
+  if(x<8)x=8;
+  if(y<8)y=8;
+  if(y+h>innerHeight-8)y=innerHeight-h-8;
+  el.style.left=x+'px'; el.style.top=y+'px';
+}
+
+/* ─────────────── 24) ตัวเลขวิ่งขึ้นตอนเปิดหน้า ─────────────── */
+function animateNums(root){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  (root||document).querySelectorAll('.kpi .v, .cvst b, .pil b, .meibox .big, .big2').forEach(el=>{
+    if(el.dataset.anim)return;
+    const small=el.querySelector('small');
+    const raw=(small?el.childNodes[0]&&el.childNodes[0].textContent:el.textContent)||'';
+    const txt=raw.trim();
+    const m=txt.match(/^-?[\d,]+(\.\d+)?%?$/);
+    if(!m)return;
+    const pct=txt.endsWith('%');
+    const num=parseFloat(txt.replace(/[,%]/g,''));
+    if(!isFinite(num)||Math.abs(num)<1)return;
+    const dec=(txt.split('.')[1]||'').replace('%','').length;
+    el.dataset.anim='1';
+    const t0=performance.now(), dur=Math.min(900,420+Math.log10(Math.abs(num)+1)*180);
+    const write=v=>{
+      const out=v.toLocaleString('th-TH',{minimumFractionDigits:dec,maximumFractionDigits:dec})+(pct?'%':'');
+      if(small)el.childNodes[0].textContent=out; else el.textContent=out;
+    };
+    const step=now=>{
+      const p=Math.min(1,(now-t0)/dur);
+      const e=1-Math.pow(1-p,3);
+      write(num*e);
+      if(p<1)requestAnimationFrame(step); else write(num);
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+/* ─────────────── 25) การ์ดค่อย ๆ ปรากฏ ─────────────── */
+function revealCards(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const els=[...document.querySelectorAll('.main .c, .main .kpi, .main .sect, .main .gau, .main .pcard, .main .fruit')];
+  els.slice(0,40).forEach((el,i)=>{
+    if(el.dataset.rev)return;
+    el.dataset.rev='1';
+    el.style.animation=`riseIn .42s cubic-bezier(.22,.7,.3,1) ${Math.min(i*28,420)}ms both`;
+  });
+}
+
+
+/* ─────────────── 26) ปุ่มกลับขึ้นบน ─────────────── */
+function initToTop(){
+  if(document.getElementById('toTop'))return;
+  const b=document.createElement('button');
+  b.id='toTop';b.className='totop';b.setAttribute('aria-label','กลับขึ้นบน');
+  b.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
+  document.body.appendChild(b);
+  const sc=document.querySelector('.main');
+  const target=sc||window;
+  b.onclick=()=>{(sc||window).scrollTo({top:0,behavior:'smooth'})};
+  const onScroll=()=>{
+    const y=sc?sc.scrollTop:window.scrollY;
+    b.classList.toggle('on',y>320);
+  };
+  target.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('scroll',onScroll,{passive:true});
+}
+
 /* ─────────────── 22) โครงร่วม: แถบบน เมนู และการเริ่มระบบ ─────────────── */
 const NAVI=[
  {id:'cover',   file:'index.html',    label:'หน้าปกจังหวัด',   ic:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.2V20h13v-9.8"/><path d="M9.6 20v-5.4h4.8V20"/>'},
@@ -612,10 +740,43 @@ function buildShell(active){
     <button class="tb" id="btnPrint"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z"/></svg></button>
     <a class="tb" href="input.html"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></svg><span>กรอกข้อมูล</span></a>`;
   const side=document.getElementById('sidebar');
-  if(side)side.innerHTML=NAVI.map(n=>n.grp?`<div class="grp">${n.grp}</div>`
+  if(side)side.innerHTML=
+     `<button class="railbtn" id="btnRail" data-tip="ขยายเมนู" aria-label="พับเมนู">
+        <svg viewBox="0 0 24 24"><path d="M14.5 7 9.5 12l5 5"/></svg><span>พับเมนู</span></button>`
+    +NAVI.map(n=>n.grp?`<div class="grp">${n.grp}</div>`
     :`<a class="nv${n.id===active?' act':''}" href="${n.file}" data-tip="${n.label}">
         <svg viewBox="0 0 24 24">${n.ic}</svg><span>${n.label}</span></a>`).join('')
     +`<div class="sfoot">“ข้อมูลที่เร็วกว่า<br>คือการตัดสินใจที่ดีกว่า”</div>`;
+
+  const main=document.querySelector('.main');
+  if(main&&!document.getElementById('pgfoot')){
+    const f=document.createElement('footer');
+    f.id='pgfoot'; f.className='pgfoot';
+    f.innerHTML=`
+      <div class="pf-in">
+        <div class="pf-brand">
+          <img src="${SEAL}" alt="ตราประจำจังหวัดหนองบัวลำภู">
+          <div>
+            <b>สำนักงานสถิติจังหวัดหนองบัวลำภู</b>
+            <span>ศาลากลางจังหวัดหนองบัวลำภู ชั้น 2 ถ.หนองบัวลำภู – เลย<br>
+            ต.ลำภู อ.เมือง จ.หนองบัวลำภู 39000</span>
+          </div>
+        </div>
+        <div class="pf-links">
+          <a href="tel:042316736">
+            <svg viewBox="0 0 24 24"><path d="M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7 2 2 0 0 1 6.5 3.5Z"/></svg>
+            0 4231 6736</a>
+          <a href="https://nongbualamphu.nso.go.th" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2M12 3.4c2.4 2.7 3.6 5.5 3.6 8.6s-1.2 5.9-3.6 8.6c-2.4-2.7-3.6-5.5-3.6-8.6S9.6 6.1 12 3.4Z"/></svg>
+            เว็บไซต์สำนักงาน</a>
+          <a href="input.html">
+            <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></svg>
+            ระบบกรอกข้อมูล</a>
+        </div>
+      </div>
+      <div class="pf-copy">© 2025 จัดทำโดย สำนักงานสถิติจังหวัดหนองบัวลำภู · ศูนย์บัญชาการข้อมูลเศรษฐกิจจังหวัดหนองบัวลำภู · build ${CFG.build}</div>`;
+    main.appendChild(f);
+  }
 }
 
 /* เตือนเมื่อโฟลเดอร์ assets ยังไม่ได้อัปโหลด */
@@ -664,6 +825,16 @@ const DS={
 
     const hb=document.getElementById('hamb');
     if(hb)hb.onclick=()=>document.body.classList.toggle('navopen');
+    const app=document.getElementById('app');
+    let railed=false; try{railed=localStorage.getItem('nblEcon.rail')==='1'}catch(e){}
+    if(railed&&app)app.classList.add('narrow');
+    const rb=document.getElementById('btnRail');
+    if(rb)rb.onclick=()=>{
+      const on=app.classList.toggle('narrow');
+      try{localStorage.setItem('nblEcon.rail',on?'1':'0')}catch(e){}
+      setTimeout(()=>{Object.values(CH).forEach(c=>{try{c.resize()}catch(e){}});
+        if(window.MAP&&MAP.invalidateSize)MAP.invalidateSize()},280);
+    };
     const bp=document.getElementById('btnPrint');
     if(bp)bp.onclick=()=>window.print();
     const be=document.getElementById('btnEdit');
@@ -694,7 +865,12 @@ const DS={
     try{EDIT=localStorage.getItem('nblEcon.editing')==='1'}catch(e){}
     safeRender();
     if(EDIT){EDIT=false;if(authValid())toggleEdit();else{try{localStorage.setItem('nblEcon.editing','0')}catch(e){}}}
-    checkAssets(); loadLive();
+    initToTop(); checkAssets(); loadLive();
+    let rz;
+    window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{
+      chDefaults();
+      Object.values(CH).forEach(c=>{try{c.resize()}catch(e){}});
+    },220)});
     window.addEventListener('error',ev=>{
       if(document.getElementById('bootErr'))return;
       const d=document.createElement('div');d.id='bootErr';
@@ -705,7 +881,10 @@ const DS={
   }
 };
 let PAGE={id:'',render(){}};
-function safeRender(){try{PAGE.render()}catch(e){console.error('render '+PAGE.id,e)}}
+function safeRender(){
+  try{PAGE.render()}catch(e){console.error('render '+PAGE.id,e)}
+  try{revealCards();animateNums()}catch(e){}
+}
 
 document.addEventListener('click',function(e){
   const g=e.target.closest('[data-go]');

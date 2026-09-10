@@ -42,7 +42,7 @@
   <div class="grid g4 mb" id="sectorTiles"></div>
   <div class="grid g21">
     <div class="c"><header><h3>ความเร็วของข้อมูลแต่ละชุด</h3><span class="r">ยิ่งแท่งสั้น ยิ่งทันสถานการณ์</span></header>
-      <div class="b"><div class="ch sm"><canvas id="cLag"></canvas></div>
+      <div class="b"><div class="ch" style="height:290px"><canvas id="cLag"></canvas></div>
       <div class="note">GPP ประกาศช้าราว 2 ปี ทำให้ตัดสินใจบนข้อมูลล้าสมัย ระบบนี้จึงนำข้อมูลเร็วที่หน่วยงานมีอยู่แล้วมาประกอบเป็นภาพเดือนต่อเดือน</div></div></div>
     <div class="c"><header><h3>สถานะการส่งข้อมูลรอบล่าสุด</h3></header><div class="b" id="feed"></div></div>
   </div></section>
@@ -108,7 +108,7 @@ function renderOverview(){
     ...DATASETS.map(d=>({n:d.agency.split(' · ')[0].replace('สำนักงาน','สนง.').replace('จังหวัดหนองบัวลำภู','จ.นภ.'),v:d.lag,c:cv('--blue')})),
     {n:'ดัชนี NBL–MEI',v:15,c:cv('--brand')}].sort((a,b)=>b.v-a.v);
   mk('cLag',{type:'bar',data:{labels:lag.map(x=>x.n),
-    datasets:[{data:lag.map(x=>x.v),backgroundColor:lag.map(x=>x.c),borderRadius:4,barThickness:10}]},
+    datasets:[{data:lag.map(x=>x.v),backgroundColor:lag.map(x=>x.c),borderRadius:4,barThickness:12}]},
     options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'ช้าประมาณ '+c.raw+' วัน'}}},
       scales:{x:ax({type:'logarithmic',ticks:{callback:v=>v+' วัน'}}),y:ax({grid:{display:false},ticks:{font:{size:9.5}}})}}});
 

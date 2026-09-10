@@ -68,7 +68,7 @@ function priceHtml(){
         </table></div></div></div>`).join('');
   return `<div class="grid g4 mb">${kpi}</div>
     <div class="c mb"><header><h3>ราคาเทียบปีก่อน — สินค้าเกษตรหลัก</h3><span class="u">สเกลลอการิทึม</span></header>
-      <div class="b"><div class="ch"><canvas id="cPrice"></canvas></div>
+      <div class="b"><div class="ch" style="height:330px"><canvas id="cPrice"></canvas></div>
       <div class="note">ยางพาราและมันสำปะหลังเป็นสองสินค้าที่ราคาขยับขึ้นจากปีก่อนมากที่สุด ขณะที่สินค้าปศุสัตว์ทรงตัว
       ราคาที่สูงขึ้นของยางและมันช่วยหนุนรายได้เกษตรกรในกลุ่มพืชไร่ ซึ่งเป็นฐานรายได้หลักของจังหวัด</div></div></div>
     ${groups}
@@ -86,11 +86,11 @@ function renderPriceChart(){
     const a=midOf(r.now),b=midOf(r.yr);
     if(a!=null&&b!=null)items.push({n:r.n+(r.sub?' ('+r.sub.slice(0,14)+')':''),now:a,yr:b});}));
   mk('cPrice',{type:'bar',data:{labels:items.map(x=>x.n),datasets:[
-    {label:'ราคาปีก่อน',data:items.map(x=>x.yr),backgroundColor:cv('--line'),borderRadius:4},
-    {label:'ราคาสัปดาห์นี้',data:items.map(x=>x.now),backgroundColor:cv('--brand'),borderRadius:4}]},
-    options:{plugins:{legend:{position:'bottom',labels:{padding:11}}},
-      scales:{x:ax({grid:{display:false},ticks:{font:{size:9.5}}}),
-              y:ax({type:'logarithmic',ticks:{callback:v=>f(v,0)}})}}});
+    {label:'ราคาปีก่อน',data:items.map(x=>x.yr),backgroundColor:cv('--line'),borderRadius:4,barPercentage:.82},
+    {label:'ราคาสัปดาห์นี้',data:items.map(x=>x.now),backgroundColor:cv('--brand'),borderRadius:4,barPercentage:.82}]},
+    options:{indexAxis:'y',plugins:{legend:{position:'bottom',labels:{padding:11}}},
+      scales:{x:ax({type:'logarithmic',ticks:{callback:v=>f(v,0)}}),
+              y:ax({grid:{display:false},ticks:{font:{size:10}}})}}});
 }
 function renderTradePage(){
   const v=document.getElementById('v-trade');
