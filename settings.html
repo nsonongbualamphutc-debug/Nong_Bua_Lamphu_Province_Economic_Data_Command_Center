@@ -120,13 +120,25 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
           <button class="tb on" id="btnGenAll">สุ่มรหัสใหม่ทั้งหมด</button>
           <button class="tb" id="btnGenSel">สุ่มเฉพาะที่เลือก</button>
+          <button class="tb hide" id="btnShowLast">
+            <svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            ดูรหัสที่เพิ่งสุ่ม</button>
+          <button class="tb hide" id="btnSaveLast">
+            <svg viewBox="0 0 24 24"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4.5 20.5h15"/></svg>
+            บันทึกไฟล์รหัส</button>
           <span class="sp" style="flex:1"></span>
           <button class="tb" id="btnReload">รีเฟรชสถานะ</button>
         </div>
         <div id="pinReveal" class="hide"></div>
         <div class="sc" style="max-height:460px"><table class="t" id="tUsers"></table></div>
-        <div class="note">รหัสจริงไม่ถูกเก็บไว้ที่ใดเลย ระบบเก็บเฉพาะค่า hash การสุ่มใหม่จะแสดงรหัสให้ดูเพียงครั้งเดียว
-        ให้บันทึกไฟล์เก็บไว้ทันที ทุกการกระทำในหน้านี้ถูกบันทึกในชีต Log</div>
+        <div class="note" style="border-top-style:solid;border-color:var(--line)">
+          <b style="color:var(--ink)">ถ้าหน่วยงานลืมรหัส ทำอย่างไร</b><br>
+          ระบบเก็บเฉพาะค่า hash ซึ่งย้อนกลับเป็นรหัสจริงไม่ได้ ผู้ดูแลจึงกดดูรหัสเดิมไม่ได้
+          นี่เป็นการออกแบบโดยตั้งใจ เพราะถ้าเก็บรหัสจริงไว้ วันหนึ่งที่ไฟล์หรือชีตหลุด รหัสทุกหน่วยงานจะหลุดตามไปด้วย<br>
+          <b style="color:var(--ink)">วิธีที่ถูกต้องคือกด “สุ่มใหม่” ที่แถวของหน่วยงานนั้น</b>
+          ใช้เวลาไม่ถึงสิบวินาที ได้รหัสใหม่ทันที แล้วแจ้งกลับไปให้หน่วยงาน<br>
+          รหัสที่เพิ่งสุ่มในรอบนี้ยังเปิดดูซ้ำได้จากปุ่ม “ดูรหัสที่เพิ่งสุ่ม” ตราบใดที่ยังไม่ปิดหรือรีเฟรชหน้านี้
+          และทุกการกระทำถูกบันทึกในชีต Log</div>
       </div>
     </div>
   </div>
@@ -262,14 +274,22 @@ function renderUsers(){
 function picked(){return [...document.querySelectorAll('.uPick:checked')].map(c=>c.value)}
 function showGenerated(list){
   LASTGEN={at:new Date(),list};
-  const rowsHtml=list.map(x=>`<tr><td>${x.name}</td><td><code>${x.code}</code></td>
-     <td class="r" style="font-family:var(--fn);font-size:17px;font-weight:600;letter-spacing:2px">${x.pin}</td></tr>`).join('');
+  const rowsHtml=list.map((x,i)=>`<tr><td>${x.name}</td><td><code>${x.code}</code></td>
+     <td class="r"><span class="pinv" data-i="${i}" data-show="0"
+        style="font-family:var(--fn);font-size:17px;font-weight:600;letter-spacing:3px">••••••</span></td>
+     <td style="width:38px">
+       <button class="tb eye" data-i="${i}" style="height:26px;padding:0 8px" title="แสดง/ซ่อนรหัส">
+         <svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+       </button></td></tr>`).join('');
   document.getElementById('pinReveal').classList.remove('hide');
   document.getElementById('pinReveal').innerHTML=`
     <div class="c" style="border-color:var(--gold);margin-bottom:13px">
       <header><h3>รหัสใหม่ ${list.length} หน่วยงาน</h3>
         <span class="u">แสดงครั้งเดียว · ${new Date().toLocaleString('th-TH')}</span>
         <span class="r">
+          <button class="tb" id="btnEyeAll">
+            <svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            แสดงรหัสทั้งหมด</button>
           <button class="tb" id="btnPinCopy">คัดลอก</button>
           <button class="tb" id="btnPinCsv">บันทึกไฟล์ CSV</button>
           <button class="tb" id="btnPinTxt">บันทึกไฟล์ข้อความ</button>
@@ -279,7 +299,7 @@ function showGenerated(list){
         <div class="edbar" style="background:var(--coral-l);border-color:rgba(201,69,47,.35);color:var(--bad)">
           <b>บันทึกเก็บไว้ทันที</b> — ระบบไม่เก็บรหัสจริงไว้ที่ใดเลย ปิดหน้านี้แล้วจะดูย้อนหลังไม่ได้อีก</div>
         <div class="sc" style="max-height:320px"><table class="t">
-          <thead><tr><th>หน่วยงาน</th><th style="width:100px">รหัสเข้าระบบ</th><th class="r" style="width:120px">PIN</th></tr></thead>
+          <thead><tr><th>หน่วยงาน</th><th style="width:100px">รหัสเข้าระบบ</th><th class="r" style="width:110px">PIN</th><th style="width:38px"></th></tr></thead>
           <tbody>${rowsHtml}</tbody></table></div>
       </div></div>`;
   const txt=()=>'รหัสเข้าใช้ระบบ ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู\n'+
@@ -292,6 +312,27 @@ function showGenerated(list){
     '\ufeff'+'หน่วยงาน,รหัสเข้าระบบ,PIN\n'+list.map(x=>`"${x.name}","${x.code}","${x.pin}"`).join('\n'),'text/csv;charset=utf-8');
   document.getElementById('btnPinTxt').onclick=()=>dlFile('รหัสหน่วยงาน-'+stamp()+'.txt','\ufeff'+txt(),'text/plain;charset=utf-8');
   document.getElementById('btnPinPrint').onclick=()=>printPins(list);
+  const setEye=(i,show)=>{
+    const el=document.querySelector(`.pinv[data-i="${i}"]`);
+    if(!el)return;
+    el.dataset.show=show?'1':'0';
+    el.textContent=show?list[i].pin:'••••••';
+  };
+  document.querySelectorAll('.eye').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i;
+    const el=document.querySelector(`.pinv[data-i="${i}"]`);
+    setEye(i, el.dataset.show!=='1');
+  });
+  let allOn=false;
+  document.getElementById('btnEyeAll').onclick=()=>{
+    allOn=!allOn;
+    list.forEach((_,i)=>setEye(i,allOn));
+    const b=document.getElementById('btnEyeAll');
+    b.classList.toggle('on',allOn);
+    b.lastChild.textContent=allOn?' ซ่อนรหัสทั้งหมด':' แสดงรหัสทั้งหมด';
+  };
+  document.getElementById('btnShowLast').classList.remove('hide');
+  document.getElementById('btnSaveLast').classList.remove('hide');
   document.getElementById('btnPinHide').onclick=()=>{
     if(confirm('ปิดแล้วจะดูรหัสชุดนี้ไม่ได้อีก บันทึกเก็บเรียบร้อยแล้วใช่หรือไม่'))
       document.getElementById('pinReveal').classList.add('hide')};
@@ -343,6 +384,19 @@ function wirePinAdmin(){
   };
   document.getElementById('btnPinOut').onclick=()=>{authLogout();USERS=[];pinGate()};
   document.getElementById('btnReload').onclick=loadUsers;
+  document.getElementById('btnShowLast').onclick=()=>{
+    if(!LASTGEN){alert('ยังไม่ได้สุ่มรหัสในรอบนี้');return}
+    showGenerated(LASTGEN.list);
+    document.getElementById('pinReveal').scrollIntoView({behavior:'smooth',block:'nearest'});};
+  document.getElementById('btnSaveLast').onclick=()=>{
+    if(!LASTGEN){alert('ยังไม่ได้สุ่มรหัสในรอบนี้');return}
+    const list=LASTGEN.list;
+    const txt='รหัสเข้าใช้ระบบ ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู\n'+
+      'ออกให้เมื่อ '+LASTGEN.at.toLocaleString('th-TH')+'\n\n'+
+      'หน่วยงาน\tรหัสเข้าระบบ\tPIN\n'+
+      list.map(x=>x.name+'\t'+x.code+'\t'+x.pin).join('\n')+
+      '\n\nเอกสารลับ โปรดแจกให้หัวหน้าหน่วยงานโดยตรง และแจ้งให้เปลี่ยน PIN เมื่อเข้าระบบครั้งแรก';
+    dlFile('รหัสหน่วยงาน-'+stamp()+'.txt','\ufeff'+txt,'text/plain;charset=utf-8');};
   document.getElementById('btnGenAll').onclick=async()=>{
     if(!confirm('สุ่มรหัสใหม่ให้ทุกหน่วยงาน? รหัสเดิมทั้งหมดจะใช้ไม่ได้ทันที'))return;
     try{const r=await pinApi('genpins',{codes:'all'});showGenerated(r.generated);loadUsers()}
