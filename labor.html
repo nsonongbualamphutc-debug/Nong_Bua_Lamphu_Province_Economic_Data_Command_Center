@@ -33,7 +33,7 @@ function renderLabor(){
   v.innerHTML=`
   <div class="ph"><div class="t"><h2>ตลาดแรงงานจังหวัดหนองบัวลำภู</h2>
     <p>คนมีงานทำคือฐานกำลังซื้อที่ยั่งยืนที่สุด หน้านี้ติดตามการว่างงานรายไตรมาสย้อนหลัง 3 ปี พร้อมโครงสร้างการจ้างงานและการเข้าสู่ระบบประกันสังคม</p></div>
-    <div class="r"><span class="chip br">${L.latest}</span><span class="chip mock">โครงร่าง รอผลสำรวจจริง</span></div></div>
+    <div class="r"><span class="chip br">${L.latest}</span><span class="chip mock">ตัวเลขโครงร่าง รอนำเข้าข้อมูลจริง</span></div></div>
 
   <div class="grid g4 mb" id="lbKpi"></div>
 
@@ -76,7 +76,8 @@ function renderLabor(){
   </div>
 
   <div class="c"><header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
-    <div class="b">${srcBar(['labor','social'],'ข้อมูลการว่างงานอ้างอิงการสำรวจภาวะการทำงานของประชากร ซึ่งเก็บข้อมูลรายไตรมาสและประกาศผลหลังสิ้นไตรมาสประมาณ 45 วัน')}</div></div>`;
+    <div class="b">${srcBar(['labor','social'],'ข้อมูลชุดจริงเผยแพร่อยู่แล้วที่บัญชีข้อมูลจังหวัดหนองบัวลำภู (nongbualamphu.gdcatalog.go.th) ชุด “การสำรวจภาวะการทำงานของประชากร” · ตัวเลขที่แสดงขณะนี้เป็นโครงร่างเพื่อสาธิตรูปแบบการนำเสนอ')+
+      '<div class="note">นำข้อมูลจริงเข้าระบบได้ 2 ทาง — ดาวน์โหลดไฟล์จาก gdcatalog แล้วอัปโหลดผ่านหน้าระบบกรอกข้อมูล (นำเข้าจาก Excel) หรือกรอกรายไตรมาสทีละงวดในหน้าเดียวกัน เมื่อบันทึกแล้วตัวเลขบนหน้านี้จะเปลี่ยนทันที</div>'}</div></div>`;
 
   /* KPI */
   document.getElementById('lbKpi').innerHTML=[

@@ -165,6 +165,29 @@ table.grid input.dirty{border-color:var(--brand);background:var(--brand-l)}
 .sticky{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--bg) 38%);
   padding:18px 0 4px;display:flex;gap:11px;align-items:center;flex-wrap:wrap;margin-top:6px;z-index:5}
 .qbadge{font-size:11.5px;color:var(--warn)}
+/* แถบสถานะงวด */
+.perbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px;align-items:center}
+.perchip{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:6px 11px;font-size:12px;
+  color:var(--dim);display:inline-flex;align-items:center;gap:6px;transition:.14s}
+.perchip:hover{border-color:var(--brand)}
+.perchip.on{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-color:transparent;font-weight:600}
+.perchip i{width:7px;height:7px;border-radius:50%;background:var(--line);display:inline-block}
+.perchip.has i{background:var(--brand)}
+.perchip.on i{background:#fff}
+.stat{display:flex;align-items:center;gap:9px;font-size:12px;padding:9px 13px;border-radius:11px;margin-bottom:13px;
+  background:var(--brand-l);border:1px solid rgba(13,146,104,.3);color:var(--good);flex-wrap:wrap}
+.stat.empty{background:var(--gold-l);border-color:rgba(181,133,26,.3);color:var(--warn)}
+.stat b{font-weight:600}
+.hist{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.hist table{width:100%;border-collapse:collapse;font-size:12px}
+.hist th{position:sticky;top:0;background:var(--card2);text-align:left;font-size:10.5px;color:var(--faint);
+  padding:8px 10px;border-bottom:1px solid var(--line);font-weight:500}
+.hist td{padding:7px 10px;border-bottom:1px solid var(--line2)}
+.hist tr:hover td{background:var(--card2)}
+.oldv{color:var(--faint);text-decoration:line-through;font-family:var(--fn)}
+.newv{color:var(--ink);font-weight:600;font-family:var(--fn)}
+.mini2{height:26px;padding:0 10px;font-size:11px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--dim)}
+.mini2:hover{border-color:var(--brand);color:var(--brand)}
 #xlPreview table{font-size:12px}
 
 .ftr{margin-top:auto;padding:22px 0 0;font-size:11px;line-height:1.8;text-align:center}
@@ -259,7 +282,8 @@ body.signed .ftr a{color:var(--blue)}
 
       <div id="pane-excel" style="display:none">
         <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px">
-          <button class="btn" id="btnTpl">ดาวน์โหลดแบบฟอร์ม Excel</button>
+          <button class="btn pri" id="btnTpl">ดาวน์โหลดแบบฟอร์มประเด็นนี้</button>
+          <button class="btn" id="btnTplAll">แบบฟอร์มทุกประเด็นที่รับผิดชอบ</button>
           <label class="btn" style="cursor:pointer">เลือกไฟล์ที่กรอกแล้ว
             <input type="file" id="xlFile" accept=".xlsx,.xls,.csv" style="display:none"></label>
           <span class="sp"></span>
@@ -303,8 +327,11 @@ body.signed .ftr a{color:var(--blue)}
         <div class="fld" id="fldDist" style="display:none"><label>อำเภอ</label><select id="dist"></select></div>
         <div class="sp"></div>
         <button class="btn" id="btnLoad">โหลดค่าที่บันทึกไว้</button>
+        <button class="btn" id="btnHist">ประวัติการแก้ไข</button>
       </div>
 
+      <div class="perbar" id="perBar"></div>
+      <div class="stat" id="perStat" style="display:none"></div>
       <div id="forms"></div>
 
       <div class="msg" id="saveMsg"></div>
@@ -314,6 +341,13 @@ body.signed .ftr a{color:var(--blue)}
         <span class="qbadge" id="queueBadge"></span>
         <span class="sp"></span>
         <button class="btn gh" id="btnPin">เปลี่ยน PIN</button>
+      </div>
+      <div id="histPane" style="display:none;margin-top:16px">
+        <div class="crumb"><span class="stepnum">3</span><b>ประวัติการแก้ไขข้อมูล</b>
+          <span>ตรวจสอบย้อนหลังได้ว่าใครแก้อะไรเมื่อไหร่ และกดคืนค่าเดิมได้</span>
+          <span class="sp" style="flex:1"></span>
+          <button class="btn gh" id="btnHistClose">ปิด</button></div>
+        <div class="hist" id="histBox"></div>
       </div>
       </div><!-- /formArea -->
       </div><!-- /pane-form -->
@@ -335,34 +369,34 @@ const DISTRICTS=[['3901','เมืองหนองบัวลำภู'],['3
   ['3904','ศรีบุญเรือง'],['3905','สุวรรณคูหา'],['3906','นาวัง']];
 
 const DOMAINS=[
- {id:'spend',no:'การคลัง',name:'การใช้จ่ายภาครัฐ',head:'ผลการเบิกจ่ายและใช้จ่ายงบประมาณ (สนง.คลังจังหวัด)',
+ {id:'spend',freq:'M',no:'การคลัง',name:'การใช้จ่ายภาครัฐ',head:'ผลการเบิกจ่ายและใช้จ่ายงบประมาณ (สนง.คลังจังหวัด)',
   series:[['inv','เบิกจ่ายงบลงทุนสะสม','ล้านบาท'],['ope','เบิกจ่ายงบประจำสะสม','ล้านบาท'],
           ['rate','ร้อยละการเบิกจ่ายต่อเป้าหมาย','%'],['rank','อันดับการเบิกจ่ายของประเทศ','อันดับ']]},
- {id:'crop',no:'เกษตร',name:'ภาคเกษตรและฐานรากเศรษฐกิจ',head:'ภาวะการผลิตพืชอายุสั้น (สนง.เกษตรจังหวัด)',
+ {id:'crop',freq:'M',no:'เกษตร',name:'ภาคเกษตรและฐานรากเศรษฐกิจ',head:'ภาวะการผลิตพืชอายุสั้น (สนง.เกษตรจังหวัด)',
   series:[['value','มูลค่าผลผลิตพืชอายุสั้น','ล้านบาท'],['area','เนื้อที่ปลูกรวม','ไร่'],
           ['yield','ผลผลิตรวม','กิโลกรัม'],['hh','ครัวเรือนเกษตรกร','ครัวเรือน']]},
- {id:'factory',no:'อุตสาหกรรม',name:'โรงงานและการลงทุน',head:'การอนุญาตตั้งโรงงาน เงินลงทุน แรงงาน (สนง.อุตสาหกรรมจังหวัด)',
+ {id:'factory',freq:'M',no:'อุตสาหกรรม',name:'โรงงานและการลงทุน',head:'การอนุญาตตั้งโรงงาน เงินลงทุน แรงงาน (สนง.อุตสาหกรรมจังหวัด)',
   series:[['newf','โรงงานใหม่/ขยายกิจการ','แห่ง'],['cap','เงินลงทุนสะสม','ล้านบาท'],['emp','แรงงานในโรงงาน','คน']]},
- {id:'power',no:'อุตสาหกรรม',name:'การใช้ไฟฟ้า',head:'ตัวชี้วัดเชิงประจักษ์ภาคการผลิต (กฟภ.จังหวัด)',
+ {id:'power',freq:'M',no:'อุตสาหกรรม',name:'การใช้ไฟฟ้า',head:'ตัวชี้วัดเชิงประจักษ์ภาคการผลิต (กฟภ.จังหวัด)',
   series:[['ind','ไฟฟ้าภาคอุตสาหกรรม','ล้านหน่วย'],['biz','ไฟฟ้าภาคธุรกิจ','ล้านหน่วย'],
           ['user','ผู้ใช้ไฟฟ้าประเภทอุตสาหกรรม','ราย']]},
- {id:'cpi',no:'การค้า',name:'ค่าครองชีพ',head:'ดัชนีราคาผู้บริโภคและอัตราเงินเฟ้อ (สนง.พาณิชย์จังหวัด)',
+ {id:'cpi',freq:'M',no:'การค้า',name:'ค่าครองชีพ',head:'ดัชนีราคาผู้บริโภคและอัตราเงินเฟ้อ (สนง.พาณิชย์จังหวัด)',
   series:[['idx','ดัชนีราคาผู้บริโภค','ดัชนี (2562=100)'],['yoy','อัตราเงินเฟ้อทั่วไป','% YoY']]},
- {id:'credit',no:'การค้า',name:'การลงทุนภาคเอกชน',head:'การอนุมัติสินเชื่อเพื่อการลงทุน (SME D Bank)',
+ {id:'credit',freq:'M',no:'การค้า',name:'การลงทุนภาคเอกชน',head:'การอนุมัติสินเชื่อเพื่อการลงทุน (SME D Bank)',
   series:[['amt','วงเงินสินเชื่ออนุมัติ','ล้านบาท'],['cnt','จำนวนรายที่ได้รับอนุมัติ','ราย']]},
- {id:'fuel',no:'การบริโภค',name:'พลังงาน',head:'ปริมาณการใช้น้ำมันเชื้อเพลิง (สนง.พลังงานจังหวัด)',
+ {id:'fuel',freq:'M',no:'การบริโภค',name:'พลังงาน',head:'ปริมาณการใช้น้ำมันเชื้อเพลิง (สนง.พลังงานจังหวัด)',
   series:[['total','ปริมาณการใช้น้ำมันรวม','ล้านลิตร'],['diesel','ดีเซล','ล้านลิตร'],
           ['gaso','เบนซิน/แก๊สโซฮอล์','ล้านลิตร']]},
- {id:'car',no:'การบริโภค',name:'กำลังซื้อครัวเรือน',head:'รถจดทะเบียนใหม่ (สนง.ขนส่งจังหวัด)',
+ {id:'car',freq:'M',no:'การบริโภค',name:'กำลังซื้อครัวเรือน',head:'รถจดทะเบียนใหม่ (สนง.ขนส่งจังหวัด)',
   series:[['moto','รถจักรยานยนต์','คัน'],['car','รถยนต์นั่งส่วนบุคคล','คัน'],['comm','รถเพื่อการพาณิชย์','คัน']]},
- {id:'labor',no:'แรงงาน · รายไตรมาส',name:'ภาวะการมีงานทำและการว่างงาน',
+ {id:'labor',freq:'Q',no:'แรงงาน · รายไตรมาส',name:'ภาวะการมีงานทำและการว่างงาน',
   head:'การสำรวจภาวะการทำงานของประชากร — กรอกเป็นรายไตรมาส (สนง.สถิติจังหวัด ร่วมกับ สนง.แรงงานจังหวัด)',
   series:[['ue','จำนวนผู้ว่างงาน','คน'],['ur','อัตราการว่างงาน','%'],
           ['emp','ผู้มีงานทำ','คน'],['force','กำลังแรงงานรวม','คน'],
           ['informal','แรงงานนอกระบบ','คน']]},
- {id:'social',no:'แรงงาน',name:'ผู้ประกันตน',head:'ผู้ประกันตนในระบบประกันสังคม (สนง.ประกันสังคมจังหวัด)',
+ {id:'social',freq:'M',no:'แรงงาน',name:'ผู้ประกันตน',head:'ผู้ประกันตนในระบบประกันสังคม (สนง.ประกันสังคมจังหวัด)',
   series:[['m33','ผู้ประกันตน มาตรา 33','คน'],['m40','ผู้ประกันตน มาตรา 40','คน'],['m39','ผู้ประกันตน มาตรา 39','คน'],['estab','สถานประกอบการในระบบ','แห่ง']]},
- {id:'tour',no:'ท่องเที่ยว',name:'ภาคการท่องเที่ยว',head:'ผู้เยี่ยมเยือน รายได้ และอัตราการเข้าพัก (สนง.การท่องเที่ยวและกีฬาจังหวัด)',
+ {id:'tour',freq:'M',no:'ท่องเที่ยว',name:'ภาคการท่องเที่ยว',head:'ผู้เยี่ยมเยือน รายได้ และอัตราการเข้าพัก (สนง.การท่องเที่ยวและกีฬาจังหวัด)',
   series:[['visit','ผู้เยี่ยมเยือน','คน-ครั้ง'],['rev','รายได้จากการท่องเที่ยว','ล้านบาท'],['occ','อัตราการเข้าพักเฉลี่ย','%'],['room','จำนวนห้องพักที่ให้บริการ','ห้อง']]}
 ];
 
@@ -401,6 +435,10 @@ $('#btnIn').onclick=async()=>{
   finally{$('#btnIn').disabled=false;$('#btnIn').textContent='เข้าสู่ระบบ'}
 };
 $('#pin').addEventListener('keydown',e=>{if(e.key==='Enter')$('#btnIn').click()});
+document.addEventListener('click',e=>{
+  if(e.target.closest('#btnHist')){showHistory();return}
+  if(e.target.closest('#btnHistClose')){document.getElementById('histPane').style.display='none';return}
+});
 
 /* ปุ่มโหมดกรอก */
 document.addEventListener('click',e=>{
@@ -410,7 +448,8 @@ document.addEventListener('click',e=>{
   $('#pane-excel').style.display=b.dataset.mode==='excel'?'block':'none';
 });
 document.addEventListener('click',e=>{
-  if(e.target.closest('#btnTpl')){try{buildTemplate()}catch(err){say('#xlMsg','err','สร้างแบบฟอร์มไม่สำเร็จ: '+err.message)}}
+  if(e.target.closest('#btnTplAll')){try{buildTemplate(true)}catch(err){say('#xlMsg','err','สร้างแบบฟอร์มไม่สำเร็จ: '+err.message)}return}
+  if(e.target.closest('#btnTpl')){try{buildTemplate(false)}catch(err){say('#xlMsg','err','สร้างแบบฟอร์มไม่สำเร็จ: '+err.message)}}
 });
 document.addEventListener('change',async e=>{
   if(e.target.id!=='xlFile')return;
@@ -461,7 +500,7 @@ function renderTopics(){
         <span class="tpic"><svg viewBox="0 0 24 24">${st.i}</svg></span>
         <b>${d.name}</b></span>
       <span class="tpsub">${d.head}</span>
-      <span class="tpfoot">${d.series.length} ตัวชี้วัด · หมวด${d.no}
+      <span class="tpfoot">${d.series.length} ตัวชี้วัด · ${FREQ_LABEL[d.freq||'M']}
         <span class="go">เริ่มกรอก ${ARROW}</span></span></button>`}).join('')
     + (list.length>1?`<button class="tpcard all" data-topic="__all" style="--ac:#57685f;--acl:#eaf1ed">
       <span class="tphead">
@@ -476,9 +515,16 @@ function pickTopic(id){
   const d=list.find(x=>x.id===id);
   $('#topicTitle').textContent = d? d.name : 'ทุกประเด็นที่รับผิดชอบ';
   $('#topicAgency').textContent = d? ('· '+d.head) : ('· '+list.length+' ชุดข้อมูล');
+  const fq=(d&&d.freq)||'M';
+  $('#freq').value=fq;
+  $('#fldMonth').style.display=fq==='M'?'flex':'none';
+  $('#fldQuarter').style.display=fq==='Q'?'flex':'none';
   $('#topicPick').style.display='none';
   $('#formArea').style.display='block';
+  $('#histPane').style.display='none';
   buildForms();
+  refreshPeriods();
+  loadSaved(true);
   window.scrollTo(0,0);
 }
 function activeDomains(){
@@ -536,11 +582,17 @@ function buildPeriod(){
     const v=$('#freq').value;
     $('#fldMonth').style.display=v==='M'?'flex':'none';
     $('#fldQuarter').style.display=v==='Q'?'flex':'none';
+    renderPerBar(); loadSaved(true);
   };
+  ['year','month','quarter','dist'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.onchange=()=>{renderPerBar();loadSaved(true)};
+  });
   $$('#tabs button').forEach(b=>b.onclick=()=>{
     $$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
     S.scope=b.dataset.scope;
     $('#fldDist').style.display=S.scope==='DIST'?'flex':'none';
+    renderPerBar(); loadSaved(true);
   });
 }
 function periodStr(){
@@ -554,7 +606,8 @@ function areaStr(){ return S.scope==='DIST' ? $('#dist').value : 'PROV' }
 function buildForms(){
   $('#forms').innerHTML=activeDomains().map(d=>`
     <div class="dom">
-      <h3><span class="no">${d.no}</span>${d.name}</h3>
+      <h3><span class="no">${d.no}</span>${d.name}
+        <span class="no" style="color:var(--gold);background:var(--gold-l);border-color:rgba(181,133,26,.35)">${FREQ_LABEL[d.freq||'M']}</span></h3>
       <p>${d.head}</p>
       <table class="grid">
         <thead><tr><th style="width:48%">ตัวชี้วัด</th><th style="width:24%">ค่า</th><th class="un">หน่วย</th><th style="width:22%">หมายเหตุ</th></tr></thead>
@@ -587,6 +640,131 @@ function checkAnomaly(inp){
 }
 
 /* ─────────── load / save ─────────── */
+let PERIODS=[];
+function periodLabel(p){
+  if(/Q/.test(p))return 'ไตรมาส '+p.slice(-1)+'/'+p.slice(0,4);
+  if(p.length===4)return 'ปี '+p;
+  return TH_M[+p.slice(-2)-1]+' '+p.slice(0,4);
+}
+function areaLabel(a){return a==='PROV'?'ระดับจังหวัด':('อ.'+((DISTRICTS.find(d=>d[0]===a)||[,a])[1]))}
+
+/* แถบเลือกงวด พร้อมจุดบอกว่ามีข้อมูลแล้วหรือยัง */
+function renderPerBar(){
+  const v=$('#freq').value, y=$('#year').value, area=areaStr();
+  const has=p=>PERIODS.some(x=>x.period===p&&x.area===area);
+  let items=[];
+  if(v==='M')items=TH_M.map((n,i)=>({p:y+'-'+String(i+1).padStart(2,'0'),n}));
+  else if(v==='Q')items=[1,2,3,4].map(q=>({p:y+'-Q'+q,n:'ไตรมาส '+q}));
+  else items=[{p:y,n:'ทั้งปี '+y}];
+  const cur=periodStr();
+  $('#perBar').innerHTML='<span style="font-size:11.5px;color:var(--faint);margin-right:4px">งวดข้อมูล</span>'+
+    items.map(it=>`<button class="perchip${it.p===cur?' on':''}${has(it.p)?' has':''}" data-per="${it.p}">
+      <i></i>${it.n}</button>`).join('')+
+    '<span style="font-size:10.5px;color:var(--faint);margin-left:6px">จุดเขียว = มีข้อมูลแล้ว</span>';
+}
+function setPeriod(p){
+  if(/Q/.test(p))$('#quarter').value=p.slice(-1);
+  else if(p.length>4)$('#month').value=String(+p.slice(-2));
+  $('#year').value=p.slice(0,4);
+  renderPerBar(); loadSaved();
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-per]');
+  if(b){setPeriod(b.dataset.per);return}
+});
+
+async function refreshPeriods(){
+  try{
+    const r=await jsonp({action:'periods',token:S.token,
+      domain:(S.topic&&S.topic!=='__all')?S.topic:''});
+    if(r.ok){PERIODS=r.periods;renderPerBar();updateStat()}
+  }catch(e){}
+}
+function updateStat(){
+  const cur=periodStr(), area=areaStr();
+  const hit=PERIODS.find(x=>x.period===cur&&x.area===area);
+  const el=$('#perStat');
+  el.style.display='flex';
+  if(hit){
+    el.className='stat';
+    el.innerHTML=`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5 10 17.5 19.5 7.5"/></svg>
+      <span>งวด <b>${periodLabel(cur)} · ${areaLabel(area)}</b> มีข้อมูลแล้ว <b>${hit.n}</b> รายการ
+      ${hit.at?`· แก้ไขล่าสุด ${new Date(hit.at).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})} โดย ${hit.by||'—'}`:''}
+      — แก้ไขทับได้เลย ระบบจะเก็บค่าเดิมไว้ในประวัติ</span>`;
+  }else{
+    el.className='stat empty';
+    el.innerHTML=`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16.5h.01"/><circle cx="12" cy="12" r="9"/></svg>
+      <span>งวด <b>${periodLabel(cur)} · ${areaLabel(area)}</b> ยังไม่มีข้อมูลในระบบ กรอกได้เลย</span>`;
+  }
+}
+
+/* โหลดค่าที่บันทึกไว้อัตโนมัติ */
+async function loadSaved(silent){
+  if(!S.token||!S.topic)return;
+  try{
+    const r=await jsonp({action:'mydata',token:S.token,period:periodStr()});
+    if(!r.ok)throw new Error(r.error);
+    const area=areaStr(); let n=0;
+    $$('#forms input[type=number]').forEach(i=>{i.value='';i.classList.remove('dirty','warn')});
+    $$('[data-flag]').forEach(f=>f.textContent='');
+    r.rows.forEach(row=>{
+      if(String(row.area)!==area)return;
+      const el=document.querySelector(`input[data-dom="${row.domain}"][data-key="${row.key}"]`);
+      if(el){el.value=row.value;n++}
+      const nt=document.querySelector(`input[data-note="${row.domain}.${row.key}"]`);
+      if(nt&&row.note)nt.value=row.note;
+    });
+    await loadPrev();
+    updateStat();
+    if(!silent)say('#saveMsg', n?'ok':'warn', n?`โหลดค่าที่บันทึกไว้ ${n} รายการ พร้อมแก้ไข`:'งวดนี้ยังไม่มีข้อมูล เริ่มกรอกได้เลย');
+  }catch(e){if(!silent)say('#saveMsg','err',e.message)}
+}
+
+/* ประวัติการแก้ไข */
+async function showHistory(){
+  $('#histPane').style.display='block';
+  $('#histBox').innerHTML='<div style="padding:18px;color:var(--faint);font-size:12.5px">กำลังโหลด…</div>';
+  $('#histPane').scrollIntoView({behavior:'smooth',block:'nearest'});
+  try{
+    const r=await jsonp({action:'history',token:S.token,
+      domain:(S.topic&&S.topic!=='__all')?S.topic:'',limit:80});
+    if(!r.ok)throw new Error(r.error);
+    if(!r.history.length){
+      $('#histBox').innerHTML='<div style="padding:18px;color:var(--faint);font-size:12.5px">ยังไม่มีประวัติการแก้ไข</div>';return;
+    }
+    const nameOf=(dom,key)=>{
+      const d=DOMAINS.find(x=>x.id===dom); if(!d)return dom+'/'+key;
+      const s2=d.series.find(x=>x[0]===key); return s2?s2[1]:key;
+    };
+    $('#histBox').innerHTML=`<table><thead><tr>
+        <th style="width:132px">เวลา</th><th>ตัวชี้วัด</th><th style="width:120px">งวด · พื้นที่</th>
+        <th style="width:150px">ค่าเดิม → ค่าใหม่</th><th style="width:96px">โดย</th><th style="width:88px"></th>
+      </tr></thead><tbody>`+
+      r.history.map((h,i)=>`<tr>
+        <td style="font-size:11px;color:var(--faint)">${new Date(h.ts).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'})}</td>
+        <td>${nameOf(h.domain,h.key)}</td>
+        <td style="font-size:11px">${periodLabel(h.period)}<br><span style="color:var(--faint)">${areaLabel(h.area)}</span></td>
+        <td>${h.oldValue==null?'<span style="color:var(--faint)">บันทึกครั้งแรก</span>':`<span class="oldv">${h.oldValue.toLocaleString('th-TH')}</span> → `}<span class="newv">${h.newValue.toLocaleString('th-TH')}</span></td>
+        <td style="font-size:11px;color:var(--dim)">${h.by||'—'}</td>
+        <td>${h.oldValue==null?'':`<button class="mini2" data-undo="${i}">คืนค่าเดิม</button>`}</td>
+      </tr>`).join('')+'</tbody></table>';
+    window.__HIST=r.history;
+  }catch(e){
+    $('#histBox').innerHTML=`<div style="padding:18px;color:var(--clay);font-size:12.5px">โหลดประวัติไม่สำเร็จ: ${e.message}</div>`;
+  }
+}
+document.addEventListener('click',e=>{
+  const u=e.target.closest('[data-undo]'); if(!u)return;
+  const h=(window.__HIST||[])[+u.dataset.undo]; if(!h)return;
+  if(!confirm(`คืนค่าเดิมของ "${h.key}" งวด ${periodLabel(h.period)} จาก ${h.newValue.toLocaleString('th-TH')} กลับเป็น ${h.oldValue.toLocaleString('th-TH')} ?`))return;
+  setPeriod(h.period);
+  setTimeout(()=>{
+    const el=document.querySelector(`input[data-dom="${h.domain}"][data-key="${h.key}"]`);
+    if(el){el.value=h.oldValue;el.classList.add('dirty');el.focus();
+      say('#saveMsg','warn','เติมค่าเดิมให้แล้ว ตรวจสอบและกดบันทึกเพื่อยืนยันการคืนค่า');}
+  },700);
+});
+
 $('#btnLoad').onclick=async()=>{
   $('#btnLoad').disabled=true;
   try{
@@ -639,7 +817,8 @@ $('#btnSave').onclick=async()=>{
   try{
     const r=await jsonp({action:'submit',token:S.token,payload:JSON.stringify(items)});
     if(!r.ok)throw new Error(r.error);
-    say('#saveMsg','ok',`บันทึกแล้ว — เพิ่มใหม่ ${r.inserted} รายการ แก้ไข ${r.updated} รายการ (งวด ${periodStr()} · ${area2label()})`);
+    say('#saveMsg','ok',`บันทึกแล้ว — เพิ่มใหม่ ${r.inserted} รายการ แก้ไข ${r.updated} รายการ (งวด ${periodLabel(periodStr())} · ${area2label()})`+(r.updated?' · ค่าเดิมถูกเก็บไว้ในประวัติแล้ว':''));
+    refreshPeriods();
     $$('#forms input[type=number]').forEach(i=>i.classList.remove('dirty'));
   }catch(e){
     queuePush(items);
@@ -667,67 +846,104 @@ $('#btnPin').onclick=async()=>{
 /* ─────────── นำเข้าจาก Excel ─────────── */
 let XLITEMS=[];
 const TH_Q=['ไตรมาส 1','ไตรมาส 2','ไตรมาส 3','ไตรมาส 4'];
-function xlCols(){return $('#freq').value==='Q'?TH_Q:TH_M}
-function xlHeader(){return ['code','ตัวชี้วัด','หน่วย','รหัสพื้นที่','พื้นที่','ปี พ.ศ.',...xlCols()]}
-function xlRows(){
-  const rows=[], areas=[['PROV','ระดับจังหวัด'],...DISTRICTS.map(d=>[d[0],'อ.'+d[1]])];
+const FREQ_LABEL={M:'รายเดือน',Q:'รายไตรมาส',Y:'รายปี'};
+function colsOf(d){return (d.freq==='Q')?TH_Q:TH_M}
+function safeSheetName(t){return String(t).replace(/[\\\/\?\*\[\]:]/g,' ').slice(0,28)}
+
+/* ── สร้างแบบฟอร์ม Excel มาตรฐาน: 1 ประเด็น = 1 ชีต ── */
+function buildTemplate(all){
+  const list=all?myDomains():activeDomains();
+  if(!list.length){say('#xlMsg','warn','ยังไม่ได้เลือกประเด็น');return}
   const y=$('#year').value;
-  activeDomains().forEach(d=>d.series.forEach(s=>{
-    areas.forEach(a=>rows.push([d.id+'|'+s[0], d.name+' — '+s[1], s[2], a[0], a[1], y].concat(xlCols().map(()=>''))));
-  }));
-  return rows;
-}
-function buildTemplate(){
+  const areas=[['PROV','ระดับจังหวัด'],...DISTRICTS.map(d=>[d[0],'อ.'+d[1]])];
   const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.aoa_to_sheet([xlHeader(),...xlRows()]);
-  ws['!cols']=[{wch:16},{wch:42},{wch:16},{wch:11},{wch:20},{wch:9},...xlCols().map(()=>({wch:12}))];
-  ws['!freeze']={xSplit:2,ySplit:1};
-  XLSX.utils.book_append_sheet(wb,ws,'กรอกข้อมูล');
-  const help=[['วิธีกรอกแบบฟอร์ม'],[''],
-    ['1. กรอกตัวเลขลงในช่องเดือนที่มีข้อมูล ช่องว่างจะถูกข้ามไป ไม่ต้องใส่ 0'],
-    ['2. ห้ามแก้ไขคอลัมน์ code เพราะระบบใช้จับคู่ตัวชี้วัด'],
-    ['3. หากมีข้อมูลเฉพาะระดับจังหวัด ให้กรอกเฉพาะแถวที่รหัสพื้นที่เป็น PROV'],
-    ['4. ปี พ.ศ. ใช้เลข 4 หลัก เช่น 2569 หากต้องการกรอกหลายปี ให้คัดลอกแถวแล้วเปลี่ยนปี'],
-    ['5. ตัวเลขให้ใส่เป็นตัวเลขล้วน ไม่ต้องใส่เครื่องหมายจุลภาคหรือหน่วย'],
-    ['6. บันทึกไฟล์เป็น .xlsx แล้วอัปโหลดกลับเข้าระบบ ระบบจะแสดงผลตรวจให้ดูก่อนส่ง'],[''],
+
+  /* ชีตคำอธิบาย */
+  const help=[['แบบฟอร์มนำเข้าข้อมูล · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู'],[''],
     ['หน่วยงาน', (S.agency&&S.agency.name)||''],
-    ['สร้างเมื่อ', new Date().toLocaleString('th-TH')]];
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(help),'คำอธิบาย');
-  XLSX.writeFile(wb,'แบบฟอร์ม-'+((S.topic&&S.topic!=='__all')?S.topic:'ทุกประเด็น')+'-'+$('#year').value+'.xlsx');
+    ['ปีที่เตรียมให้', 'พ.ศ. '+y],
+    ['สร้างเมื่อ', new Date().toLocaleString('th-TH')],[''],
+    ['วิธีกรอก'],
+    ['1. แต่ละประเด็นอยู่คนละชีต ดูชื่อชีตด้านล่างของโปรแกรม'],
+    ['2. กรอกตัวเลขในช่องงวดที่มีข้อมูล ช่องว่างจะถูกข้าม ไม่ต้องใส่ 0'],
+    ['3. ห้ามแก้คอลัมน์ code และห้ามลบแถวหัวตาราง เพราะระบบใช้จับคู่ตัวชี้วัด'],
+    ['4. กรอกเฉพาะแถว PROV ได้ ถ้ายังไม่มีข้อมูลรายอำเภอ'],
+    ['5. ต้องการกรอกหลายปี ให้คัดลอกแถวแล้วเปลี่ยนเลขปี พ.ศ.'],
+    ['6. ตัวเลขใส่เป็นตัวเลขล้วน ไม่ต้องมีจุลภาคหรือหน่วย'],
+    ['7. บันทึกเป็น .xlsx แล้วอัปโหลดกลับ ระบบจะแสดงผลตรวจก่อนส่งทุกครั้ง'],[''],
+    ['ประเด็นในไฟล์นี้'],['ชีต','ประเด็น','รอบข้อมูล','ตัวชี้วัด']];
+  list.forEach(d=>help.push([safeSheetName(d.name),d.name,FREQ_LABEL[d.freq||'M'],d.series.length]));
+  const wsH=XLSX.utils.aoa_to_sheet(help);
+  wsH['!cols']=[{wch:30},{wch:40},{wch:14},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,wsH,'คำอธิบาย');
+
+  /* ชีตข้อมูลรายประเด็น */
+  list.forEach(d=>{
+    const cols=colsOf(d);
+    const head=['code','ตัวชี้วัด','หน่วย','รหัสพื้นที่','พื้นที่','ปี พ.ศ.',...cols];
+    const rows=[];
+    d.series.forEach(sr=>areas.forEach(a=>
+      rows.push([d.id+'|'+sr[0], sr[1], sr[2], a[0], a[1], y].concat(cols.map(()=>'')))));
+    const ws=XLSX.utils.aoa_to_sheet([
+      [d.name+'  ·  '+FREQ_LABEL[d.freq||'M']+'  ·  '+((S.agency&&S.agency.name)||'')],
+      [d.head],[''],head,...rows]);
+    ws['!cols']=[{wch:16},{wch:38},{wch:16},{wch:11},{wch:20},{wch:9},...cols.map(()=>({wch:12}))];
+    ws['!freeze']={xSplit:2,ySplit:4};
+    XLSX.utils.book_append_sheet(wb,ws,safeSheetName(d.name));
+  });
+
+  const tag=all?'ทุกประเด็น':((S.topic&&S.topic!=='__all')?S.topic:'ทุกประเด็น');
+  XLSX.writeFile(wb,'แบบฟอร์มนำเข้าข้อมูล-'+tag+'-'+y+'.xlsx');
+  say('#xlMsg','ok','สร้างแบบฟอร์มแล้ว '+list.length+' ประเด็น ('+list.map(d=>FREQ_LABEL[d.freq||'M']).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')+')');
 }
+
+/* ── อ่านไฟล์: ไล่ทุกชีตในสมุดงาน ── */
 function parseWorkbook(wb){
-  const ws=wb.Sheets[wb.SheetNames[0]];
-  const aoa=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-  if(!aoa.length)throw new Error('ไฟล์ว่างเปล่า');
-  let hi=aoa.findIndex(r=>String(r[0]).trim().toLowerCase()==='code');
-  if(hi<0)throw new Error('ไม่พบหัวตาราง (คอลัมน์แรกต้องเป็น code) กรุณาใช้แบบฟอร์มที่ระบบสร้างให้');
-  const head=aoa[hi].map(x=>String(x).trim());
-  const isQ=TH_Q.some(q=>head.indexOf(q)>=0);
-  const cols=isQ?TH_Q:TH_M;
-  const mCols=cols.map(m=>head.indexOf(m));
-  const iArea=head.indexOf('รหัสพื้นที่'), iYear=head.indexOf('ปี พ.ศ.'), iUnit=head.indexOf('หน่วย');
-  const known={};activeDomains().forEach(d=>d.series.forEach(s=>known[d.id+'|'+s[0]]={dom:d.id,key:s[0],label:d.name+' — '+s[1],unit:s[2]}));
-  const items=[],bad=[];
-  for(let r=hi+1;r<aoa.length;r++){
-    const row=aoa[r];if(!row||!String(row[0]).trim())continue;
-    const code=String(row[0]).trim(), meta=known[code];
-    if(!meta){bad.push('แถว '+(r+1)+': ไม่รู้จักรหัส '+code);continue}
-    const area=String(row[iArea]||'PROV').trim();
-    const year=String(row[iYear]||'').trim();
-    if(!/^\d{4}$/.test(year)){bad.push('แถว '+(r+1)+': ปี พ.ศ. ไม่ถูกต้อง');continue}
-    mCols.forEach((ci,mi)=>{
-      if(ci<0)return;
-      const raw=row[ci];
-      if(raw===''||raw===null||raw===undefined)return;
-      const v=Number(String(raw).replace(/[, ]/g,''));
-      if(isNaN(v)){bad.push('แถว '+(r+1)+' '+cols[mi]+': ไม่ใช่ตัวเลข');return}
-      items.push({domain:meta.dom,key:meta.key,label:meta.label,
-        period:year+(isQ?('-Q'+(mi+1)):('-'+String(mi+1).padStart(2,'0'))),area,value:v,
-        unit:String(row[iUnit]||meta.unit),agency:S.agency.code});
-    });
-  }
+  const known={};
+  myDomains().forEach(d=>d.series.forEach(sr=>{
+    known[d.id+'|'+sr[0]]={dom:d.id,key:sr[0],label:d.name+' — '+sr[1],unit:sr[2],freq:d.freq||'M'};
+  }));
+  const items=[],bad=[];let sheetsRead=0;
+
+  wb.SheetNames.forEach(name=>{
+    if(name==='คำอธิบาย')return;
+    const aoa=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:''});
+    const hi=aoa.findIndex(r=>String(r[0]).trim().toLowerCase()==='code');
+    if(hi<0)return;
+    sheetsRead++;
+    const head=aoa[hi].map(x=>String(x).trim());
+    const isQ=TH_Q.some(q=>head.indexOf(q)>=0);
+    const cols=isQ?TH_Q:TH_M;
+    const cIdx=cols.map(c=>head.indexOf(c));
+    const iArea=head.indexOf('รหัสพื้นที่'), iYear=head.indexOf('ปี พ.ศ.'), iUnit=head.indexOf('หน่วย');
+    for(let r=hi+1;r<aoa.length;r++){
+      const row=aoa[r];
+      if(!row||!String(row[0]).trim())continue;
+      const code=String(row[0]).trim(), meta=known[code];
+      if(!meta){bad.push(`[${name}] แถว ${r+1}: ไม่รู้จักรหัส ${code}`);continue}
+      if((meta.freq==='Q')!==isQ){
+        bad.push(`[${name}] แถว ${r+1}: ${meta.label} ต้องกรอกแบบ${FREQ_LABEL[meta.freq]} แต่ไฟล์เป็น${isQ?'รายไตรมาส':'รายเดือน'}`);
+        continue;
+      }
+      const area=String(row[iArea]||'PROV').trim();
+      const year=String(row[iYear]||'').trim();
+      if(!/^\d{4}$/.test(year)){bad.push(`[${name}] แถว ${r+1}: ปี พ.ศ. ไม่ถูกต้อง`);continue}
+      cIdx.forEach((ci,mi)=>{
+        if(ci<0)return;
+        const raw=row[ci];
+        if(raw===''||raw===null||raw===undefined)return;
+        const v=Number(String(raw).replace(/[, ]/g,''));
+        if(isNaN(v)){bad.push(`[${name}] แถว ${r+1} ${cols[mi]}: ไม่ใช่ตัวเลข`);return}
+        items.push({domain:meta.dom,key:meta.key,label:meta.label,
+          period:year+(isQ?('-Q'+(mi+1)):('-'+String(mi+1).padStart(2,'0'))),
+          area,value:v,unit:String(row[iUnit]||meta.unit),agency:S.agency.code});
+      });
+    }
+  });
+  if(!sheetsRead)throw new Error('ไม่พบหัวตาราง (คอลัมน์แรกต้องเป็น code) กรุณาใช้แบบฟอร์มที่ระบบสร้างให้');
   return {items,bad};
 }
+
 function showPreview(items,bad){
   XLITEMS=items;
   $('#btnXlSubmit').disabled=!items.length;
