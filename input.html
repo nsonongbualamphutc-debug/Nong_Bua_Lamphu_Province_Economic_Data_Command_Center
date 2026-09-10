@@ -63,6 +63,17 @@ input.pin{letter-spacing:8px;font-family:var(--f-num);font-size:19px;text-align:
 
 /* app */
 #app{display:none}
+.tpgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:11px}
+.tpcard{background:var(--ink3);border:1px solid var(--line);border-radius:13px;padding:14px 15px;text-align:left;
+  display:flex;flex-direction:column;gap:6px;transition:.15s}
+.tpcard:hover{border-color:var(--brass);transform:translateY(-2px)}
+.tpcard b{font-family:var(--fd);font-size:14.5px}
+.tpcard span{font-size:11.5px;color:var(--faint);line-height:1.55}
+.tpcard i{font-style:normal;font-size:10.5px;color:var(--brass);margin-top:auto;padding-top:6px}
+.crumb{display:flex;align-items:center;gap:9px;margin-bottom:14px;font-size:12.5px;color:var(--dim);flex-wrap:wrap}
+.crumb b{font-family:var(--fd);font-size:15px;color:var(--paper)}
+.stepnum{width:22px;height:22px;border-radius:50%;background:var(--brass);color:#fff;display:grid;place-items:center;
+  font-size:11.5px;font-weight:600;font-family:var(--fn);flex:none}
 .who{display:flex;align-items:center;gap:10px;background:var(--ink2);border:1px solid var(--line-soft);
   border-left:3px solid var(--lotus);border-radius:14px;padding:11px 15px;margin-bottom:14px;flex-wrap:wrap}
 .who b{font-family:var(--f-disp);font-size:15px}
@@ -178,6 +189,15 @@ table.grid input.dirty{border-color:var(--jade)}
       </div>
 
       <div id="pane-form">
+      <div id="topicPick">
+        <div class="crumb"><span class="stepnum">1</span><b>เลือกประเด็นที่ต้องการกรอก</b>
+          <span>กรอกทีละประเด็นเพื่อลดความผิดพลาด</span></div>
+        <div class="tpgrid" id="tpGrid"></div>
+      </div>
+      <div id="formArea" style="display:none">
+      <div class="crumb"><span class="stepnum">2</span><b id="topicTitle">—</b>
+        <span id="topicAgency"></span><span class="sp" style="flex:1"></span>
+        <button class="btn gh" id="btnBackTopic">← เปลี่ยนประเด็น</button></div>
       <div class="tabs" id="tabs">
         <button class="on" data-scope="PROV">ระดับจังหวัด</button>
         <button data-scope="DIST">รายอำเภอ</button>
@@ -202,6 +222,7 @@ table.grid input.dirty{border-color:var(--jade)}
         <span class="sp"></span>
         <button class="btn gh" id="btnPin">เปลี่ยน PIN</button>
       </div>
+      </div><!-- /formArea -->
       </div><!-- /pane-form -->
     </div>
   </section>
@@ -309,6 +330,37 @@ document.addEventListener('click',async e=>{
   }finally{btn.disabled=false;btn.textContent='ส่งข้อมูลที่ตรวจแล้ว'}
 });
 
+function renderTopics(){
+  const list=myDomains();
+  $('#tpGrid').innerHTML=list.map(d=>`<button class="tpcard" data-topic="${d.id}">
+      <b>${d.name}</b><span>${d.head}</span>
+      <i>${d.series.length} ตัวชี้วัด · หมวด${d.no}</i></button>`).join('')
+    + (list.length>1?`<button class="tpcard" data-topic="__all" style="border-style:dashed">
+      <b>กรอกทุกประเด็นพร้อมกัน</b><span>สำหรับผู้ที่ดูแลข้อมูลหลายชุดและต้องการกรอกรวดเดียว</span>
+      <i>${list.length} ประเด็น</i></button>`:'');
+}
+function pickTopic(id){
+  S.topic=id;
+  const list=myDomains();
+  const d=list.find(x=>x.id===id);
+  $('#topicTitle').textContent = d? d.name : 'ทุกประเด็นที่รับผิดชอบ';
+  $('#topicAgency').textContent = d? ('· '+d.head) : ('· '+list.length+' ชุดข้อมูล');
+  $('#topicPick').style.display='none';
+  $('#formArea').style.display='block';
+  buildForms();
+  window.scrollTo(0,0);
+}
+function activeDomains(){
+  const list=myDomains();
+  if(!S.topic||S.topic==='__all')return list;
+  return list.filter(d=>d.id===S.topic);
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-topic]');
+  if(t){pickTopic(t.dataset.topic);return}
+  if(e.target.closest('#btnBackTopic')){
+    S.topic=null;$('#formArea').style.display='none';$('#topicPick').style.display='block';window.scrollTo(0,0);}
+});
 function myDomains(){
   const d=String(S.agency.domains||'');
   if(d.trim()==='*')return DOMAINS;
@@ -317,10 +369,11 @@ function myDomains(){
 }
 
 function enterApp(){
+  S.topic=null;
   $('#login').style.display='none';$('#app').style.display='block';$('#btnOut').style.display='inline-flex';
   $('#whoName').textContent=S.agency.name||S.agency.code;
   $('#whoRole').textContent=S.agency.role==='admin'?'ผู้ดูแลระบบ':'หน่วยงานเจ้าของข้อมูล';
-  buildPeriod();buildForms();startTtl();flushQueue();
+  buildPeriod();renderTopics();startTtl();flushQueue();
 }
 $('#btnOut').onclick=async()=>{
   try{await jsonp({action:'logout',token:S.token})}catch(e){}
@@ -360,7 +413,7 @@ function periodStr(){
 function areaStr(){ return S.scope==='DIST' ? $('#dist').value : 'PROV' }
 
 function buildForms(){
-  $('#forms').innerHTML=myDomains().map(d=>`
+  $('#forms').innerHTML=activeDomains().map(d=>`
     <div class="dom">
       <h3><span class="no">${d.no}</span>${d.name}</h3>
       <p>${d.head}</p>
@@ -475,7 +528,7 @@ function xlHeader(){return ['code','ตัวชี้วัด','หน่ว�
 function xlRows(){
   const rows=[], areas=[['PROV','ระดับจังหวัด'],...DISTRICTS.map(d=>[d[0],'อ.'+d[1]])];
   const y=$('#year').value;
-  myDomains().forEach(d=>d.series.forEach(s=>{
+  activeDomains().forEach(d=>d.series.forEach(s=>{
     areas.forEach(a=>rows.push([d.id+'|'+s[0], d.name+' — '+s[1], s[2], a[0], a[1], y, '','','','','','','','','','','','']));
   }));
   return rows;
@@ -496,7 +549,7 @@ function buildTemplate(){
     ['หน่วยงาน', (S.agency&&S.agency.name)||''],
     ['สร้างเมื่อ', new Date().toLocaleString('th-TH')]];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(help),'คำอธิบาย');
-  XLSX.writeFile(wb,'แบบฟอร์มข้อมูลเศรษฐกิจ-'+((S.agency&&S.agency.code)||'agency')+'-'+$('#year').value+'.xlsx');
+  XLSX.writeFile(wb,'แบบฟอร์ม-'+((S.topic&&S.topic!=='__all')?S.topic:'ทุกประเด็น')+'-'+$('#year').value+'.xlsx');
 }
 function parseWorkbook(wb){
   const ws=wb.Sheets[wb.SheetNames[0]];
@@ -507,7 +560,7 @@ function parseWorkbook(wb){
   const head=aoa[hi].map(x=>String(x).trim());
   const mCols=TH_M.map(m=>head.indexOf(m));
   const iArea=head.indexOf('รหัสพื้นที่'), iYear=head.indexOf('ปี พ.ศ.'), iUnit=head.indexOf('หน่วย');
-  const known={};myDomains().forEach(d=>d.series.forEach(s=>known[d.id+'|'+s[0]]={dom:d.id,key:s[0],label:d.name+' — '+s[1],unit:s[2]}));
+  const known={};activeDomains().forEach(d=>d.series.forEach(s=>known[d.id+'|'+s[0]]={dom:d.id,key:s[0],label:d.name+' — '+s[1],unit:s[2]}));
   const items=[],bad=[];
   for(let r=hi+1;r<aoa.length;r++){
     const row=aoa[r];if(!row||!String(row[0]).trim())continue;

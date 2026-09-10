@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'0.4.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'0.5.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -106,6 +106,40 @@ const REAL = {
     {n:'พื้นที่ชลประทานจริง',                       cnt:null,unit:'ไร่',  benefit:null,ok:false}
   ],
 
+  /* สำนักงานพาณิชย์จังหวัดหนองบัวลำภู — ประจำวันที่ 8 กันยายน 2569 */
+  price:{
+    asof:'8 กันยายน 2569', prevLabel:'ส.ค. 2569', yearLabel:'ส.ค. 2568',
+    groups:[
+      {g:'พืชเศรษฐกิจ', unit:'บาท/ตัน', rows:[
+        {n:'ข้าวเปลือกหอมมะลิ', sub:'สีได้ต้นข้าว 36 กรัมขึ้นไป', now:'17,000', prev:'17,000', chg:0, mo:17000, yr:14600},
+        {n:'ข้าวเปลือกเหนียว',  sub:'เมล็ดยาว กข 6',            now:'12,300', prev:'12,300', chg:0, mo:12338, yr:10625}]},
+      {g:'พืชไร่และพืชพลังงาน', unit:'บาท/กก.', rows:[
+        {n:'มันสำปะหลัง หัวมันสด', sub:'ณ ลานมันคละ ไม่หักน้ำหนัก', now:'2.90–3.10', prev:'2.85–3.00', chg:0.05,  mo:2.94, yr:1.62},
+        {n:'มันสำปะหลัง หัวมันสด', sub:'ณ โรงแป้ง เชื้อแป้ง 25%',  now:'2.75–3.30', prev:'2.75–3.20', chg:-0.05, mo:2.94, yr:2.00},
+        {n:'ข้าวโพดเลี้ยงสัตว์ฝัก', sub:'ความชื้นไม่เกิน 30%',     now:'—', prev:'—', chg:null, mo:null, yr:null},
+        {n:'ข้าวโพดเลี้ยงสัตว์เมล็ด', sub:'ความชื้นไม่เกิน 30%',   now:'—', prev:'—', chg:null, mo:null, yr:null},
+        {n:'ข้าวโพดเลี้ยงสัตว์เมล็ด', sub:'ความชื้นไม่เกิน 14.5%', now:'—', prev:'—', chg:null, mo:null, yr:null},
+        {n:'ยางก้อนถ้วย', sub:'', now:'43.70–45.80', prev:'45.60–45.80', chg:-0.95, mo:41.54, yr:30.23},
+        {n:'น้ำยางสด',   sub:'', now:'70–71',       prev:'69–70',       chg:1.00,  mo:66.85, yr:47.90},
+        {n:'ปาล์มน้ำมัน', sub:'ณ ลานเท', now:'7.00–7.40', prev:'7.00–8.00', chg:-0.30, mo:7.51, yr:5.67}]},
+      {g:'ปศุสัตว์และประมง', unit:'บาท/กก.', rows:[
+        {n:'สุกรชำแหละเนื้อแดง', sub:'', now:'160', prev:'150', chg:10,  mo:150, yr:150},
+        {n:'สุกรชำแหละสามชั้น',  sub:'', now:'170', prev:'170', chg:0,   mo:170, yr:170},
+        {n:'เนื้อโคชำแหละเนื้อน่อง', sub:'', now:'280', prev:'280', chg:0, mo:280, yr:280},
+        {n:'ไก่เนื้อสดทั้งตัว', sub:'ไม่รวมเครื่องใน', now:'90–95',  prev:'90', chg:2.5, mo:90, yr:85},
+        {n:'ไก่เนื้อสดชำแหละอก', sub:'',              now:'90–100', prev:'85', chg:10,  mo:93, yr:90},
+        {n:'ไก่เนื้อสดชำแหละน่องสะโพก', sub:'',        now:'90–95',  prev:'90', chg:2.5, mo:89, yr:85},
+        {n:'ปลานิล', sub:'', now:'90–100', prev:'90–100', chg:0, mo:95, yr:90},
+        {n:'ไข่ไก่ เบอร์ 3', sub:'บาท/ฟอง', now:'4.4', prev:'4.4', chg:0, mo:4.2, yr:4}]},
+      {g:'สินค้าอุปโภคบริโภค', unit:'บาท', rows:[
+        {n:'น้ำมันพืชปาล์ม', sub:'บาท/ขวด', now:'50–58', prev:'50–58', chg:0, mo:'50–58', yr:'50–60'},
+        {n:'ข้าวสารหอมมะลิ', sub:'บาท/กก.', now:'41–42', prev:'41–42', chg:0, mo:41.5, yr:36},
+        {n:'ข้าวสารเหนียว กข.', sub:'บาท/กก.', now:'29', prev:'29', chg:0, mo:29, yr:27}]}
+    ],
+    note:'ราคาสินค้าเกษตร ณ ลานรับซื้อ และราคาสินค้าอุปโภคบริโภค ณ ท้องตลาดทั่วไป',
+    contact:'สำนักงานพาณิชย์จังหวัดหนองบัวลำภู โทร 0 4231 2018 · โทรสาร 0 4231 2884'
+  },
+
   gpp:{rows:[{y:2564,value:30120,pc:62800},{y:2565,value:31850,pc:66500},{y:2566,value:33240,pc:69800}],
     struct:[['เกษตรกรรม',28.4],['บริการและอื่น ๆ',24.3],['ค้าส่ง–ค้าปลีก',16.8],
             ['ภาครัฐ การศึกษา สาธารณสุข',16.4],['อุตสาหกรรม',14.1]]}
@@ -139,7 +173,7 @@ const DATASETS = [
   series:[{key:'moto',label:'รถจักรยานยนต์จดทะเบียนใหม่',unit:'คัน',base:735,trend:.02,seas:.19,kpi:1,int:1},
           {key:'car',label:'รถยนต์นั่งส่วนบุคคล',unit:'คัน',base:118,trend:.03,seas:.24,int:1},
           {key:'comm',label:'รถเพื่อการพาณิชย์',unit:'คัน',base:64,trend:.035,seas:.30,int:1}]},
- {id:'labor',img:'assets/s-labor.jpg',sector:'labor',agency:'สำนักงานแรงงานจังหวัดหนองบัวลำภู · สำนักงานสถิติจังหวัด',lag:45,
+ {id:'labor',sector:'labor',agency:'สำนักงานแรงงานจังหวัดหนองบัวลำภู · สำนักงานสถิติจังหวัด',lag:45,
   series:[{key:'emp',label:'ผู้มีงานทำ',unit:'คน',base:258000,trend:.008,seas:.05,kpi:1,int:1},
           {key:'ur',label:'อัตราการว่างงาน',unit:'%',base:0.92,trend:0,seas:.4,pct:1,dec:2},
           {key:'force',label:'กำลังแรงงานรวม',unit:'คน',base:262000,trend:.006,seas:.04,int:1}]},
@@ -168,7 +202,7 @@ const SECTORS = [
  {id:'consume',img:'assets/s-consume.jpg', name:'การบริโภคและพลังงาน', icon:'bolt',   color:'#d0563f',weight:.12,datasets:['fuel','car'],
   pitch:'ตัวชี้ที่เห็นผลเร็วที่สุด',
   desc:'การใช้น้ำมันเชื้อเพลิงและรถจดทะเบียนใหม่'},
- {id:'labor',   name:'ตลาดแรงงาน',          icon:'brief',  color:'#7d5b8f',weight:.07,datasets:['labor','social'],
+ {id:'labor',img:'assets/s-labor.jpg',   name:'ตลาดแรงงาน',          icon:'brief',  color:'#7d5b8f',weight:.07,datasets:['labor','social'],
   pitch:'คนมีงานทำ คือกำลังซื้อที่ยั่งยืน',
   desc:'การมีงานทำ การว่างงาน และผู้ประกันตน'},
  {id:'tourism',img:'assets/s-tourism.jpg', name:'ภาคการท่องเที่ยว',    icon:'plane',  color:'#12867e',weight:.03,datasets:['tour'],
@@ -393,26 +427,125 @@ function drawSectorChart(sid,mode){
 
 /* ─────────────── 19) โหมดแก้ไขตาราง ─────────────── */
 let EDIT=false;
-function applyEditMode(){
-  $$('td[data-path]').forEach(td=>{
-    if(EDIT){td.setAttribute('contenteditable','true')}else{td.removeAttribute('contenteditable')}});
+let AUTH=null;
+try{AUTH=JSON.parse(sessionStorage.getItem('nblEcon.auth')||'null')}catch(e){}
+
+/* หน่วยงานที่มีสิทธิ์แก้แต่ละตาราง — ต้องตรงกับคอลัมน์ domains ในชีต Users */
+const OWNER_NAME={spend:'สำนักงานคลังจังหวัด',crop:'สำนักงานเกษตรจังหวัด',
+  factory:'สำนักงานอุตสาหกรรมจังหวัด',power:'การไฟฟ้าส่วนภูมิภาคจังหวัด',
+  cpi:'สำนักงานพาณิชย์จังหวัด',credit:'SME D Bank',fuel:'สำนักงานพลังงานจังหวัด',
+  car:'สำนักงานขนส่งจังหวัด',labor:'สำนักงานแรงงานจังหวัด',social:'สำนักงานประกันสังคมจังหวัด',
+  tour:'สำนักงานการท่องเที่ยวและกีฬาจังหวัด','*':'ผู้ดูแลระบบเท่านั้น'};
+function myDomainList(){return String((AUTH&&AUTH.domains)||'').split(',').map(x=>x.trim()).filter(Boolean)}
+function canEdit(owner){
+  if(!AUTH)return false;
+  if(AUTH.role==='admin'||myDomainList().indexOf('*')>=0)return true;
+  return owner&&owner!=='*'&&myDomainList().indexOf(owner)>=0;
 }
-function toggleEdit(){
+function tableOwner(td){
+  const t=td.closest('[data-owner]');
+  return t?t.dataset.owner:'*';
+}
+
+function applyEditMode(){
+  document.querySelectorAll('table[data-owner]').forEach(t=>{
+    t.classList.toggle('locked',EDIT&&!canEdit(t.dataset.owner));
+  });
+  $$('td[data-path]').forEach(td=>{
+    if(EDIT&&canEdit(tableOwner(td)))td.setAttribute('contenteditable','true');
+    else td.removeAttribute('contenteditable');
+  });
+}
+
+/* ── กล่องเข้าสู่ระบบสำหรับแก้ไขข้อมูล ── */
+function authBox(){
+  return new Promise(resolve=>{
+    const wrap=document.createElement('div');
+    wrap.className='modal';
+    wrap.innerHTML=`<div class="mbox">
+      <h3>ยืนยันตัวตนก่อนแก้ไขข้อมูล</h3>
+      <p>ระบบจะเปิดให้แก้ไขเฉพาะตารางที่หน่วยงานของท่านรับผิดชอบ ผู้ดูแลระบบแก้ไขได้ทุกตาราง</p>
+      <label>หน่วยงาน</label>
+      <select id="mAg">
+        <option value="klang">สำนักงานคลังจังหวัดหนองบัวลำภู</option>
+        <option value="agri">สำนักงานเกษตรจังหวัดหนองบัวลำภู</option>
+        <option value="industry">สำนักงานอุตสาหกรรมจังหวัดหนองบัวลำภู</option>
+        <option value="pea">การไฟฟ้าส่วนภูมิภาคจังหวัดหนองบัวลำภู</option>
+        <option value="commerce">สำนักงานพาณิชย์จังหวัดหนองบัวลำภู</option>
+        <option value="smebank">ธนาคารพัฒนาวิสาหกิจขนาดกลางและขนาดย่อมฯ</option>
+        <option value="energy">สำนักงานพลังงานจังหวัดหนองบัวลำภู</option>
+        <option value="transport">สำนักงานขนส่งจังหวัดหนองบัวลำภู</option>
+        <option value="labour">สำนักงานแรงงานจังหวัดหนองบัวลำภู</option>
+        <option value="sso">สำนักงานประกันสังคมจังหวัดหนองบัวลำภู</option>
+        <option value="mots">สำนักงานการท่องเที่ยวและกีฬาจังหวัดหนองบัวลำภู</option>
+        <option value="province">สำนักงานจังหวัดหนองบัวลำภู (ผู้ดูแลระบบ)</option>
+        <option value="admin">สำนักงานสถิติจังหวัดหนองบัวลำภู (ผู้ดูแลระบบ)</option>
+      </select>
+      <label>รหัส PIN</label>
+      <input id="mPin" type="password" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="••••••">
+      <div class="mmsg" id="mMsg"></div>
+      <div class="mact">
+        <button class="tb" id="mCancel">ยกเลิก</button>
+        <button class="tb on" id="mOk">เข้าสู่ระบบ</button>
+      </div>
+      <div class="mnote">PIN ถูกเก็บเป็นค่า hash บนเซิร์ฟเวอร์เท่านั้น ใส่ผิดเกิน 5 ครั้งระบบจะล็อกบัญชี 15 นาที</div>
+    </div>`;
+    document.body.appendChild(wrap);
+    const close=v=>{wrap.remove();resolve(v)};
+    wrap.querySelector('#mCancel').onclick=()=>close(false);
+    wrap.addEventListener('click',e=>{if(e.target===wrap)close(false)});
+    const msg=t=>{wrap.querySelector('#mMsg').textContent=t;wrap.querySelector('#mMsg').style.display='block'};
+    const go=async()=>{
+      const pin=wrap.querySelector('#mPin').value.trim();
+      if(!CFG.API){msg('ยังไม่ได้เชื่อมฐานข้อมูล — ไปตั้งค่า URL ที่หน้าตั้งค่าระบบก่อน');return}
+      if(!/^\d{4,10}$/.test(pin)){msg('กรอก PIN เป็นตัวเลข');return}
+      wrap.querySelector('#mOk').disabled=true;
+      try{
+        const r=await jsonp(CFG.API,{action:'login',agency:wrap.querySelector('#mAg').value,pin});
+        if(!r||!r.ok)throw new Error((r&&r.error)||'เข้าสู่ระบบไม่สำเร็จ');
+        AUTH={token:r.token,code:r.agency.code,name:r.agency.name,role:r.agency.role,domains:r.agency.domains,
+              exp:Date.now()+(r.expires_in||5400)*1000};
+        try{sessionStorage.setItem('nblEcon.auth',JSON.stringify(AUTH))}catch(e){}
+        close(true);
+      }catch(err){msg(err.message);wrap.querySelector('#mOk').disabled=false}
+    };
+    wrap.querySelector('#mOk').onclick=go;
+    wrap.querySelector('#mPin').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+    setTimeout(()=>wrap.querySelector('#mPin').focus(),80);
+  });
+}
+function authValid(){return AUTH&&AUTH.exp&&AUTH.exp>Date.now()}
+function authLogout(){AUTH=null;try{sessionStorage.removeItem('nblEcon.auth')}catch(e){}
+  if(EDIT)toggleEdit();}
+
+async function toggleEdit(){
+  if(!EDIT){
+    if(!authValid()){AUTH=null;
+      const ok=await authBox();
+      if(!ok)return;}
+  }
   EDIT=!EDIT;
   try{localStorage.setItem('nblEcon.editing',EDIT?'1':'0')}catch(e){}
   document.body.classList.toggle('editing',EDIT);
-  $('#btnEdit').classList.toggle('on',EDIT);
-  let bar=$('#edbar');
+  const be=$('#btnEdit'); if(be)be.classList.toggle('on',EDIT);
+  let bar=document.getElementById('edbar');
   if(EDIT&&!bar){
     bar=document.createElement('div');bar.id='edbar';bar.className='edbar';
+    const scope=(AUTH.role==='admin'||myDomainList().indexOf('*')>=0)
+      ? 'สิทธิ์ผู้ดูแลระบบ แก้ไขได้ทุกตาราง'
+      : 'แก้ไขได้เฉพาะ '+myDomainList().map(d=>OWNER_NAME[d]||d).join(' · ');
     bar.innerHTML=`<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4.5L19 9.5a2.1 2.1 0 0 0-3-3L5.5 17z"/></svg>
-      <span><b>โหมดแก้ไขตาราง</b> — คลิกที่ตัวเลขในตารางเพื่อแก้ไข กด Enter หรือคลิกนอกช่องเพื่อบันทึก</span>
-      <span class="sp"></span><button class="tb" id="btnEdDone" style="height:26px;font-size:11px">เสร็จสิ้น</button>`;
-    $('#main').prepend(bar);
+      <span><b>${AUTH.name||AUTH.code}</b> — ${scope} · คลิกที่ตัวเลขเพื่อแก้ไข กด Enter เพื่อบันทึก</span>
+      <span class="sp"></span>
+      <button class="tb" id="btnEdOut" style="height:26px;font-size:11px">ออกจากระบบ</button>
+      <button class="tb" id="btnEdDone" style="height:26px;font-size:11px">เสร็จสิ้น</button>`;
+    const m=document.querySelector('.main'); if(m)m.prepend(bar);
+    const bo=document.getElementById('btnEdOut'); if(bo)bo.onclick=authLogout;
   }else if(!EDIT&&bar)bar.remove();
   applyEditMode();
 }
 function commitCell(td){
+  if(!canEdit(tableOwner(td))){applyEditMode();return}
   const path=td.dataset.path,dec=+(td.dataset.dec||0);
   const raw=td.textContent.replace(/[, \s]/g,'').replace('—','');
   const v=raw===''?null:Number(raw);
@@ -560,7 +693,7 @@ const DS={
 
     try{EDIT=localStorage.getItem('nblEcon.editing')==='1'}catch(e){}
     safeRender();
-    if(EDIT){EDIT=false;toggleEdit()}
+    if(EDIT){EDIT=false;if(authValid())toggleEdit();else{try{localStorage.setItem('nblEcon.editing','0')}catch(e){}}}
     checkAssets(); loadLive();
     window.addEventListener('error',ev=>{
       if(document.getElementById('bootErr'))return;

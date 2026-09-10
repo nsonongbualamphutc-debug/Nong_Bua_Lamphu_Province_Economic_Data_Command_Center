@@ -117,8 +117,9 @@ body.cover .main{padding:0}
 .cv .crest{display:flex;align-items:center;gap:16px;margin-bottom:20px}
 .cv .crest img{width:82px;height:82px;object-fit:contain;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
 .cv .crest .ct{font-size:12.5px;color:#9fd3bd;letter-spacing:1.4px;line-height:1.6}
-.cv h1{font-family:var(--fd);font-size:clamp(30px,4.6vw,54px);font-weight:700;margin:0;line-height:1.1;letter-spacing:-1px;
-  text-shadow:0 4px 24px rgba(0,0,0,.5);max-width:19ch}
+.cv h1{font-family:var(--fd);font-size:clamp(26px,4vw,50px);font-weight:700;margin:0;line-height:1.14;letter-spacing:-.8px;
+  text-shadow:0 4px 24px rgba(0,0,0,.5);display:flex;flex-direction:column}
+.cv h1 span{white-space:nowrap}
 .cv .tag{font-family:var(--fd);font-size:clamp(15px,1.7vw,20px);color:#a8dcc4;margin:14px 0 0;font-weight:500}
 .cv .lead{font-size:14px;color:#c3ded2;margin:12px 0 0;max-width:62ch;line-height:1.85}
 .cvstats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:30px;max-width:940px}
@@ -260,6 +261,10 @@ table.t tfoot td:first-child{font-family:var(--fb)}
 .bar i{display:block;height:100%;border-radius:6px}
 /* edit mode */
 body.editing td[contenteditable]{background:var(--gold-l);outline:1px dashed rgba(181,133,26,.5);cursor:text;border-radius:4px}
+body.editing table.locked{opacity:.62}
+body.editing table.locked::after{content:""}
+table[data-owner]{position:relative}
+body.editing table.locked caption{caption-side:top;text-align:left;font-size:10.5px;color:var(--bad);padding:4px 9px}
 body.editing td[contenteditable]:focus{outline:2px solid var(--brand);background:var(--brand-l)}
 .edbar{display:flex;gap:7px;align-items:center;font-size:11.5px;color:var(--warn);
   background:var(--gold-l);border:1px solid rgba(181,133,26,.35);border-radius:9px;padding:7px 12px;margin-bottom:11px}
@@ -376,3 +381,24 @@ body.kiosk .main{grid-column:1/-1}
   #tip{max-width:220px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ── กล่องยืนยันตัวตน ── */
+.modal{position:fixed;inset:0;z-index:9998;background:rgba(6,28,23,.55);display:grid;place-items:center;padding:18px;
+  backdrop-filter:blur(3px)}
+.mbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;width:min(420px,100%);
+  box-shadow:0 30px 70px -30px rgba(0,0,0,.6)}
+.mbox h3{font-family:var(--fd);font-size:18px;margin:0 0 5px;font-weight:600}
+.mbox p{margin:0 0 14px;font-size:12.5px;color:var(--dim);line-height:1.65}
+.mbox label{display:block;font-size:11.5px;color:var(--faint);margin:11px 0 5px}
+.mbox select,.mbox input{width:100%;height:40px;background:var(--card2);border:1px solid var(--line);
+  border-radius:10px;padding:0 12px;font-size:14px}
+.mbox input{letter-spacing:7px;font-family:var(--fn);font-size:18px;text-align:center}
+.mbox select:focus,.mbox input:focus{border-color:var(--brand);outline:none}
+.mmsg{display:none;margin-top:11px;padding:8px 12px;border-radius:9px;font-size:12.5px;
+  background:var(--coral-l);border:1px solid rgba(201,69,47,.35);color:var(--bad)}
+.mact{display:flex;gap:9px;justify-content:flex-end;margin-top:16px}
+.mact .tb{height:38px;padding:0 18px}
+.mnote{font-size:11px;color:var(--faint);line-height:1.6;margin-top:12px;padding-top:11px;border-top:1px dashed var(--line)}
+/* ── ป้ายเจ้าของตาราง ── */
+.owner{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--faint);white-space:nowrap}
+.owner::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--brand)}
