@@ -283,6 +283,7 @@ window.onSeg=function(w,btn){
     });
   }
 };
+const AGRI_IMG={crop:'a-crop',fruit:'a-fruit',main:'a-maincrop',water:'a-water',org:'a-bigplot',base:'a-base'};
 const AGRI_SUB={
   crop:['พืชอายุสั้น','ข้าว อ้อยโรงงาน มันสำปะหลัง และพืชผัก'],
   fruit:['ไม้ผลเศรษฐกิจ','ทุเรียน ลำไย กาแฟ เงาะ ลิ้นจี่ อินทผลัม'],
@@ -294,7 +295,7 @@ const AGRI_SUB={
 DS.init('agri',function(){
   renderAgri();
   Object.keys(AGRI_SUB).forEach(function(k){
-    bannerInto(document.getElementById('agri-'+k),'assets/a-'+k+'.jpg',AGRI_SUB[k][0],AGRI_SUB[k][1]);
+    bannerInto(document.getElementById('agri-'+k),'assets/'+AGRI_IMG[k]+'.jpg',AGRI_SUB[k][0],AGRI_SUB[k][1]);
   });
 });
 </script>
