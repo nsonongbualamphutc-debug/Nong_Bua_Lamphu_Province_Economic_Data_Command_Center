@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'0.9.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'1.0.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -587,6 +587,8 @@ function commitCell(td){
   saveEdits();
   safeRender();
   applyEditMode();
+  const root=path.split('.')[0];
+  if(TABLE_OWNER.hasOwnProperty(root))pushTable(root);
 }
 
 /* ─────────────── 20) live data ─────────────── */
@@ -607,6 +609,43 @@ async function loadLive(){
   }catch(e){}
 }
 
+
+
+/* ─────────────── 20b) ตารางรายละเอียด: ซิงก์กับ Google Sheet ─────────────── */
+const TABLE_OWNER={fiscal:'spend',crop:'crop',fruit:'crop',water:'crop',base:'crop',price:'cpi',gpp:'*'};
+let TBL_META={};
+async function loadTables(){
+  if(!CFG.API)return;
+  try{
+    const r=await jsonp(CFG.API,{action:'tables'});
+    if(!r||!r.ok||!r.tables)return;
+    let n=0;
+    Object.keys(r.tables).forEach(k=>{ if(D[k]!==undefined){ D[k]=r.tables[k]; n++; } });
+    TBL_META=r.updated||{};
+    if(n)safeRender();
+  }catch(e){}
+}
+function toast(text,bad){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t)}
+  t.textContent=text;
+  t.className='toast on'+(bad?' bad':'');
+  clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),3200);
+}
+async function pushTable(key){
+  if(!CFG.API){toast('บันทึกในเครื่องนี้แล้ว — ยังไม่ได้เชื่อมฐานข้อมูลกลาง',true);return}
+  if(!authValid()){toast('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่',true);return}
+  try{
+    const res=await fetch(CFG.API,{method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'savetable',token:AUTH.token,key:key,json:JSON.stringify(D[key])})});
+    const r=await res.json();
+    if(!r.ok)throw new Error(r.error||'บันทึกไม่สำเร็จ');
+    toast('บันทึกขึ้นฐานข้อมูลกลางแล้ว ทุกคนเห็นตรงกัน');
+  }catch(e){
+    toast('บันทึกขึ้นฐานข้อมูลกลางไม่สำเร็จ ('+e.message+') เก็บไว้ในเครื่องนี้แล้ว',true);
+  }
+}
 
 /* ─────────────── 23) Tooltip กราฟแบบการ์ดลอย ─────────────── */
 function chartTipEl(){
@@ -887,7 +926,7 @@ const DS={
     try{EDIT=localStorage.getItem('nblEcon.editing')==='1'}catch(e){}
     safeRender();
     if(EDIT){EDIT=false;if(authValid())toggleEdit();else{try{localStorage.setItem('nblEcon.editing','0')}catch(e){}}}
-    initToTop(); checkAssets(); loadLive();
+    initToTop(); checkAssets(); loadLive(); loadTables();
     let rz;
     window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{
       chDefaults();
