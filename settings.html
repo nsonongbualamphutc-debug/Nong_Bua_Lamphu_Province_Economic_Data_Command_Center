@@ -70,7 +70,40 @@
         <button class="tb" id="btnTestApi">ทดสอบการเชื่อมต่อ</button>
       </div>
       <div class="note">เมื่อใส่ URL แล้วบันทึก ระบบจะดึงข้อมูลจริงจาก Google Sheet มาทับข้อมูลโครงร่างโดยอัตโนมัติทุกครั้งที่เปิดหน้า</div>
-    </div></div></section>
+    </div></div>
+  <div class="c mb" id="pinAdmin" style="margin-top:13px">
+    <header><h3>จัดการรหัสหน่วยงาน</h3><span class="u">เฉพาะผู้ดูแลระบบ</span>
+      <span class="r"><span id="pinWho"></span>
+        <button class="tb" id="btnPinLogin">เข้าสู่ระบบผู้ดูแล</button>
+        <button class="tb hide" id="btnPinOut">ออกจากระบบ</button></span></header>
+    <div class="b">
+      <div id="pinLocked">
+        <div style="display:flex;gap:13px;align-items:flex-start;padding:6px 0">
+          <span style="width:38px;height:38px;border-radius:11px;background:var(--gold-l);display:grid;place-items:center;flex:none">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="var(--gold)" stroke-width="1.7">
+              <rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></svg></span>
+          <div style="font-size:12.5px;color:var(--dim);line-height:1.8">
+            ส่วนนี้ใช้สุ่มรหัส PIN ใหม่ ตั้งรหัสเอง ปลดล็อกบัญชี และเปิด-ปิดการใช้งานของแต่ละหน่วยงาน
+            โดยไม่ต้องเข้าไปแก้ที่ Google Apps Script<br>
+            ต้องเข้าสู่ระบบด้วยบัญชีผู้ดูแล (<b>สำนักงานจังหวัด</b> หรือ <b>สำนักงานสถิติจังหวัด</b>) เท่านั้น
+          </div>
+        </div>
+      </div>
+      <div id="pinPanel" class="hide">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+          <button class="tb on" id="btnGenAll">สุ่มรหัสใหม่ทั้งหมด</button>
+          <button class="tb" id="btnGenSel">สุ่มเฉพาะที่เลือก</button>
+          <span class="sp" style="flex:1"></span>
+          <button class="tb" id="btnReload">รีเฟรชสถานะ</button>
+        </div>
+        <div id="pinReveal" class="hide"></div>
+        <div class="sc" style="max-height:460px"><table class="t" id="tUsers"></table></div>
+        <div class="note">รหัสจริงไม่ถูกเก็บไว้ที่ใดเลย ระบบเก็บเฉพาะค่า hash การสุ่มใหม่จะแสดงรหัสให้ดูเพียงครั้งเดียว
+        ให้บันทึกไฟล์เก็บไว้ทันที ทุกการกระทำในหน้านี้ถูกบันทึกในชีต Log</div>
+      </div>
+    </div>
+  </div>
+</section>
   </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -130,7 +163,171 @@ function wireSettings(){
     if(confirm('คืนค่าข้อมูลทั้งหมดเป็นค่าตั้งต้น? การแก้ไขที่บันทึกไว้จะหายไป')){
       localStorage.removeItem(LS.data);location.reload()}};
 }
-DS.init('settings',function(){renderSettings();wireSettings()});
+
+/* ═══════════ จัดการรหัสหน่วยงาน (แอดมิน) ═══════════ */
+let USERS=[], LASTGEN=null;
+function isAdmin(){return AUTH&&authValid()&&(AUTH.role==='admin'||String(AUTH.domains||'').split(',').map(x=>x.trim()).indexOf('*')>=0)}
+function pinMsg(t,cls){
+  const el=document.getElementById('pinReveal');
+  el.classList.remove('hide');
+  el.innerHTML=`<div class="edbar" style="${cls==='err'?'background:var(--coral-l);border-color:rgba(201,69,47,.35);color:var(--bad)':''}">${t}</div>`;
+}
+async function pinApi(action,extra){
+  if(!CFG.API)throw new Error('ยังไม่ได้ตั้งค่า URL ของ Apps Script');
+  const r=await jsonp(CFG.API,Object.assign({action,token:AUTH.token},extra||{}));
+  if(!r||!r.ok)throw new Error((r&&r.error)||'คำสั่งไม่สำเร็จ');
+  return r;
+}
+function pinGate(){
+  const admin=isAdmin();
+  document.getElementById('pinLocked').classList.toggle('hide',admin);
+  document.getElementById('pinPanel').classList.toggle('hide',!admin);
+  document.getElementById('btnPinLogin').classList.toggle('hide',admin);
+  document.getElementById('btnPinOut').classList.toggle('hide',!admin);
+  document.getElementById('pinWho').innerHTML=admin
+    ? `<span class="chip up">${AUTH.name||AUTH.code}</span>` : '';
+  if(admin)loadUsers();
+}
+async function loadUsers(){
+  try{
+    const r=await pinApi('users');
+    USERS=r.users; renderUsers();
+  }catch(e){pinMsg('โหลดรายชื่อไม่สำเร็จ: '+e.message,'err')}
+}
+function renderUsers(){
+  const t=document.getElementById('tUsers');
+  t.innerHTML=`<thead><tr>
+      <th style="width:30px"><input type="checkbox" id="uAll"></th>
+      <th>หน่วยงาน</th><th style="width:88px">รหัส</th><th style="width:74px">สิทธิ์</th>
+      <th style="width:96px">สถานะ</th><th style="width:110px">เข้าใช้ล่าสุด</th>
+      <th style="width:190px">จัดการ</th></tr></thead><tbody>`+
+    USERS.map(u=>{
+      const st=!u.active?'<span class="chip dn">ปิดใช้งาน</span>'
+        :u.locked?'<span class="chip dn">ถูกล็อก</span>'
+        :!u.hasPin?'<span class="chip fl">ยังไม่ตั้ง PIN</span>'
+        :'<span class="chip up">พร้อมใช้</span>';
+      const last=u.lastLogin?new Date(u.lastLogin).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'2-digit'}):'—';
+      return `<tr>
+        <td><input type="checkbox" class="uPick" value="${u.code}"></td>
+        <td>${u.name}${u.fail?`<span style="font-size:10px;color:var(--warn)"> · ผิด ${u.fail} ครั้ง</span>`:''}</td>
+        <td><code style="font-size:11px">${u.code}</code></td>
+        <td>${u.role==='admin'?'<span class="chip br">แอดมิน</span>':'หน่วยงาน'}</td>
+        <td>${st}</td><td style="font-size:11px;color:var(--faint)">${last}</td>
+        <td style="white-space:nowrap">
+          <button class="tb" style="height:26px;font-size:11px" data-act="gen" data-code="${u.code}">สุ่มใหม่</button>
+          <button class="tb" style="height:26px;font-size:11px" data-act="set" data-code="${u.code}">ตั้งเอง</button>
+          ${u.locked?`<button class="tb" style="height:26px;font-size:11px" data-act="unlock" data-code="${u.code}">ปลดล็อก</button>`:''}
+          <button class="tb" style="height:26px;font-size:11px" data-act="active" data-code="${u.code}" data-on="${u.active?'0':'1'}">${u.active?'ปิด':'เปิด'}</button>
+        </td></tr>`}).join('')+'</tbody>';
+  const all=document.getElementById('uAll');
+  if(all)all.onchange=()=>document.querySelectorAll('.uPick').forEach(c=>c.checked=all.checked);
+}
+function picked(){return [...document.querySelectorAll('.uPick:checked')].map(c=>c.value)}
+function showGenerated(list){
+  LASTGEN={at:new Date(),list};
+  const rowsHtml=list.map(x=>`<tr><td>${x.name}</td><td><code>${x.code}</code></td>
+     <td class="r" style="font-family:var(--fn);font-size:17px;font-weight:600;letter-spacing:2px">${x.pin}</td></tr>`).join('');
+  document.getElementById('pinReveal').classList.remove('hide');
+  document.getElementById('pinReveal').innerHTML=`
+    <div class="c" style="border-color:var(--gold);margin-bottom:13px">
+      <header><h3>รหัสใหม่ ${list.length} หน่วยงาน</h3>
+        <span class="u">แสดงครั้งเดียว · ${new Date().toLocaleString('th-TH')}</span>
+        <span class="r">
+          <button class="tb" id="btnPinCopy">คัดลอก</button>
+          <button class="tb" id="btnPinCsv">บันทึกไฟล์ CSV</button>
+          <button class="tb" id="btnPinTxt">บันทึกไฟล์ข้อความ</button>
+          <button class="tb" id="btnPinPrint">พิมพ์</button>
+          <button class="tb" id="btnPinHide">ปิด</button></span></header>
+      <div class="b">
+        <div class="edbar" style="background:var(--coral-l);border-color:rgba(201,69,47,.35);color:var(--bad)">
+          <b>บันทึกเก็บไว้ทันที</b> — ระบบไม่เก็บรหัสจริงไว้ที่ใดเลย ปิดหน้านี้แล้วจะดูย้อนหลังไม่ได้อีก</div>
+        <div class="sc" style="max-height:320px"><table class="t">
+          <thead><tr><th>หน่วยงาน</th><th style="width:100px">รหัสเข้าระบบ</th><th class="r" style="width:120px">PIN</th></tr></thead>
+          <tbody>${rowsHtml}</tbody></table></div>
+      </div></div>`;
+  const txt=()=>'รหัสเข้าใช้ระบบ ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู\n'+
+    'ออกให้เมื่อ '+new Date().toLocaleString('th-TH')+'\n\n'+
+    list.map(x=>x.name+'\t'+x.code+'\t'+x.pin).join('\n')+
+    '\n\nเอกสารลับ โปรดแจกให้หัวหน้าหน่วยงานโดยตรง และแจ้งให้เปลี่ยน PIN เมื่อเข้าระบบครั้งแรก';
+  document.getElementById('btnPinCopy').onclick=()=>{
+    navigator.clipboard.writeText(txt()).then(()=>alert('คัดลอกแล้ว'),()=>alert('คัดลอกไม่สำเร็จ กรุณาใช้ปุ่มบันทึกไฟล์แทน'))};
+  document.getElementById('btnPinCsv').onclick=()=>dlFile('รหัสหน่วยงาน-'+stamp()+'.csv',
+    '\ufeff'+'หน่วยงาน,รหัสเข้าระบบ,PIN\n'+list.map(x=>`"${x.name}","${x.code}","${x.pin}"`).join('\n'),'text/csv;charset=utf-8');
+  document.getElementById('btnPinTxt').onclick=()=>dlFile('รหัสหน่วยงาน-'+stamp()+'.txt','\ufeff'+txt(),'text/plain;charset=utf-8');
+  document.getElementById('btnPinPrint').onclick=()=>printPins(list);
+  document.getElementById('btnPinHide').onclick=()=>{
+    if(confirm('ปิดแล้วจะดูรหัสชุดนี้ไม่ได้อีก บันทึกเก็บเรียบร้อยแล้วใช่หรือไม่'))
+      document.getElementById('pinReveal').classList.add('hide')};
+}
+function stamp(){const d=new Date();return d.getFullYear()+543+''+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
+function dlFile(name,text,type){
+  const b=new Blob([text],{type:type});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+function printPins(list){
+  const w=window.open('','_blank');
+  w.document.write(`<html><head><meta charset="utf-8"><title>รหัสเข้าใช้ระบบ</title>
+    <style>body{font-family:'IBM Plex Sans Thai',sans-serif;padding:26px;color:#12241f}
+    h1{font-size:19px;margin:0 0 3px}p{font-size:12px;color:#666;margin:0 0 16px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{border:1px solid #ddd;padding:8px 10px;text-align:left}
+    th{background:#f2f6f3;font-size:11px}
+    .pin{font-family:monospace;font-size:17px;letter-spacing:2px;font-weight:700}
+    .w{margin-top:18px;padding:11px 14px;border:1px solid #e0b4ab;background:#fbeeea;color:#c9452f;font-size:12px;border-radius:8px}
+    </style></head><body>
+    <h1>รหัสเข้าใช้ระบบ · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</h1>
+    <p>ออกให้เมื่อ ${new Date().toLocaleString('th-TH')} · เอกสารลับ</p>
+    <table><thead><tr><th>หน่วยงาน</th><th>รหัสเข้าระบบ</th><th>PIN</th><th>ผู้รับ / วันที่รับ</th></tr></thead><tbody>
+    ${list.map(x=>`<tr><td>${x.name}</td><td>${x.code}</td><td class="pin">${x.pin}</td><td></td></tr>`).join('')}
+    </tbody></table>
+    <div class="w">โปรดตัดเฉพาะแถวของหน่วยงานนั้นส่งให้หัวหน้าหน่วยงานโดยตรง ห้ามส่งทั้งเอกสารในกลุ่มแชทหรืออีเมลเวียน
+    และแจ้งให้เปลี่ยน PIN ด้วยตนเองเมื่อเข้าระบบครั้งแรก</div>
+    </body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),400);
+}
+function wirePinAdmin(){
+  document.getElementById('btnPinLogin').onclick=async()=>{
+    if(!CFG.API){alert('ยังไม่ได้ตั้งค่า URL ของ Apps Script กรุณาบันทึกที่การ์ดด้านบนก่อน');return}
+    if(!authValid())AUTH=null;
+    const ok=await authBox(); if(!ok)return;
+    if(!isAdmin()){alert('บัญชีนี้ไม่ใช่ผู้ดูแลระบบ กรุณาเข้าด้วยบัญชีสำนักงานจังหวัดหรือสำนักงานสถิติจังหวัด');authLogout();}
+    pinGate();
+  };
+  document.getElementById('btnPinOut').onclick=()=>{authLogout();USERS=[];pinGate()};
+  document.getElementById('btnReload').onclick=loadUsers;
+  document.getElementById('btnGenAll').onclick=async()=>{
+    if(!confirm('สุ่มรหัสใหม่ให้ทุกหน่วยงาน? รหัสเดิมทั้งหมดจะใช้ไม่ได้ทันที'))return;
+    try{const r=await pinApi('genpins',{codes:'all'});showGenerated(r.generated);loadUsers()}
+    catch(e){pinMsg('สุ่มรหัสไม่สำเร็จ: '+e.message,'err')}};
+  document.getElementById('btnGenSel').onclick=async()=>{
+    const c=picked(); if(!c.length){alert('เลือกหน่วยงานที่ต้องการก่อน');return}
+    if(!confirm('สุ่มรหัสใหม่ให้ '+c.length+' หน่วยงาน?'))return;
+    try{const r=await pinApi('genpins',{codes:c.join(',')});showGenerated(r.generated);loadUsers()}
+    catch(e){pinMsg('สุ่มรหัสไม่สำเร็จ: '+e.message,'err')}};
+  document.getElementById('tUsers').addEventListener('click',async e=>{
+    const b=e.target.closest('[data-act]'); if(!b)return;
+    const code=b.dataset.code;
+    try{
+      if(b.dataset.act==='gen'){
+        if(!confirm('สุ่มรหัสใหม่ให้ '+code+' ?'))return;
+        const r=await pinApi('genpins',{codes:code});showGenerated(r.generated);
+      }else if(b.dataset.act==='set'){
+        const pin=prompt('ตั้ง PIN ใหม่ให้ '+code+' (ตัวเลข 6–10 หลัก)');
+        if(!pin)return;
+        await pinApi('setpin',{code,pin});
+        pinMsg('ตั้ง PIN ให้ '+code+' เรียบร้อย');
+      }else if(b.dataset.act==='unlock'){
+        await pinApi('unlock',{code});pinMsg('ปลดล็อกบัญชี '+code+' เรียบร้อย');
+      }else if(b.dataset.act==='active'){
+        await pinApi('setactive',{code,active:b.dataset.on==='1'?'true':'false'});
+      }
+      loadUsers();
+    }catch(err){pinMsg('ไม่สำเร็จ: '+err.message,'err')}
+  });
+  pinGate();
+}
+
+DS.init('settings',function(){renderSettings();wireSettings();wirePinAdmin()});
 </script>
 </body>
 </html>
