@@ -22,6 +22,33 @@
   <div class="ph"><div class="t"><h2>ตั้งค่าระบบ</h2>
     <p>ปรับภาพพื้นหลัง สีหลัก และการนำเสนอ ค่าที่ตั้งไว้จะถูกบันทึกในเครื่องนี้ ไม่กระทบผู้ใช้คนอื่น</p></div>
     <div class="r"><span class="chip">สำหรับผู้ดูแลระบบ</span></div></div>
+  <div class="c" id="setGate">
+    <div class="b" style="padding:26px 24px">
+      <div style="display:flex;gap:16px;align-items:flex-start;max-width:760px">
+        <span style="width:52px;height:52px;border-radius:15px;background:var(--gold-l);display:grid;place-items:center;flex:none">
+          <svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="var(--gold)" stroke-width="1.6">
+            <rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></svg></span>
+        <div style="flex:1">
+          <h2 style="font-family:var(--fd);font-size:20px;margin:0 0 6px;font-weight:600">หน้านี้สงวนสำหรับผู้ดูแลระบบ</h2>
+          <p style="margin:0 0 4px;font-size:13px;color:var(--dim);line-height:1.8">
+            การตั้งค่าระบบ ภาพพื้นหลัง การเชื่อมฐานข้อมูล และการจัดการรหัสหน่วยงาน
+            เปิดให้เฉพาะผู้ดูแลระบบสองหน่วยงานเท่านั้น</p>
+          <ul style="margin:10px 0 16px;padding-left:19px;font-size:13px;color:var(--ink);line-height:1.9">
+            <li>สำนักงานสถิติจังหวัดหนองบัวลำภู <code style="font-size:11.5px;color:var(--faint)">admin</code></li>
+            <li>สำนักงานจังหวัดหนองบัวลำภู <code style="font-size:11.5px;color:var(--faint)">province</code></li>
+          </ul>
+          <button class="tb on" id="btnGateLogin" style="height:42px;padding:0 22px;font-size:14px">
+            <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></svg>
+            เข้าสู่ระบบผู้ดูแล</button>
+          <div class="note" style="max-width:60ch">หน่วยงานทั่วไปที่ต้องการส่งข้อมูล ให้ใช้หน้า
+            <a href="input.html" style="color:var(--blue)">ระบบกรอกข้อมูล</a> แทน
+            ส่วนการแก้ไขตารางบนแดชบอร์ดกดได้จากไอคอนดินสอบนแถบบนได้ตามปกติ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="setBody" class="hide">
+
   <div class="grid g2 mb">
     <div class="c"><header><h3>ภาพพื้นหลังหน้าปก</h3><span class="u">แนะนำขนาด 2400×1350 px</span></header>
       <div class="b">
@@ -103,6 +130,8 @@
       </div>
     </div>
   </div>
+
+  </div><!-- /setBody -->
 </section>
   </main>
 </div>
@@ -180,6 +209,9 @@ async function pinApi(action,extra){
 }
 function pinGate(){
   const admin=isAdmin();
+  const gate=document.getElementById('setGate'), body=document.getElementById('setBody');
+  if(gate)gate.classList.toggle('hide',admin);
+  if(body)body.classList.toggle('hide',!admin);
   document.getElementById('pinLocked').classList.toggle('hide',admin);
   document.getElementById('pinPanel').classList.toggle('hide',!admin);
   document.getElementById('btnPinLogin').classList.toggle('hide',admin);
@@ -192,7 +224,12 @@ async function loadUsers(){
   try{
     const r=await pinApi('users');
     USERS=r.users; renderUsers();
-  }catch(e){pinMsg('โหลดรายชื่อไม่สำเร็จ: '+e.message,'err')}
+  }catch(e){
+    const hint = /ไม่รู้จักคำสั่ง/.test(e.message)
+      ? 'โค้ดหลังบ้านยังเป็นเวอร์ชันเก่า — ให้วาง Code.gs ตัวล่าสุดใน Apps Script แล้วกด Deploy → Manage deployments → ไอคอนดินสอ → Version เลือก New version → Deploy'
+      : e.message;
+    pinMsg('โหลดรายชื่อไม่สำเร็จ: '+hint,'err');
+  }
 }
 function renderUsers(){
   const t=document.getElementById('tUsers');
@@ -285,13 +322,24 @@ function printPins(list){
     </body></html>`);
   w.document.close(); setTimeout(()=>w.print(),400);
 }
+async function adminLogin(){
+  if(!CFG.API){
+    alert('ยังไม่ได้ตั้งค่า URL ของ Google Apps Script\n\nครั้งแรกให้ตั้งค่าผ่านหน้านี้ไม่ได้ เพราะยังไม่มีฐานข้อมูลให้ตรวจสอบรหัส\nกรุณาแจ้งผู้พัฒนาให้ฝัง URL ในไฟล์ หรือเปิดไฟล์ ds.js แล้วใส่ค่า API ก่อน');
+    return;
+  }
+  if(!authValid())AUTH=null;
+  const ok=await authBox(); if(!ok)return;
+  if(!isAdmin()){
+    alert('บัญชีนี้ไม่ใช่ผู้ดูแลระบบ\n\nเข้าได้เฉพาะสำนักงานสถิติจังหวัดหนองบัวลำภู (admin)\nและสำนักงานจังหวัดหนองบัวลำภู (province)');
+    authLogout();
+  }
+  pinGate();
+}
 function wirePinAdmin(){
+  const bg=document.getElementById('btnGateLogin');
+  if(bg)bg.onclick=adminLogin;
   document.getElementById('btnPinLogin').onclick=async()=>{
-    if(!CFG.API){alert('ยังไม่ได้ตั้งค่า URL ของ Apps Script กรุณาบันทึกที่การ์ดด้านบนก่อน');return}
-    if(!authValid())AUTH=null;
-    const ok=await authBox(); if(!ok)return;
-    if(!isAdmin()){alert('บัญชีนี้ไม่ใช่ผู้ดูแลระบบ กรุณาเข้าด้วยบัญชีสำนักงานจังหวัดหรือสำนักงานสถิติจังหวัด');authLogout();}
-    pinGate();
+    adminLogin();
   };
   document.getElementById('btnPinOut').onclick=()=>{authLogout();USERS=[];pinGate()};
   document.getElementById('btnReload').onclick=loadUsers;
