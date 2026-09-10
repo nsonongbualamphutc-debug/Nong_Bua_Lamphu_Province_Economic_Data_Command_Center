@@ -283,7 +283,20 @@ window.onSeg=function(w,btn){
     });
   }
 };
-DS.init('agri',renderAgri);
+const AGRI_SUB={
+  crop:['พืชอายุสั้น','ข้าว อ้อยโรงงาน มันสำปะหลัง และพืชผัก'],
+  fruit:['ไม้ผลเศรษฐกิจ','ทุเรียน ลำไย กาแฟ เงาะ ลิ้นจี่ อินทผลัม'],
+  main:['พืชเศรษฐกิจหลัก','ข้าวนาปี อ้อยโรงงาน มันสำปะหลัง ยางพารา'],
+  water:['แหล่งน้ำเพื่อการเกษตร','ระบบสูบน้ำพลังงานแสงอาทิตย์และแหล่งน้ำต้นทุน'],
+  org:['แปลงใหญ่และสถาบันเกษตรกร','73 แปลง เกษตรกร 3,996 ราย พื้นที่ 36,900 ไร่'],
+  base:['ฐานข้อมูลพื้นฐาน','โครงสร้างประชากร พื้นที่ และครัวเรือนเกษตรกร']
+};
+DS.init('agri',function(){
+  renderAgri();
+  Object.keys(AGRI_SUB).forEach(function(k){
+    bannerInto(document.getElementById('agri-'+k),'assets/a-'+k+'.jpg',AGRI_SUB[k][0],AGRI_SUB[k][1]);
+  });
+});
 </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'0.7.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'0.8.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -704,6 +704,28 @@ function initToTop(){
   window.addEventListener('scroll',onScroll,{passive:true});
 }
 
+
+/* ─────────────── 27) แบนเนอร์ภาพหัวหน้า (ใส่ไฟล์เมื่อไรก็ขึ้นเอง) ─────────────── */
+function bannerInto(target,src,title,sub,place){
+  if(!target)return;
+  if(target.querySelector(':scope > .pgbanner'))return;
+  const img=new Image();
+  img.onload=()=>{
+    const d=document.createElement('div');
+    d.className='pgbanner';
+    d.style.backgroundImage=`url('${src}')`;
+    d.innerHTML=`<div class="pgb-in"><b>${title}</b>${sub?`<span>${sub}</span>`:''}</div>`;
+    if(place==='append')target.appendChild(d); else target.prepend(d);
+  };
+  img.src=src;
+}
+function pageBanner(){
+  if(['cover','report','settings'].indexOf(PAGE.id)>=0)return;
+  const v=document.querySelector('.view.on'); if(!v)return;
+  const n=NAVI.find(x=>x.id===PAGE.id); if(!n)return;
+  bannerInto(v,'assets/h-'+PAGE.id+'.jpg',n.label,'ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู');
+}
+
 /* ─────────────── 22) โครงร่วม: แถบบน เมนู และการเริ่มระบบ ─────────────── */
 const NAVI=[
  {id:'cover',   file:'index.html',    label:'หน้าปกจังหวัด',   ic:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.2V20h13v-9.8"/><path d="M9.6 20v-5.4h4.8V20"/>'},
@@ -757,24 +779,24 @@ function buildShell(active){
         <div class="pf-brand">
           <img src="${SEAL}" alt="ตราประจำจังหวัดหนองบัวลำภู">
           <div>
-            <b>สำนักงานสถิติจังหวัดหนองบัวลำภู</b>
-            <span>ศาลากลางจังหวัดหนองบัวลำภู ชั้น 2 ถ.หนองบัวลำภู – เลย<br>
+            <b>สำนักงานจังหวัดหนองบัวลำภู</b>
+            <span>ศาลากลางจังหวัดหนองบัวลำภู ชั้น 4 ถ.หนองบัวลำภู – เลย<br>
             ต.ลำภู อ.เมือง จ.หนองบัวลำภู 39000</span>
           </div>
         </div>
         <div class="pf-links">
-          <a href="tel:042316736">
+          <a href="tel:042316680">
             <svg viewBox="0 0 24 24"><path d="M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7 2 2 0 0 1 6.5 3.5Z"/></svg>
-            0 4231 6736</a>
-          <a href="https://nongbualamphu.nso.go.th" target="_blank" rel="noopener">
+            0 4231 6680-1</a>
+          <a href="https://www.nongbualamphu.go.th/" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2M12 3.4c2.4 2.7 3.6 5.5 3.6 8.6s-1.2 5.9-3.6 8.6c-2.4-2.7-3.6-5.5-3.6-8.6S9.6 6.1 12 3.4Z"/></svg>
-            เว็บไซต์สำนักงาน</a>
+            เว็บไซต์จังหวัด</a>
           <a href="input.html">
             <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></svg>
             ระบบกรอกข้อมูล</a>
         </div>
       </div>
-      <div class="pf-copy">© 2025 จัดทำโดย สำนักงานสถิติจังหวัดหนองบัวลำภู · ศูนย์บัญชาการข้อมูลเศรษฐกิจจังหวัดหนองบัวลำภู · build ${CFG.build}</div>`;
+      <div class="pf-copy">© 2025 จัดทำโดย สำนักงานสถิติจังหวัดหนองบัวลำภู · โทร 0 4231 6736 · build ${CFG.build}</div>`;
     main.appendChild(f);
   }
 }
@@ -883,7 +905,7 @@ const DS={
 let PAGE={id:'',render(){}};
 function safeRender(){
   try{PAGE.render()}catch(e){console.error('render '+PAGE.id,e)}
-  try{revealCards();animateNums()}catch(e){}
+  try{pageBanner();revealCards();animateNums()}catch(e){}
 }
 
 document.addEventListener('click',function(e){

@@ -106,6 +106,7 @@ function renderTradePage(){
   v.appendChild(tabs); v.appendChild(wrap);
   const pr=document.createElement('div'); pr.id='trade-price'; pr.className='hide';
   pr.innerHTML=priceHtml(); v.appendChild(pr);
+  bannerInto(pr,'assets/t-price.jpg','ราคาสินค้าเกษตรและอุปโภคบริโภครายสัปดาห์','สำนักงานพาณิชย์จังหวัดหนองบัวลำภู · ข้อมูล ณ 8 กันยายน 2569');
   renderPriceChart(); applyEditMode();
 }
 window.onSeg=function(w,btn){
