@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'1.0.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'1.1.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -140,6 +140,33 @@ const REAL = {
     contact:'สำนักงานพาณิชย์จังหวัดหนองบัวลำภู โทร 0 4231 2018 · โทรสาร 0 4231 2884'
   },
 
+  /* สำนักงานแรงงานจังหวัด · สำนักงานสถิติจังหวัด — สำรวจภาวะการทำงานของประชากร รายไตรมาส */
+  labor:{
+    src:'การสำรวจภาวะการทำงานของประชากร สำนักงานสถิติจังหวัดหนองบัวลำภู',
+    latest:'ไตรมาส 2/2569',
+    quarters:[
+      {q:'2566-Q3',y:2566,n:3,force:259466,emp:257446,ue:2020,ur:0.78},
+      {q:'2566-Q4',y:2566,n:4,force:259933,emp:257693,ue:2240,ur:0.86},
+      {q:'2567-Q1',y:2567,n:1,force:260400,emp:256810,ue:3590,ur:1.38},
+      {q:'2567-Q2',y:2567,n:2,force:260868,emp:258028,ue:2840,ur:1.09},
+      {q:'2567-Q3',y:2567,n:3,force:261337,emp:259217,ue:2120,ur:0.81},
+      {q:'2567-Q4',y:2567,n:4,force:261807,emp:259267,ue:2540,ur:0.97},
+      {q:'2568-Q1',y:2568,n:1,force:262278,emp:258478,ue:3800,ur:1.45},
+      {q:'2568-Q2',y:2568,n:2,force:262750,emp:259650,ue:3100,ur:1.18},
+      {q:'2568-Q3',y:2568,n:3,force:263222,emp:261112,ue:2110,ur:0.80},
+      {q:'2568-Q4',y:2568,n:4,force:263695,emp:261135,ue:2560,ur:0.97},
+      {q:'2569-Q1',y:2569,n:1,force:264169,emp:260369,ue:3800,ur:1.44},
+      {q:'2569-Q2',y:2569,n:2,force:264644,emp:261684,ue:2960,ur:1.12}
+    ],
+    sectors:[['เกษตรกรรม ป่าไม้ ประมง',52.4],['ค้าส่ง ค้าปลีก ซ่อมยานยนต์',13.8],
+             ['ที่พักแรมและบริการอาหาร',6.4],['การผลิต',6.1],['ก่อสร้าง',5.9],
+             ['การศึกษา บริหารราชการ สาธารณสุข',9.2],['บริการอื่น ๆ',6.2]],
+    informal:{rate:68.2,persons:178500},
+    edu:[['ต่ำกว่าประถมและประถม',44.6],['มัธยมต้น',20.1],['มัธยมปลาย/ปวช.',18.7],['อนุปริญญา/ปวส.',6.3],['ปริญญาตรีขึ้นไป',10.3]],
+    compare:{prov:1.12,ne:1.18,th:1.02},
+    note:'ตัวเลขชุดนี้เป็นโครงร่างระหว่างรอข้อมูลจริงจากการสำรวจภาวะการทำงานของประชากร'
+  },
+
   gpp:{rows:[{y:2564,value:30120,pc:62800},{y:2565,value:31850,pc:66500},{y:2566,value:33240,pc:69800}],
     struct:[['เกษตรกรรม',28.4],['บริการและอื่น ๆ',24.3],['ค้าส่ง–ค้าปลีก',16.8],
             ['ภาครัฐ การศึกษา สาธารณสุข',16.4],['อุตสาหกรรม',14.1]]}
@@ -173,10 +200,11 @@ const DATASETS = [
   series:[{key:'moto',label:'รถจักรยานยนต์จดทะเบียนใหม่',unit:'คัน',base:735,trend:.02,seas:.19,kpi:1,int:1},
           {key:'car',label:'รถยนต์นั่งส่วนบุคคล',unit:'คัน',base:118,trend:.03,seas:.24,int:1},
           {key:'comm',label:'รถเพื่อการพาณิชย์',unit:'คัน',base:64,trend:.035,seas:.30,int:1}]},
- {id:'labor',sector:'labor',agency:'สำนักงานแรงงานจังหวัดหนองบัวลำภู · สำนักงานสถิติจังหวัด',lag:45,
-  series:[{key:'emp',label:'ผู้มีงานทำ',unit:'คน',base:258000,trend:.008,seas:.05,kpi:1,int:1},
-          {key:'ur',label:'อัตราการว่างงาน',unit:'%',base:0.92,trend:0,seas:.4,pct:1,dec:2},
-          {key:'force',label:'กำลังแรงงานรวม',unit:'คน',base:262000,trend:.006,seas:.04,int:1}]},
+ {id:'labor',sector:'labor',agency:'สำนักงานแรงงานจังหวัดหนองบัวลำภู · สำนักงานสถิติจังหวัด',lag:45,freq:'Q',real:true,
+  series:[{key:'ue',label:'จำนวนผู้ว่างงาน',unit:'คน',base:2960,trend:.01,seas:.5,kpi:1,int:1},
+          {key:'ur',label:'อัตราการว่างงาน',unit:'%',base:1.12,trend:0,seas:.45,pct:1,dec:2},
+          {key:'emp',label:'ผู้มีงานทำ',unit:'คน',base:261684,trend:.008,seas:.03,int:1},
+          {key:'force',label:'กำลังแรงงานรวม',unit:'คน',base:264644,trend:.006,seas:.02,int:1}]},
  {id:'social',sector:'labor',agency:'สำนักงานประกันสังคมจังหวัดหนองบัวลำภู',lag:30,
   series:[{key:'m33',label:'ผู้ประกันตน มาตรา 33',unit:'คน',base:21500,trend:.02,seas:.06,kpi:1,int:1},
           {key:'m40',label:'ผู้ประกันตน มาตรา 40',unit:'คน',base:64800,trend:.015,seas:.04,int:1}]},
@@ -416,7 +444,9 @@ function renderSector(sid){
       ${M.extra?`<div class="c"><header><h3>เปรียบเทียบรายปี</h3></header><div class="b"><div class="ch"><canvas id="cy-${sid}"></canvas></div></div></div>`:''}
       <div class="c"><header><h3>กระจายรายอำเภอ</h3><span class="u">เดือนล่าสุด</span></header>
         <div class="b"><div class="sc"><table class="t" id="td-${sid}"></table></div></div></div>
-    </div>`;
+    </div>
+    <div class="c" style="margin-top:13px"><header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
+      <div class="b">${srcBar(sec.datasets)}</div></div>`;
   $('#k-'+sid).innerHTML=all.slice(0,4).map((o,i)=>{
     const arr=DB[o.d.id][o.s.key];
     return kpiCard({icon:['chart','coin','people','bolt'][i],color:PAL()[i],label:o.s.label,
@@ -612,7 +642,7 @@ async function loadLive(){
 
 
 /* ─────────────── 20b) ตารางรายละเอียด: ซิงก์กับ Google Sheet ─────────────── */
-const TABLE_OWNER={fiscal:'spend',crop:'crop',fruit:'crop',water:'crop',base:'crop',price:'cpi',gpp:'*'};
+const TABLE_OWNER={fiscal:'spend',crop:'crop',fruit:'crop',water:'crop',base:'crop',price:'cpi',labor:'labor',gpp:'*'};
 let TBL_META={};
 async function loadTables(){
   if(!CFG.API)return;
@@ -671,6 +701,8 @@ function externalTip(ctx){
     }
     return `<div class="cht-r"><i style="background:${col}"></i><b class="cht-v" style="margin-left:0">${str}</b></div>`;
   }).join('');
+  const foot=(tt.footer||[]).join(' ');
+  if(foot)html+=`<div class="cht-f">${foot}</div>`;
   el.innerHTML=html;
   el.classList.add('on');
   const r=ctx.chart.canvas.getBoundingClientRect();
@@ -763,6 +795,53 @@ function pageBanner(){
   const v=document.querySelector('.view.on'); if(!v)return;
   const n=NAVI.find(x=>x.id===PAGE.id); if(!n)return;
   bannerInto(v,'assets/h-'+PAGE.id+'.jpg',n.label,'ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู');
+}
+
+
+/* ─────────────── 28) แหล่งที่มา · ชื่อเต็มหน่วยงาน ─────────────── */
+const AGENCY_FULL={
+  spend  :{n:'สำนักงานคลังจังหวัดหนองบัวลำภู',dept:'กรมบัญชีกลาง กระทรวงการคลัง',tel:'0 4231 2410 ต่อ 26921-26',doc:'รายงานผลการเบิกจ่ายและใช้จ่ายเงินงบประมาณ'},
+  crop   :{n:'สำนักงานเกษตรจังหวัดหนองบัวลำภู',dept:'กรมส่งเสริมการเกษตร กระทรวงเกษตรและสหกรณ์',tel:'0 4231 3301',doc:'รายงานข้อมูลภาวะการผลิตพืช'},
+  factory:{n:'สำนักงานอุตสาหกรรมจังหวัดหนองบัวลำภู',dept:'สำนักงานปลัดกระทรวงอุตสาหกรรม กระทรวงอุตสาหกรรม',tel:'',doc:'ทะเบียนโรงงานอุตสาหกรรม'},
+  power  :{n:'การไฟฟ้าส่วนภูมิภาคจังหวัดหนองบัวลำภู',dept:'การไฟฟ้าส่วนภูมิภาค กระทรวงมหาดไทย',tel:'',doc:'สถิติการจำหน่ายกระแสไฟฟ้าแยกประเภทผู้ใช้'},
+  cpi    :{n:'สำนักงานพาณิชย์จังหวัดหนองบัวลำภู',dept:'สำนักงานปลัดกระทรวงพาณิชย์ กระทรวงพาณิชย์',tel:'0 4231 2018',doc:'รายงานสถานการณ์ราคาสินค้าเกษตรที่สำคัญและสินค้าอุปโภคบริโภค'},
+  credit :{n:'ธนาคารพัฒนาวิสาหกิจขนาดกลางและขนาดย่อมแห่งประเทศไทย',dept:'สาขาหนองบัวลำภู',tel:'',doc:'รายงานการอนุมัติสินเชื่อเพื่อการลงทุน'},
+  fuel   :{n:'สำนักงานพลังงานจังหวัดหนองบัวลำภู',dept:'สำนักงานปลัดกระทรวงพลังงาน กระทรวงพลังงาน',tel:'',doc:'รายงานปริมาณการใช้น้ำมันเชื้อเพลิงรายจังหวัด'},
+  car    :{n:'สำนักงานขนส่งจังหวัดหนองบัวลำภู',dept:'กรมการขนส่งทางบก กระทรวงคมนาคม',tel:'',doc:'สถิติการจดทะเบียนรถใหม่'},
+  labor  :{n:'สำนักงานสถิติจังหวัดหนองบัวลำภู',dept:'สำนักงานสถิติแห่งชาติ กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม · ร่วมกับ สำนักงานแรงงานจังหวัดหนองบัวลำภู',tel:'0 4231 6736',doc:'การสำรวจภาวะการทำงานของประชากร (Labor Force Survey) รายไตรมาส'},
+  social :{n:'สำนักงานประกันสังคมจังหวัดหนองบัวลำภู',dept:'สำนักงานประกันสังคม กระทรวงแรงงาน',tel:'',doc:'สถิติผู้ประกันตนจำแนกตามมาตรา'},
+  tour   :{n:'สำนักงานการท่องเที่ยวและกีฬาจังหวัดหนองบัวลำภู',dept:'สำนักงานปลัดกระทรวงการท่องเที่ยวและกีฬา',tel:'',doc:'สถิติผู้เยี่ยมเยือนและรายได้จากการท่องเที่ยว'},
+  gpp    :{n:'สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ',dept:'สำนักนายกรัฐมนตรี',tel:'',doc:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) แบบปริมาณลูกโซ่'}
+};
+function srcBar(keys,extra){
+  const list=(Array.isArray(keys)?keys:[keys]).map(k=>AGENCY_FULL[k]).filter(Boolean);
+  if(!list.length)return '';
+  return `<div class="srcbar">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5.5A2 2 0 0 1 6 3.5h9l5 5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14.5 3.6V9h5.2"/></svg>
+    <div>${list.map(a=>`<div class="src1"><b>${a.n}</b>${a.dept?` · ${a.dept}`:''}
+      ${a.doc?`<span>ที่มา: ${a.doc}</span>`:''}${a.tel?`<span>โทร ${a.tel}</span>`:''}</div>`).join('')}
+    ${extra?`<div class="src1"><span>${extra}</span></div>`:''}</div></div>`;
+}
+
+/* ─────────────── 29) ปุ่มสลับกราฟ / ตารางรายละเอียด ─────────────── */
+function viewToggle(id,labelChart,labelTable){
+  return `<span class="segs vt" data-vt="${id}">
+    <button class="on" data-v="chart">${labelChart||'กราฟ'}</button>
+    <button data-v="table">${labelTable||'ตารางข้อมูล'}</button></span>`;
+}
+function bindToggle(){
+  document.querySelectorAll('.segs.vt').forEach(w=>{
+    if(w.dataset.bound)return; w.dataset.bound='1';
+    w.addEventListener('click',e=>{
+      const b=e.target.closest('button'); if(!b)return;
+      w.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+      const id=w.dataset.vt, v=b.dataset.v;
+      const c=document.getElementById(id+'-chart'), t=document.getElementById(id+'-table');
+      if(c)c.classList.toggle('hide',v!=='chart');
+      if(t)t.classList.toggle('hide',v!=='table');
+      if(v==='chart'&&CH[id])setTimeout(()=>{try{CH[id].resize()}catch(e){}},30);
+    });
+  });
 }
 
 /* ─────────────── 22) โครงร่วม: แถบบน เมนู และการเริ่มระบบ ─────────────── */
@@ -944,7 +1023,7 @@ const DS={
 let PAGE={id:'',render(){}};
 function safeRender(){
   try{PAGE.render()}catch(e){console.error('render '+PAGE.id,e)}
-  try{pageBanner();revealCards();animateNums()}catch(e){}
+  try{pageBanner();bindToggle();revealCards();animateNums()}catch(e){}
 }
 
 document.addEventListener('click',function(e){

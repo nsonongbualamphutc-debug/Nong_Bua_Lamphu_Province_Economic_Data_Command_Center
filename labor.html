@@ -24,8 +24,169 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="ds.js"></script>
 <script>
-window.onSeg=function(w,btn){ if(w.dataset.dom)drawSectorChart(w.dataset.dom,btn.dataset.mode); };
-DS.init('labor',function(){renderSector('labor')});
+const QL=q=>'ไตรมาส '+q.n+'/'+q.y;
+function ueYoY(i){const Q=D.labor.quarters;return i>=4?pctc(Q[i].ue,Q[i-4].ue):null}
+
+function renderLabor(){
+  const L=D.labor, Q=L.quarters, last=Q[Q.length-1], prev=Q[Q.length-2], yoy=Q[Q.length-5];
+  const v=document.getElementById('v-labor');
+  v.innerHTML=`
+  <div class="ph"><div class="t"><h2>ตลาดแรงงานจังหวัดหนองบัวลำภู</h2>
+    <p>คนมีงานทำคือฐานกำลังซื้อที่ยั่งยืนที่สุด หน้านี้ติดตามการว่างงานรายไตรมาสย้อนหลัง 3 ปี พร้อมโครงสร้างการจ้างงานและการเข้าสู่ระบบประกันสังคม</p></div>
+    <div class="r"><span class="chip br">${L.latest}</span><span class="chip mock">โครงร่าง รอผลสำรวจจริง</span></div></div>
+
+  <div class="grid g4 mb" id="lbKpi"></div>
+
+  <div class="grid g21 mb">
+    <div class="c"><header><h3>จำนวนผู้ว่างงานและอัตราการว่างงาน</h3><span class="u">12 ไตรมาสย้อนหลัง</span>
+      <span class="r">${viewToggle('cUe')}</span></header>
+      <div class="b">
+        <div id="cUe-chart"><div class="ch lg"><canvas id="cUe"></canvas></div></div>
+        <div id="cUe-table" class="hide"><div class="sc" style="max-height:330px"><table class="t" data-owner="labor" id="tUe"></table></div></div>
+        <div class="note" id="lbInsight"></div>
+      </div></div>
+    <div class="c"><header><h3>เทียบอัตราการว่างงาน</h3><span class="u">${L.latest}</span></header>
+      <div class="b"><div id="lbCmp"></div>
+        <div class="ch sm" style="height:150px"><canvas id="cCmp"></canvas></div>
+        <div class="note">อัตราการว่างงานของจังหวัดต่ำกว่าค่าเฉลี่ยภาคตะวันออกเฉียงเหนือ แต่ต้องอ่านคู่กับสัดส่วนแรงงานนอกระบบที่สูงถึง ${L.informal.rate}% ซึ่งเป็นการจ้างงานที่ไม่มีหลักประกัน</div>
+      </div></div>
+  </div>
+
+  <div class="grid g3 mb">
+    <div class="c"><header><h3>ผู้มีงานทำแยกสาขาเศรษฐกิจ</h3><span class="r">${viewToggle('cSec')}</span></header>
+      <div class="b">
+        <div id="cSec-chart"><div class="ch"><canvas id="cSec"></canvas></div></div>
+        <div id="cSec-table" class="hide"><div class="sc"><table class="t" id="tSec"></table></div></div>
+      </div></div>
+    <div class="c"><header><h3>ระดับการศึกษาของผู้มีงานทำ</h3><span class="u">ร้อยละ</span></header>
+      <div class="b"><div id="lbEdu"></div>
+        <div class="note">ผู้มีงานทำเกือบครึ่งจบระดับประถมหรือต่ำกว่า การยกระดับทักษะจึงเป็นเงื่อนไขสำคัญของการเพิ่มรายได้ต่อหัว</div></div></div>
+    <div class="c"><header><h3>แรงงานในระบบ vs นอกระบบ</h3></header>
+      <div class="b"><div class="ch"><canvas id="cInf"></canvas></div>
+        <div class="note">แรงงานนอกระบบ ${f(L.informal.persons,0)} คน คิดเป็น ${L.informal.rate}% ของผู้มีงานทำ ส่วนใหญ่อยู่ในภาคเกษตรและค้าขายรายย่อย</div></div></div>
+  </div>
+
+  <div class="grid g21 mb">
+    <div class="c"><header><h3>ผู้ประกันตนในระบบประกันสังคม</h3><span class="u">รายเดือน 36 เดือน</span></header>
+      <div class="b"><div class="ch"><canvas id="cSso"></canvas></div>
+        <div class="note">ผู้ประกันตนมาตรา 40 ที่เพิ่มขึ้นคือสัญญาณที่ดี แปลว่าแรงงานอิสระเข้าสู่ระบบคุ้มครองมากขึ้น</div></div></div>
+    <div class="c"><header><h3>ฤดูกาลของการว่างงาน</h3><span class="u">ค่าเฉลี่ยรายไตรมาส 3 ปี</span></header>
+      <div class="b"><div class="ch"><canvas id="cSeas"></canvas></div>
+        <div class="note" id="lbSeas"></div></div></div>
+  </div>
+
+  <div class="c"><header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
+    <div class="b">${srcBar(['labor','social'],'ข้อมูลการว่างงานอ้างอิงการสำรวจภาวะการทำงานของประชากร ซึ่งเก็บข้อมูลรายไตรมาสและประกาศผลหลังสิ้นไตรมาสประมาณ 45 วัน')}</div></div>`;
+
+  /* KPI */
+  document.getElementById('lbKpi').innerHTML=[
+    kpiCard({icon:'people',color:cv('--coral'),label:'จำนวนผู้ว่างงาน',value:f(last.ue,0),unit:'คน',
+      chip:chip(pctc(last.ue,yoy.ue)),sub:'เทียบ '+QL(yoy)+' ('+f(yoy.ue,0)+' คน)',
+      tip:'จำนวนผู้ว่างงาน|ผู้ที่ไม่มีงานทำและพร้อมทำงานในสัปดาห์สำรวจ|ที่มา: การสำรวจภาวะการทำงานของประชากร '+L.latest}),
+    kpiCard({icon:'chart',color:cv('--gold'),label:'อัตราการว่างงาน',value:last.ur.toFixed(2),unit:'%',
+      chip:chip(last.ur-yoy.ur),sub:'ประเทศ '+L.compare.th+'% · ภาคอีสาน '+L.compare.ne+'%',
+      tip:'อัตราการว่างงาน|จำนวนผู้ว่างงาน หารด้วย กำลังแรงงานรวม|ต่ำกว่า 2% ถือว่าอยู่ในระดับปกติของประเทศไทย'}),
+    kpiCard({icon:'brief',color:cv('--brand'),label:'ผู้มีงานทำ',value:f(last.emp,0),unit:'คน',
+      chip:chip(pctc(last.emp,yoy.emp)),sub:'จากกำลังแรงงาน '+f(last.force,0)+' คน'}),
+    kpiCard({icon:'coin',color:cv('--plum'),label:'ผู้ประกันตน มาตรา 33',value:f(DB.social.m33[35].v,0),unit:'คน',
+      chip:chip(pctc(DB.social.m33[35].v,DB.social.m33[23].v)),sub:'ม.40 '+f(DB.social.m40[35].v,0)+' คน'})
+  ].join('');
+
+  /* กราฟหลัก */
+  mk('cUe',{data:{labels:Q.map(QL),datasets:[
+    {type:'bar',label:'จำนวนผู้ว่างงาน (คน)',data:Q.map(x=>x.ue),
+      backgroundColor:Q.map(x=>x.n===1?cv('--coral'):cv('--brand')),borderRadius:6,barPercentage:.68,yAxisID:'y',order:2},
+    {type:'line',label:'อัตราการว่างงาน (%)',data:Q.map(x=>x.ur),borderColor:cv('--gold'),borderWidth:2.6,
+      pointRadius:4,pointBackgroundColor:cv('--gold'),pointBorderColor:'#fff',pointBorderWidth:1.6,tension:.3,yAxisID:'y2',order:1}]},
+    options:{interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom',labels:{padding:12}},
+        tooltip:{callbacks:{
+          footer:(items)=>{const i=items[0].dataIndex;const p=ueYoY(i);
+            return p==null?'':(p>0?'เพิ่มขึ้น ':'ลดลง ')+Math.abs(p).toFixed(1)+'% เทียบไตรมาสเดียวกันปีก่อน'}}}},
+      scales:{x:ax({grid:{display:false},ticks:{font:{size:9.5}}}),
+        y:ax({title:{display:true,text:'คน',color:cv('--faint'),font:{size:10}},ticks:{callback:v=>f(v,0)}}),
+        y2:{position:'right',grid:{display:false},border:{display:false},
+          title:{display:true,text:'%',color:cv('--faint'),font:{size:10}},ticks:{callback:v=>v.toFixed(2)}}}}});
+
+  document.getElementById('tUe').innerHTML=`<thead><tr><th>ไตรมาส</th><th class="r">กำลังแรงงาน</th>
+    <th class="r">ผู้มีงานทำ</th><th class="r">ผู้ว่างงาน</th><th class="r">อัตราว่างงาน (%)</th><th class="r">%YoY ผู้ว่างงาน</th></tr></thead><tbody>`+
+    Q.map((x,i)=>`<tr><td>${QL(x)}</td>${ec('labor.quarters.'+i+'.force',f(x.force,0),0)}
+      ${ec('labor.quarters.'+i+'.emp',f(x.emp,0),0)}${ec('labor.quarters.'+i+'.ue',f(x.ue,0),0)}
+      ${ec('labor.quarters.'+i+'.ur',x.ur.toFixed(2),2)}
+      <td class="r">${ueYoY(i)==null?'—':chip(ueYoY(i))}</td></tr>`).join('')+'</tbody>';
+
+  const mx=Math.max(...Q.map(x=>x.ue));
+  const q1=Q.filter(x=>x.n===1);
+  document.getElementById('lbInsight').innerHTML=
+    `แท่งสีแดงคือไตรมาสที่ 1 ของทุกปี ซึ่งเป็นช่วงหลังฤดูเก็บเกี่ยว แรงงานภาคเกษตรว่างงานตามฤดูกาล
+     ค่าเฉลี่ยผู้ว่างงานไตรมาส 1 อยู่ที่ ${f(q1.reduce((a,b)=>a+b.ue,0)/q1.length,0)} คน
+     สูงกว่าไตรมาสอื่นอย่างชัดเจน จังหวัดจึงควรวางมาตรการจ้างงานระยะสั้นและฝึกอาชีพให้ตรงกับช่วงเวลานี้`;
+
+  /* เทียบระดับ */
+  const cmp=[['จังหวัดหนองบัวลำภู',L.compare.prov,cv('--brand')],
+             ['ภาคตะวันออกเฉียงเหนือ',L.compare.ne,cv('--gold')],
+             ['ทั้งประเทศ',L.compare.th,cv('--blue')]];
+  document.getElementById('lbCmp').innerHTML=cmp.map(r=>`<div class="barrow">
+    <span class="nm">${r[0]}</span><span class="tr"><i style="width:${(r[1]/2*100).toFixed(0)}%;background:${r[2]}"></i></span>
+    <span class="vv" style="color:${r[2]}">${r[1].toFixed(2)}%</span></div>`).join('');
+  mk('cCmp',{type:'bar',data:{labels:cmp.map(r=>r[0]),datasets:[{data:cmp.map(r=>r[1]),
+    backgroundColor:cmp.map(r=>r[2]),borderRadius:6,barPercentage:.6}]},
+    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'อัตราการว่างงาน '+c.raw.toFixed(2)+'%'}}},
+      scales:{x:ax({grid:{display:false},ticks:{font:{size:10}}}),y:ax({ticks:{callback:v=>v+'%'}})}}});
+
+  /* สาขาเศรษฐกิจ */
+  mk('cSec',{type:'doughnut',data:{labels:L.sectors.map(r=>r[0]),
+    datasets:[{data:L.sectors.map(r=>r[1]),backgroundColor:PAL(),borderColor:cv('--card'),borderWidth:3}]},
+    options:{cutout:'56%',plugins:{legend:{position:'bottom',labels:{padding:8,font:{size:10}}},
+      tooltip:{callbacks:{label:c=>c.label+' '+c.raw+'%',
+        footer:items=>'ราว '+f(last.emp*items[0].raw/100,0)+' คน'}}}}});
+  document.getElementById('tSec').innerHTML=`<thead><tr><th>สาขาเศรษฐกิจ</th><th class="r">สัดส่วน</th><th class="r">ประมาณการ (คน)</th></tr></thead><tbody>`+
+    L.sectors.map(r=>`<tr><td>${r[0]}</td><td class="r">${r[1].toFixed(1)}%</td><td class="r">${f(last.emp*r[1]/100,0)}</td></tr>`).join('')+
+    `</tbody><tfoot><tr><td>รวม</td><td class="r">100.0%</td><td class="r">${f(last.emp,0)}</td></tr></tfoot>`;
+
+  /* การศึกษา */
+  const mxe=Math.max(...L.edu.map(r=>r[1]));
+  document.getElementById('lbEdu').innerHTML=L.edu.map((r,i)=>`<div class="barrow">
+    <span class="nm">${r[0]}</span><span class="tr"><i style="width:${(r[1]/mxe*100).toFixed(0)}%;background:${PAL()[i%7]}"></i></span>
+    <span class="vv">${r[1].toFixed(1)}%</span></div>`).join('');
+
+  /* ในระบบ vs นอกระบบ */
+  mk('cInf',{type:'doughnut',data:{labels:['แรงงานนอกระบบ','แรงงานในระบบ'],
+    datasets:[{data:[L.informal.rate,+(100-L.informal.rate).toFixed(1)],
+      backgroundColor:[cv('--coral'),cv('--brand')],borderColor:cv('--card'),borderWidth:3}]},
+    options:{cutout:'64%',plugins:{legend:{position:'bottom',labels:{padding:11}},
+      tooltip:{callbacks:{label:c=>c.label+' '+c.raw+'%',
+        footer:items=>'ราว '+f(last.emp*items[0].raw/100,0)+' คน'}}}}});
+
+  /* ประกันสังคม */
+  mk('cSso',{type:'line',data:{labels:MONTHS.map(m=>m.label),datasets:[
+    {label:'มาตรา 33 (คน)',data:DB.social.m33.map(x=>x.v),borderColor:cv('--brand'),backgroundColor:cv('--brand')+'22',
+      borderWidth:2.3,pointRadius:0,tension:.32,fill:true,yAxisID:'y'},
+    {label:'มาตรา 40 (คน)',data:DB.social.m40.map(x=>x.v),borderColor:cv('--plum'),borderWidth:1.9,pointRadius:0,tension:.32,yAxisID:'y2'}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:11}}},
+      scales:{x:ax({grid:{display:false},ticks:{maxTicksLimit:12,font:{size:9.5}}}),
+        y:ax({ticks:{callback:v=>f(v,0)}}),
+        y2:{position:'right',grid:{display:false},border:{display:false},ticks:{callback:v=>f(v,0),font:{size:9.5}}}}}});
+
+  /* ฤดูกาล */
+  const byQ=[1,2,3,4].map(n=>{const g=Q.filter(x=>x.n===n);
+    return {n,ue:g.reduce((a,b)=>a+b.ue,0)/g.length,ur:g.reduce((a,b)=>a+b.ur,0)/g.length}});
+  mk('cSeas',{type:'bar',data:{labels:byQ.map(x=>'ไตรมาส '+x.n),
+    datasets:[{label:'ผู้ว่างงานเฉลี่ย (คน)',data:byQ.map(x=>Math.round(x.ue)),
+      backgroundColor:byQ.map(x=>x.n===1?cv('--coral'):cv('--brand')+'cc'),borderRadius:7,barPercentage:.62}]},
+    options:{plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>'เฉลี่ย '+f(c.raw,0)+' คน',
+        footer:items=>'อัตราว่างงานเฉลี่ย '+byQ[items[0].dataIndex].ur.toFixed(2)+'%'}}},
+      scales:{x:ax({grid:{display:false}}),y:ax({ticks:{callback:v=>f(v,0)}})}}});
+  const hi=byQ.slice().sort((a,b)=>b.ue-a.ue)[0], lo=byQ.slice().sort((a,b)=>a.ue-b.ue)[0];
+  document.getElementById('lbSeas').textContent=
+    `ไตรมาส ${hi.n} มีผู้ว่างงานเฉลี่ยสูงสุด ${Math.round(hi.ue).toLocaleString('th-TH')} คน `+
+    `ขณะที่ไตรมาส ${lo.n} ต่ำสุด ${Math.round(lo.ue).toLocaleString('th-TH')} คน `+
+    `ต่างกัน ${Math.round(hi.ue-lo.ue).toLocaleString('th-TH')} คน สะท้อนว่าการว่างงานของจังหวัดเป็นเรื่องฤดูกาลมากกว่าเชิงโครงสร้าง`;
+
+  applyEditMode();
+}
+DS.init('labor',renderLabor);
 </script>
 </body>
 </html>

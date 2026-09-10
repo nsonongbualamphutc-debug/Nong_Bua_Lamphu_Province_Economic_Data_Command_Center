@@ -556,3 +556,26 @@ body.cover .ph{position:static}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 #toast.bad{background:var(--bad)}
 @media print{#toast{display:none}}
+
+/* ── แถบแหล่งที่มา ── */
+.srcbar{display:flex;gap:10px;align-items:flex-start;margin-top:11px;padding:11px 13px;border-radius:11px;
+  background:var(--card2);border:1px solid var(--line);font-size:11.5px;color:var(--dim);line-height:1.7}
+.srcbar>svg{flex:none;stroke:var(--brand);margin-top:2px}
+.srcbar .src1{margin-bottom:5px}
+.srcbar .src1:last-child{margin-bottom:0}
+.srcbar b{color:var(--ink);font-weight:600}
+.srcbar span{display:block;font-size:10.5px;color:var(--faint)}
+/* ── ปุ่มสลับกราฟ/ตาราง ── */
+.segs.vt{padding:2px}
+.segs.vt button{padding:4px 11px;font-size:11.5px}
+/* ── tooltip: บรรทัดท้าย ── */
+#chtip .cht-f{margin-top:7px;padding-top:6px;border-top:1px dashed var(--line2);font-size:11px;color:var(--faint);line-height:1.55}
+/* ── แผงตัวเลขเด่น ── */
+.bignum{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.bignum .v{font-family:var(--fn);font-size:46px;font-weight:600;letter-spacing:-2px;line-height:1}
+.bignum .u{font-size:13px;color:var(--faint);padding-bottom:6px}
+.barrow{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:12.5px}
+.barrow .nm{width:38%;color:var(--dim)}
+.barrow .tr{flex:1;height:9px;border-radius:9px;background:var(--line2);overflow:hidden}
+.barrow .tr i{display:block;height:100%;border-radius:9px}
+.barrow .vv{font-family:var(--fn);font-weight:600;min-width:56px;text-align:right}

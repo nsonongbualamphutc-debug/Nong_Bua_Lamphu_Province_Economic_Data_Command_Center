@@ -105,7 +105,16 @@ function drawGauges(){
 
 
 window.onSeg=function(w,btn){ if(w.id==='fiscalSeg'){fiscalMode=btn.dataset.m;renderFiscal();} };
-DS.init('fiscal',renderFiscal);
+DS.init('fiscal',function(){
+  renderFiscal();
+  const v=document.getElementById('v-fiscal');
+  if(v&&!v.querySelector('.srcbar')){
+    const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
+    d.innerHTML='<header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
+      srcBar(['spend'],'ข้อมูล ณ 4 กันยายน 2569 · รายงานครั้งที่ 178/2569 · เผยแพร่รายสัปดาห์')+'</div>';
+    v.appendChild(d);
+  }
+});
 </script>
 </body>
 </html>

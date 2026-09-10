@@ -290,9 +290,16 @@ body.signed .ftr a{color:var(--blue)}
       </div>
       <div class="toolbar">
         <div class="fld"><label>รอบข้อมูล</label>
-          <select id="freq"><option value="M">รายเดือน</option><option value="Y">รายปี</option></select></div>
+          <select id="freq"><option value="M">รายเดือน</option><option value="Q">รายไตรมาส</option><option value="Y">รายปี</option></select></div>
         <div class="fld"><label>ปี พ.ศ.</label><select id="year"></select></div>
         <div class="fld" id="fldMonth"><label>เดือน</label><select id="month"></select></div>
+        <div class="fld" id="fldQuarter" style="display:none"><label>ไตรมาส</label>
+          <select id="quarter">
+            <option value="1">ไตรมาส 1 (ม.ค. – มี.ค.)</option>
+            <option value="2">ไตรมาส 2 (เม.ย. – มิ.ย.)</option>
+            <option value="3">ไตรมาส 3 (ก.ค. – ก.ย.)</option>
+            <option value="4">ไตรมาส 4 (ต.ค. – ธ.ค.)</option>
+          </select></div>
         <div class="fld" id="fldDist" style="display:none"><label>อำเภอ</label><select id="dist"></select></div>
         <div class="sp"></div>
         <button class="btn" id="btnLoad">โหลดค่าที่บันทึกไว้</button>
@@ -348,8 +355,11 @@ const DOMAINS=[
           ['gaso','เบนซิน/แก๊สโซฮอล์','ล้านลิตร']]},
  {id:'car',no:'การบริโภค',name:'กำลังซื้อครัวเรือน',head:'รถจดทะเบียนใหม่ (สนง.ขนส่งจังหวัด)',
   series:[['moto','รถจักรยานยนต์','คัน'],['car','รถยนต์นั่งส่วนบุคคล','คัน'],['comm','รถเพื่อการพาณิชย์','คัน']]},
- {id:'labor',no:'แรงงาน',name:'ภาวะการมีงานทำ',head:'กำลังแรงงานและอัตราการว่างงาน (สนง.แรงงานจังหวัด · สนง.สถิติจังหวัด)',
-  series:[['emp','ผู้มีงานทำ','คน'],['ur','อัตราการว่างงาน','%'],['force','กำลังแรงงานรวม','คน'],['informal','แรงงานนอกระบบ','คน']]},
+ {id:'labor',no:'แรงงาน · รายไตรมาส',name:'ภาวะการมีงานทำและการว่างงาน',
+  head:'การสำรวจภาวะการทำงานของประชากร — กรอกเป็นรายไตรมาส (สนง.สถิติจังหวัด ร่วมกับ สนง.แรงงานจังหวัด)',
+  series:[['ue','จำนวนผู้ว่างงาน','คน'],['ur','อัตราการว่างงาน','%'],
+          ['emp','ผู้มีงานทำ','คน'],['force','กำลังแรงงานรวม','คน'],
+          ['informal','แรงงานนอกระบบ','คน']]},
  {id:'social',no:'แรงงาน',name:'ผู้ประกันตน',head:'ผู้ประกันตนในระบบประกันสังคม (สนง.ประกันสังคมจังหวัด)',
   series:[['m33','ผู้ประกันตน มาตรา 33','คน'],['m40','ผู้ประกันตน มาตรา 40','คน'],['m39','ผู้ประกันตน มาตรา 39','คน'],['estab','สถานประกอบการในระบบ','แห่ง']]},
  {id:'tour',no:'ท่องเที่ยว',name:'ภาคการท่องเที่ยว',head:'ผู้เยี่ยมเยือน รายได้ และอัตราการเข้าพัก (สนง.การท่องเที่ยวและกีฬาจังหวัด)',
@@ -522,7 +532,11 @@ function buildPeriod(){
   const m=now.getMonth();  // เดือนก่อนหน้าเป็นค่าเริ่มต้น
   $('#month').innerHTML=TH_M.map((n,i)=>`<option value="${i+1}"${i===(m===0?11:m-1)?' selected':''}>${n}</option>`).join('');
   $('#dist').innerHTML=DISTRICTS.map(d=>`<option value="${d[0]}">อ.${d[1]}</option>`).join('');
-  $('#freq').onchange=()=>{$('#fldMonth').style.display=$('#freq').value==='M'?'flex':'none'};
+  $('#freq').onchange=()=>{
+    const v=$('#freq').value;
+    $('#fldMonth').style.display=v==='M'?'flex':'none';
+    $('#fldQuarter').style.display=v==='Q'?'flex':'none';
+  };
   $$('#tabs button').forEach(b=>b.onclick=()=>{
     $$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
     S.scope=b.dataset.scope;
@@ -530,8 +544,10 @@ function buildPeriod(){
   });
 }
 function periodStr(){
-  const y=$('#year').value;
-  return $('#freq').value==='M' ? y+'-'+String($('#month').value).padStart(2,'0') : y;
+  const y=$('#year').value, v=$('#freq').value;
+  if(v==='M')return y+'-'+String($('#month').value).padStart(2,'0');
+  if(v==='Q')return y+'-Q'+$('#quarter').value;
+  return y;
 }
 function areaStr(){ return S.scope==='DIST' ? $('#dist').value : 'PROV' }
 
@@ -594,7 +610,10 @@ $('#btnLoad').onclick=async()=>{
 async function loadPrev(){
   const y=+$('#year').value, m=+$('#month').value;
   let py=y,pm=m-1; if(pm<1){pm=12;py=y-1}
-  const per=$('#freq').value==='M'?py+'-'+String(pm).padStart(2,'0'):String(y-1);
+  let per;
+  if($('#freq').value==='M')per=py+'-'+String(pm).padStart(2,'0');
+  else if($('#freq').value==='Q'){let qq=+$('#quarter').value-1,qy=y;if(qq<1){qq=4;qy=y-1}per=qy+'-Q'+qq}
+  else per=String(y-1);
   try{
     const r=await jsonp({action:'mydata',token:S.token,period:per});
     S.prev={};
@@ -647,19 +666,21 @@ $('#btnPin').onclick=async()=>{
 
 /* ─────────── นำเข้าจาก Excel ─────────── */
 let XLITEMS=[];
-function xlHeader(){return ['code','ตัวชี้วัด','หน่วย','รหัสพื้นที่','พื้นที่','ปี พ.ศ.',...TH_M]}
+const TH_Q=['ไตรมาส 1','ไตรมาส 2','ไตรมาส 3','ไตรมาส 4'];
+function xlCols(){return $('#freq').value==='Q'?TH_Q:TH_M}
+function xlHeader(){return ['code','ตัวชี้วัด','หน่วย','รหัสพื้นที่','พื้นที่','ปี พ.ศ.',...xlCols()]}
 function xlRows(){
   const rows=[], areas=[['PROV','ระดับจังหวัด'],...DISTRICTS.map(d=>[d[0],'อ.'+d[1]])];
   const y=$('#year').value;
   activeDomains().forEach(d=>d.series.forEach(s=>{
-    areas.forEach(a=>rows.push([d.id+'|'+s[0], d.name+' — '+s[1], s[2], a[0], a[1], y, '','','','','','','','','','','','']));
+    areas.forEach(a=>rows.push([d.id+'|'+s[0], d.name+' — '+s[1], s[2], a[0], a[1], y].concat(xlCols().map(()=>''))));
   }));
   return rows;
 }
 function buildTemplate(){
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.aoa_to_sheet([xlHeader(),...xlRows()]);
-  ws['!cols']=[{wch:16},{wch:42},{wch:16},{wch:11},{wch:20},{wch:9},...TH_M.map(()=>({wch:11}))];
+  ws['!cols']=[{wch:16},{wch:42},{wch:16},{wch:11},{wch:20},{wch:9},...xlCols().map(()=>({wch:12}))];
   ws['!freeze']={xSplit:2,ySplit:1};
   XLSX.utils.book_append_sheet(wb,ws,'กรอกข้อมูล');
   const help=[['วิธีกรอกแบบฟอร์ม'],[''],
@@ -681,7 +702,9 @@ function parseWorkbook(wb){
   let hi=aoa.findIndex(r=>String(r[0]).trim().toLowerCase()==='code');
   if(hi<0)throw new Error('ไม่พบหัวตาราง (คอลัมน์แรกต้องเป็น code) กรุณาใช้แบบฟอร์มที่ระบบสร้างให้');
   const head=aoa[hi].map(x=>String(x).trim());
-  const mCols=TH_M.map(m=>head.indexOf(m));
+  const isQ=TH_Q.some(q=>head.indexOf(q)>=0);
+  const cols=isQ?TH_Q:TH_M;
+  const mCols=cols.map(m=>head.indexOf(m));
   const iArea=head.indexOf('รหัสพื้นที่'), iYear=head.indexOf('ปี พ.ศ.'), iUnit=head.indexOf('หน่วย');
   const known={};activeDomains().forEach(d=>d.series.forEach(s=>known[d.id+'|'+s[0]]={dom:d.id,key:s[0],label:d.name+' — '+s[1],unit:s[2]}));
   const items=[],bad=[];
@@ -697,9 +720,9 @@ function parseWorkbook(wb){
       const raw=row[ci];
       if(raw===''||raw===null||raw===undefined)return;
       const v=Number(String(raw).replace(/[, ]/g,''));
-      if(isNaN(v)){bad.push('แถว '+(r+1)+' เดือน '+TH_M[mi]+': ไม่ใช่ตัวเลข');return}
+      if(isNaN(v)){bad.push('แถว '+(r+1)+' '+cols[mi]+': ไม่ใช่ตัวเลข');return}
       items.push({domain:meta.dom,key:meta.key,label:meta.label,
-        period:year+'-'+String(mi+1).padStart(2,'0'),area,value:v,
+        period:year+(isQ?('-Q'+(mi+1)):('-'+String(mi+1).padStart(2,'0'))),area,value:v,
         unit:String(row[iUnit]||meta.unit),agency:S.agency.code});
     });
   }
@@ -711,7 +734,7 @@ function showPreview(items,bad){
   const areaName=c=>c==='PROV'?'จังหวัด':('อ.'+((DISTRICTS.find(d=>d[0]===c)||[,c])[1]));
   const head='<tr><th>ตัวชี้วัด</th><th>พื้นที่</th><th>งวด</th><th style="text-align:right">ค่า</th></tr>';
   const body=items.slice(0,200).map(i=>`<tr><td>${i.label}</td><td>${areaName(i.area)}</td>
-    <td>${TH_M[+i.period.slice(-2)-1]} ${i.period.slice(0,4)}</td>
+    <td>${/Q/.test(i.period)?('ไตรมาส '+i.period.slice(-1)):TH_M[+i.period.slice(-2)-1]} ${i.period.slice(0,4)}</td>
     <td style="text-align:right;font-family:var(--fn)">${Number(i.value).toLocaleString('th-TH')}</td></tr>`).join('');
   $('#xlPreview').innerHTML=`
     <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:10px;font-size:12.5px">

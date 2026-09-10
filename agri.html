@@ -294,6 +294,13 @@ const AGRI_SUB={
 };
 DS.init('agri',function(){
   renderAgri();
+  const v=document.getElementById('v-agri');
+  if(v&&!v.querySelector('.srcbar')){
+    const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
+    d.innerHTML='<header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
+      srcBar(['crop'],'ภาวะการผลิตพืชอายุสั้น ณ 8 ก.ย. 2569 · ไม้ผลเศรษฐกิจ ณ มิ.ย. 2569 · ฐานข้อมูลการเกษตร ณ ก.ค. 2569')+'</div>';
+    v.appendChild(d);
+  }
   Object.keys(AGRI_SUB).forEach(function(k){
     bannerInto(document.getElementById('agri-'+k),'assets/'+AGRI_IMG[k]+'.jpg',AGRI_SUB[k][0],AGRI_SUB[k][1]);
   });

@@ -107,6 +107,10 @@ function renderTradePage(){
   const pr=document.createElement('div'); pr.id='trade-price'; pr.className='hide';
   pr.innerHTML=priceHtml(); v.appendChild(pr);
   bannerInto(pr,'assets/t-price.jpg','ราคาสินค้าเกษตรและอุปโภคบริโภครายสัปดาห์','สำนักงานพาณิชย์จังหวัดหนองบัวลำภู · ข้อมูล ณ 8 กันยายน 2569');
+  const sb=document.createElement('div');sb.className='c';sb.style.marginTop='13px';
+  sb.innerHTML='<header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
+    srcBar(['cpi','credit'],'ราคาสินค้าสำรวจรายสัปดาห์ ณ ลานรับซื้อและท้องตลาดทั่วไป · ข้อมูล ณ 8 กันยายน 2569')+'</div>';
+  pr.appendChild(sb);
   renderPriceChart(); applyEditMode();
 }
 window.onSeg=function(w,btn){

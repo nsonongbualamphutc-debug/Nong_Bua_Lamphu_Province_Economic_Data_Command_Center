@@ -92,6 +92,13 @@ function renderGpp(){
 
 DS.init('gpp',function(){
   renderGpp();
+  const v=document.getElementById('v-gpp');
+  if(v&&!v.querySelector('.srcbar')){
+    const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
+    d.innerHTML='<header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
+      srcBar(['gpp'],'GPP ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี · ดัชนี NBL–MEI คำนวณโดยสำนักงานสถิติจังหวัดหนองบัวลำภู')+'</div>';
+    v.appendChild(d);
+  }
   var b=document.getElementById('btnGppEdit');
   if(b)b.onclick=function(){if(!EDIT)toggleEdit()};
 });
