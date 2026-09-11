@@ -27,11 +27,16 @@
     <div class="c"><header><h3 id="areaTitle">แผนที่จังหวัดหนองบัวลำภู</h3><span class="u" id="areaUnit"></span></header>
       <div class="b">
         <div class="mapwrap">
-          <div id="map"></div>
+          <div id="tilemap" class="tilemap"></div>
+          <div id="map" class="hide"></div>
           <div class="mapbar">
             <div class="crumbm" id="crumbMap"></div>
             <button id="btnBackProv" class="hide"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>กลับทั้งจังหวัด</button>
             <button id="btnBase"><svg viewBox="0 0 24 24"><path d="M12 3.5 3 8l9 4.5L21 8z"/><path d="M3 12.5 12 17l9-4.5M3 16.5 12 21l9-4.5"/></svg>ภาพถ่ายพื้นหลัง</button>
+          </div>
+          <div class="mapmode">
+            <button id="btnTile" class="on">แผนผัง</button>
+            <button id="btnReal" disabled>ขอบเขตจริง</button>
           </div>
           <div class="scalebar" id="scaleBar"></div>
           <div class="maploading hide" id="mapLoad">กำลังโหลดขอบเขตตำบล…</div>
@@ -70,6 +75,16 @@ const GEO_SRC=[
 ];
 const PRO='39', PRONAME='หนองบัวลำภู';
 /* โหลดไฟล์จากหลายแหล่ง เผื่อแหล่งใดล่ม แล้วกรองเฉพาะจังหวัดหนองบัวลำภู */
+/* โหลดไฟล์ในระบบก่อน ถ้าไม่มีจึงไปดึงจากภายนอก */
+async function loadLocal(path){
+  try{
+    const r=await fetch(path);
+    if(!r.ok)return null;
+    const j=await r.json();
+    if(!j||!j.features||!j.features.length)return null;
+    return {ok:true,features:j.features,base:'ในระบบ'};
+  }catch(e){return null}
+}
 async function loadGeo(file){
   let lastErr='';
   for(const base of GEO_SRC){
@@ -141,6 +156,88 @@ function moveTipM(ev){
   e.style.left=x+'px';e.style.top=y+'px'}
 function hideTip(){mtip().classList.remove('on')}
 
+
+/* ══════════ แผนผังจังหวัดฝังในระบบ ══════════
+   วางตำแหน่งตามภูมิศาสตร์จริงโดยประมาณ ใช้เมื่อไฟล์ขอบเขตจากภายนอกโหลดไม่ได้
+   หรือเมื่อผู้ใช้ต้องการมุมมองที่อ่านตัวเลขง่ายกว่าแผนที่จริง */
+const TILE_POS={
+  '3906':{x:.20,y:.14,label:'นาวัง'},
+  '3905':{x:.56,y:.08,label:'สุวรรณคูหา'},
+  '3902':{x:.34,y:.42,label:'นากลาง'},
+  '3901':{x:.72,y:.46,label:'เมืองหนองบัวลำภู'},
+  '3904':{x:.28,y:.78,label:'ศรีบุญเรือง'},
+  '3903':{x:.76,y:.82,label:'โนนสัง'}
+};
+function isLight(hex){
+  const p=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16));
+  const [r,g,b]=p(hex);
+  return (r*299+g*587+b*114)/1000>165;
+}
+function renderTileMap(){
+  const el=document.getElementById('tilemap'); if(!el)return;
+  const o=curOpt(),vals=curVals();
+  const arr=Object.values(vals),mn=Math.min(...arr),mx=Math.max(...arr),r=(mx-mn)||1;
+  const tot=arr.reduce((a,b)=>a+b,0)||1;
+  const W=1000,H=620,RW=232,RH=132;
+  let g=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+    <defs><filter id="tsh" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#0b3c32" flood-opacity=".28"/></filter></defs>`;
+  /* เส้นเชื่อมแสดงการติดกันของอำเภอโดยคร่าว */
+  const link=[['3906','3905'],['3906','3902'],['3905','3902'],['3902','3901'],
+              ['3902','3904'],['3901','3903'],['3904','3903'],['3904','3901']];
+  link.forEach(([a,b])=>{
+    const A=TILE_POS[a],B=TILE_POS[b];
+    g+=`<line x1="${A.x*W}" y1="${A.y*H+RH/2}" x2="${B.x*W}" y2="${B.y*H+RH/2}"
+      stroke="${cv('--line')}" stroke-width="2" stroke-dasharray="5 6"/>`;
+  });
+  DISTRICTS.forEach(d=>{
+    const p=TILE_POS[d.code]; if(!p)return;
+    const v=vals[d.code], t=(v-mn)/r, col=ramp(t);
+    const x=p.x*W-RW/2, y=p.y*H;
+    const rk=DISTRICTS.slice().sort((a,b)=>vals[b.code]-vals[a.code]).findIndex(z=>z.code===d.code)+1;
+    g+=`<g class="tile${isLight(col)?' light':''}${DRILL&&DRILL.code===d.code?' sel':''}" data-tile="${d.code}"
+        data-v="${v}" data-rank="${rk}" data-share="${(v/tot*100).toFixed(1)}">
+      <rect class="tsh" x="${x}" y="${y}" width="${RW}" height="${RH}" rx="22" fill="${col}" filter="url(#tsh)"/>
+      <rect class="tbody" x="${x}" y="${y}" width="${RW}" height="${RH}" rx="22" fill="${col}"
+        stroke="#fff" stroke-width="2.5"/>
+      <text class="tn" x="${x+RW/2}" y="${y+38}">${p.label}</text>
+      <text class="tv" x="${x+RW/2}" y="${y+78}">${f_(v,o.dec)}</text>
+      <text class="tu" x="${x+RW/2}" y="${y+102}">${o.unit} · อันดับ ${rk}</text>
+    </g>`;
+  });
+  g+=`<text x="${W-14}" y="${H-12}" text-anchor="end" font-size="12" fill="${cv('--faint')}">
+    แผนผังแสดงตำแหน่งอำเภอโดยประมาณ ไม่ใช่ขอบเขตตามมาตราส่วน</text></svg>`;
+  el.innerHTML=g;
+  el.querySelectorAll('[data-tile]').forEach(t=>{
+    const dt=DISTRICTS.find(x=>x.code===t.dataset.tile);
+    t.addEventListener('mouseenter',e=>showTip(e,
+      `<div class="mt"><i style="background:${ramp((vals[dt.code]-mn)/r)}"></i>อำเภอ${dt.name}</div>
+       <div class="mv">${f_(vals[dt.code],o.dec)}<small>${o.unit}</small></div>
+       <div class="mr"><span>อันดับ <b>${t.dataset.rank}</b> จาก 6</span><span>สัดส่วน <b>${t.dataset.share}%</b></span></div>
+       <div class="mgo">คลิกเพื่อเลือกอำเภอนี้ →</div>`));
+    t.addEventListener('mousemove',moveTipM);
+    t.addEventListener('mouseleave',hideTip);
+    t.addEventListener('click',()=>{hideTip();DRILL=dt;renderCrumb();renderList();renderTileMap();
+      document.getElementById('mapNote').innerHTML=
+        `เลือก <b>อำเภอ${dt.name}</b> · ${curOpt().label} <b>${f_(vals[dt.code],o.dec)} ${o.unit}</b><br>
+         ${REAL_OK?'สลับไปโหมดขอบเขตจริงเพื่อเจาะลงระดับตำบล':'ระดับตำบลดูได้เมื่อขอบเขตจริงโหลดสำเร็จ'}`;
+      document.getElementById('btnBackProv').classList.remove('hide');});
+  });
+  document.getElementById('scaleBar').innerHTML=
+    `<div class="ttl">${o.label}</div><div style="font-size:10px">หน่วย: ${o.unit}</div>
+     <div class="bar"></div><div class="ends"><span>${f_(mn,o.dec)}</span><span>${f_(mx,o.dec)}</span></div>`;
+}
+let REAL_OK=false, MODE='tile';
+function setMode(m){
+  MODE=m;
+  document.getElementById('tilemap').classList.toggle('hide',m!=='tile');
+  document.getElementById('map').classList.toggle('hide',m!=='real');
+  document.getElementById('btnTile').classList.toggle('on',m==='tile');
+  document.getElementById('btnReal').classList.toggle('on',m==='real');
+  if(m==='tile')renderTileMap();
+  else if(MAP){setTimeout(()=>{MAP.invalidateSize();if(GEO&&!DRILL)paintProvince()},60)}
+}
+
 /* ══ วาดแผนที่ระดับอำเภอ ══ */
 function paintProvince(){
   if(!MAP||!GEO)return;
@@ -196,8 +293,8 @@ async function drillTo(dt,feat){
 
   if(!TGEO){
     document.getElementById('mapLoad').classList.remove('hide');
-    const res=await loadGeo('subdistricts.geojson');
-    TGEO={type:'FeatureCollection',features:res.features||[]};
+    const res=await loadLocal('assets/nbl-tambon.geojson')||await loadGeo('subdistricts.geojson');
+    TGEO={type:'FeatureCollection',features:(res&&res.features)||[]};
     document.getElementById('mapLoad').classList.add('hide');
   }
   if(TLAYER){MAP.removeLayer(TLAYER);TLAYER=null}
@@ -236,6 +333,7 @@ function hashStr(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>
 
 function backProvince(){
   DRILL=null;
+  renderTileMap();
   document.getElementById('btnBackProv').classList.add('hide');
   if(TLAYER){MAP.removeLayer(TLAYER);TLAYER=null}
   paintProvince();renderCrumb();
@@ -337,20 +435,27 @@ function renderArea(){
     });
     document.getElementById('mapLoad').textContent='กำลังโหลดขอบเขตอำเภอ…';
     document.getElementById('mapLoad').classList.remove('hide');
-    loadGeo('amphoes.geojson').then(res=>{
+    loadLocal('assets/nbl-amphoe.geojson').then(r=>r||loadGeo('amphoes.geojson')).then(res=>{
       document.getElementById('mapLoad').classList.add('hide');
-      if(res.ok){
+      if(res&&res.ok){
         GEO={type:'FeatureCollection',features:res.features};
-        paintProvince();
+        REAL_OK=true;
+        const br=document.getElementById('btnReal'); if(br)br.disabled=false;
+        setMode('real');
         document.getElementById('mapNote').innerHTML=defaultNote();
       }else{
         document.getElementById('mapNote').innerHTML=
-          '<b style="color:var(--bad)">โหลดขอบเขตอำเภอไม่สำเร็จ</b> — '+(res.error||'')+
-          '<br>ตรวจการเชื่อมต่ออินเทอร์เน็ต หรือลองรีเฟรชหน้าอีกครั้ง ตัวเลขและกราฟด้านล่างยังใช้งานได้ตามปกติ';
+          '<b style="color:var(--warn)">ยังไม่พบไฟล์ขอบเขตจริง</b> — กำลังแสดงเป็นแผนผังจังหวัดแทน '+
+          'อัปโหลด <code>assets/nbl-amphoe.geojson</code> และ <code>assets/nbl-tambon.geojson</code> เพื่อเปิดแผนที่ขอบเขตจริง'+
+          (res&&res.error?'<br><span style="color:var(--faint)">รายละเอียด: '+res.error+'</span>':'');
       }
     });
   }else{MAP.invalidateSize();if(GEO&&!DRILL)paintProvince()}
   refreshSide();
+  renderTileMap();
+  const bt=document.getElementById('btnTile'), br=document.getElementById('btnReal');
+  if(bt&&!bt.dataset.b){bt.dataset.b='1';bt.onclick=()=>setMode('tile')}
+  if(br&&!br.dataset.b){br.dataset.b='1';br.onclick=()=>{if(REAL_OK)setMode('real')}}
   document.getElementById('mapNote').innerHTML=defaultNote();
   renderCrumb();
 }
@@ -367,7 +472,7 @@ function toggleBase(){
   }
   document.getElementById('btnBase').style.color=BASEON?cv('--brand'):'';
 }
-function refreshAll(){if(GEO)paintProvince();refreshSide();
+function refreshAll(){if(GEO&&MODE==='real')paintProvince();renderTileMap();refreshSide();
   document.getElementById('mapNote').innerHTML=defaultNote()}
 function refreshSide(){
   renderList();renderCharts();renderTable();
