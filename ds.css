@@ -579,3 +579,71 @@ body.cover .ph{position:static}
 .barrow .tr{flex:1;height:9px;border-radius:9px;background:var(--line2);overflow:hidden}
 .barrow .tr i{display:block;height:100%;border-radius:9px}
 .barrow .vv{font-family:var(--fn);font-weight:600;min-width:56px;text-align:right}
+
+/* ══════════ แผนที่จังหวัด ══════════ */
+.mapwrap{position:relative;border-radius:var(--r);overflow:hidden;background:
+  radial-gradient(120% 120% at 30% 10%, var(--tint), var(--card2) 70%);border:1px solid var(--line)}
+#map{height:540px;background:transparent}
+.leaflet-container{background:transparent!important;font-family:var(--fb);outline:none}
+.leaflet-control-attribution{display:none}
+.leaflet-bar{border:0!important;box-shadow:0 8px 20px -12px rgba(6,35,29,.5)!important}
+.leaflet-bar a{background:var(--card)!important;color:var(--dim)!important;border-color:var(--line)!important;
+  width:32px!important;height:32px!important;line-height:32px!important;font-size:17px!important}
+.leaflet-bar a:hover{background:var(--tint)!important;color:var(--brand)!important}
+.leaflet-interactive{outline:none;transition:fill-opacity .18s}
+/* ป้ายชื่ออำเภอบนแผนที่ */
+.amplbl{background:none!important;border:0!important;box-shadow:none!important;padding:0!important}
+.amplbl::before{display:none!important}
+.amplbl .lb{text-align:center;line-height:1.25;pointer-events:none;
+  text-shadow:0 1px 3px rgba(255,255,255,.9),0 0 8px rgba(255,255,255,.8)}
+[data-theme="dark"] .amplbl .lb{text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 8px rgba(0,0,0,.85)}
+.amplbl .n{font-family:var(--fd);font-size:12.5px;font-weight:600;color:var(--ink);display:block}
+.amplbl .v{font-family:var(--fn);font-size:12px;font-weight:600;color:var(--brand);display:block}
+.tamlbl .n{font-size:10.5px;font-weight:500;color:var(--dim)}
+/* กล่องลอยบนแผนที่ */
+#maptip{position:fixed;z-index:9996;pointer-events:none;opacity:0;transform:translateY(4px);
+  transition:opacity .13s,transform .13s;min-width:190px;max-width:280px;
+  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;
+  box-shadow:0 26px 54px -22px rgba(6,35,29,.55)}
+#maptip.on{opacity:1;transform:none}
+#maptip .mt{font-family:var(--fd);font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+#maptip .mt i{width:9px;height:9px;border-radius:3px;flex:none}
+#maptip .mv{font-family:var(--fn);font-size:25px;font-weight:600;letter-spacing:-.8px;margin:6px 0 0}
+#maptip .mv small{font-size:11.5px;color:var(--faint);font-weight:400;margin-left:4px}
+#maptip .mr{display:flex;gap:10px;margin-top:7px;padding-top:7px;border-top:1px dashed var(--line2);
+  font-size:11px;color:var(--faint)}
+#maptip .mr b{color:var(--dim);font-family:var(--fn)}
+#maptip .mgo{margin-top:8px;font-size:11px;color:var(--brand)}
+/* แถบนำทาง */
+.mapbar{position:absolute;left:12px;top:12px;z-index:500;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.mapbar .crumbm{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:7px 13px;
+  font-size:12.5px;box-shadow:var(--sh);display:flex;align-items:center;gap:8px}
+.mapbar .crumbm b{font-family:var(--fd);font-weight:600}
+.mapbar .crumbm .sep{color:var(--faint)}
+.mapbar button{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:7px 12px;
+  font-size:12px;color:var(--dim);box-shadow:var(--sh);display:inline-flex;align-items:center;gap:6px}
+.mapbar button:hover{border-color:var(--brand);color:var(--brand)}
+.mapbar svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.maploading{position:absolute;inset:0;display:grid;place-items:center;z-index:600;background:rgba(255,255,255,.55);
+  backdrop-filter:blur(2px);font-size:13px;color:var(--dim)}
+[data-theme="dark"] .maploading{background:rgba(12,26,22,.6)}
+/* แถบสีข้างแผนที่ */
+.scalebar{position:absolute;right:12px;bottom:12px;z-index:500;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:10px 12px;box-shadow:var(--sh);font-size:10.5px;color:var(--dim);min-width:158px}
+.scalebar .bar{height:10px;border-radius:6px;margin:6px 0 5px;
+  background:linear-gradient(90deg,#e8f5ee,#a9ddc4,#5fbf95,#1f9a6c,#0a6247)}
+.scalebar .ends{display:flex;justify-content:space-between;font-family:var(--fn)}
+.scalebar .ttl{font-weight:600;color:var(--ink);font-size:11px;margin-bottom:2px}
+/* รายการอำเภอ */
+.amprow{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:11px;cursor:pointer;transition:.14s;
+  border:1px solid transparent}
+.amprow:hover{background:var(--card2);border-color:var(--line)}
+.amprow.act{background:var(--brand-l);border-color:rgba(13,146,104,.35)}
+.amprow .rk{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-family:var(--fn);
+  font-size:11px;font-weight:600;background:var(--line2);color:var(--dim);flex:none}
+.amprow.top .rk{background:var(--brand);color:#fff}
+.amprow .nm{flex:1;font-size:13px}
+.amprow .bar{width:78px;height:7px;border-radius:7px;background:var(--line2);overflow:hidden}
+.amprow .bar i{display:block;height:100%;border-radius:7px}
+.amprow .vl{font-family:var(--fn);font-size:13px;font-weight:600;min-width:64px;text-align:right}
+@media (max-width:767px){#map{height:400px}.mapbar{left:8px;top:8px}.scalebar{display:none}}
