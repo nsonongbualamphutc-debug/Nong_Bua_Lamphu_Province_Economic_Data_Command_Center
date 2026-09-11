@@ -59,11 +59,43 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data2.js"></script>
 <script src="ds.js"></script>
 <script>
 /* ══════════ แผนที่จังหวัดหนองบัวลำภู ══════════ */
-const GEO_URL='https://raw.githubusercontent.com/chingchai/OpenGISData-Thailand/master/';
-const PRO='39';
+const GEO_SRC=[
+  'https://raw.githubusercontent.com/chingchai/OpenGISData-Thailand/master/',
+  'https://cdn.jsdelivr.net/gh/chingchai/OpenGISData-Thailand@master/',
+  'https://raw.githubusercontent.com/chingchai/OpenGISData-Thailand/main/'
+];
+const PRO='39', PRONAME='หนองบัวลำภู';
+/* โหลดไฟล์จากหลายแหล่ง เผื่อแหล่งใดล่ม แล้วกรองเฉพาะจังหวัดหนองบัวลำภู */
+async function loadGeo(file){
+  let lastErr='';
+  for(const base of GEO_SRC){
+    try{
+      const r=await fetch(base+file,{cache:'force-cache'});
+      if(!r.ok){lastErr='HTTP '+r.status;continue}
+      const j=await r.json();
+      if(!j||!j.features)  {lastErr='รูปแบบไฟล์ไม่ถูกต้อง';continue}
+      const fs=j.features.filter(inProvince);
+      if(fs.length)return {ok:true,features:fs,total:j.features.length,base};
+      lastErr='ไม่พบพื้นที่จังหวัดในไฟล์ ('+j.features.length+' รูปทั้งประเทศ)';
+    }catch(e){lastErr=e.message}
+  }
+  return {ok:false,features:[],error:lastErr};
+}
+/* จับคู่จังหวัดจากรหัสหรือชื่อ รองรับทุกรูปแบบชื่อคอลัมน์ */
+function inProvince(f){
+  const p=f.properties||{};
+  for(const k in p){
+    const v=String(p[k]??'');
+    if(v===PRO||v==='39.0')return true;
+    if(v.indexOf(PRONAME)>=0)return true;
+    if(/nong\s*bua\s*lam\s*phu/i.test(v))return true;
+  }
+  return false;
+}
 let MAP=null,LAYER=null,TLAYER=null,BASE=null,GEO=null,TGEO=null,LABELS=[],DRILL=null,BASEON=false;
 
 const AREA_OPTS=(()=>{
@@ -164,11 +196,8 @@ async function drillTo(dt,feat){
 
   if(!TGEO){
     document.getElementById('mapLoad').classList.remove('hide');
-    try{
-      const r=await fetch(GEO_URL+'subdistricts.geojson');
-      const j=await r.json();
-      TGEO={type:'FeatureCollection',features:j.features.filter(ft=>proCode(ft)===PRO)};
-    }catch(e){TGEO={type:'FeatureCollection',features:[]}}
+    const res=await loadGeo('subdistricts.geojson');
+    TGEO={type:'FeatureCollection',features:res.features||[]};
     document.getElementById('mapLoad').classList.add('hide');
   }
   if(TLAYER){MAP.removeLayer(TLAYER);TLAYER=null}
@@ -294,8 +323,9 @@ function renderArea(){
   if(typeof L==='undefined'){document.getElementById('map').innerHTML=
     '<div style="padding:24px;color:var(--faint)">โหลดแผนที่ไม่สำเร็จ ตรวจการเชื่อมต่ออินเทอร์เน็ต</div>';refreshSide();return}
   if(!MAP){
-    MAP=L.map('map',{zoomControl:true,attributionControl:false,scrollWheelZoom:false,
+    MAP=L.map('map',{zoomControl:false,attributionControl:false,scrollWheelZoom:false,
       zoomSnap:.25,minZoom:8,maxZoom:14});
+    L.control.zoom({position:'topright'}).addTo(MAP);
     MAP.setView([17.22,102.36],9.4);
     document.getElementById('btnBackProv').onclick=backProvince;
     document.getElementById('btnBase').onclick=toggleBase;
@@ -305,12 +335,19 @@ function renderArea(){
       const ft=GEO&&GEO.features.find(f=>{const d=dtByName(ampName(f));return d&&d.code===dt.code});
       drillTo(dt,ft); renderList();
     });
-    fetch(GEO_URL+'amphoes.geojson').then(r=>r.json()).then(j=>{
-      GEO={type:'FeatureCollection',features:j.features.filter(f=>proCode(f)===PRO)};
-      paintProvince();
-    }).catch(()=>{
-      document.getElementById('mapNote').innerHTML=
-        'โหลดขอบเขตอำเภอไม่สำเร็จ ตรวจการเชื่อมต่ออินเทอร์เน็ต ข้อมูลตัวเลขด้านขวายังใช้งานได้ปกติ';
+    document.getElementById('mapLoad').textContent='กำลังโหลดขอบเขตอำเภอ…';
+    document.getElementById('mapLoad').classList.remove('hide');
+    loadGeo('amphoes.geojson').then(res=>{
+      document.getElementById('mapLoad').classList.add('hide');
+      if(res.ok){
+        GEO={type:'FeatureCollection',features:res.features};
+        paintProvince();
+        document.getElementById('mapNote').innerHTML=defaultNote();
+      }else{
+        document.getElementById('mapNote').innerHTML=
+          '<b style="color:var(--bad)">โหลดขอบเขตอำเภอไม่สำเร็จ</b> — '+(res.error||'')+
+          '<br>ตรวจการเชื่อมต่ออินเทอร์เน็ต หรือลองรีเฟรชหน้าอีกครั้ง ตัวเลขและกราฟด้านล่างยังใช้งานได้ตามปกติ';
+      }
     });
   }else{MAP.invalidateSize();if(GEO&&!DRILL)paintProvince()}
   refreshSide();
