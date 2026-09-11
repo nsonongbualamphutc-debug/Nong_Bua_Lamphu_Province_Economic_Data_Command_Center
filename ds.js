@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'1.5.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'1.6.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -232,25 +232,25 @@ const DATASETS = [
 ];
 
 const SECTORS = [
- {id:'fiscal',img:'assets/s-fiscal.jpg',  name:'การคลังภาครัฐ',       icon:'bank',   color:'#0d9268',weight:.24,datasets:['spend'],
+ {id:'fiscal',ico:'fiscal',img:'assets/s-fiscal.jpg',  name:'การคลังภาครัฐ',       icon:'bank',   color:'#0d9268',weight:.24,datasets:['spend'],
   pitch:'ตัวขับเคลื่อนอันดับหนึ่งของเศรษฐกิจจังหวัด',
   desc:'เม็ดเงินงบประมาณที่รัฐอัดเข้าสู่ระบบเศรษฐกิจจังหวัด'},
- {id:'agri',img:'assets/s-agri.jpg',    name:'ภาคเกษตรและฐานราก',   icon:'leaf',   color:'#66a33a',weight:.24,datasets:['crop'],
+ {id:'agri',ico:'agri',img:'assets/s-agri.jpg',    name:'ภาคเกษตรและฐานราก',   icon:'leaf',   color:'#66a33a',weight:.24,datasets:['crop'],
   pitch:'ครัวเรือนเกษตรกร 101,836 ครัวเรือน',
   desc:'พืชอายุสั้น ไม้ผล แหล่งน้ำ และสถาบันเกษตรกร'},
- {id:'industry',img:'assets/s-industry.jpg',name:'อุตสาหกรรมและการผลิต',icon:'factory',color:'#356aad',weight:.16,datasets:['factory','power'],
+ {id:'industry',ico:'industry',img:'assets/s-industry.jpg',name:'อุตสาหกรรมและการผลิต',icon:'factory',color:'#356aad',weight:.16,datasets:['factory','power'],
   pitch:'ยืนยันด้วยปริมาณไฟฟ้าที่ใช้จริง',
   desc:'โรงงาน เงินลงทุน การจ้างงาน และการใช้ไฟฟ้า'},
- {id:'trade',img:'assets/s-trade.jpg',   name:'การค้าและค่าครองชีพ', icon:'cart',   color:'#b5851a',weight:.14,datasets:['cpi','credit'],
+ {id:'trade',ico:'trade',img:'assets/s-trade.jpg',   name:'การค้าและค่าครองชีพ', icon:'cart',   color:'#b5851a',weight:.14,datasets:['cpi','credit'],
   pitch:'เงินในกระเป๋าซื้อของได้เท่าเดิมหรือไม่',
   desc:'ดัชนีราคาผู้บริโภคและสินเชื่อเพื่อการลงทุน'},
- {id:'consume',img:'assets/s-consume.jpg', name:'การบริโภคและพลังงาน', icon:'bolt',   color:'#d0563f',weight:.12,datasets:['fuel','car'],
+ {id:'consume',ico:'consume',img:'assets/s-consume.jpg', name:'การบริโภคและพลังงาน', icon:'bolt',   color:'#d0563f',weight:.12,datasets:['fuel','car'],
   pitch:'ตัวชี้ที่เห็นผลเร็วที่สุด',
   desc:'การใช้น้ำมันเชื้อเพลิงและรถจดทะเบียนใหม่'},
- {id:'labor',img:'assets/s-labor.jpg',   name:'ตลาดแรงงาน',          icon:'brief',  color:'#7d5b8f',weight:.07,datasets:['labor','social'],
+ {id:'labor',ico:'labor',img:'assets/s-labor.jpg',   name:'ตลาดแรงงาน',          icon:'brief',  color:'#7d5b8f',weight:.07,datasets:['labor','social'],
   pitch:'คนมีงานทำ คือกำลังซื้อที่ยั่งยืน',
   desc:'การมีงานทำ การว่างงาน และผู้ประกันตน'},
- {id:'tourism',img:'assets/s-tourism.jpg', name:'ภาคการท่องเที่ยว',    icon:'plane',  color:'#12867e',weight:.03,datasets:['tour'],
+ {id:'tourism',ico:'tourism',img:'assets/s-tourism.jpg', name:'ภาคการท่องเที่ยว',    icon:'plane',  color:'#12867e',weight:.03,datasets:['tour'],
   pitch:'รายได้ใหม่ที่ไหลเข้าจังหวัด',
   desc:'ผู้เยี่ยมเยือน รายได้ และอัตราการเข้าพัก'}
 ];
@@ -336,10 +336,15 @@ function spark(vals,color){
   <stop offset="0" stop-color="${color}" stop-opacity=".3"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
   <path d="${dl} L${w},${h} L0,${h} Z" fill="url(#${id})"/><path d="${dl}" fill="none" stroke="${color}" stroke-width="1.7" stroke-linejoin="round"/>
   <circle cx="${w}" cy="${p[p.length-1][1].toFixed(1)}" r="2.2" fill="${color}"/></svg>`}
+function icoImg(name,px){
+  return `<img class="ico" src="assets/icons/ic-${name}.png" alt="" width="${px||30}" height="${px||30}"
+    loading="lazy" onerror="this.closest('.icow')?this.closest('.icow').classList.add('noimg'):0;this.remove()">`;
+}
 function kpiCard(o){
   const T=o.go?'button':'div';
   return`<${T} class="kpi"${o.go?` data-go="${o.go}"`:''}${o.tip?` data-tip2="${o.tip}"`:''}>
-    <div class="h">${o.icon?`<span class="ic" style="background:${o.color}1e"><svg viewBox="0 0 24 24" style="stroke:${o.color}">${IC[o.icon]}</svg></span>`:''}<span>${o.label}</span></div>
+    <div class="h">${o.img?`<span class="ic icow img" style="background:${o.color}14">${icoImg(o.img,26)}<svg viewBox="0 0 24 24" style="stroke:${o.color}">${IC[o.icon]||''}</svg></span>`
+      :o.icon?`<span class="ic" style="background:${o.color}1e"><svg viewBox="0 0 24 24" style="stroke:${o.color}">${IC[o.icon]}</svg></span>`:''}<span>${o.label}</span></div>
     <div class="v n">${o.value}${o.unit?`<small>${o.unit}</small>`:''}</div>
     ${o.spark?`<div class="spark">${o.spark}</div>`:''}
     <div class="f">${o.chip||''}${o.sub?`<span class="sub">${o.sub}</span>`:''}</div></${T}>`}
@@ -447,7 +452,9 @@ function renderSector(sid){
   const agy=[...new Set(sec.datasets.map(id=>DATASETS.find(x=>x.id===id).agency))].join(' · ');
   const el=document.getElementById('v-'+sid);
   el.innerHTML=`
-    <div class="ph"><div class="t"><h2>${M.title}</h2><p>${M.lead}</p></div>
+    <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start">
+      <span class="bigico icow img">${icoImg(sec.ico||sec.id,52)}</span>
+      <span><h2>${M.title}</h2><p>${M.lead}</p></span></div>
       <div class="r"><span class="chip mock">โครงร่าง รอข้อมูลจริง</span><span class="chip">${agy.replace(/สำนักงาน/g,'สนง.')}</span></div></div>
     <div class="grid g4 mb" id="k-${sid}"></div>
     <div class="grid g21 mb">
@@ -828,6 +835,10 @@ const AGENCY_FULL={
   labor  :{n:'สำนักงานสถิติจังหวัดหนองบัวลำภู',dept:'สำนักงานสถิติแห่งชาติ กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม · ร่วมกับ สำนักงานแรงงานจังหวัดหนองบัวลำภู',tel:'0 4231 6736',doc:'การสำรวจภาวะการทำงานของประชากร (Labor Force Survey) รายไตรมาส'},
   social :{n:'สำนักงานประกันสังคมจังหวัดหนองบัวลำภู',dept:'สำนักงานประกันสังคม กระทรวงแรงงาน',tel:'',doc:'สถิติผู้ประกันตนจำแนกตามมาตรา'},
   tour   :{n:'สำนักงานการท่องเที่ยวและกีฬาจังหวัดหนองบัวลำภู',dept:'สำนักงานปลัดกระทรวงการท่องเที่ยวและกีฬา',tel:'',doc:'สถิติผู้เยี่ยมเยือนและรายได้จากการท่องเที่ยว'},
+  otop   :{n:'สำนักงานพัฒนาชุมชนจังหวัดหนองบัวลำภู',dept:'กรมการพัฒนาชุมชน กระทรวงมหาดไทย',tel:'',doc:'ข้อมูลผู้ประกอบการ ผลิตภัณฑ์ และรายได้จากผลิตภัณฑ์ OTOP'},
+  popreg :{n:'ที่ทำการปกครองจังหวัดหนองบัวลำภู',dept:'กรมการปกครอง กระทรวงมหาดไทย',tel:'',doc:'ข้อมูลทะเบียนราษฎร จำนวนประชากร การเกิด การตาย และการย้ายถิ่น'},
+  irrig  :{n:'โครงการชลประทานหนองบัวลำภู',dept:'สำนักงานชลประทานที่ 5 กรมชลประทาน กระทรวงเกษตรและสหกรณ์',tel:'',doc:'ข้อมูลแหล่งน้ำชลประทาน พื้นที่รับประโยชน์ และสถานีสูบน้ำด้วยไฟฟ้า'},
+  house  :{n:'สำนักงานสถิติจังหวัดหนองบัวลำภู',dept:'สำนักงานสถิติแห่งชาติ กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม',tel:'0 4231 6736',doc:'โครงการสำรวจภาวะเศรษฐกิจและสังคมของครัวเรือน (Household Socio-Economic Survey)'},
   gpp    :{n:'สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ',dept:'สำนักนายกรัฐมนตรี',tel:'',doc:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) แบบปริมาณลูกโซ่'}
 };
 function srcBar(keys,extra){
@@ -874,6 +885,7 @@ const NAVI=[
  {id:'consume', file:'consume.html',  label:'การบริโภคและพลังงาน',  ic:IC.bolt},
  {id:'labor',   file:'labor.html',    label:'ตลาดแรงงาน',           ic:IC.brief},
  {id:'tourism', file:'tourism.html',  label:'ภาคการท่องเที่ยว',     ic:IC.plane},
+ {id:'otop',    file:'otop.html',     label:'OTOP และเศรษฐกิจชุมชน', ic:'<path d="M3.5 8.5 12 4l8.5 4.5v7L12 20l-8.5-4.5z"/><path d="M3.5 8.5 12 13l8.5-4.5M12 13v7"/>'},
  {grp:'มุมมองและเครื่องมือ'},
  {id:'area',    file:'area.html',     label:'ข้อมูลเชิงพื้นที่',    ic:'<path d="M9 3.5 3.5 6v14.5L9 18l6 2.5 5.5-2.5V3.5L15 6z"/><path d="M9 3.5V18M15 6v14.5"/>'},
  {id:'report',  file:'report.html',   label:'รายงานและบทวิเคราะห์', ic:'<path d="M4 5.5A2 2 0 0 1 6 3.5h9l5 5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14.5 3.6V9h5.2M8 12.5h8M8 16h5"/>'},
@@ -1040,7 +1052,10 @@ const DS={
 let PAGE={id:'',render(){}};
 function safeRender(){
   try{PAGE.render()}catch(e){console.error('render '+PAGE.id,e)}
-  try{pageBanner();bindToggle();revealCards();animateNums()}catch(e){}
+  try{
+    document.querySelectorAll('[data-bigico]').forEach(el=>{if(!el.innerHTML)el.innerHTML=icoImg(el.dataset.bigico,52)});
+    pageBanner();bindToggle();revealCards();animateNums();
+  }catch(e){}
 }
 
 document.addEventListener('click',function(e){

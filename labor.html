@@ -35,8 +35,9 @@ function renderLabor(){
   const v=document.getElementById('v-labor');
 
   v.innerHTML=`
-  <div class="ph"><div class="t"><h2>ตลาดแรงงานจังหวัดหนองบัวลำภู</h2>
-    <p>ข้อมูลจริงจากการสำรวจภาวะการทำงานของประชากร รายไตรมาส ย้อนหลัง 3 ปี พร้อมโครงสร้างการจ้างงานและสัญญาณที่ซ่อนอยู่หลังตัวเลขว่างงาน</p></div>
+  <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start">
+    <span class="bigico icow img">${icoImg('labor',52)}</span><span><h2>ตลาดแรงงานจังหวัดหนองบัวลำภู</h2>
+    <p>ข้อมูลจริงจากการสำรวจภาวะการทำงานของประชากร รายไตรมาส ย้อนหลัง 3 ปี พร้อมโครงสร้างการจ้างงานและสัญญาณที่ซ่อนอยู่หลังตัวเลขว่างงาน</p></span></div>
     <div class="r"><span class="chip real">ข้อมูลจริง</span><span class="chip br">${L.latest}</span></div></div>
 
   <div class="grid g4 mb" id="lbKpi"></div>
@@ -81,7 +82,8 @@ function renderLabor(){
 
   <div class="grid g21 mb">
     <div class="c"><header><h3>การทำงานต่ำกว่าระดับด้านชั่วโมงการทำงาน</h3>
-      <span class="u">ผู้ที่ทำงานน้อยกว่า 35 ชั่วโมงต่อสัปดาห์และต้องการทำงานเพิ่ม</span></header>
+      <span class="u">ผู้ที่ทำงานน้อยกว่า 35 ชั่วโมงต่อสัปดาห์และต้องการทำงานเพิ่ม</span>
+      <span class="r"><span class="icow img" style="width:26px;height:26px;display:inline-grid;place-items:center">${icoImg('underemp',26)}</span></span></header>
       <div class="b"><div class="ch"><canvas id="cUnder"></canvas></div>
         <div class="note" id="underNote"></div></div></div>
     <div class="c"><header><h3>ผู้ประกันตนในระบบประกันสังคม</h3><span class="u">รายเดือน · โครงร่าง</span></header>
@@ -97,17 +99,17 @@ function renderLabor(){
   /* ── KPI ── */
   const ueY=pctc(last.ue,yoy.ue);
   document.getElementById('lbKpi').innerHTML=[
-    kpiCard({icon:'people',color:cv('--coral'),label:'จำนวนผู้ว่างงาน',value:f(last.ue,0),unit:'คน',
+    kpiCard({icon:'people',img:'unemployed',color:cv('--coral'),label:'จำนวนผู้ว่างงาน',value:f(last.ue,0),unit:'คน',
       chip:ueY==null?'<span class="chip">—</span>':chip(ueY),
       sub:'เทียบ '+QL(yoy)+' · '+f(yoy.ue,0)+' คน',
       tip:'จำนวนผู้ว่างงาน|ผู้ที่ไม่มีงานทำ พร้อมทำงาน และกำลังหางานในสัปดาห์สำรวจ|ที่มา: การสำรวจภาวะการทำงานของประชากร '+L.latest}),
-    kpiCard({icon:'chart',color:cv('--gold'),label:'อัตราการว่างงาน',value:last.ur.toFixed(2),unit:'%',
+    kpiCard({icon:'chart',img:'unemprate',color:cv('--gold'),label:'อัตราการว่างงาน',value:last.ur.toFixed(2),unit:'%',
       chip:'<span class="chip fl">'+(last.ur-yoy.ur>0?'+':'')+(last.ur-yoy.ur).toFixed(2)+' จุด</span>',
       sub:'จากกำลังแรงงาน '+f(last.force,0)+' คน',
       tip:'อัตราการว่างงาน|จำนวนผู้ว่างงาน หารด้วยกำลังแรงงานรวม|ไตรมาส 1 ของทุกปีมักสูงกว่าไตรมาสอื่นเพราะเป็นช่วงหลังฤดูเก็บเกี่ยว'}),
-    kpiCard({icon:'brief',color:cv('--brand'),label:'ผู้มีงานทำ',value:f(last.emp,0),unit:'คน',
+    kpiCard({icon:'brief',img:'employed',color:cv('--brand'),label:'ผู้มีงานทำ',value:f(last.emp,0),unit:'คน',
       chip:chip(pctc(last.emp,yoy.emp)),sub:'จากประชากรอายุ 15 ปีขึ้นไป '+f(last.pop15,0)+' คน'}),
-    kpiCard({icon:'coin',color:cv('--plum'),label:'อัตราการมีส่วนร่วมกำลังแรงงาน',value:last.lfpr.toFixed(1),unit:'%',
+    kpiCard({icon:'coin',img:'lfpr',color:cv('--plum'),label:'อัตราการมีส่วนร่วมกำลังแรงงาน',value:last.lfpr.toFixed(1),unit:'%',
       chip:'<span class="chip '+(last.lfpr<first.lfpr?'dn':'up')+'">'+(last.lfpr-first.lfpr>0?'+':'')+(last.lfpr-first.lfpr).toFixed(1)+' จุด จาก '+QS(first)+'</span>',
       sub:'ผู้ไม่อยู่ในกำลังแรงงาน '+f(last.notin,0)+' คน',
       tip:'อัตราการมีส่วนร่วมกำลังแรงงาน|สัดส่วนคนที่อยู่ในกำลังแรงงาน ต่อประชากรอายุ 15 ปีขึ้นไป|ตัวเลขนี้ลดลงหมายถึงคนถอนตัวออกจากตลาดแรงงาน ซึ่งไม่ถูกนับเป็นผู้ว่างงาน'})

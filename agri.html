@@ -19,8 +19,9 @@
   <nav class="side" id="sidebar"></nav>
   <main class="main">
     <section class="view on" id="v-agri">
-  <div class="ph"><div class="t"><h2>ภาคเกษตรและฐานรากเศรษฐกิจ</h2>
-    <p>ครัวเรือนเกษตรกรกว่า 1 แสนครัวเรือน คือฐานรายได้ของคนส่วนใหญ่ ภาคนี้จึงเป็นตัวชี้กำลังซื้อระดับหมู่บ้าน</p></div>
+  <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start">
+    <span class="bigico icow img" id="agriBigIco"></span><span><h2>ภาคเกษตรและฐานรากเศรษฐกิจ</h2>
+    <p>ครัวเรือนเกษตรกรกว่า 1 แสนครัวเรือน คือฐานรายได้ของคนส่วนใหญ่ ภาคนี้จึงเป็นตัวชี้กำลังซื้อระดับหมู่บ้าน</p></span></div>
     <div class="r"><span class="chip real">ข้อมูลจริง</span><span class="chip">สนง.เกษตรจังหวัด</span></div></div>
   <div class="grid g5 mb" id="agriKpi"></div>
   <div class="segs mb" id="agriSeg">
@@ -118,6 +119,7 @@
   </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="data2.js"></script>
 <script src="ds.js"></script>
 <script>
 /* ─────────────── 13) เกษตร ─────────────── */
@@ -294,6 +296,8 @@ const AGRI_SUB={
 };
 DS.init('agri',function(){
   renderAgri();
+  const bi=document.getElementById('agriBigIco');
+  if(bi&&!bi.innerHTML)bi.innerHTML=icoImg('agri',52);
   const v=document.getElementById('v-agri');
   if(v&&!v.querySelector('.srcbar')){
     const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
