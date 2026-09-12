@@ -783,3 +783,11 @@ body.cover .ph{position:static}
 .svc-item .km{font-family:var(--fn);font-size:11px;color:var(--brand);font-weight:600;margin-left:auto;
   white-space:nowrap;padding-left:8px}
 .svc-item{align-items:center}
+
+/* ── ไอคอนเล็กในแท็บย่อยและหัวการ์ด ── */
+.segs img.segico{width:20px;height:20px;object-fit:contain;vertical-align:-5px;margin-right:6px;
+  filter:drop-shadow(0 1px 2px rgba(6,35,29,.18))}
+.segs button.on img.segico{filter:drop-shadow(0 1px 3px rgba(0,0,0,.35)) brightness(1.06)}
+.c>header .hdico{width:26px;height:26px;flex:none;display:grid;place-items:center;margin-right:2px}
+.c>header .hdico img{width:26px;height:26px;object-fit:contain}
+@media (max-width:767px){.segs img.segico{width:17px;height:17px;margin-right:4px}}
