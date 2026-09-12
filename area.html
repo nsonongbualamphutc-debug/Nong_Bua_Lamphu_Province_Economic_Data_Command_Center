@@ -26,18 +26,19 @@
   <div class="grid g21 mb">
     <div class="c"><header><h3 id="areaTitle">แผนที่จังหวัดหนองบัวลำภู</h3><span class="u" id="areaUnit"></span></header>
       <div class="b">
-        <div class="mapwrap">
+        <div class="mapwrap" id="mapWrapA">
           <div id="tilemap" class="tilemap"></div>
           <div id="map" class="hide"></div>
           <div class="mapbar">
             <div class="crumbm" id="crumbMap"></div>
             <button id="btnBackProv" class="hide"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>กลับทั้งจังหวัด</button>
-            <button id="btnBase"><svg viewBox="0 0 24 24"><path d="M12 3.5 3 8l9 4.5L21 8z"/><path d="M3 12.5 12 17l9-4.5M3 16.5 12 21l9-4.5"/></svg>ภาพถ่ายพื้นหลัง</button>
+            ${fullscreenBtn('#mapWrapA')}
           </div>
           <div class="mapmode">
             <button id="btnTile" class="on">แผนผัง</button>
             <button id="btnReal" disabled>ขอบเขตจริง</button>
           </div>
+          ${baseSwitcher('abase')}
           <div class="scalebar" id="scaleBar"></div>
           <div class="maploading hide" id="mapLoad">กำลังโหลดขอบเขตตำบล…</div>
         </div>
@@ -114,6 +115,7 @@ function inProvince(f){
   return false;
 }
 let MAP=null,LAYER=null,TLAYER=null,BASE=null,GEO=null,TGEO=null,LABELS=[],DRILL=null,BASEON=false;
+let ABASE={layer:null,onChange:k=>{ if(LAYER)LAYER.setStyle({fillOpacity:k==='plain'?.92:.55}) }};
 
 const AREA_OPTS=(()=>{
   const o=[{id:'tour',label:'แหล่งท่องเที่ยวเชิงเกษตร',unit:'แห่ง',dec:0,real:true,
@@ -436,7 +438,7 @@ function renderArea(){
     L.control.zoom({position:'topright'}).addTo(MAP);
     MAP.setView([17.22,102.36],9.4);
     document.getElementById('btnBackProv').onclick=backProvince;
-    document.getElementById('btnBase').onclick=toggleBase;
+    bindBase('abase',MAP,ABASE);
     document.getElementById('ampList').addEventListener('click',e=>{
       const r=e.target.closest('[data-amp]'); if(!r)return;
       const dt=DISTRICTS.find(x=>x.code===r.dataset.amp);
@@ -468,19 +470,6 @@ function renderArea(){
   if(br&&!br.dataset.b){br.dataset.b='1';br.onclick=()=>{if(REAL_OK)setMode('real')}}
   document.getElementById('mapNote').innerHTML=defaultNote();
   renderCrumb();
-}
-function toggleBase(){
-  BASEON=!BASEON;
-  if(BASEON){
-    BASE=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      {maxZoom:16,opacity:.85}).addTo(MAP);
-    BASE.bringToBack();
-    if(LAYER)LAYER.setStyle({fillOpacity:.55});
-  }else{
-    if(BASE){MAP.removeLayer(BASE);BASE=null}
-    if(LAYER&&!DRILL)paintProvince();
-  }
-  document.getElementById('btnBase').style.color=BASEON?cv('--brand'):'';
 }
 function refreshAll(){if(GEO&&MODE==='real')paintProvince();renderTileMap();refreshSide();
   document.getElementById('mapNote').innerHTML=defaultNote()}

@@ -91,10 +91,17 @@ function renderTour(){
             <input id="spotQ" placeholder="ค้นหาชื่อแหล่งท่องเที่ยวหรือตำบล">
           </span>
           <select class="sel" id="spotAmpSel"></select>
+          <button class="tb" id="spotNear">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
+            ใกล้ฉัน</button>
+          ${fullscreenBtn('#tmapWrap')}
           <button class="tb" id="spotReset">ล้างตัวกรอง</button>
         </div>
         <div class="svc">
-          <div class="mapwrap"><div id="tmap" style="height:520px"></div></div>
+          <div class="mapwrap" id="tmapWrap">
+            <div id="tmap" style="height:520px"></div>
+            ${baseSwitcher('tbase')}
+          </div>
           <div class="svc-list" id="spotList"></div>
         </div>
         <div class="note">หมุดสีเขียวคือแหล่งท่องเที่ยวที่มีพิกัดในฐานข้อมูลจังหวัด
@@ -263,12 +270,17 @@ function renderTour(){
   drawSpotMap();
 }
 
-let TMAP=null, TMARK=[], SPOT_FILTER={q:'',amp:''};
+let TMAP=null, TMARK=[], SPOT_FILTER={q:'',amp:''}, ME=null, MEMARK=null, TBASE={layer:null};
 function spotsFiltered(){
   const q=SPOT_FILTER.q.trim();
-  return T.spots.filter(s=>
+  let list=T.spots.filter(s=>
     (!SPOT_FILTER.amp||s.a===SPOT_FILTER.amp) &&
     (!q||s.n.includes(q)||s.ta.includes(q)||s.a.includes(q)));
+  if(ME){
+    list=list.map(s=>Object.assign({},s,{km:distKm(ME.lat,ME.lng,s.lat,s.lng)}))
+             .sort((a,b)=>a.km-b.km);
+  }
+  return list;
 }
 function drawSpotMap(){
   if(typeof L==='undefined')return;
@@ -276,6 +288,7 @@ function drawSpotMap(){
   if(TMAP){TMAP.remove();TMAP=null;TMARK=[]}
   TMAP=L.map('tmap',{zoomControl:false,attributionControl:false,scrollWheelZoom:false,zoomSnap:.25});
   L.control.zoom({position:'topright'}).addTo(TMAP);
+  bindBase('tbase',TMAP,TBASE);
   fetch('assets/nbl-amphoe.geojson').then(r=>r.json()).then(j=>{
     const g=L.geoJSON(j,{style:{color:'#fff',weight:2,fillColor:'#cfe9dc',fillOpacity:.85},
       onEachFeature:(f,l)=>{const nm=f.properties.amp_th;
@@ -292,9 +305,9 @@ function addSpots(){
       fillColor:cv('--brand'),fillOpacity:.95}).addTo(TMAP);
     m.bindPopup(servicePopup({
       name:s.n, sub:'ต.'+s.ta+' · อ.'+s.a,
-      rows:[['อำเภอ',s.a],['ตำบล',s.ta]],
-      lat:s.lat,lng:s.lng,nearby:'ที่พักและร้านอาหาร'
-    }),{maxWidth:300});
+      rows:[['อำเภอ','อ.'+s.a],['ตำบล','ต.'+s.ta]],
+      km:s.km, lat:s.lat,lng:s.lng,nearby:'ที่พักและร้านอาหาร'
+    }),{maxWidth:310});
     m.on('click',()=>highlight(i));
     TMARK.push(m);
   });
@@ -306,9 +319,13 @@ function addSpots(){
 function renderSpotList(list){
   const el=document.getElementById('spotList');
   if(!list.length){el.innerHTML='<div class="svc-empty">ไม่พบแหล่งท่องเที่ยวที่ตรงกับตัวกรอง</div>';return}
-  el.innerHTML=list.map((s,i)=>`<button class="svc-item" data-spot="${i}">
-    <span class="no">${i+1}</span>
-    <span><b>${s.n}</b><span>ต.${s.ta} · อ.${s.a}</span></span></button>`).join('');
+  el.innerHTML=(ME?`<div style="padding:9px 13px;font-size:11.5px;color:var(--brand);background:var(--brand-l);
+      border-bottom:1px solid var(--line)">เรียงตามระยะทางจากตำแหน่งของท่าน</div>`:'')+
+    list.map((s,i)=>`<button class="svc-item" data-spot="${i}">
+      <span class="no">${i+1}</span>
+      <span style="flex:1"><b>${s.n}</b><span>ต.${s.ta} · อ.${s.a}</span></span>
+      ${s.km!=null?`<span class="km">${s.km.toFixed(1)} กม.<br><span style="font-weight:400;color:var(--faint)">~${driveMin(s.km)} นาที</span></span>`:''}
+    </button>`).join('');
 }
 function highlight(i){
   document.querySelectorAll('.svc-item').forEach((el,j)=>el.classList.toggle('on',j===i));
@@ -331,9 +348,27 @@ function wireSpotTools(){
     q.addEventListener('input',()=>{SPOT_FILTER.q=q.value;addSpots()})}
   if(sel&&!sel.dataset.b){sel.dataset.b='1';
     sel.addEventListener('change',()=>{SPOT_FILTER.amp=sel.value;addSpots()})}
+  const nr=document.getElementById('spotNear');
+  if(nr&&!nr.dataset.b){nr.dataset.b='1';
+    nr.onclick=async()=>{
+      nr.disabled=true;const old=nr.innerHTML;nr.textContent='กำลังหาตำแหน่ง…';
+      try{
+        ME=await askLocation();
+        if(MEMARK)TMAP.removeLayer(MEMARK);
+        MEMARK=L.circleMarker([ME.lat,ME.lng],{radius:9,className:'mebadge',color:'#fff',weight:3,
+          fillColor:cv('--blue'),fillOpacity:1}).addTo(TMAP)
+          .bindPopup('<div class="pop"><div class="ph2"><b>ตำแหน่งของท่าน</b><span>คลาดเคลื่อนราว '+Math.round(ME.acc)+' เมตร</span></div></div>');
+        addSpots();
+        nr.classList.add('on');
+      }catch(e){alert(e.message)}
+      finally{nr.disabled=false;nr.innerHTML=old}
+    }}
   const rs=document.getElementById('spotReset');
   if(rs&&!rs.dataset.b){rs.dataset.b='1';
-    rs.onclick=()=>{SPOT_FILTER={q:'',amp:''};if(q)q.value='';if(sel)sel.value='';addSpots()}}
+    rs.onclick=()=>{SPOT_FILTER={q:'',amp:''};ME=null;
+      if(MEMARK&&TMAP){TMAP.removeLayer(MEMARK);MEMARK=null}
+      const n=document.getElementById('spotNear');if(n)n.classList.remove('on');
+      if(q)q.value='';if(sel)sel.value='';addSpots()}}
   const lst=document.getElementById('spotList');
   if(lst&&!lst.dataset.b){lst.dataset.b='1';
     lst.addEventListener('click',e=>{const b=e.target.closest('[data-spot]');if(b)focusSpot(+b.dataset.spot)})}

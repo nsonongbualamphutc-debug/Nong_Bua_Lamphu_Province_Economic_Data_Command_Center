@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'2.2.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'2.3.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -895,20 +895,83 @@ function servicePopup(o){
   const nav=`https://www.google.com/maps/dir/?api=1&destination=${q}&travelmode=driving`;
   const view=`https://www.google.com/maps/search/?api=1&query=${q}`;
   const near=o.nearby?`https://www.google.com/maps/search/${encodeURIComponent(o.nearby)}/@${o.lat},${o.lng},15z`:'';
+  const sv=`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${q}`;
   return `<div class="pop">
     <div class="ph2"><b>${o.name}</b>${o.sub?`<span>${o.sub}</span>`:''}</div>
     <div class="pb">
       ${(o.rows||[]).map(r=>`<div class="prow"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}
+      ${o.km!=null?`<div class="prow"><span>ระยะจากตำแหน่งท่าน</span><b>${o.km.toFixed(1)} กม. · ราว ${driveMin(o.km)} นาที</b></div>`:''}
       <div class="prow"><span>พิกัด</span><b>${(+o.lat).toFixed(5)}, ${(+o.lng).toFixed(5)}</b></div>
       <div class="pact">
         <a class="go" href="${nav}" target="_blank" rel="noopener">${ICO_NAV}นำทาง</a>
         <a href="${view}" target="_blank" rel="noopener">${ICO_PIN}เปิดแผนที่</a>
         <button onclick="navigator.clipboard&&navigator.clipboard.writeText('${q}');this.textContent='คัดลอกแล้ว'">${ICO_COPY}พิกัด</button>
       </div>
-      ${near?`<div class="pact" style="margin-top:6px">
-        <a href="${near}" target="_blank" rel="noopener" style="flex:1">${ICO_PIN}ค้นหา${o.nearby}ใกล้ที่นี่</a></div>`:''}
+      <div class="pact" style="margin-top:6px">
+        ${near?`<a href="${near}" target="_blank" rel="noopener">${ICO_PIN}${o.nearby}ใกล้ที่นี่</a>`:''}
+        <a href="${sv}" target="_blank" rel="noopener">${ICO_PIN}ดูภาพถนน</a>
+      </div>
     </div></div>`;
 }
+
+
+/* ─────────────── 32) เครื่องมือแผนที่ฟรี — ไม่ต้องใช้ API key ─────────────── */
+const BASEMAPS={
+  plain :{n:'เรียบ',   url:null},
+  street:{n:'ถนน',     url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+          sub:'abcd',max:19},
+  sat   :{n:'ดาวเทียม',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          max:17},
+  topo  :{n:'ภูมิประเทศ',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+          max:17}
+};
+function baseSwitcher(id){
+  return `<div class="basesw" data-base="${id}">${Object.entries(BASEMAPS).map(([k,v],i)=>
+    `<button data-bm="${k}" class="${i===0?'on':''}">${v.n}</button>`).join('')}</div>`;
+}
+function bindBase(id,map,state){
+  const el=document.querySelector(`[data-base="${id}"]`); if(!el||el.dataset.b)return;
+  el.dataset.b='1';
+  el.addEventListener('click',e=>{
+    const b=e.target.closest('[data-bm]'); if(!b)return;
+    el.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    const k=b.dataset.bm, cfg=BASEMAPS[k];
+    if(state.layer){map.removeLayer(state.layer);state.layer=null}
+    if(cfg.url){
+      state.layer=L.tileLayer(cfg.url,{maxZoom:cfg.max||18,subdomains:cfg.sub||'abc',opacity:.92}).addTo(map);
+      state.layer.bringToBack();
+    }
+    if(state.onChange)state.onChange(k);
+  });
+}
+/* ระยะทางเส้นตรงแบบ Haversine (กิโลเมตร) */
+function distKm(a,b,c,d){
+  const R=6371,r=Math.PI/180;
+  const dLa=(c-a)*r,dLo=(d-b)*r;
+  const h=Math.sin(dLa/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(dLo/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function driveMin(km){return Math.round(km/45*60*1.25)}   /* ถนนต่างจังหวัด เฉลี่ย 45 กม./ชม. บวกตัวคูณเส้นทางจริง */
+/* ขอตำแหน่งผู้ใช้จากเบราว์เซอร์ ฟรีและไม่ต้องใช้คีย์ */
+function askLocation(){
+  return new Promise((res,rej)=>{
+    if(!navigator.geolocation)return rej(new Error('เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง'));
+    navigator.geolocation.getCurrentPosition(
+      p=>res({lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy}),
+      e=>rej(new Error(e.code===1?'ท่านปฏิเสธการเข้าถึงตำแหน่ง':'ระบุตำแหน่งไม่สำเร็จ')),
+      {enableHighAccuracy:true,timeout:12000,maximumAge:60000});
+  });
+}
+function fullscreenBtn(targetSel){
+  return `<button class="tb fsbtn" data-fs="${targetSel}">
+    <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>เต็มจอ</button>`;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-fs]'); if(!b)return;
+  const el=document.querySelector(b.dataset.fs); if(!el)return;
+  if(document.fullscreenElement)document.exitFullscreen();
+  else if(el.requestFullscreen)el.requestFullscreen();
+});
 
 /* ─────────────── 22) โครงร่วม: แถบบน เมนู และการเริ่มระบบ ─────────────── */
 const NAVI=[
