@@ -126,15 +126,21 @@
 function renderAgri(){
   const C=D.crop,B=D.base,val=cropValue();
   $('#agriKpi').innerHTML=[
-    kpiCard({icon:'people',color:cv('--leaf'),label:'ครัวเรือนเกษตรกร',value:f(C.hh,0),unit:'ครัวเรือน',
-      chip:'<span class="chip">ทะเบียน '+f(B.agriHH,0)+'</span>',sub:'ราว 1 ใน 5 ของประชากร'}),
+    kpiCard({icon:'people',img:'population',color:cv('--leaf'),label:'ครัวเรือนเกษตรกร',value:f(C.hh,0),unit:'ครัวเรือน',
+      chip:'<span class="chip">ทะเบียน '+f(B.agriHH,0)+'</span>',sub:'ราว 1 ใน 5 ของประชากร',
+      tip:tipOf({t:'ครัวเรือนเกษตรกร',
+        d:'จำนวนครัวเรือนที่ปลูกพืชอายุสั้นในฤดูกาลนี้ นับซ้ำได้ถ้าครัวเรือนหนึ่งปลูกหลายชนิดพืช จึงสูงกว่าจำนวนครัวเรือนที่ขึ้นทะเบียนเกษตรกร',
+        calc:'ผลรวมครัวเรือนที่รายงานการปลูกในแต่ละชนิดพืช',src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})}),
     kpiCard({icon:'leaf',color:cv('--brand'),label:'เนื้อที่ปลูกพืชอายุสั้น',value:f(C.area,0),unit:'ไร่',
       chip:'<span class="chip">ข้าวนาปี 60.9%</span>',sub:'จากพื้นที่เกษตร 1.55 ล้านไร่'}),
     kpiCard({icon:'drop',color:cv('--brand2'),label:'ผลผลิตรวม',value:f(C.yieldKg/1e6,0),unit:'ล้าน กก.',
       chip:'<span class="chip">อ้อยโรงงาน 95%</span>',sub:'ข้าวนาปีอยู่ระหว่างฤดูกาล'}),
-    kpiCard({icon:'coin',color:cv('--gold'),label:'มูลค่าผลผลิต',value:f(val,0),unit:'ล้านบาท',
+    kpiCard({icon:'coin',img:'income',color:cv('--gold'),label:'มูลค่าผลผลิต',value:f(val,0),unit:'ล้านบาท',
       chip:'<span class="chip up">คำนวณจากราคาที่ขายได้</span>',sub:'ยังไม่รวมข้าวนาปี',
-      tip:'มูลค่าผลผลิตพืชอายุสั้น|ผลรวมของ ผลผลิต × ราคาที่เกษตรกรขายได้ ทุกชนิดพืช|อ้อยโรงงานคิดเป็น 89% ของมูลค่าทั้งหมด'}),
+      tip:tipOf({t:'มูลค่าผลผลิตพืชอายุสั้น',
+        d:'เงินที่เกษตรกรได้รับจริงจากการขายผลผลิต ไม่ใช่แค่ปริมาณผลผลิต ทำให้เทียบข้ามชนิดพืชได้ อ้อยโรงงานคิดเป็นราว 89% ของมูลค่าทั้งหมด',
+        calc:'ผลรวมของ (ผลผลิต กก. × ราคาที่เกษตรกรขายได้ บาท/กก.) ทุกชนิดพืช · ข้าวนาปียังไม่มีตัวเลขผลผลิตเพราะอยู่ระหว่างฤดูกาล จึงยังไม่ถูกนับ',
+        src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})}),
     kpiCard({icon:'plane',color:cv('--plum'),label:'ท่องเที่ยวเชิงเกษตร',value:f(B.tour.total,0),unit:'แห่ง',
       chip:'<span class="chip">แปลงใหญ่ '+B.bigPlot.plots+' แปลง</span>',sub:'กระจายทั้ง 6 อำเภอ'})
   ].join('');

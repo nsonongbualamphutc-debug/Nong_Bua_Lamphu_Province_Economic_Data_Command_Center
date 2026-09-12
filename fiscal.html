@@ -35,8 +35,12 @@
   </div>
   <div class="grid g2">
     <div class="c"><header><h3>เงินกันไว้เบิกเหลื่อมปี พ.ศ. 2568</h3></header><div class="b" id="carryOver"></div></div>
-    <div class="c"><header><h3>เม็ดเงินภาครัฐรายเดือน</h3><span class="u">สะสมตั้งแต่ต้นปีงบประมาณ</span></header>
-      <div class="b"><div class="ch"><canvas id="cFiscalTrend"></canvas></div></div></div>
+    <div class="c"><header><h3>เม็ดเงินภาครัฐตามงวดเวลา</h3><span class="u">เลือกดูย้อนหลังได้ถึง 36 เดือน</span></header>
+      <div class="b">
+        <div id="fiscalSlc"></div>
+        <div class="grid g2 mb" id="fiscalPick"></div>
+        <div class="ch"><canvas id="cFiscalTrend"></canvas></div>
+      </div></div>
   </div></section>
   </main>
 </div>
@@ -46,16 +50,28 @@
 <script>
 /* ─────────────── 12) การคลัง ─────────────── */
 let fiscalMode='dis';
+function f_num(v){return Number(v).toLocaleString('th-TH',{maximumFractionDigits:2})}
 function renderFiscal(){
   const F=D.fiscal;
   $('#fiscalKpi').innerHTML=[
-    kpiCard({icon:'bank',color:cv('--brand'),label:'เบิกจ่ายภาพรวม',value:F.fn.dis[0].pct.toFixed(2),unit:'%',
-      chip:'<span class="chip up">อันดับ '+F.fn.dis[0].rank+' ของประเทศ</span>',sub:'สูงกว่าเป้าหมาย '+F.fn.dis[0].over+'%'}),
+    kpiCard({icon:'bank',img:'fiscal',color:cv('--brand'),label:'เบิกจ่ายภาพรวม',value:F.fn.dis[0].pct.toFixed(2),unit:'%',
+      chip:'<span class="chip up">อันดับ '+F.fn.dis[0].rank+' ของประเทศ</span>',sub:'สูงกว่าเป้าหมาย '+F.fn.dis[0].over+'%',
+      tip:tipOf({t:'ร้อยละการเบิกจ่ายงบประมาณภาพรวม',
+        d:'สัดส่วนเงินที่ออกจากระบบคลังจริงแล้ว เทียบกับงบที่จังหวัดได้รับจัดสรรทั้งปี ยิ่งสูงยิ่งแปลว่าเงินลงถึงพื้นที่เร็ว',
+        calc:'(ยอดเบิกจ่ายสะสม ÷ งบที่ได้รับจัดสรร) × 100 = ('+f_num(F.fn.dis[0].val)+' ÷ '+f_num(F.fn.dis[0].alloc)+') × 100',
+        src:'spend',when:'ข้อมูล ณ 4 กันยายน 2569 · รายงานครั้งที่ 178/2569'})}),
     kpiCard({icon:'coin',color:cv('--brand2'),label:'ใช้จ่ายภาพรวม',value:F.fn.use[0].pct.toFixed(2),unit:'%',
-      chip:'<span class="chip up">อันดับ '+F.fn.use[0].rank+' ของประเทศ</span>',sub:f(F.fn.use[0].val,2)+' ล้านบาท'}),
+      chip:'<span class="chip up">อันดับ '+F.fn.use[0].rank+' ของประเทศ</span>',sub:f(F.fn.use[0].val,2)+' ล้านบาท',
+      tip:tipOf({t:'ร้อยละการใช้จ่ายงบประมาณ',
+        d:'กว้างกว่าการเบิกจ่าย เพราะรวมเงินที่ก่อหนี้ผูกพันแล้ว คือลงนามสัญญาแล้วแต่ยังไม่ได้จ่ายเงินออก',
+        calc:'((ยอดเบิกจ่าย + ยอดก่อหนี้ผูกพัน) ÷ งบที่ได้รับจัดสรร) × 100',
+        src:'spend',when:'ข้อมูล ณ 4 กันยายน 2569'})}),
     kpiCard({icon:'factory',color:cv('--blue'),label:'เบิกจ่ายงบลงทุน',value:F.fn.dis[2].pct.toFixed(2),unit:'%',
       chip:'<span class="chip up">อันดับ '+F.fn.dis[2].rank+' ของประเทศ</span>',sub:'สูงกว่าเป้าหมาย '+F.fn.dis[2].over+'%',
-      tip:'งบลงทุน|เป็นงบที่กระตุ้นเศรษฐกิจในพื้นที่ได้มากที่สุด เพราะแปลงเป็นการก่อสร้างและจัดซื้อโดยตรง'}),
+      tip:tipOf({t:'ร้อยละการเบิกจ่ายงบลงทุน',
+        d:'งบหมวดลงทุนกระตุ้นเศรษฐกิจในพื้นที่ได้มากที่สุด เพราะแปลงเป็นค่าก่อสร้างและจัดซื้อที่จ่ายให้ผู้รับเหมา แรงงาน และร้านวัสดุในจังหวัดโดยตรง',
+        calc:'(เบิกจ่ายงบลงทุน ÷ งบลงทุนที่จัดสรร) × 100 = ('+f_num(F.fn.dis[2].val)+' ÷ '+f_num(F.fn.dis[2].alloc)+') × 100',
+        src:'spend',when:'ข้อมูล ณ 4 กันยายน 2569'})}),
     kpiCard({icon:'chart',color:cv('--gold'),label:'งบจัดสรรทั้งจังหวัด',value:f(F.fn.dis[0].alloc,0),unit:'ลบ.',
       chip:'<span class="chip">คงเหลือ '+f(F.fn.dis[0].alloc-F.fn.dis[0].val,0)+' ลบ.</span>',sub:'ปีงบประมาณ 2569'})
   ].join('');
@@ -84,10 +100,48 @@ function renderFiscal(){
           <span>เบิกจ่าย ${f(C.dis,2)} ลบ.</span><span>จัดสรร ${f(C.alloc,2)} ลบ.</span></div></div></div>
     <div class="note">เงินกันไว้เบิกเหลื่อมปี 2568 เหลือรอเบิกอีก ${f(C.left,2)} ล้านบาท เป็นเม็ดเงินที่ผลักลงพื้นที่ได้ทันทีหากเร่งกระบวนการ</div>`;
 
+  const box=document.getElementById('fiscalSlc');
+  if(box&&!box.innerHTML)box.innerHTML=slicerBar('slc-fiscal',{freqs:['M','Q','Y'],freq:'M',label:'เลือกงวดข้อมูล',compare:true});
+  drawFiscalTrend();
+  bindSlicers(()=>drawFiscalTrend());
+  applyEditMode();
+}
+
+function drawFiscalTrend(){
+  const st=slicerState('slc-fiscal');
+  const inv=DB.spend.inv, ope=DB.spend.ope;
+  const nowI=seriesAt(inv,st,'sum'), wasI=seriesPrevYear(inv,st,'sum');
+  const nowO=seriesAt(ope,st,'sum'), wasO=seriesPrevYear(ope,st,'sum');
+  const info=document.getElementById('slc-fiscal-info');
+  if(info)info.innerHTML=`กำลังแสดง <b>${st.label}</b>`+(st.freq==='M'?'':` · รวม ${st.idx.length} เดือน`);
+  const pick=document.getElementById('fiscalPick');
+  if(pick)pick.innerHTML=[
+    kpiCard({icon:'factory',img:'fiscal',color:cv('--brand'),label:'งบลงทุน '+(st.freq==='M'?'ณ':'รวมงวด')+' '+st.label,
+      value:f(nowI,0),unit:'ลบ.',chip:(wasI?chip(pctc(nowI,wasI)):'<span class="chip">—</span>')+' '+statusBadge(wasI?pctc(nowI,wasI):null,false,'งบลงทุนเทียบงวดเดียวกันปีก่อน'),
+      sub:wasI?('งวดเดียวกันปีก่อน '+f(wasI,0)+' ลบ.'):'ไม่มีข้อมูลปีก่อนให้เทียบ',
+      tip:tipOf({t:'การเบิกจ่ายงบลงทุน',
+        d:'เงินงบประมาณหมวดลงทุนที่ออกจากระบบคลังแล้วจริง เช่น ค่าก่อสร้าง ครุภัณฑ์ และที่ดินสิ่งก่อสร้าง',
+        calc:st.freq==='M'?'ยอดเบิกจ่ายสะสมที่รายงาน ณ เดือนที่เลือก':'ผลรวมยอดเบิกจ่ายรายเดือนภายในงวดที่เลือก',
+        src:'spend',when:st.label})}),
+    kpiCard({icon:'coin',color:cv('--gold'),label:'งบประจำ '+(st.freq==='M'?'ณ':'รวมงวด')+' '+st.label,
+      value:f(nowO,0),unit:'ลบ.',chip:(wasO?chip(pctc(nowO,wasO)):'<span class="chip">—</span>')+' '+statusBadge(wasO?pctc(nowO,wasO):null,false,'งบประจำเทียบงวดเดียวกันปีก่อน'),
+      sub:wasO?('งวดเดียวกันปีก่อน '+f(wasO,0)+' ลบ.'):'ไม่มีข้อมูลปีก่อนให้เทียบ',
+      tip:tipOf({t:'การเบิกจ่ายงบรายจ่ายประจำ',
+        d:'เงินงบประมาณหมวดประจำ เช่น เงินเดือน ค่าสาธารณูปโภค และค่าใช้สอยของส่วนราชการ',
+        calc:st.freq==='M'?'ยอดเบิกจ่ายสะสมที่รายงาน ณ เดือนที่เลือก':'ผลรวมยอดเบิกจ่ายรายเดือนภายในงวดที่เลือก',
+        src:'spend',when:st.label})})
+  ].join('');
+  const hi=st.idx||[st.i];
   mk('cFiscalTrend',{type:'line',data:{labels:MONTHS.map(m=>m.label),datasets:[
-    {label:'งบลงทุน (ลบ.)',data:DB.spend.inv.map(x=>x.v),borderColor:cv('--brand'),backgroundColor:cv('--brand')+'22',borderWidth:2.2,pointRadius:0,tension:.3,fill:true},
-    {label:'งบประจำ (ลบ.)',data:DB.spend.ope.map(x=>x.v),borderColor:cv('--gold'),borderWidth:1.8,pointRadius:0,tension:.3}]},
-    options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:11}}},
+    {label:'งบลงทุน (ลบ.)',data:inv.map(x=>x.v),borderColor:cv('--brand'),backgroundColor:cv('--brand')+'22',
+      borderWidth:2.2,tension:.3,fill:true,
+      pointRadius:MONTHS.map((m,i)=>hi.includes(i)?5:0),
+      pointBackgroundColor:cv('--brand'),pointBorderColor:'#fff',pointBorderWidth:2},
+    {label:'งบประจำ (ลบ.)',data:ope.map(x=>x.v),borderColor:cv('--gold'),borderWidth:1.8,tension:.3,
+      pointRadius:MONTHS.map((m,i)=>hi.includes(i)?5:0),
+      pointBackgroundColor:cv('--gold'),pointBorderColor:'#fff',pointBorderWidth:2}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:11}},
+      tooltip:{callbacks:{title:it=>{const m=MONTHS[it[0].dataIndex];return TH_M[m.m-1]+' '+m.y}}}},
       scales:{x:ax({grid:{display:false},ticks:{maxTicksLimit:12,font:{size:9.5}}}),y:ax({ticks:{callback:v=>f(v,0)}})}}});
   applyEditMode();
 }

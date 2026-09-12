@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'1.9.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'2.0.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -363,9 +363,19 @@ const TIP=()=>document.getElementById('tip');
 function initTip(){
   document.addEventListener('mouseover',e=>{
     const el=e.target.closest('[data-tip2]');if(!el)return;
-    const parts=String(el.dataset.tip2).split('|');
-    TIP().innerHTML=`<div class="tt">${parts[0]}</div>`+(parts[1]?`<div class="td">${parts[1]}</div>`:'')+
-      (parts[2]?`<div class="ts">${parts[2]}</div>`:'');
+    const parts=String(el.dataset.tip2).split('|').filter(x=>x!=='');
+    let html=`<div class="tt">${parts[0]}</div>`;
+    const desc=[],meta=[];
+    parts.slice(1).forEach(p=>{
+      if(/^(ที่มา|วิธีคำนวณ|งวดข้อมูล|เกณฑ์)/.test(p))meta.push(p); else desc.push(p);
+    });
+    if(desc.length)html+=`<div class="td">${desc.join('<br>')}</div>`;
+    meta.forEach(m=>{
+      const i=m.indexOf(':');
+      const k=i>0?m.slice(0,i):'', v=i>0?m.slice(i+1).trim():m;
+      html+=`<div class="tm"><span>${k}</span>${v}</div>`;
+    });
+    TIP().innerHTML=html;
     TIP().classList.add('on');moveTip(e)});
   document.addEventListener('mousemove',e=>{if(TIP().classList.contains('on'))moveTip(e)});
   document.addEventListener('mouseout',e=>{if(e.target.closest('[data-tip2]'))TIP().classList.remove('on')});
@@ -456,6 +466,7 @@ function renderSector(sid){
       <span class="bigico icow img">${icoImg(sec.ico||sec.id,52)}</span>
       <span><h2>${M.title}</h2><p>${M.lead}</p></span></div>
       <div class="r"><span class="chip mock">โครงร่าง รอข้อมูลจริง</span><span class="chip">${agy.replace(/สำนักงาน/g,'สนง.')}</span></div></div>
+    ${slicerBar('slc-'+sid,{freqs:['M','Q','Y'],freq:'M',label:'เลือกงวดข้อมูล',compare:true})}
     <div class="grid g4 mb" id="k-${sid}"></div>
     <div class="grid g21 mb">
       <div class="c"><header><h3>แนวโน้มรายเดือน 36 เดือน</h3>
@@ -471,12 +482,27 @@ function renderSector(sid){
     </div>
     <div class="c" style="margin-top:13px"><header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
       <div class="b">${srcBar(sec.datasets)}</div></div>`;
+  const st=slicerState('slc-'+sid);
+  const info=document.getElementById('slc-'+sid+'-info');
+  if(info)info.innerHTML=`กำลังแสดง <b>${st.label}</b>`+
+    (st.freq==='M'?'':` · ${st.idx.length} เดือนรวมกัน`)+
+    (st.cmp?' · เทียบกับงวดเดียวกันปีก่อน':'');
   $('#k-'+sid).innerHTML=all.slice(0,4).map((o,i)=>{
     const arr=DB[o.d.id][o.s.key];
+    const mode=o.s.pct?'avg':'sum';
+    const now=seriesAt(arr,st,mode), was=seriesPrevYear(arr,st,mode);
+    const pc=was?pctc(now,was):null;
     return kpiCard({icon:['chart','coin','people','bolt'][i],color:PAL()[i],label:o.s.label,
-      value:f(arr[35].v,o.s.dec??0),unit:o.s.unit,chip:chip(pctc(arr[35].v,arr[23].v)),
+      value:f(now,o.s.dec??0),unit:o.s.unit,
+      chip:(pc==null?'<span class="chip">—</span>':chip(pc))+' '+statusBadge(pc,!!o.d.invert,o.s.label+' เทียบงวดเดียวกันปีก่อน'),
       spark:spark(arr.slice(-18).map(x=>x.v),PAL()[i]),
-      sub:o.d.agency.split(' · ')[0].replace('สำนักงาน','สนง.').replace('จังหวัดหนองบัวลำภู','จ.นภ.')})}).join('');
+      sub:agencyName(o.d.id).replace('สำนักงาน','สนง.').replace('จังหวัดหนองบัวลำภู','จ.นภ.'),
+      tip:tipOf({t:o.s.label,
+        d:'หน่วยวัด '+o.s.unit+(st.freq==='M'?' · ค่าของเดือนที่เลือก':(mode==='avg'?' · ค่าเฉลี่ยในงวด':' · ผลรวมในงวด')),
+        calc:st.freq==='M'?'ค่าที่หน่วยงานรายงานในเดือนนั้นโดยตรง'
+          :(mode==='avg'?'เฉลี่ยค่ารายเดือนภายในงวดที่เลือก':'รวมค่ารายเดือนภายในงวดที่เลือก')+
+            (pc!=null?' · เปรียบเทียบกับงวดเดียวกันของปีก่อน = (งวดนี้ − ปีก่อน) ÷ ปีก่อน × 100':''),
+        src:o.d.id, when:st.label})})}).join('');
   drawSectorChart(sid,'line');
   mk('cy-'+sid,{type:'bar',data:{labels:YEARS.map(y=>'ปี '+y),
     datasets:all.slice(0,3).map((o,i)=>({label:o.s.label,
@@ -490,6 +516,7 @@ function renderSector(sid){
   $('#td-'+sid).innerHTML=`<thead><tr><th>อำเภอ</th><th class="r">${o.s.label} (${o.s.unit})</th><th class="r">สัดส่วน</th><th style="width:110px"></th></tr></thead><tbody>`+
     vals.map(r=>`<tr><td>${r.n}</td><td class="r">${f(r.v,o.s.dec??0)}</td><td class="r">${(r.v/tot*100).toFixed(1)}%</td>
       <td><div class="bar"><i style="width:${(r.v/mx*100).toFixed(0)}%;background:${sec.color}"></i></div></td></tr>`).join('')+'</tbody>';
+  bindSlicers(()=>renderSector(sid));
   if(M.extra){const m2=M.extra.rows[0][1];
     $('#tx-'+sid).innerHTML=`<thead><tr><th>รายการ</th><th class="r">${M.extra.unit}</th><th style="width:80px"></th></tr></thead><tbody>`+
       M.extra.rows.map(r=>`<tr><td>${r[0]}</td><td class="r">${f(r[1],0)}</td>
@@ -707,6 +734,16 @@ function chartTipEl(){
   if(!el){el=document.createElement('div');el.id='chtip';document.body.appendChild(el)}
   return el;
 }
+/* สร้างข้อความ tooltip แบบมีโครงสร้าง — ใช้กับทุกตัวชี้วัด
+   t=ชื่อ · d=ความหมาย · calc=วิธีคำนวณ · src=หน่วยงานเจ้าของข้อมูล (คีย์ใน AGENCY_FULL หรือข้อความ) · when=งวดข้อมูล */
+function tipOf(o){
+  const ag=(typeof AGENCY_FULL!=='undefined'&&AGENCY_FULL[o.src])?AGENCY_FULL[o.src]:null;
+  const src=ag?(ag.n+(ag.doc?' · '+ag.doc:'')):(o.src||'');
+  return [o.t||'', o.d||'', o.calc?('วิธีคำนวณ: '+o.calc):'', src?('ที่มา: '+src):'', o.when?('งวดข้อมูล: '+o.when):'']
+    .filter(Boolean).join('|').replace(/"/g,'&#34;');
+}
+function agencyName(k){const a=AGENCY_FULL[k];return a?a.n:k}
+
 function externalTip(ctx){
   const el=chartTipEl(), tt=ctx.tooltip;
   if(!tt||tt.opacity===0){el.classList.remove('on');return}
@@ -884,6 +921,106 @@ function bindToggle(){
       if(c)c.classList.toggle('hide',v!=='chart');
       if(t)t.classList.toggle('hide',v!=='table');
       if(v==='chart'&&CH[id])setTimeout(()=>{try{CH[id].resize()}catch(e){}},30);
+    });
+  });
+}
+
+
+/* ─────────────── 30) ตัวกรองเวลาแบบใช้ร่วมทุกหน้า ─────────────── */
+const SLC={};   /* เก็บสถานะของแต่ละตัวกรอง */
+const FQ_LABEL={M:'รายเดือน',Q:'รายไตรมาส',Y:'รายปี'};
+
+/* สร้างรายการงวดจากชุดข้อมูลรายเดือน 36 เดือน */
+function periodsOf(freq){
+  if(freq==='M')return MONTHS.map((m,i)=>({k:'M'+i,label:TH_M[m.m-1]+' '+m.y,short:m.label,i}));
+  if(freq==='Q'){
+    const out=[];
+    MONTHS.forEach((m,i)=>{
+      const q=Math.ceil(m.m/3), k='Q'+m.y+'-'+q;
+      let e=out.find(x=>x.k===k);
+      if(!e){e={k,label:'ไตรมาส '+q+'/'+m.y,short:'Q'+q+'/'+String(m.y).slice(-2),idx:[]};out.push(e)}
+      e.idx.push(i);
+    });
+    return out.map(x=>Object.assign(x,{i:x.idx[x.idx.length-1]}));
+  }
+  const ys=[...new Set(MONTHS.map(m=>m.y))];
+  return ys.map(y=>{const idx=MONTHS.map((m,i)=>m.y===y?i:-1).filter(i=>i>=0);
+    return {k:'Y'+y,label:'ปี '+y,short:'ปี '+y,i:idx[idx.length-1],idx}});
+}
+
+/**
+ * สร้างแถบตัวกรองเวลา
+ * cfg: {freqs:['M','Q','Y'], freq:'M', value:'M35', label:'งวดข้อมูล', compare:true, fy:false}
+ */
+function slicerBar(id,cfg){
+  cfg=Object.assign({freqs:['M','Q','Y'],freq:'M',compare:true,label:'งวดข้อมูล'},cfg||{});
+  if(!SLC[id])SLC[id]=cfg; else cfg=SLC[id];
+  const ps=periodsOf(cfg.freq);
+  if(!cfg.value||!ps.find(p=>p.k===cfg.value))cfg.value=ps[ps.length-1].k;
+  const cur=ps.find(p=>p.k===cfg.value), ci=ps.indexOf(cur);
+  return `<div class="slicer" data-slicer="${id}">
+    <span class="sl-lab">${cfg.label}</span>
+    ${cfg.freqs.length>1?`<span class="sl-seg">${cfg.freqs.map(f=>
+      `<button data-fq="${f}" class="${f===cfg.freq?'on':''}">${FQ_LABEL[f]}</button>`).join('')}</span>`:''}
+    <span class="sl-nav">
+      <button data-step="-1" ${ci<=0?'disabled':''} aria-label="ก่อนหน้า">
+        <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <select data-pick>${ps.map(p=>`<option value="${p.k}"${p.k===cfg.value?' selected':''}>${p.label}</option>`).join('')}</select>
+      <button data-step="1" ${ci>=ps.length-1?'disabled':''} aria-label="ถัดไป">
+        <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    </span>
+    <button class="sl-now${ci===ps.length-1?' on':''}" data-now>ล่าสุด</button>
+    ${cfg.compare?`<button class="sl-cmp${cfg.cmp?' on':''}" data-cmp>
+      <svg viewBox="0 0 24 24"><path d="M4 17.5 10 11l4 3.5 6-7.5"/></svg>เทียบปีก่อน</button>`:''}
+    <span class="sl-info" id="${id}-info"></span>
+  </div>`;
+}
+function slicerState(id){
+  const cfg=SLC[id]; if(!cfg)return null;
+  const ps=periodsOf(cfg.freq);
+  const cur=ps.find(p=>p.k===cfg.value)||ps[ps.length-1];
+  return {freq:cfg.freq,key:cur.k,label:cur.label,i:cur.i,idx:cur.idx||[cur.i],cmp:!!cfg.cmp,periods:ps};
+}
+/* ค่าของชุดข้อมูลตามงวดที่เลือก — รายเดือนใช้ค่าเดือนนั้น รายไตรมาส/ปีใช้ผลรวมหรือค่าเฉลี่ย */
+function seriesAt(arr,st,mode){
+  if(!st)return arr[arr.length-1].v;
+  const idx=st.idx||[st.i];
+  const vals=idx.map(i=>arr[i]&&arr[i].v).filter(v=>v!=null);
+  if(!vals.length)return null;
+  if(st.freq==='M')return vals[vals.length-1];
+  return mode==='avg'?vals.reduce((a,b)=>a+b,0)/vals.length:vals.reduce((a,b)=>a+b,0);
+}
+function seriesPrevYear(arr,st,mode){
+  if(!st)return null;
+  const idx=(st.idx||[st.i]).map(i=>i-12).filter(i=>i>=0);
+  if(!idx.length)return null;
+  const vals=idx.map(i=>arr[i]&&arr[i].v).filter(v=>v!=null);
+  if(!vals.length)return null;
+  if(st.freq==='M')return vals[vals.length-1];
+  return mode==='avg'?vals.reduce((a,b)=>a+b,0)/vals.length:vals.reduce((a,b)=>a+b,0);
+}
+function bindSlicers(onChange){
+  document.querySelectorAll('[data-slicer]').forEach(el=>{
+    if(el.dataset.bound)return; el.dataset.bound='1';
+    const id=el.dataset.slicer;
+    el.addEventListener('click',e=>{
+      const fq=e.target.closest('[data-fq]');
+      const st=e.target.closest('[data-step]');
+      const nw=e.target.closest('[data-now]');
+      const cp=e.target.closest('[data-cmp]');
+      const c=SLC[id]; if(!c)return;
+      if(fq){c.freq=fq.dataset.fq;c.value=null}
+      else if(st){const ps=periodsOf(c.freq);const i=ps.findIndex(p=>p.k===c.value);
+        const n=ps[i+ +st.dataset.step]; if(n)c.value=n.k; else return}
+      else if(nw){const ps=periodsOf(c.freq);c.value=ps[ps.length-1].k}
+      else if(cp){c.cmp=!c.cmp}
+      else return;
+      onChange&&onChange(id);
+    });
+    el.addEventListener('change',e=>{
+      if(!e.target.matches('[data-pick]'))return;
+      SLC[id].value=e.target.value;
+      onChange&&onChange(id);
     });
   });
 }
