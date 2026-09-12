@@ -79,8 +79,11 @@
       <div class="c"><header><h3>แหล่งน้ำเพื่อการเกษตร</h3><span class="u">แยกตามประเภท</span>
         <span class="r"><span class="chip mock">บางรายการรอยืนยัน</span></span></header>
         <div class="b"><div class="sc"><table class="t" data-owner="crop" id="tWater"></table></div></div></div>
-      <div class="c"><header><h3>พื้นที่รับประโยชน์</h3><span class="u">ไร่</span></header>
-        <div class="b"><div class="ch"><canvas id="cWater"></canvas></div></div></div>
+      <div class="c"><header><span class="hdico icow img">${icoImg('irrigation',26)}</span>
+        <h3>แหล่งน้ำชลประทานจำแนกตามประเภท</h3></header>
+        <div class="b"><div id="irrBox"></div>
+          <div class="note">ข้อมูลจากโครงการชลประทานหนองบัวลำภู กรมชลประทาน — เป็นแหล่งน้ำที่มีระบบส่งน้ำถึงแปลงจริง
+          ต่างจากแหล่งน้ำธรรมชาติที่ยังต้องสูบเอง</div></div></div>
     </div>
     <div class="c"><header><h3>ความเชื่อมโยงกับศูนย์บัญชาการข้อมูลสถานการณ์น้ำ</h3></header>
       <div class="b" style="font-size:12.5px;line-height:1.9;color:var(--dim)">
@@ -211,18 +214,53 @@ function renderAgri(){
     options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>f(c.raw,2)+' กก./ไร่'}}},
       scales:{x:ax({grid:{display:false}}),y:ax({type:'logarithmic',ticks:{callback:v=>f(v,0)}})}}});
 
-  /* แหล่งน้ำ */
+  /* แหล่งน้ำ — รวมข้อมูลชลประทานจริง */
   const W=D.water,ok=W.filter(w=>w.ok);
+  const IR=(typeof DX!=='undefined')?DX.irrig:null;
+  const irrTot=IR?Object.values(IR.byType).reduce((a,b)=>a+b,0):0;
+  const benefit=IR?IR.benefitArea.total:0;
+  const hhBen=IR?IR.households.total:0;
   $('#waterKpi').innerHTML=[
-    kpiCard({icon:'bolt',img:'irrigation',color:cv('--gold'),label:'ระบบสูบน้ำโซลาร์เซลล์',value:f(W[0].cnt,0),unit:'แห่ง',
+    kpiCard({icon:'drop',img:'irrigation',color:cv('--blue'),label:'แหล่งน้ำชลประทาน',
+      value:f(irrTot,0),unit:'แห่ง',
+      chip:'<span class="chip real">ข้อมูลจริง</span>',
+      sub:IR?('ปี '+IR.year+' · แก้มลิง '+IR.monkey.total+' · สถานีสูบน้ำ '+IR.pump.total):'',
+      tip:tipOf({t:'แหล่งน้ำชลประทาน',
+        d:'ฝาย อ่างเก็บน้ำขนาดเล็ก ประตูระบายน้ำ และสถานีสูบน้ำด้วยไฟฟ้าในความรับผิดชอบของโครงการชลประทานจังหวัด',
+        calc:'ผลรวมจำนวนแหล่งน้ำทุกประเภทที่ขึ้นทะเบียน',src:'irrig',when:IR?('ปี '+IR.year):''})}),
+    kpiCard({icon:'leaf',color:cv('--brand'),label:'พื้นที่รับประโยชน์',value:f(benefit,0),unit:'ไร่',
+      chip:'<span class="chip">'+(benefit/1550000*100).toFixed(1)+'% ของพื้นที่เกษตร</span>',
+      sub:'ครัวเรือนได้ประโยชน์ '+f(hhBen,0)+' ครัวเรือน',
+      tip:tipOf({t:'พื้นที่รับประโยชน์ในเขตชลประทาน',
+        d:'พื้นที่การเกษตรที่อยู่ในระยะที่ระบบชลประทานส่งน้ำถึง ใช้ประเมินว่าเกษตรกรกี่รายพ้นจากการพึ่งน้ำฝน',
+        calc:'ผลรวมพื้นที่รับประโยชน์ของทุกโครงการ ÷ พื้นที่เกษตรทั้งจังหวัด 1.55 ล้านไร่',
+        src:'irrig',when:IR?('ปี '+IR.benefitArea.year):''})}),
+    kpiCard({icon:'bolt',color:cv('--gold'),label:'ระบบสูบน้ำโซลาร์เซลล์',value:f(W[0].cnt,0),unit:'แห่ง',
       chip:'<span class="chip real">ข้อมูลจริง</span>',sub:'พื้นที่รับประโยชน์ '+f(W[0].benefit,0)+' ไร่'}),
-    kpiCard({icon:'drop',color:cv('--brand2'),label:'พื้นที่รับประโยชน์ที่ยืนยันแล้ว',value:f(ok.reduce((a,w)=>a+(w.benefit||0),0),0),unit:'ไร่',
-      chip:'<span class="chip">คิดเป็น 0.35% ของพื้นที่เกษตร</span>',sub:'จากพื้นที่เกษตร 1.55 ล้านไร่'}),
-    kpiCard({icon:'leaf',color:cv('--leaf'),label:'พื้นที่เกษตรทั้งจังหวัด',value:'1.55',unit:'ล้านไร่',
-      chip:'<span class="chip fl">ยังพึ่งน้ำฝนเป็นหลัก</span>',sub:'ต้องขยายแหล่งน้ำต้นทุน'}),
-    kpiCard({icon:'chart',color:cv('--coral'),label:'รายการที่รอข้อมูล',value:W.filter(w=>!w.ok).length,unit:'ประเภท',
-      chip:'<span class="chip mock">ต้องประสานหน่วยงาน</span>',sub:'ชลประทาน · ทรัพยากรน้ำบาดาล'})
+    kpiCard({icon:'drop',color:cv('--coral'),label:'พื้นที่เกษตรที่ยังพึ่งน้ำฝน',
+      value:((1550000-benefit)/1e6).toFixed(2),unit:'ล้านไร่',
+      chip:'<span class="chip fl">'+((1550000-benefit)/1550000*100).toFixed(0)+'% ของพื้นที่เกษตร</span>',
+      sub:'เป็นกลุ่มเสี่ยงที่สุดเมื่อฝนทิ้งช่วง',
+      tip:tipOf({t:'พื้นที่เกษตรนอกเขตชลประทาน',
+        d:'พื้นที่ที่ยังไม่มีระบบส่งน้ำถึง ต้องพึ่งน้ำฝนอย่างเดียว ผลผลิตจึงผันผวนตามสภาพอากาศ',
+        calc:'พื้นที่เกษตรทั้งจังหวัด − พื้นที่รับประโยชน์ในเขตชลประทาน',src:'irrig'})})
   ].join('');
+  if(IR){
+    const box=document.getElementById('irrBox');
+    if(box){
+      const T=Object.entries(IR.byType).sort((a,b)=>b[1]-a[1]);
+      const mx=T[0][1];
+      box.innerHTML=T.map((r,i)=>`<div class="barrow"><span class="nm">${r[0]}</span>
+        <span class="tr"><i style="width:${(r[1]/mx*100).toFixed(0)}%;background:${PAL()[i%7]}"></i></span>
+        <span class="vv">${f(r[1],0)}</span></div>`).join('')+
+        `<div class="grid g2" style="gap:9px;margin-top:11px">
+          <div class="mini"><div class="l">แก้มลิง</div><div class="v">${IR.monkey.total}<small> แห่ง</small></div></div>
+          <div class="mini"><div class="l">สถานีสูบน้ำด้วยไฟฟ้า</div><div class="v">${IR.pump.total}<small> สถานี</small></div></div>
+          <div class="mini"><div class="l">ความจุเก็บกัก</div><div class="v">${f(IR.storage.total,0)}<small> ลบ.ม.</small></div></div>
+          <div class="mini"><div class="l">พื้นที่เพาะปลูกในเขต</div><div class="v">${f(IR.cropArea.total,0)}<small> ไร่</small></div></div>
+        </div>`;
+    }
+  }
   $('#tWater').innerHTML=`<thead><tr><th>ประเภทแหล่งน้ำ</th><th class="r">จำนวน</th><th>หน่วย</th>
     <th class="r">พื้นที่รับประโยชน์ (ไร่)</th><th style="width:90px">สถานะ</th></tr></thead><tbody>`+
     W.map((w,i)=>`<tr><td>${w.n}</td>${ec('water.'+i+'.cnt',w.cnt!=null?f(w.cnt,0):'—',0)}<td>${w.unit}</td>
@@ -230,10 +268,7 @@ function renderAgri(){
       <td>${w.ok?'<span class="chip real">ยืนยันแล้ว</span>':'<span class="chip mock">รอข้อมูล</span>'}</td></tr>`).join('')+
     `</tbody><tfoot><tr><td colspan="5" style="font-family:var(--fb);font-weight:400;color:var(--faint);font-size:10.5px">
       ยืนยันจากเอกสาร สนง.เกษตรจังหวัด ณ ก.ค. 2569 เฉพาะระบบสูบน้ำพลังงานแสงอาทิตย์ · รายการอื่นรอหนังสือยืนยันตัวเลข</td></tr></tfoot>`;
-  mk('cWater',{type:'bar',data:{labels:W.map(w=>w.n.length>26?w.n.slice(0,25)+'…':w.n),
-    datasets:[{data:W.map(w=>w.benefit||0),backgroundColor:W.map(w=>w.ok?cv('--brand'):cv('--line')),borderRadius:5,barThickness:14}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw?f(c.raw,0)+' ไร่':'ยังไม่มีข้อมูล'}}},
-      scales:{x:ax({ticks:{callback:v=>f(v,0)}}),y:ax({grid:{display:false},ticks:{font:{size:10}}})}}});
+
 
   /* แปลงใหญ่ */
   const mxA=Math.max(...B.bigPlot.rows.map(r=>r[3]));
@@ -309,7 +344,7 @@ DS.init('agri',function(){
   if(v&&!v.querySelector('.srcbar')){
     const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
     d.innerHTML='<header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
-      srcBar(['crop'],'ภาวะการผลิตพืชอายุสั้น ณ 8 ก.ย. 2569 · ไม้ผลเศรษฐกิจ ณ มิ.ย. 2569 · ฐานข้อมูลการเกษตร ณ ก.ค. 2569')+'</div>';
+      srcBar(['crop','irrig'],'ภาวะการผลิตพืชอายุสั้น ณ 8 ก.ย. 2569 · ไม้ผลเศรษฐกิจ ณ มิ.ย. 2569 · ฐานข้อมูลการเกษตร ณ ก.ค. 2569 · ข้อมูลชลประทานรายปี')+'</div>';
     v.appendChild(d);
   }
   Object.keys(AGRI_SUB).forEach(function(k){

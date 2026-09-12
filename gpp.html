@@ -29,6 +29,12 @@
     <div class="c"><header><h3>โครงสร้างเศรษฐกิจ</h3><span class="u">สัดส่วน GPP ตามสาขา</span></header>
       <div class="b"><div class="ch lg"><canvas id="cStruct"></canvas></div></div></div>
   </div>
+  <div class="c mb" style="border-left:4px solid var(--brand)">
+    <header><h3>การวิเคราะห์ด้านอุปสงค์ อุปทาน และเสถียรภาพการคลัง</h3>
+      <span class="u">อ่านทิศทางเศรษฐกิจจากสามด้านพร้อมกัน</span></header>
+    <div class="b"><div class="note" id="dsNote" style="border-top:0;padding-top:0;margin-top:0"></div></div></div>
+  <div class="grid g3 mb" id="dsGrid"></div>
+
   <div class="grid g21">
     <div class="c"><header><h3>GPP รายปีและรายได้ต่อหัว</h3><span class="u">ล้านบาท · บาท/คน/ปี</span>
       <span class="r"><button class="tb" id="btnGppEdit" style="height:27px;font-size:11px">แก้ไขตาราง</button></span></header>
@@ -92,6 +98,80 @@ function renderGpp(){
 }
 
 
+/* ══ ด้านอุปสงค์ อุปทาน และเสถียรภาพการคลัง ══ */
+function renderDS(){
+  const g=document.getElementById('dsGrid'); if(!g)return;
+  const st=slicerState('slc-ov')||{i:35,idx:[33,34,35],freq:'Q',label:'ไตรมาสล่าสุด'};
+  const last=v=>v[v.length-1].v, prev=v=>v[v.length-13].v;
+  /* อุปสงค์ = การใช้จ่ายของครัวเรือนและรัฐ */
+  const dem=[
+    {n:'รถจดทะเบียนใหม่',a:DB.car.moto,u:'คัน',agg:'sum',src:'car'},
+    {n:'การใช้น้ำมันเชื้อเพลิง',a:DB.fuel.total,u:'ล้านลิตร',agg:'sum',src:'fuel'},
+    {n:'สินเชื่อที่อนุมัติ',a:DB.credit.amt,u:'ล้านบาท',agg:'sum',src:'credit'}
+  ];
+  /* อุปทาน = กำลังการผลิตในพื้นที่ */
+  const sup=[
+    {n:'ไฟฟ้าภาคอุตสาหกรรม',a:DB.power.ind,u:'ล้านหน่วย',agg:'sum',src:'power'},
+    {n:'โรงงานใหม่และขยายกิจการ',a:DB.factory.newf,u:'แห่ง',agg:'sum',src:'factory'},
+    {n:'มูลค่าผลผลิตพืชอายุสั้น',a:DB.crop.value,u:'ล้านบาท',agg:'sum',src:'crop'}
+  ];
+  const score=arr=>{
+    const ps=arr.map(x=>{const n=last(x.a),w=prev(x.a);return w?pctc(n,w):null}).filter(x=>x!=null);
+    return ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:null;
+  };
+  const dScore=score(dem), sScore=score(sup);
+  const F=D.fiscal;
+  const stability=[
+    ['ร้อยละการเบิกจ่ายภาพรวม',F.fn.dis[0].pct,'%',F.fn.dis[0].pct>=90],
+    ['ร้อยละการเบิกจ่ายงบลงทุน',F.fn.dis[2].pct,'%',F.fn.dis[2].pct>=85],
+    ['เงินกันเหลื่อมปีที่เบิกแล้ว',F.carry.pct,'%',F.carry.pct>=95],
+    ['งบคงเหลือรอเบิกจ่าย',F.fn.dis[0].alloc-F.fn.dis[0].val,'ลบ.',null]
+  ];
+  const block=(ico,title,sc,rows,note,color)=>`
+    <div class="c"><header><span class="hdico icow img">${icoImg(ico,26)}</span><h3>${title}</h3>
+      <span class="r">${sc==null?'':statusBadge(sc,false,title+' เทียบปีก่อน')}</span></header>
+      <div class="b">
+        ${sc!=null?`<div class="bignum" style="margin-bottom:11px">
+          <span class="v" style="color:${color}">${sc>0?'+':''}${sc.toFixed(1)}%</span>
+          <span class="u">เฉลี่ยเทียบปีก่อน</span></div>`:''}
+        ${rows}
+        <div class="note">${note}</div>
+      </div></div>`;
+  const rowsOf=list=>list.map((x,i)=>{
+    const n=last(x.a),w=prev(x.a),p=w?pctc(n,w):null;
+    return `<div class="barrow" data-tip2="${tipOf({t:x.n,d:'เทียบเดือนเดียวกันปีก่อน',
+      calc:'(ค่าเดือนล่าสุด − ค่าเดือนเดียวกันปีก่อน) ÷ ค่าปีก่อน × 100',src:x.src})}">
+      <span class="nm">${x.n}</span>
+      <span class="tr"><i style="width:${Math.min(100,Math.abs(p||0)*4).toFixed(0)}%;background:${p>=0?cv('--brand'):cv('--coral')}"></i></span>
+      <span class="vv" style="color:${p>=0?cv('--good'):cv('--bad')}">${p==null?'—':(p>0?'+':'')+p.toFixed(1)+'%'}</span></div>`;
+  }).join('');
+  g.innerHTML=
+    block('demand','ด้านอุปสงค์',dScore,rowsOf(dem),
+      'วัดจากการใช้จ่ายจริงของครัวเรือนและภาคธุรกิจ ถ้าอุปสงค์โตเร็วกว่าอุปทานนาน ๆ จะกดดันราคาให้สูงขึ้น',
+      dScore>=0?cv('--brand'):cv('--coral'))+
+    block('supply','ด้านอุปทาน',sScore,rowsOf(sup),
+      'วัดจากกำลังการผลิตในพื้นที่ ถ้าอุปทานโตช้ากว่าอุปสงค์ แปลว่าจังหวัดผลิตไม่ทันความต้องการ ต้องนำเข้าจากนอกพื้นที่',
+      sScore>=0?cv('--brand'):cv('--coral'))+
+    `<div class="c"><header><span class="hdico icow img">${icoImg('stability',26)}</span><h3>เสถียรภาพการคลัง</h3>
+      <span class="r">${statusBadge(F.fn.dis[0].pct-90,false,'ระดับการเบิกจ่ายเทียบเกณฑ์ 90%')}</span></header>
+      <div class="b">
+        ${stability.map(r=>`<div class="barrow">
+          <span class="nm">${r[0]}</span>
+          <span class="vv" style="color:${r[3]===null?cv('--dim'):(r[3]?cv('--good'):cv('--bad'))}">
+            ${typeof r[1]==='number'?f(r[1],r[2]==='%'?2:0):r[1]} ${r[2]}</span></div>`).join('')}
+        <div class="note">เสถียรภาพการคลังจังหวัดดูจากความสามารถในการเบิกจ่ายให้ทันปีงบประมาณ
+          จังหวัดเบิกจ่ายได้ ${F.fn.dis[0].pct}% เป็นอันดับ ${F.fn.dis[0].rank} ของประเทศ
+          เหลืองบรอเบิกจ่ายอีก ${f(F.fn.dis[0].alloc-F.fn.dis[0].val,0)} ล้านบาทที่ผลักลงพื้นที่ได้ทันที</div>
+      </div></div>`;
+  const gap=(dScore!=null&&sScore!=null)?dScore-sScore:null;
+  const note=document.getElementById('dsNote');
+  if(note&&gap!=null)note.innerHTML=
+    `ช่องว่างอุปสงค์กับอุปทานอยู่ที่ ${gap>0?'+':''}${gap.toFixed(1)} จุด `+
+    (gap>3?'อุปสงค์นำอุปทาน ควรเร่งขยายกำลังการผลิตในพื้นที่'
+     :gap<-3?'อุปทานนำอุปสงค์ ควรเร่งกระตุ้นกำลังซื้อ'
+     :'อุปสงค์และอุปทานค่อนข้างสมดุล');
+}
+
 DS.init('gpp',function(){
   renderGpp();
   const v=document.getElementById('v-gpp');
@@ -101,6 +181,7 @@ DS.init('gpp',function(){
       srcBar(['gpp'],'GPP ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี · ดัชนี NBL–MEI คำนวณโดยสำนักงานสถิติจังหวัดหนองบัวลำภู')+'</div>';
     v.appendChild(d);
   }
+  renderDS();
   var b=document.getElementById('btnGppEdit');
   if(b)b.onclick=function(){if(!EDIT)toggleEdit()};
 });

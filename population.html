@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ประชากรและโครงสร้างอายุ · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</title>
+<meta name="theme-color" content="#0b3c32">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ds.css">
+</head>
+<body>
+<div id="tip"></div>
+<div class="app" id="app">
+  <header class="top" id="topbar"></header>
+  <nav class="side" id="sidebar"></nav>
+  <main class="main">
+    <section class="view on" id="v-population"></section>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="data1.js"></script>
+<script src="data2.js"></script>
+<script src="ds.js"></script>
+<script>
+const P=DX.pop;
+const AMP6=['เมืองหนองบัวลำภู','ศรีบุญเรือง','นากลาง','โนนสัง','สุวรรณคูหา','นาวัง'];
+const BAND_ORDER=['0 ถึง 4 ปี','5 ถึง 9 ปี','10 ถึง 14 ปี','15 ถึง 19 ปี','20 ถึง 24 ปี','25 ถึง 29 ปี',
+  '30 ถึง 34 ปี','35 ถึง 39 ปี','40 ถึง 44 ปี','45 ถึง 49 ปี','50 ถึง 54 ปี','55 ถึง 59 ปี',
+  '60 ถึง 64 ปี','65 ถึง 69 ปี','70 ถึง 74 ปี','75 ถึง 79 ปี','80 ปี และมากกว่า'];
+const bandVal=b=>P.ageBands[b]||0;
+const ageOf=b=>parseInt(b)||0;
+
+function renderPop(){
+  const YS=Object.keys(P.popSeries).map(Number).sort((a,b)=>a-b);
+  const lastY=YS[YS.length-1], firstY=YS[0];
+  const popNow=P.popSeries[lastY], popFirst=P.popSeries[firstY];
+  const male=AMP6.reduce((a,x)=>a+((P.popByAmpSex[x]||{})['ชาย']||0),0);
+  const female=AMP6.reduce((a,x)=>a+((P.popByAmpSex[x]||{})['หญิง']||0),0);
+  const bY=Object.keys(P.birth).map(Number).sort((a,b)=>a-b);
+  const bLast=bY[bY.length-1];
+  const birth=P.birth[bLast], death=P.death[bLast];
+  const houses=Object.values(P.houses).reduce((a,b)=>a+b,0);
+  const mv=P.move[String(bLast)]||{};
+  /* โครงสร้างอายุ */
+  const totalBand=BAND_ORDER.reduce((a,b)=>a+bandVal(b),0)||1;
+  const kids=BAND_ORDER.filter(b=>ageOf(b)<15).reduce((a,b)=>a+bandVal(b),0);
+  const work=BAND_ORDER.filter(b=>ageOf(b)>=15&&ageOf(b)<60).reduce((a,b)=>a+bandVal(b),0);
+  const old=BAND_ORDER.filter(b=>ageOf(b)>=60).reduce((a,b)=>a+bandVal(b),0);
+  const dep=((kids+old)/work*100);
+
+  document.getElementById('v-population').innerHTML=`
+  <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start">
+    <span class="bigico icow img" data-bigico="population"></span>
+    <span><h2>ประชากรและโครงสร้างอายุ</h2>
+    <p>ประชากรคือฐานของทุกตัวเลขเศรษฐกิจ จังหวัดกำลังเข้าสู่ภาวะประชากรลดลงและสังคมสูงวัย ซึ่งกระทบกำลังแรงงานและกำลังซื้อในระยะยาว</p></span></div>
+    <div class="r"><span class="chip real">ข้อมูลจริง</span><span class="chip br">ปี ${lastY}</span></div></div>
+
+  <div class="grid g5 mb" id="pKpi"></div>
+
+  <div class="grid g21 mb">
+    <div class="c"><header><h3>จำนวนประชากรรายปี</h3><span class="u">${firstY}–${lastY}</span>
+      <span class="r">${viewToggle('cPop')}</span></header>
+      <div class="b">
+        <div id="cPop-chart"><div class="ch lg"><canvas id="cPop"></canvas></div></div>
+        <div id="cPop-table" class="hide"><div class="sc"><table class="t" id="tPop"></table></div></div>
+        <div class="note" id="popNote"></div>
+      </div></div>
+    <div class="c"><header><span class="hdico icow img">${icoImg('birth',26)}</span><h3>การเกิดและการตาย</h3>
+      <span class="u">คน</span></header>
+      <div class="b"><div class="ch lg"><canvas id="cBD"></canvas></div>
+        <div class="note" id="bdNote"></div></div></div>
+  </div>
+
+  <div class="grid g21 mb">
+    <div class="c"><header><h3>โครงสร้างอายุประชากร</h3><span class="u">พีระมิดประชากร · ${f(totalBand,0)} คน</span>
+      <span class="r">${viewToggle('cAge')}</span></header>
+      <div class="b">
+        <div id="cAge-chart"><div class="ch" style="height:400px"><canvas id="cAge"></canvas></div></div>
+        <div id="cAge-table" class="hide"><div class="sc" style="max-height:380px"><table class="t" id="tAge"></table></div></div>
+        <div class="note" id="ageNote"></div>
+      </div></div>
+    <div class="c"><header><h3>สัดส่วนวัย</h3></header>
+      <div class="b"><div class="ch"><canvas id="cDep"></canvas></div>
+        <div id="depBox" style="margin-top:10px"></div></div></div>
+  </div>
+
+  <div class="grid g21 mb">
+    <div class="c"><header><h3>ประชากรรายอำเภอ</h3><span class="u">แยกชายและหญิง</span>
+      <span class="r">${viewToggle('cAmp')}</span></header>
+      <div class="b">
+        <div id="cAmp-chart"><div class="ch"><canvas id="cAmp"></canvas></div></div>
+        <div id="cAmp-table" class="hide"><div class="sc"><table class="t" id="tAmp"></table></div></div>
+        <div class="note" id="ampNote"></div>
+      </div></div>
+    <div class="c"><header><span class="hdico icow img">${icoImg('migration',26)}</span><h3>การย้ายถิ่น</h3>
+      <span class="u">ย้ายเข้าและย้ายออก</span></header>
+      <div class="b"><div class="ch"><canvas id="cMove"></canvas></div>
+        <div class="note" id="moveNote"></div></div></div>
+  </div>
+
+  <div class="c"><header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
+    <div class="b">${srcBar(['popreg'],'ข้อมูลทะเบียนราษฎร ณ สิ้นปี ครอบคลุมจำนวนประชากรรายอำเภอแยกเพศ โครงสร้างอายุ การเกิด การตาย การย้ายถิ่น และจำนวนบ้าน')}</div></div>`;
+
+  /* ── KPI ── */
+  const natural=birth-death;
+  document.getElementById('pKpi').innerHTML=[
+    kpiCard({icon:'people',img:'population',color:cv('--brand'),label:'ประชากรทั้งจังหวัด',
+      value:f(popNow,0),unit:'คน',
+      chip:chip(pctc(popNow,P.popSeries[YS[YS.length-2]]))+' '+statusBadge(pctc(popNow,P.popSeries[YS[YS.length-2]]),false,'ประชากรเทียบปีก่อน'),
+      sub:'ลดลง '+f(popFirst-popNow,0)+' คน จากปี '+firstY,
+      tip:tipOf({t:'จำนวนประชากรทั้งจังหวัด',
+        d:'นับจากทะเบียนราษฎร ณ สิ้นปี ไม่ใช่จากการสำรวจ จึงเป็นตัวเลขที่ใช้อ้างอิงทางราชการ',
+        calc:'ผลรวมประชากรชายและหญิงทั้ง 6 อำเภอ',src:'popreg',when:'ปี '+lastY})}),
+    kpiCard({icon:'people',color:cv('--blue'),label:'ชาย',value:f(male,0),unit:'คน',
+      chip:'<span class="chip">'+(male/(male+female)*100).toFixed(2)+'%</span>',sub:'หญิง '+f(female,0)+' คน ('+(female/(male+female)*100).toFixed(2)+'%)'}),
+    kpiCard({icon:'people',img:'birth',color:cv('--leaf'),label:'เด็กเกิดใหม่',value:f(birth,0),unit:'คน',
+      chip:chip(pctc(birth,P.birth[bY[bY.length-2]]))+' '+statusBadge(pctc(birth,P.birth[bY[bY.length-2]]),false,'จำนวนเด็กเกิดใหม่เทียบปีก่อน'),
+      sub:'ปี '+bLast+' · ลดลงจาก '+f(P.birth[bY[0]],0)+' คนในปี '+bY[0],
+      tip:tipOf({t:'จำนวนเด็กเกิดใหม่',
+        d:'จำนวนการเกิดที่แจ้งต่อนายทะเบียนในรอบปี · ลดลงต่อเนื่องทุกปี เป็นสัญญาณว่ากำลังแรงงานในอนาคตจะหดตัว',
+        calc:'นับจากใบแจ้งเกิดที่บันทึกในระบบทะเบียนราษฎร',src:'popreg',when:'ปี '+bLast})}),
+    kpiCard({icon:'chart',color:natural<0?cv('--bad'):cv('--good'),label:'การเปลี่ยนแปลงตามธรรมชาติ',
+      value:(natural>0?'+':'')+f(natural,0),unit:'คน',
+      chip:'<span class="chip '+(natural<0?'dn':'up')+'">'+(natural<0?'ตายมากกว่าเกิด':'เกิดมากกว่าตาย')+'</span>',
+      sub:'เกิด '+f(birth,0)+' · ตาย '+f(death,0),
+      tip:tipOf({t:'การเปลี่ยนแปลงประชากรตามธรรมชาติ',
+        d:'ผลต่างระหว่างการเกิดกับการตาย ไม่รวมการย้ายถิ่น · ค่าติดลบแปลว่าประชากรลดลงเองแม้ไม่มีใครย้ายออก',
+        calc:'จำนวนเกิด − จำนวนตาย = '+f(birth,0)+' − '+f(death,0),src:'popreg',when:'ปี '+bLast})}),
+    kpiCard({icon:'brief',color:cv('--gold'),label:'อัตราพึ่งพิง',value:dep.toFixed(1),unit:'%',
+      chip:'<span class="chip fl">วัยทำงาน '+(work/totalBand*100).toFixed(1)+'%</span>',
+      sub:'ผู้สูงอายุ '+(old/totalBand*100).toFixed(1)+'% · เด็ก '+(kids/totalBand*100).toFixed(1)+'%',
+      tip:tipOf({t:'อัตราส่วนพึ่งพิง (Dependency ratio)',
+        d:'บอกว่าวัยทำงาน 100 คนต้องดูแลเด็กและผู้สูงอายุกี่คน ยิ่งสูงยิ่งเป็นภาระต่อกำลังแรงงาน',
+        calc:'((เด็กต่ำกว่า 15 ปี + ผู้สูงอายุ 60 ปีขึ้นไป) ÷ วัยทำงาน 15–59 ปี) × 100',
+        src:'popreg',when:'ปี '+P.ageYear})})
+  ].join('');
+
+  /* ── ประชากรรายปี ── */
+  mk('cPop',{data:{labels:YS.map(y=>'ปี '+y),datasets:[
+    {type:'line',label:'ประชากร (คน)',data:YS.map(y=>P.popSeries[y]),borderColor:cv('--brand'),
+      backgroundColor:cv('--brand')+'22',borderWidth:2.8,pointRadius:4,pointBackgroundColor:cv('--brand'),tension:.25,fill:true}]},
+    options:{plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>f(c.raw,0)+' คน',
+        footer:it=>{const i=it[0].dataIndex;if(!i)return'';
+          const d=P.popSeries[YS[i]]-P.popSeries[YS[i-1]];
+          return (d<0?'ลดลง ':'เพิ่มขึ้น ')+f(Math.abs(d),0)+' คนจากปีก่อน'}}}},
+      scales:{x:ax({grid:{display:false}}),y:ax({ticks:{callback:v=>f(v,0)}})}}});
+  document.getElementById('tPop').innerHTML=`<thead><tr><th>ปี</th><th class="r">ประชากร</th><th class="r">เปลี่ยนแปลง</th><th class="r">%</th></tr></thead><tbody>`+
+    YS.map((y,i)=>{const d=i?P.popSeries[y]-P.popSeries[YS[i-1]]:null;
+      return `<tr><td>ปี ${y}</td><td class="r">${f(P.popSeries[y],0)}</td>
+        <td class="r" style="color:${d<0?'var(--bad)':'var(--good)'}">${d!=null?((d>0?'+':'')+f(d,0)):'—'}</td>
+        <td class="r">${d!=null?((d/P.popSeries[YS[i-1]]*100).toFixed(2)+'%'):'—'}</td></tr>`}).join('')+'</tbody>';
+  document.getElementById('popNote').innerHTML=
+    `ประชากรลดลงต่อเนื่องจาก ${f(popFirst,0)} คนในปี ${firstY} เหลือ <b>${f(popNow,0)} คน</b> ในปี ${lastY}
+     หายไป ${f(popFirst-popNow,0)} คนใน ${lastY-firstY} ปี เฉลี่ยปีละ ${f((popFirst-popNow)/(lastY-firstY),0)} คน
+     ทุกนโยบายที่วางบนสมมติฐานประชากรคงที่ต้องทบทวนใหม่`;
+
+  /* ── เกิด ตาย ── */
+  mk('cBD',{data:{labels:bY.map(y=>'ปี '+y),datasets:[
+    {type:'bar',label:'เกิด',data:bY.map(y=>P.birth[y]),backgroundColor:cv('--leaf'),borderRadius:6,barPercentage:.72},
+    {type:'bar',label:'ตาย',data:bY.map(y=>P.death[y]),backgroundColor:cv('--coral'),borderRadius:6,barPercentage:.72},
+    {type:'line',label:'เกิด − ตาย',data:bY.map(y=>P.birth[y]-P.death[y]),borderColor:cv('--gold'),
+      borderWidth:2.6,pointRadius:4,pointBackgroundColor:cv('--gold'),tension:.25}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:11}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+' '+f(c.raw,0)+' คน'}}},
+      scales:{x:ax({grid:{display:false}}),y:ax({ticks:{callback:v=>f(v,0)}})}}});
+  const cross=bY.find(y=>P.death[y]>P.birth[y]);
+  document.getElementById('bdNote').innerHTML=
+    `จังหวัดมีคนตายมากกว่าคนเกิดตั้งแต่ปี <b>${cross}</b> เป็นต้นมา
+     ปี ${bLast} เกิด ${f(birth,0)} คน แต่ตาย ${f(death,0)} คน ต่างกัน ${f(death-birth,0)} คน
+     นี่คือสาเหตุหลักที่ประชากรลดลง ไม่ใช่การย้ายออกอย่างที่เข้าใจกัน`;
+
+  /* ── พีระมิดอายุ ── */
+  mk('cAge',{type:'bar',data:{labels:BAND_ORDER,
+    datasets:[{label:'ประชากร (คน)',data:BAND_ORDER.map(bandVal),
+      backgroundColor:BAND_ORDER.map(b=>ageOf(b)>=60?cv('--coral'):ageOf(b)<15?cv('--leaf'):cv('--brand')),
+      borderRadius:5,barThickness:16}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>f(c.raw,0)+' คน',
+        footer:it=>(it[0].raw/totalBand*100).toFixed(1)+'% ของประชากร'}}},
+      scales:{x:ax({ticks:{callback:v=>f(v/1000,0)+'K'}}),y:ax({grid:{display:false},ticks:{font:{size:10}}})}}});
+  document.getElementById('tAge').innerHTML=`<thead><tr><th>ช่วงอายุ</th><th class="r">คน</th><th class="r">สัดส่วน</th></tr></thead><tbody>`+
+    BAND_ORDER.map(b=>`<tr><td>${b}</td><td class="r">${f(bandVal(b),0)}</td>
+      <td class="r">${(bandVal(b)/totalBand*100).toFixed(1)}%</td></tr>`).join('')+
+    `</tbody><tfoot><tr><td>รวม</td><td class="r">${f(totalBand,0)}</td><td class="r">100.0%</td></tr></tfoot>`;
+  const peak=BAND_ORDER.reduce((a,b)=>bandVal(b)>bandVal(a)?b:a);
+  document.getElementById('ageNote').innerHTML=
+    `ช่วงอายุที่มีคนมากที่สุดคือ <b>${peak}</b> ที่ ${f(bandVal(peak),0)} คน
+     ขณะที่เด็ก 0–4 ปีมีเพียง ${f(bandVal('0 ถึง 4 ปี'),0)} คน น้อยกว่ากลุ่มใหญ่สุดเกือบ ${(bandVal(peak)/bandVal('0 ถึง 4 ปี')).toFixed(1)} เท่า
+     ในอีก 15 ปีกลุ่มใหญ่จะเข้าสู่วัยเกษียณพร้อมกัน แต่ไม่มีคนรุ่นใหม่มาแทนในจำนวนเท่ากัน`;
+
+  /* ── สัดส่วนวัย ── */
+  mk('cDep',{type:'doughnut',data:{labels:['เด็ก 0–14 ปี','วัยทำงาน 15–59 ปี','ผู้สูงอายุ 60 ปีขึ้นไป'],
+    datasets:[{data:[kids,work,old],backgroundColor:[cv('--leaf'),cv('--brand'),cv('--coral')],
+      borderColor:cv('--card'),borderWidth:3}]},
+    options:{cutout:'58%',plugins:{legend:{position:'bottom',labels:{padding:10,font:{size:10.5}}},
+      tooltip:{callbacks:{label:c=>c.label+' '+f(c.raw,0)+' คน',
+        footer:it=>(it[0].raw/totalBand*100).toFixed(1)+'% ของประชากร'}}}}});
+  document.getElementById('depBox').innerHTML=[
+    ['อัตราพึ่งพิงรวม',dep.toFixed(1)+'%','วัยทำงาน 100 คน ดูแล '+dep.toFixed(0)+' คน',cv('--gold')],
+    ['สัดส่วนผู้สูงอายุ',(old/totalBand*100).toFixed(1)+'%',(old/totalBand>=0.2?'เข้าสู่สังคมสูงวัยอย่างสมบูรณ์แล้ว':'ใกล้เข้าสู่สังคมสูงวัยสมบูรณ์'),cv('--coral')]
+  ].map(r=>`<div class="mini" style="margin-bottom:9px"><div class="l">${r[0]}</div>
+      <div class="v" style="color:${r[3]}">${r[1]}</div>
+      <div style="font-size:11px;color:var(--faint);margin-top:3px">${r[2]}</div></div>`).join('');
+
+  /* ── รายอำเภอ ── */
+  const rows=AMP6.map(a=>({a,m:(P.popByAmpSex[a]||{})['ชาย']||0,f:(P.popByAmpSex[a]||{})['หญิง']||0}))
+    .sort((x,y)=>(y.m+y.f)-(x.m+x.f));
+  mk('cAmp',{type:'bar',data:{labels:rows.map(r=>r.a),datasets:[
+    {label:'ชาย',data:rows.map(r=>r.m),backgroundColor:cv('--blue'),borderRadius:5,stack:'s'},
+    {label:'หญิง',data:rows.map(r=>r.f),backgroundColor:cv('--lotus')||cv('--plum'),borderRadius:5,stack:'s'}]},
+    options:{plugins:{legend:{position:'bottom',labels:{padding:11}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+' '+f(c.raw,0)+' คน',
+        footer:it=>{const r=rows[it[0].dataIndex];return 'รวม '+f(r.m+r.f,0)+' คน · บ้าน '+f(P.houses[r.a]||0,0)+' หลัง'}}}},
+      scales:{x:ax({grid:{display:false},stacked:true,ticks:{font:{size:10}}}),
+        y:ax({stacked:true,ticks:{callback:v=>f(v/1000,0)+'K'}})}}});
+  document.getElementById('tAmp').innerHTML=`<thead><tr><th>อำเภอ</th><th class="r">ชาย</th><th class="r">หญิง</th>
+    <th class="r">รวม</th><th class="r">บ้าน (หลัง)</th><th class="r">คน/หลัง</th></tr></thead><tbody>`+
+    rows.map(r=>{const h=P.houses[r.a]||0,t=r.m+r.f;
+      return `<tr><td>${r.a}</td><td class="r">${f(r.m,0)}</td><td class="r">${f(r.f,0)}</td>
+        <td class="r" style="font-weight:600">${f(t,0)}</td><td class="r">${f(h,0)}</td>
+        <td class="r">${h?(t/h).toFixed(2):'—'}</td></tr>`}).join('')+
+    `</tbody><tfoot><tr><td>รวม</td><td class="r">${f(male,0)}</td><td class="r">${f(female,0)}</td>
+      <td class="r">${f(male+female,0)}</td><td class="r">${f(houses,0)}</td>
+      <td class="r">${((male+female)/houses).toFixed(2)}</td></tr></tfoot>`;
+  document.getElementById('ampNote').innerHTML=
+    `<b>${rows[0].a}</b> มีประชากรมากที่สุด ${f(rows[0].m+rows[0].f,0)} คน คิดเป็น ${((rows[0].m+rows[0].f)/(male+female)*100).toFixed(1)}% ของจังหวัด
+     ทั้งจังหวัดมีบ้าน ${f(houses,0)} หลัง เฉลี่ย ${((male+female)/houses).toFixed(2)} คนต่อหลัง
+     ซึ่งต่ำกว่าค่าเฉลี่ยประเทศ สะท้อนว่าครัวเรือนมีขนาดเล็กลงและมีบ้านว่างจากการย้ายถิ่น`;
+
+  /* ── ย้ายถิ่น ── */
+  const mY=Object.keys(P.move).map(Number).sort((a,b)=>a-b);
+  mk('cMove',{data:{labels:mY.map(y=>'ปี '+y),datasets:[
+    {type:'bar',label:'ย้ายเข้า',data:mY.map(y=>P.move[y]['ย้ายเข้า']),backgroundColor:cv('--brand'),borderRadius:5},
+    {type:'bar',label:'ย้ายออก',data:mY.map(y=>P.move[y]['ย้ายออก']),backgroundColor:cv('--coral'),borderRadius:5},
+    {type:'line',label:'สุทธิ',data:mY.map(y=>P.move[y]['ย้ายเข้า']-P.move[y]['ย้ายออก']),
+      borderColor:cv('--gold'),borderWidth:2.4,pointRadius:4,tension:.25}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:11,font:{size:10}}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+' '+f(c.raw,0)+' คน'}}},
+      scales:{x:ax({grid:{display:false}}),y:ax({ticks:{callback:v=>f(v/1000,0)+'K'}})}}});
+  const net=(mv['ย้ายเข้า']||0)-(mv['ย้ายออก']||0);
+  document.getElementById('moveNote').innerHTML=
+    `ปี ${bLast} ย้ายเข้า ${f(mv['ย้ายเข้า']||0,0)} คน ย้ายออก ${f(mv['ย้ายออก']||0,0)} คน สุทธิ ${net>=0?'+':''}${f(net,0)} คน
+     การย้ายถิ่นเกือบสมดุล ต่างจากที่หลายคนเข้าใจ ประชากรที่ลดลงจึงมาจากการเกิดน้อยกว่าตายเป็นหลัก`;
+}
+
+DS.init('population',renderPop);
+</script>
+</body>
+</html>
