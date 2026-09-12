@@ -207,7 +207,7 @@ function renderAgri(){
   /* แหล่งน้ำ */
   const W=D.water,ok=W.filter(w=>w.ok);
   $('#waterKpi').innerHTML=[
-    kpiCard({icon:'bolt',color:cv('--gold'),label:'ระบบสูบน้ำโซลาร์เซลล์',value:f(W[0].cnt,0),unit:'แห่ง',
+    kpiCard({icon:'bolt',img:'irrigation',color:cv('--gold'),label:'ระบบสูบน้ำโซลาร์เซลล์',value:f(W[0].cnt,0),unit:'แห่ง',
       chip:'<span class="chip real">ข้อมูลจริง</span>',sub:'พื้นที่รับประโยชน์ '+f(W[0].benefit,0)+' ไร่'}),
     kpiCard({icon:'drop',color:cv('--brand2'),label:'พื้นที่รับประโยชน์ที่ยืนยันแล้ว',value:f(ok.reduce((a,w)=>a+(w.benefit||0),0),0),unit:'ไร่',
       chip:'<span class="chip">คิดเป็น 0.35% ของพื้นที่เกษตร</span>',sub:'จากพื้นที่เกษตร 1.55 ล้านไร่'}),

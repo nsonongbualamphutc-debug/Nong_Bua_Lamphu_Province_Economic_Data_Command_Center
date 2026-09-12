@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'1.7.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'1.8.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -821,6 +821,22 @@ function pageBanner(){
   bannerInto(v,'assets/h-'+PAGE.id+'.jpg',n.label,'ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู');
 }
 
+
+/* ─────────────── 27b) ตราสถานะเศรษฐกิจ ─────────────── */
+/* ใช้เกณฑ์เดียวกันทุกตัวชี้วัด: เทียบกับงวดเดียวกันปีก่อน */
+function statusOf(pct,invert){
+  if(pct==null||isNaN(pct))return {k:'normal',t:'ไม่มีข้อมูลเทียบ',c:'--faint'};
+  const v=invert?-pct:pct;
+  if(v>=3)  return {k:'good',  t:'ดี',     c:'--good'};
+  if(v<=-3) return {k:'bad',   t:'ต้องเฝ้าระวัง',c:'--bad'};
+  return             {k:'normal',t:'ทรงตัว', c:'--warn'};
+}
+function statusBadge(pct,invert,label){
+  const st=statusOf(pct,invert);
+  return `<span class="stbadge ${st.k}" data-tip2="สถานะ ${st.t}|${label||'เทียบกับงวดเดียวกันปีก่อน'}${pct==null?'':' · เปลี่ยนแปลง '+(pct>0?'+':'')+pct.toFixed(1)+'%'}|เกณฑ์: เกิน +3% = ดี · -3% ถึง +3% = ทรงตัว · ต่ำกว่า -3% = ต้องเฝ้าระวัง">
+    <img src="assets/icons/ic-${st.k}.png" alt="" width="20" height="20" onerror="this.remove()">
+    <b style="color:var(${st.c})">${st.t}</b></span>`;
+}
 
 /* ─────────────── 28) แหล่งที่มา · ชื่อเต็มหน่วยงาน ─────────────── */
 const AGENCY_FULL={

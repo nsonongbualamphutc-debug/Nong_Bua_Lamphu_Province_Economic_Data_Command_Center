@@ -43,7 +43,7 @@ function renderOtop(){
 
   document.getElementById('v-otop').innerHTML=`
   <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start">
-    <span class="bigico icow img" data-bigico="trade"></span>
+    <span class="bigico icow img" data-bigico="otop"></span>
     <span><h2>OTOP และเศรษฐกิจชุมชน</h2>
     <p>รายได้จากผลิตภัณฑ์ชุมชนคือเงินที่ไหลถึงครัวเรือนโดยตรง ไม่ผ่านคนกลาง เป็นเครื่องยนต์เศรษฐกิจฐานรากที่จังหวัดควบคุมได้เอง</p></span></div>
     <div class="r"><span class="chip real">ข้อมูลจริง</span>
@@ -98,7 +98,7 @@ function renderOtop(){
 
   /* ── KPI ── */
   document.getElementById('oKpi').innerHTML=[
-    kpiCard({icon:'coin',img:'trade',color:cv('--brand'),label:'รายได้ OTOP ปี '+last,
+    kpiCard({icon:'coin',img:'otop',color:cv('--brand'),label:'รายได้ OTOP ปี '+last,
       value:f(rev/1e6,0),unit:'ลบ.',chip:chip(pctc(rev,revPrev)),
       sub:'เทียบปี '+prev+' · '+f(revPrev/1e6,0)+' ลบ.',
       tip:'รายได้จากผลิตภัณฑ์ OTOP|ยอดจำหน่ายผลิตภัณฑ์ชุมชนทั้งจังหวัดในรอบปี|ที่มา: สำนักงานพัฒนาชุมชนจังหวัดหนองบัวลำภู'}),
@@ -106,7 +106,7 @@ function renderOtop(){
       chip:'<span class="chip">ทุกอำเภอ</span>',sub:'ลงทะเบียนในระบบ OTOP'}),
     kpiCard({icon:'cart',color:cv('--leaf'),label:'ผลิตภัณฑ์',value:f(prodTot,0),unit:'ชนิด',
       chip:'<span class="chip">ปี '+O.prodYear+'</span>',sub:'5 ประเภทผลิตภัณฑ์'}),
-    kpiCard({icon:'chart',color:cv('--plum'),label:'ผลิตภัณฑ์ระดับ 5 ดาว',value:f(star5,0),unit:'รายการ',
+    kpiCard({icon:'chart',img:'otopstar',color:cv('--plum'),label:'ผลิตภัณฑ์ระดับ 5 ดาว',value:f(star5,0),unit:'รายการ',
       chip:'<span class="chip up">คุณภาพสูงสุด</span>',sub:'ปี '+O.star5Year,
       tip:'ผลิตภัณฑ์ระดับ 5 ดาว|ผ่านการคัดสรรสุดยอดหนึ่งตำบลหนึ่งผลิตภัณฑ์ระดับประเทศ|เป็นกลุ่มที่พร้อมผลักเข้าตลาดนอกจังหวัดและออนไลน์ทันที'}),
     kpiCard({icon:'brief',color:cv('--blue'),label:'ร้านค้าชุมชน',value:f(shops,0),unit:'แห่ง',
