@@ -111,25 +111,26 @@ function renderFiscal(){
 function drawFiscalTrend(){
   const st=slicerState('slc-fiscal');
   const inv=DB.spend.inv, ope=DB.spend.ope;
-  const nowI=seriesAt(inv,st,'sum'), wasI=seriesPrevYear(inv,st,'sum');
-  const nowO=seriesAt(ope,st,'sum'), wasO=seriesPrevYear(ope,st,'sum');
+  const nowI=seriesAt(inv,st,'last'), wasI=seriesPrevYear(inv,st,'last');
+  const nowO=seriesAt(ope,st,'last'), wasO=seriesPrevYear(ope,st,'last');
   const info=document.getElementById('slc-fiscal-info');
-  if(info)info.innerHTML=`กำลังแสดง <b>${st.label}</b>`+(st.freq==='M'?'':` · รวม ${st.idx.length} เดือน`);
+  if(info)info.innerHTML=`กำลังแสดง <b>${st.label}</b>`+
+    (st.freq==='M'?'':` · ใช้ค่า ณ สิ้นงวด เพราะเป็นยอดสะสม`);
   const pick=document.getElementById('fiscalPick');
   if(pick)pick.innerHTML=[
-    kpiCard({icon:'factory',img:'fiscal',color:cv('--brand'),label:'งบลงทุน '+(st.freq==='M'?'ณ':'รวมงวด')+' '+st.label,
+    kpiCard({icon:'factory',img:'fiscal',color:cv('--brand'),label:'งบลงทุนสะสม ณ '+st.label,
       value:f(nowI,0),unit:'ลบ.',chip:(wasI?chip(pctc(nowI,wasI)):'<span class="chip">—</span>')+' '+statusBadge(wasI?pctc(nowI,wasI):null,false,'งบลงทุนเทียบงวดเดียวกันปีก่อน'),
       sub:wasI?('งวดเดียวกันปีก่อน '+f(wasI,0)+' ลบ.'):'ไม่มีข้อมูลปีก่อนให้เทียบ',
       tip:tipOf({t:'การเบิกจ่ายงบลงทุน',
         d:'เงินงบประมาณหมวดลงทุนที่ออกจากระบบคลังแล้วจริง เช่น ค่าก่อสร้าง ครุภัณฑ์ และที่ดินสิ่งก่อสร้าง',
-        calc:st.freq==='M'?'ยอดเบิกจ่ายสะสมที่รายงาน ณ เดือนที่เลือก':'ผลรวมยอดเบิกจ่ายรายเดือนภายในงวดที่เลือก',
+        calc:'ยอดเบิกจ่ายสะสมที่รายงาน ณ เดือนสุดท้ายของงวดที่เลือก · เป็นยอดสะสมจึงไม่นำรายเดือนมาบวกกัน',
         src:'spend',when:st.label})}),
-    kpiCard({icon:'coin',color:cv('--gold'),label:'งบประจำ '+(st.freq==='M'?'ณ':'รวมงวด')+' '+st.label,
+    kpiCard({icon:'coin',color:cv('--gold'),label:'งบประจำสะสม ณ '+st.label,
       value:f(nowO,0),unit:'ลบ.',chip:(wasO?chip(pctc(nowO,wasO)):'<span class="chip">—</span>')+' '+statusBadge(wasO?pctc(nowO,wasO):null,false,'งบประจำเทียบงวดเดียวกันปีก่อน'),
       sub:wasO?('งวดเดียวกันปีก่อน '+f(wasO,0)+' ลบ.'):'ไม่มีข้อมูลปีก่อนให้เทียบ',
       tip:tipOf({t:'การเบิกจ่ายงบรายจ่ายประจำ',
         d:'เงินงบประมาณหมวดประจำ เช่น เงินเดือน ค่าสาธารณูปโภค และค่าใช้สอยของส่วนราชการ',
-        calc:st.freq==='M'?'ยอดเบิกจ่ายสะสมที่รายงาน ณ เดือนที่เลือก':'ผลรวมยอดเบิกจ่ายรายเดือนภายในงวดที่เลือก',
+        calc:'ยอดเบิกจ่ายสะสมที่รายงาน ณ เดือนสุดท้ายของงวดที่เลือก · เป็นยอดสะสมจึงไม่นำรายเดือนมาบวกกัน',
         src:'spend',when:st.label})})
   ].join('');
   const hi=st.idx||[st.i];

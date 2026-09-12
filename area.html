@@ -42,6 +42,7 @@
           <div class="maploading hide" id="mapLoad">กำลังโหลดขอบเขตตำบล…</div>
         </div>
         <div class="note" id="mapNote"></div>
+        <div class="note" style="border-top:0;padding-top:0">เคล็ดลับ: กด Shift ค้างแล้วคลิกที่อำเภอ จะได้ป๊อปอัปพร้อมปุ่มนำทางด้วย Google Maps</div>
       </div></div>
 
     <div class="c"><header><h3>อันดับรายอำเภอ</h3><span class="u">คลิกเพื่อซูมไปที่อำเภอนั้น</span></header>
@@ -268,7 +269,15 @@ function paintProvince(){
       });
       l.on('mousemove',moveTipM);
       l.on('mouseout',()=>{LAYER.resetStyle(l);hideTip()});
-      l.on('click',()=>{hideTip();drillTo(dt,f)});
+      l.on('click',e=>{hideTip();
+        if(e.originalEvent&&e.originalEvent.shiftKey){
+          L.popup({maxWidth:300}).setLatLng(e.latlng).setContent(servicePopup({
+            name:'อำเภอ'+dt.name,sub:'จังหวัดหนองบัวลำภู',
+            rows:[[o.label,f_(v,o.dec)+' '+o.unit],['อันดับ',rankOf(dt.code)+' จาก 6']],
+            lat:e.latlng.lat,lng:e.latlng.lng,nearby:'ส่วนราชการ'})).openOn(MAP);
+          return;
+        }
+        drillTo(dt,f)});
       const c=l.getBounds().getCenter();
       const lb=L.marker(c,{interactive:false,icon:L.divIcon({className:'amplbl',
         html:`<div class="lb"><span class="n">${dt.name}</span><span class="v">${f_(v,o.dec)}</span></div>`,

@@ -82,10 +82,25 @@ function renderTour(){
       <div class="note" id="monNote"></div></div></div>
 
   <div class="grid g21 mb">
-    <div class="c"><header><h3>แหล่งท่องเที่ยว ${T.spots.length} แห่งบนแผนที่</h3>
-      <span class="u">คลิกหมุดเพื่อดูชื่อและตำบล</span></header>
-      <div class="b"><div class="mapwrap"><div id="tmap" style="height:460px"></div></div>
-        <div class="note">หมุดสีเขียวคือแหล่งท่องเที่ยวที่มีพิกัดในฐานข้อมูลจังหวัด ใช้วางแผนเส้นทางเชื่อมโยงกับแปลงใหญ่และร้าน OTOP ได้</div></div></div>
+    <div class="c"><header><h3>แหล่งท่องเที่ยว ${T.spots.length} แห่ง</h3>
+      <span class="u">คลิกหมุดหรือรายชื่อ แล้วกดนำทางไปได้ทันที</span></header>
+      <div class="b">
+        <div class="svc-tools">
+          <span class="svc-search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input id="spotQ" placeholder="ค้นหาชื่อแหล่งท่องเที่ยวหรือตำบล">
+          </span>
+          <select class="sel" id="spotAmpSel"></select>
+          <button class="tb" id="spotReset">ล้างตัวกรอง</button>
+        </div>
+        <div class="svc">
+          <div class="mapwrap"><div id="tmap" style="height:520px"></div></div>
+          <div class="svc-list" id="spotList"></div>
+        </div>
+        <div class="note">หมุดสีเขียวคือแหล่งท่องเที่ยวที่มีพิกัดในฐานข้อมูลจังหวัด
+          กดที่หมุดจะมีปุ่มนำทางด้วย Google Maps เปิดแผนที่ และคัดลอกพิกัด
+          พร้อมปุ่มค้นหาที่พักและร้านอาหารใกล้จุดนั้น ใช้วางแผนเส้นทางเชื่อมกับแปลงใหญ่และร้าน OTOP ได้</div>
+      </div></div>
     <div class="c"><header><h3>ประเภทแหล่งท่องเที่ยว</h3><span class="u">ปี ${T.spotYear} · ${spotTot} แห่ง</span>
       <span class="r">${viewToggle('cSpot')}</span></header>
       <div class="b">
@@ -248,31 +263,87 @@ function renderTour(){
   drawSpotMap();
 }
 
-let TMAP=null;
+let TMAP=null, TMARK=[], SPOT_FILTER={q:'',amp:''};
+function spotsFiltered(){
+  const q=SPOT_FILTER.q.trim();
+  return T.spots.filter(s=>
+    (!SPOT_FILTER.amp||s.a===SPOT_FILTER.amp) &&
+    (!q||s.n.includes(q)||s.ta.includes(q)||s.a.includes(q)));
+}
 function drawSpotMap(){
   if(typeof L==='undefined')return;
   const el=document.getElementById('tmap'); if(!el)return;
-  if(TMAP){TMAP.remove();TMAP=null}
+  if(TMAP){TMAP.remove();TMAP=null;TMARK=[]}
   TMAP=L.map('tmap',{zoomControl:false,attributionControl:false,scrollWheelZoom:false,zoomSnap:.25});
   L.control.zoom({position:'topright'}).addTo(TMAP);
   fetch('assets/nbl-amphoe.geojson').then(r=>r.json()).then(j=>{
-    const g=L.geoJSON(j,{style:{color:'#fff',weight:2,fillColor:'#cfe9dc',fillOpacity:.85}}).addTo(TMAP);
+    const g=L.geoJSON(j,{style:{color:'#fff',weight:2,fillColor:'#cfe9dc',fillOpacity:.85},
+      onEachFeature:(f,l)=>{const nm=f.properties.amp_th;
+        l.bindTooltip('อ.'+nm,{direction:'center',className:'amplbl'})}}).addTo(TMAP);
     try{TMAP.fitBounds(g.getBounds(),{padding:[20,20]})}catch(e){}
     addSpots();
   }).catch(()=>{TMAP.setView([17.22,102.36],9.3);addSpots()});
-  function addSpots(){
-    T.spots.forEach(s=>{
-      L.circleMarker([s.lat,s.lng],{radius:7,color:'#fff',weight:2,fillColor:cv('--brand'),fillOpacity:.95})
-        .addTo(TMAP)
-        .bindPopup(`<b>${s.n}</b><br><span style="color:#777">ต.${s.ta} อ.${s.a}</span>`);
-    });
+}
+function addSpots(){
+  TMARK.forEach(m=>TMAP.removeLayer(m)); TMARK=[];
+  const list=spotsFiltered();
+  list.forEach((s,i)=>{
+    const m=L.circleMarker([s.lat,s.lng],{radius:8,color:'#fff',weight:2,
+      fillColor:cv('--brand'),fillOpacity:.95}).addTo(TMAP);
+    m.bindPopup(servicePopup({
+      name:s.n, sub:'ต.'+s.ta+' · อ.'+s.a,
+      rows:[['อำเภอ',s.a],['ตำบล',s.ta]],
+      lat:s.lat,lng:s.lng,nearby:'ที่พักและร้านอาหาร'
+    }),{maxWidth:300});
+    m.on('click',()=>highlight(i));
+    TMARK.push(m);
+  });
+  if(list.length){
+    try{TMAP.fitBounds(L.featureGroup(TMARK).getBounds(),{padding:[34,34],maxZoom:12})}catch(e){}
   }
+  renderSpotList(list);
+}
+function renderSpotList(list){
+  const el=document.getElementById('spotList');
+  if(!list.length){el.innerHTML='<div class="svc-empty">ไม่พบแหล่งท่องเที่ยวที่ตรงกับตัวกรอง</div>';return}
+  el.innerHTML=list.map((s,i)=>`<button class="svc-item" data-spot="${i}">
+    <span class="no">${i+1}</span>
+    <span><b>${s.n}</b><span>ต.${s.ta} · อ.${s.a}</span></span></button>`).join('');
+}
+function highlight(i){
+  document.querySelectorAll('.svc-item').forEach((el,j)=>el.classList.toggle('on',j===i));
+  const it=document.querySelector(`[data-spot="${i}"]`);
+  if(it)it.scrollIntoView({block:'nearest'});
+}
+function focusSpot(i){
+  const s=spotsFiltered()[i]; if(!s||!TMAP)return;
+  TMAP.setView([s.lat,s.lng],13,{animate:true});
+  if(TMARK[i])TMARK[i].openPopup();
+  highlight(i);
+}
+function wireSpotTools(){
+  const q=document.getElementById('spotQ'), sel=document.getElementById('spotAmpSel');
+  if(sel&&!sel.options.length){
+    const amps=[...new Set(T.spots.map(s=>s.a))].filter(Boolean).sort();
+    sel.innerHTML='<option value="">ทุกอำเภอ</option>'+amps.map(a=>`<option value="${a}">อ.${a}</option>`).join('');
+  }
+  if(q&&!q.dataset.b){q.dataset.b='1';
+    q.addEventListener('input',()=>{SPOT_FILTER.q=q.value;addSpots()})}
+  if(sel&&!sel.dataset.b){sel.dataset.b='1';
+    sel.addEventListener('change',()=>{SPOT_FILTER.amp=sel.value;addSpots()})}
+  const rs=document.getElementById('spotReset');
+  if(rs&&!rs.dataset.b){rs.dataset.b='1';
+    rs.onclick=()=>{SPOT_FILTER={q:'',amp:''};if(q)q.value='';if(sel)sel.value='';addSpots()}}
+  const lst=document.getElementById('spotList');
+  if(lst&&!lst.dataset.b){lst.dataset.b='1';
+    lst.addEventListener('click',e=>{const b=e.target.closest('[data-spot]');if(b)focusSpot(+b.dataset.spot)})}
 }
 
 DS.init('tourism',function(){
   renderTour();
+  wireSpotTools();
   const sel=document.getElementById('tYear');
-  if(sel)sel.onchange=function(){TY=+sel.value;renderTour();};
+  if(sel)sel.onchange=function(){TY=+sel.value;renderTour();wireSpotTools();};
 });
 </script>
 </body>

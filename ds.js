@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'2.1.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'2.2.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -29,43 +29,43 @@ const IC = {
 /* ─────────────── 2) ชุดข้อมูลรายหน่วยงาน ─────────────── */
 const DATASETS = [
  {id:'spend',sector:'fiscal',agency:'สำนักงานคลังจังหวัดหนองบัวลำภู',lag:20,real:true,
-  series:[{key:'inv',label:'เบิกจ่ายงบลงทุนสะสม',unit:'ล้านบาท',base:2575,trend:.05,seas:.30,kpi:1,dec:0},
-          {key:'ope',label:'เบิกจ่ายงบประจำสะสม',unit:'ล้านบาท',base:2262,trend:.03,seas:.16,dec:0}]},
+  series:[{key:'inv',agg:'last',label:'เบิกจ่ายงบลงทุนสะสม',unit:'ล้านบาท',base:2575,trend:.05,seas:.30,kpi:1,dec:0},
+          {key:'ope',agg:'last',label:'เบิกจ่ายงบประจำสะสม',unit:'ล้านบาท',base:2262,trend:.03,seas:.16,dec:0}]},
  {id:'crop',sector:'agri',agency:'สำนักงานเกษตรจังหวัดหนองบัวลำภู',lag:15,real:true,
-  series:[{key:'value',label:'มูลค่าผลผลิตพืชอายุสั้น',unit:'ล้านบาท',base:2960,trend:.02,seas:.30,kpi:1,dec:0},
-          {key:'area',label:'เนื้อที่ปลูก',unit:'ไร่',base:949634,trend:.008,seas:.06,int:1}]},
+  series:[{key:'value',agg:'sum',label:'มูลค่าผลผลิตพืชอายุสั้น',unit:'ล้านบาท',base:2960,trend:.02,seas:.30,kpi:1,dec:0},
+          {key:'area',agg:'last',label:'เนื้อที่ปลูก',agg:'last',unit:'ไร่',base:949634,trend:.008,seas:.06,int:1}]},
  {id:'factory',sector:'industry',agency:'สำนักงานอุตสาหกรรมจังหวัดหนองบัวลำภู',lag:30,
-  series:[{key:'newf',label:'โรงงานใหม่/ขยายกิจการ',unit:'แห่ง',base:4,trend:.04,seas:.5,kpi:1,int:1},
-          {key:'cap',label:'เงินลงทุนสะสม',unit:'ล้านบาท',base:9800,trend:.045,seas:.05,int:1},
-          {key:'emp',label:'แรงงานในโรงงาน',unit:'คน',base:6350,trend:.025,seas:.04,int:1}]},
+  series:[{key:'newf',agg:'sum',label:'โรงงานใหม่/ขยายกิจการ',unit:'แห่ง',base:4,trend:.04,seas:.5,kpi:1,int:1},
+          {key:'cap',agg:'last',label:'เงินลงทุนสะสม',unit:'ล้านบาท',base:9800,trend:.045,seas:.05,int:1},
+          {key:'emp',agg:'last',label:'แรงงานในโรงงาน',agg:'last',unit:'คน',base:6350,trend:.025,seas:.04,int:1}]},
  {id:'power',sector:'industry',agency:'การไฟฟ้าส่วนภูมิภาคจังหวัดหนองบัวลำภู',lag:25,
-  series:[{key:'ind',label:'ไฟฟ้าภาคอุตสาหกรรม',unit:'ล้านหน่วย',base:11.8,trend:.03,seas:.08,kpi:1,dec:2},
-          {key:'biz',label:'ไฟฟ้าภาคธุรกิจ',unit:'ล้านหน่วย',base:7.4,trend:.028,seas:.10,dec:2}]},
+  series:[{key:'ind',agg:'sum',label:'ไฟฟ้าภาคอุตสาหกรรม',unit:'ล้านหน่วย',base:11.8,trend:.03,seas:.08,kpi:1,dec:2},
+          {key:'biz',agg:'sum',label:'ไฟฟ้าภาคธุรกิจ',unit:'ล้านหน่วย',base:7.4,trend:.028,seas:.10,dec:2}]},
  {id:'cpi',sector:'trade',agency:'สำนักงานพาณิชย์จังหวัดหนองบัวลำภู',lag:20,invert:true,
-  series:[{key:'idx',label:'ดัชนีราคาผู้บริโภค',unit:'ดัชนี (2562=100)',base:108.4,trend:.012,seas:.03,kpi:1,dec:1},
-          {key:'yoy',label:'อัตราเงินเฟ้อทั่วไป',unit:'% YoY',base:1.3,trend:0,seas:.55,pct:1,dec:2}]},
+  series:[{key:'idx',agg:'avg',label:'ดัชนีราคาผู้บริโภค',unit:'ดัชนี (2562=100)',base:108.4,trend:.012,seas:.03,kpi:1,dec:1},
+          {key:'yoy',agg:'avg',label:'อัตราเงินเฟ้อทั่วไป',unit:'% YoY',base:1.3,trend:0,seas:.55,pct:1,dec:2}]},
  {id:'credit',sector:'trade',agency:'ธนาคารพัฒนาวิสาหกิจขนาดกลางและขนาดย่อมแห่งประเทศไทย',lag:30,
-  series:[{key:'amt',label:'วงเงินสินเชื่ออนุมัติ',unit:'ล้านบาท',base:52,trend:.05,seas:.28,kpi:1,dec:1},
-          {key:'cnt',label:'จำนวนรายที่ได้รับอนุมัติ',unit:'ราย',base:29,trend:.035,seas:.24,int:1}]},
+  series:[{key:'amt',agg:'sum',label:'วงเงินสินเชื่ออนุมัติ',unit:'ล้านบาท',base:52,trend:.05,seas:.28,kpi:1,dec:1},
+          {key:'cnt',agg:'sum',label:'จำนวนรายที่ได้รับอนุมัติ',unit:'ราย',base:29,trend:.035,seas:.24,int:1}]},
  {id:'fuel',sector:'consume',agency:'สำนักงานพลังงานจังหวัดหนองบัวลำภู',lag:35,
-  series:[{key:'total',label:'ปริมาณการใช้น้ำมันรวม',unit:'ล้านลิตร',base:14.2,trend:.02,seas:.09,kpi:1,dec:2},
-          {key:'diesel',label:'ดีเซล',unit:'ล้านลิตร',base:8.6,trend:.018,seas:.12,dec:2}]},
+  series:[{key:'total',agg:'sum',label:'ปริมาณการใช้น้ำมันรวม',unit:'ล้านลิตร',base:14.2,trend:.02,seas:.09,kpi:1,dec:2},
+          {key:'diesel',agg:'sum',label:'ดีเซล',unit:'ล้านลิตร',base:8.6,trend:.018,seas:.12,dec:2}]},
  {id:'car',sector:'consume',agency:'สำนักงานขนส่งจังหวัดหนองบัวลำภู',lag:15,
-  series:[{key:'moto',label:'รถจักรยานยนต์จดทะเบียนใหม่',unit:'คัน',base:735,trend:.02,seas:.19,kpi:1,int:1},
-          {key:'car',label:'รถยนต์นั่งส่วนบุคคล',unit:'คัน',base:118,trend:.03,seas:.24,int:1},
-          {key:'comm',label:'รถเพื่อการพาณิชย์',unit:'คัน',base:64,trend:.035,seas:.30,int:1}]},
+  series:[{key:'moto',agg:'sum',label:'รถจักรยานยนต์จดทะเบียนใหม่',unit:'คัน',base:735,trend:.02,seas:.19,kpi:1,int:1},
+          {key:'car',agg:'sum',label:'รถยนต์นั่งส่วนบุคคล',unit:'คัน',base:118,trend:.03,seas:.24,int:1},
+          {key:'comm',agg:'sum',label:'รถเพื่อการพาณิชย์',unit:'คัน',base:64,trend:.035,seas:.30,int:1}]},
  {id:'labor',sector:'labor',agency:'สำนักงานแรงงานจังหวัดหนองบัวลำภู · สำนักงานสถิติจังหวัด',lag:45,freq:'Q',real:true,
-  series:[{key:'ue',label:'จำนวนผู้ว่างงาน',unit:'คน',base:2960,trend:.01,seas:.5,kpi:1,int:1},
-          {key:'ur',label:'อัตราการว่างงาน',unit:'%',base:1.12,trend:0,seas:.45,pct:1,dec:2},
-          {key:'emp',label:'ผู้มีงานทำ',unit:'คน',base:261684,trend:.008,seas:.03,int:1},
-          {key:'force',label:'กำลังแรงงานรวม',unit:'คน',base:264644,trend:.006,seas:.02,int:1}]},
+  series:[{key:'ue',agg:'last',label:'จำนวนผู้ว่างงาน',unit:'คน',base:2960,trend:.01,seas:.5,kpi:1,int:1},
+          {key:'ur',agg:'avg',label:'อัตราการว่างงาน',unit:'%',base:1.12,trend:0,seas:.45,pct:1,dec:2},
+          {key:'emp',agg:'last',label:'ผู้มีงานทำ',agg:'last',unit:'คน',base:261684,trend:.008,seas:.03,int:1},
+          {key:'force',agg:'last',label:'กำลังแรงงานรวม',unit:'คน',base:264644,trend:.006,seas:.02,int:1}]},
  {id:'social',sector:'labor',agency:'สำนักงานประกันสังคมจังหวัดหนองบัวลำภู',lag:30,
-  series:[{key:'m33',label:'ผู้ประกันตน มาตรา 33',unit:'คน',base:21500,trend:.02,seas:.06,kpi:1,int:1},
-          {key:'m40',label:'ผู้ประกันตน มาตรา 40',unit:'คน',base:64800,trend:.015,seas:.04,int:1}]},
+  series:[{key:'m33',agg:'last',label:'ผู้ประกันตน มาตรา 33',unit:'คน',base:21500,trend:.02,seas:.06,kpi:1,int:1},
+          {key:'m40',agg:'last',label:'ผู้ประกันตน มาตรา 40',unit:'คน',base:64800,trend:.015,seas:.04,int:1}]},
  {id:'tour',sector:'tourism',agency:'สำนักงานการท่องเที่ยวและกีฬาจังหวัดหนองบัวลำภู',lag:50,
-  series:[{key:'visit',label:'ผู้เยี่ยมเยือน',unit:'คน-ครั้ง',base:78000,trend:.05,seas:.30,kpi:1,int:1},
-          {key:'rev',label:'รายได้จากการท่องเที่ยว',unit:'ล้านบาท',base:210,trend:.06,seas:.32,dec:1},
-          {key:'occ',label:'อัตราการเข้าพักเฉลี่ย',unit:'%',base:42,trend:.02,seas:.22,pct:1,dec:1}]}
+  series:[{key:'visit',agg:'sum',label:'ผู้เยี่ยมเยือน',unit:'คน-ครั้ง',base:78000,trend:.05,seas:.30,kpi:1,int:1},
+          {key:'rev',agg:'sum',label:'รายได้จากการท่องเที่ยว',unit:'ล้านบาท',base:210,trend:.06,seas:.32,dec:1},
+          {key:'occ',agg:'avg',label:'อัตราการเข้าพักเฉลี่ย',unit:'%',base:42,trend:.02,seas:.22,pct:1,dec:1}]}
 ];
 
 const SECTORS = [
@@ -321,12 +321,14 @@ function renderSector(sid){
       <div class="b">${srcBar(sec.datasets)}</div></div>`;
   const st=slicerState('slc-'+sid);
   const info=document.getElementById('slc-'+sid+'-info');
+  const full={M:1,Q:3,Y:12}[st.freq];
   if(info)info.innerHTML=`กำลังแสดง <b>${st.label}</b>`+
-    (st.freq==='M'?'':` · ${st.idx.length} เดือนรวมกัน`)+
-    (st.cmp?' · เทียบกับงวดเดียวกันปีก่อน':'');
+    (st.freq==='M'?'':` · ครอบคลุม ${st.idx.length} เดือน`+(st.idx.length<full?' <span style="color:var(--warn)">(ยังไม่ครบงวด)</span>':''))+
+    (st.cmp?' · เทียบงวดเดียวกันปีก่อน':'');
   $('#k-'+sid).innerHTML=all.slice(0,4).map((o,i)=>{
     const arr=DB[o.d.id][o.s.key];
-    const mode=o.s.pct?'avg':'sum';
+    const mode=o.s.agg||(o.s.pct?'avg':'sum');
+    const modeTxt={sum:'ผลรวมในงวด',avg:'ค่าเฉลี่ยในงวด',last:'ค่า ณ สิ้นงวด'}[mode];
     const now=seriesAt(arr,st,mode), was=seriesPrevYear(arr,st,mode);
     const pc=was?pctc(now,was):null;
     return kpiCard({icon:['chart','coin','people','bolt'][i],color:PAL()[i],label:o.s.label,
@@ -335,9 +337,11 @@ function renderSector(sid){
       spark:spark(arr.slice(-18).map(x=>x.v),PAL()[i]),
       sub:agencyName(o.d.id).replace('สำนักงาน','สนง.').replace('จังหวัดหนองบัวลำภู','จ.นภ.'),
       tip:tipOf({t:o.s.label,
-        d:'หน่วยวัด '+o.s.unit+(st.freq==='M'?' · ค่าของเดือนที่เลือก':(mode==='avg'?' · ค่าเฉลี่ยในงวด':' · ผลรวมในงวด')),
+        d:'หน่วยวัด '+o.s.unit+(st.freq==='M'?' · ค่าของเดือนที่เลือก':' · '+modeTxt),
         calc:st.freq==='M'?'ค่าที่หน่วยงานรายงานในเดือนนั้นโดยตรง'
-          :(mode==='avg'?'เฉลี่ยค่ารายเดือนภายในงวดที่เลือก':'รวมค่ารายเดือนภายในงวดที่เลือก')+
+          :({sum:'รวมค่ารายเดือนภายในงวดที่เลือก',
+             avg:'เฉลี่ยค่ารายเดือนภายในงวดที่เลือก เพราะเป็นอัตราหรือดัชนี นำมาบวกกันไม่ได้',
+             last:'ใช้ค่าของเดือนสุดท้ายในงวด เพราะเป็นยอดสะสมหรือจำนวนคงค้าง ณ เวลาหนึ่ง นำมาบวกกันจะนับซ้ำ'}[mode])+
             (pc!=null?' · เปรียบเทียบกับงวดเดียวกันของปีก่อน = (งวดนี้ − ปีก่อน) ÷ ปีก่อน × 100':''),
         src:o.d.id, when:st.label})})}).join('');
   drawSectorChart(sid,'line');
@@ -826,13 +830,19 @@ function slicerState(id){
   return {freq:cfg.freq,key:cur.k,label:cur.label,i:cur.i,idx:cur.idx||[cur.i],cmp:!!cfg.cmp,periods:ps};
 }
 /* ค่าของชุดข้อมูลตามงวดที่เลือก — รายเดือนใช้ค่าเดือนนั้น รายไตรมาส/ปีใช้ผลรวมหรือค่าเฉลี่ย */
+/* mode: sum=ยอดไหลรวมกันได้ · avg=อัตราหรือดัชนีใช้ค่าเฉลี่ย · last=ค่าสะสมหรือค่าสต๊อก ใช้ค่าสิ้นงวด */
+function aggVals(vals,mode){
+  if(!vals.length)return null;
+  if(mode==='last')return vals[vals.length-1];
+  if(mode==='avg')return vals.reduce((a,b)=>a+b,0)/vals.length;
+  return vals.reduce((a,b)=>a+b,0);
+}
 function seriesAt(arr,st,mode){
   if(!st)return arr[arr.length-1].v;
   const idx=st.idx||[st.i];
   const vals=idx.map(i=>arr[i]&&arr[i].v).filter(v=>v!=null);
-  if(!vals.length)return null;
-  if(st.freq==='M')return vals[vals.length-1];
-  return mode==='avg'?vals.reduce((a,b)=>a+b,0)/vals.length:vals.reduce((a,b)=>a+b,0);
+  if(st.freq==='M')return vals.length?vals[vals.length-1]:null;
+  return aggVals(vals,mode);
 }
 function seriesPrevYear(arr,st,mode){
   if(!st)return null;
@@ -841,7 +851,7 @@ function seriesPrevYear(arr,st,mode){
   const vals=idx.map(i=>arr[i]&&arr[i].v).filter(v=>v!=null);
   if(!vals.length)return null;
   if(st.freq==='M')return vals[vals.length-1];
-  return mode==='avg'?vals.reduce((a,b)=>a+b,0)/vals.length:vals.reduce((a,b)=>a+b,0);
+  return aggVals(vals,mode);
 }
 function bindSlicers(onChange){
   document.querySelectorAll('[data-slicer]').forEach(el=>{
@@ -867,6 +877,37 @@ function bindSlicers(onChange){
       onChange&&onChange(id);
     });
   });
+}
+
+
+/* ─────────────── 31) แผนที่เชิงบริการ — ป๊อปอัปพร้อมนำทาง ─────────────── */
+const GMAP=(lat,lng,name)=>`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`+
+  (name?('&query_place_id='):'')
+const ICO_NAV='<svg viewBox="0 0 24 24"><path d="M3 11.5 21 3l-8.5 18-2-7.5z"/></svg>';
+const ICO_PIN='<svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>';
+const ICO_COPY='<svg viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M4.5 15.5v-9a2 2 0 0 1 2-2h9"/></svg>';
+/**
+ * สร้างป๊อปอัปแบบบริการ ใช้ได้กับทุกจุดที่มีพิกัด
+ * o: {name, sub, rows:[[label,value]], lat, lng, nearby:'คำค้นบริการใกล้เคียง'}
+ */
+function servicePopup(o){
+  const q=`${o.lat},${o.lng}`;
+  const nav=`https://www.google.com/maps/dir/?api=1&destination=${q}&travelmode=driving`;
+  const view=`https://www.google.com/maps/search/?api=1&query=${q}`;
+  const near=o.nearby?`https://www.google.com/maps/search/${encodeURIComponent(o.nearby)}/@${o.lat},${o.lng},15z`:'';
+  return `<div class="pop">
+    <div class="ph2"><b>${o.name}</b>${o.sub?`<span>${o.sub}</span>`:''}</div>
+    <div class="pb">
+      ${(o.rows||[]).map(r=>`<div class="prow"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}
+      <div class="prow"><span>พิกัด</span><b>${(+o.lat).toFixed(5)}, ${(+o.lng).toFixed(5)}</b></div>
+      <div class="pact">
+        <a class="go" href="${nav}" target="_blank" rel="noopener">${ICO_NAV}นำทาง</a>
+        <a href="${view}" target="_blank" rel="noopener">${ICO_PIN}เปิดแผนที่</a>
+        <button onclick="navigator.clipboard&&navigator.clipboard.writeText('${q}');this.textContent='คัดลอกแล้ว'">${ICO_COPY}พิกัด</button>
+      </div>
+      ${near?`<div class="pact" style="margin-top:6px">
+        <a href="${near}" target="_blank" rel="noopener" style="flex:1">${ICO_PIN}ค้นหา${o.nearby}ใกล้ที่นี่</a></div>`:''}
+    </div></div>`;
 }
 
 /* ─────────────── 22) โครงร่วม: แถบบน เมนู และการเริ่มระบบ ─────────────── */
