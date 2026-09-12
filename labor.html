@@ -26,12 +26,76 @@
 <script src="ds.js"></script>
 <script>
 const QL=q=>'ไตรมาส '+q.n+'/'+q.y;
+const LB={freq:'Q',key:null};
+const LYEARS=()=>[...new Set(D.labor.quarters.map(q=>q.y))].sort((a,b)=>a-b);
+function lbPeriods(){
+  const Q=D.labor.quarters;
+  if(LB.freq==='Q')return Q.map(q=>({k:q.q,label:QL(q),qs:[q]}));
+  return LYEARS().map(y=>({k:'Y'+y,label:'ปี '+y,qs:Q.filter(q=>q.y===y)}));
+}
+function lbCur(){
+  const ps=lbPeriods();
+  if(!LB.key||!ps.find(p=>p.k===LB.key))LB.key=ps[ps.length-1].k;
+  return ps.find(p=>p.k===LB.key);
+}
+function lbPrev(cur){
+  const Q=D.labor.quarters;
+  if(LB.freq==='Q'){
+    const c=cur.qs[0], py=Q.find(q=>q.y===c.y-1&&q.n===c.n);
+    return py?{label:QL(py),qs:[py]}:null;
+  }
+  const y=+cur.k.slice(1), qs=Q.filter(q=>q.y===y-1);
+  return qs.length?{label:'ปี '+(y-1),qs}:null;
+}
+/* ค่าของงวด — จำนวนคนเป็นค่าสต๊อก จึงใช้ค่าเฉลี่ยของไตรมาสในปีนั้น */
+function lbVal(p,key){
+  if(!p||!p.qs.length)return null;
+  const v=p.qs.map(q=>q[key]).filter(x=>x!=null);
+  if(!v.length)return null;
+  return LB.freq==='Q'?v[0]:v.reduce((a,b)=>a+b,0)/v.length;
+}
+function lbBar(){
+  const ps=lbPeriods(), cur=lbCur(), ci=ps.indexOf(cur);
+  return `<div class="slicer" id="lbSlicer">
+    <span class="sl-lab">เลือกงวดข้อมูล</span>
+    <span class="sl-seg">
+      <button data-lfq="Q" class="${LB.freq==='Q'?'on':''}">รายไตรมาส</button>
+      <button data-lfq="Y" class="${LB.freq==='Y'?'on':''}">รายปี</button></span>
+    <span class="sl-nav">
+      <button data-lstep="-1" ${ci<=0?'disabled':''}><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <select data-lpick>${ps.map(p=>`<option value="${p.k}"${p.k===cur.k?' selected':''}>${p.label}</option>`).join('')}</select>
+      <button data-lstep="1" ${ci>=ps.length-1?'disabled':''}><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    </span>
+    <button class="sl-now${ci===ps.length-1?' on':''}" data-lnow>ล่าสุด</button>
+    <span class="sl-info">${LB.freq==='Q'?'ข้อมูลรายไตรมาส 12 งวด ตั้งแต่ '+QL(D.labor.quarters[0]):
+      'รายปีใช้ค่าเฉลี่ยของไตรมาสในปีนั้น เพราะเป็นค่าสต๊อก ไม่ใช่ยอดสะสม'}</span>
+  </div>`;
+}
+function bindLb(){
+  const el=document.getElementById('lbSlicer'); if(!el||el.dataset.b)return;
+  el.dataset.b='1';
+  el.addEventListener('click',e=>{
+    const fq=e.target.closest('[data-lfq]'), st=e.target.closest('[data-lstep]'), nw=e.target.closest('[data-lnow]');
+    if(fq){LB.freq=fq.dataset.lfq;LB.key=null}
+    else if(st){const ps=lbPeriods(),i=ps.findIndex(p=>p.k===LB.key);const n=ps[i+ +st.dataset.lstep];if(!n)return;LB.key=n.k}
+    else if(nw){const ps=lbPeriods();LB.key=ps[ps.length-1].k}
+    else return;
+    renderLabor();
+  });
+  el.addEventListener('change',e=>{if(e.target.matches('[data-lpick]')){LB.key=e.target.value;renderLabor()}});
+}
 const QS=q=>'Q'+q.n+'/'+String(q.y).slice(-2);
 function yoyOf(arr,i,k){return i>=4?pctc(arr[i][k],arr[i-4][k]):null}
 
 function renderLabor(){
-  const L=D.labor, Q=L.quarters, last=Q[Q.length-1], first=Q[0];
-  const yoy=Q[Q.length-5];
+  const L=D.labor, Q=L.quarters, first=Q[0];
+  const cur=lbCur(), prevP=lbPrev(cur);
+  const last=LB.freq==='Q'?cur.qs[0]:{ue:lbVal(cur,'ue'),ur:lbVal(cur,'ur'),emp:lbVal(cur,'emp'),
+    force:lbVal(cur,'force'),pop15:lbVal(cur,'pop15'),notin:lbVal(cur,'notin'),lfpr:lbVal(cur,'lfpr'),
+    y:+cur.k.slice(1),n:0};
+  const yoy=prevP?(LB.freq==='Q'?prevP.qs[0]:{ue:lbVal(prevP,'ue'),ur:lbVal(prevP,'ur'),
+    emp:lbVal(prevP,'emp'),force:lbVal(prevP,'force'),lfpr:lbVal(prevP,'lfpr')}):null;
+  const curLabel=cur.label, prevLabel=prevP?prevP.label:'';
   const v=document.getElementById('v-labor');
 
   v.innerHTML=`
@@ -40,6 +104,7 @@ function renderLabor(){
     <p>ข้อมูลจริงจากการสำรวจภาวะการทำงานของประชากร รายไตรมาส ย้อนหลัง 3 ปี พร้อมโครงสร้างการจ้างงานและสัญญาณที่ซ่อนอยู่หลังตัวเลขว่างงาน</p></span></div>
     <div class="r"><span class="chip real">ข้อมูลจริง</span><span class="chip br">${L.latest}</span></div></div>
 
+  ${lbBar()}
   <div class="grid g4 mb" id="lbKpi"></div>
 
   <div class="grid g21 mb">
@@ -48,7 +113,7 @@ function renderLabor(){
       <div class="b">
         <div id="cUe-chart"><div class="ch lg"><canvas id="cUe"></canvas></div></div>
         <div id="cUe-table" class="hide"><div class="sc" style="max-height:340px"><table class="t" data-owner="labor" id="tUe"></table></div></div>
-        <div class="note">${L.note}</div>
+        <div class="note">แท่งสีทองคืองวดที่เลือกอยู่ · แท่งสีส้มคือไตรมาสที่ 1 ของแต่ละปีซึ่งเป็นช่วงหลังฤดูเก็บเกี่ยว<br>${L.note}</div>
       </div></div>
     <div class="c"><header><h3>อัตราการว่างงานรายปี</h3><span class="u">ร้อยละ</span></header>
       <div class="b"><div class="ch lg"><canvas id="cAnn"></canvas></div>
@@ -97,28 +162,47 @@ function renderLabor(){
       'ประกอบด้วย สถานภาพแรงงานรายไตรมาส · จำนวนและอัตราการว่างงาน · การมีงานทำจำแนกตามอุตสาหกรรมและสถานภาพการทำงาน · การทำงานต่ำกว่าระดับด้านชั่วโมงการทำงาน')}</div></div>`;
 
   /* ── KPI ── */
-  const ueY=pctc(last.ue,yoy.ue);
+  const ueY=yoy?pctc(last.ue,yoy.ue):null;
+  const aggNote=LB.freq==='Y'?'ค่าเฉลี่ยของไตรมาสในปีนั้น':'ค่าที่สำรวจได้ในไตรมาสนั้น';
+  const SRC='labor';
   document.getElementById('lbKpi').innerHTML=[
     kpiCard({icon:'people',img:'unemployed',color:cv('--coral'),label:'จำนวนผู้ว่างงาน',value:f(last.ue,0),unit:'คน',
-      chip:ueY==null?'<span class="chip">—</span>':chip(ueY),
-      sub:'เทียบ '+QL(yoy)+' · '+f(yoy.ue,0)+' คน',
-      tip:'จำนวนผู้ว่างงาน|ผู้ที่ไม่มีงานทำ พร้อมทำงาน และกำลังหางานในสัปดาห์สำรวจ|ที่มา: การสำรวจภาวะการทำงานของประชากร '+L.latest}),
+      chip:(ueY==null?'<span class="chip">—</span>':chip(ueY))+' '+statusBadge(ueY,true,'จำนวนผู้ว่างงานเทียบงวดเดียวกันปีก่อน'),
+      sub:yoy?('เทียบ '+prevLabel+' · '+f(yoy.ue,0)+' คน'):'ไม่มีงวดปีก่อนให้เทียบ',
+      tip:tipOf({t:'จำนวนผู้ว่างงาน',
+        d:'ผู้ที่ไม่ได้ทำงานเลยแม้แต่ชั่วโมงเดียวในสัปดาห์สำรวจ พร้อมทำงาน และกำลังหางาน · '+aggNote,
+        calc:'นับจากกลุ่มตัวอย่างครัวเรือนแล้วถ่วงน้ำหนักขึ้นเป็นระดับจังหวัด'+(LB.freq==='Y'?' จากนั้นเฉลี่ยไตรมาสในปีนั้น':''),
+        src:SRC,when:curLabel})}),
     kpiCard({icon:'chart',img:'unemprate',color:cv('--gold'),label:'อัตราการว่างงาน',value:last.ur.toFixed(2),unit:'%',
-      chip:'<span class="chip fl">'+(last.ur-yoy.ur>0?'+':'')+(last.ur-yoy.ur).toFixed(2)+' จุด</span>',
+      chip:'<span class="chip fl">'+(yoy?((last.ur-yoy.ur>0?'+':'')+(last.ur-yoy.ur).toFixed(2)+' จุด'):'—')+'</span>'
+        +' '+statusBadge(yoy?-(last.ur-yoy.ur)*10:null,false,'อัตราการว่างงานเทียบงวดเดียวกันปีก่อน'),
       sub:'จากกำลังแรงงาน '+f(last.force,0)+' คน',
-      tip:'อัตราการว่างงาน|จำนวนผู้ว่างงาน หารด้วยกำลังแรงงานรวม|ไตรมาส 1 ของทุกปีมักสูงกว่าไตรมาสอื่นเพราะเป็นช่วงหลังฤดูเก็บเกี่ยว'}),
+      tip:tipOf({t:'อัตราการว่างงาน',
+        d:'สัดส่วนผู้ว่างงานต่อกำลังแรงงานรวม · ไตรมาส 1 ของทุกปีมักสูงกว่าไตรมาสอื่น เพราะเป็นช่วงหลังฤดูเก็บเกี่ยว แรงงานเกษตรว่างงานตามฤดูกาล',
+        calc:'(จำนวนผู้ว่างงาน ÷ กำลังแรงงานรวม) × 100 = ('+f(last.ue,0)+' ÷ '+f(last.force,0)+') × 100',
+        src:SRC,when:curLabel})}),
     kpiCard({icon:'brief',img:'employed',color:cv('--brand'),label:'ผู้มีงานทำ',value:f(last.emp,0),unit:'คน',
-      chip:chip(pctc(last.emp,yoy.emp)),sub:'จากประชากรอายุ 15 ปีขึ้นไป '+f(last.pop15,0)+' คน'}),
+      chip:(yoy?chip(pctc(last.emp,yoy.emp)):'<span class="chip">—</span>')+' '+statusBadge(yoy?pctc(last.emp,yoy.emp):null,false,'ผู้มีงานทำเทียบงวดเดียวกันปีก่อน'),
+      sub:'จากประชากรอายุ 15 ปีขึ้นไป '+f(last.pop15,0)+' คน',
+      tip:tipOf({t:'ผู้มีงานทำ',
+        d:'ผู้ที่ทำงานตั้งแต่ 1 ชั่วโมงขึ้นไปในสัปดาห์สำรวจ หรือมีงานประจำแต่ไม่ได้ทำงานในสัปดาห์นั้น เป็นฐานกำลังซื้อที่แท้จริงของจังหวัด · '+aggNote,
+        calc:'กำลังแรงงานรวม − ผู้ว่างงาน = '+f(last.force,0)+' − '+f(last.ue,0),
+        src:SRC,when:curLabel})}),
     kpiCard({icon:'coin',img:'lfpr',color:cv('--plum'),label:'อัตราการมีส่วนร่วมกำลังแรงงาน',value:last.lfpr.toFixed(1),unit:'%',
       chip:'<span class="chip '+(last.lfpr<first.lfpr?'dn':'up')+'">'+(last.lfpr-first.lfpr>0?'+':'')+(last.lfpr-first.lfpr).toFixed(1)+' จุด จาก '+QS(first)+'</span>',
       sub:'ผู้ไม่อยู่ในกำลังแรงงาน '+f(last.notin,0)+' คน',
-      tip:'อัตราการมีส่วนร่วมกำลังแรงงาน|สัดส่วนคนที่อยู่ในกำลังแรงงาน ต่อประชากรอายุ 15 ปีขึ้นไป|ตัวเลขนี้ลดลงหมายถึงคนถอนตัวออกจากตลาดแรงงาน ซึ่งไม่ถูกนับเป็นผู้ว่างงาน'})
+      tip:tipOf({t:'อัตราการมีส่วนร่วมกำลังแรงงาน',
+        d:'สัดส่วนคนที่อยู่ในกำลังแรงงานต่อประชากรอายุ 15 ปีขึ้นไป · ตัวเลขนี้ลดลงหมายถึงคนถอนตัวออกจากตลาดแรงงานไปเลย ซึ่งไม่ถูกนับเป็นผู้ว่างงาน จึงต้องอ่านคู่กับอัตราการว่างงานเสมอ',
+        calc:'(กำลังแรงงานรวม ÷ ประชากรอายุ 15 ปีขึ้นไป) × 100 = ('+f(last.force,0)+' ÷ '+f(last.pop15,0)+') × 100',
+        src:SRC,when:curLabel})})
   ].join('');
+  bindLb();
 
   /* ── กราฟหลัก ── */
   mk('cUe',{data:{labels:Q.map(QS),datasets:[
     {type:'bar',label:'จำนวนผู้ว่างงาน (คน)',data:Q.map(x=>x.ue),
-      backgroundColor:Q.map(x=>x.n===1?cv('--coral'):cv('--brand')),borderRadius:6,barPercentage:.68,yAxisID:'y',order:2},
+      backgroundColor:Q.map(x=>(cur.qs.some(c=>c.q===x.q))?cv('--gold'):(x.n===1?cv('--coral'):cv('--brand')+'99')),
+      borderRadius:6,barPercentage:.68,yAxisID:'y',order:2},
     {type:'line',label:'อัตราการว่างงาน (%)',data:Q.map(x=>x.ur),borderColor:cv('--gold'),borderWidth:2.6,
       pointRadius:4,pointBackgroundColor:cv('--gold'),pointBorderColor:'#fff',pointBorderWidth:1.6,tension:.28,yAxisID:'y2',order:1}]},
     options:{interaction:{mode:'index',intersect:false},
