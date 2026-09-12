@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="ds.css">
 
 </head>
@@ -22,10 +23,256 @@
   </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data2.js"></script>
 <script src="ds.js"></script>
 <script>
-window.onSeg=function(w,btn){ if(w.dataset.dom)drawSectorChart(w.dataset.dom,btn.dataset.mode); };
-DS.init('tourism',function(){renderSector('tourism')});
+const T=DX.tour;
+const YRS=[...new Set(T.internal.map(x=>x.y))].sort((a,b)=>a-b);
+let TY=YRS[YRS.length-1];
+const KINDS=['ผู้เยี่ยมเยือน','นักท่องเที่ยว','นักทัศนาจร'];
+const val=(y,kind,who)=>{const r=T.internal.find(x=>x.y===y&&x.kind===kind&&x.who===who);return r?r.v:0};
+const tot=(y,kind)=>val(y,kind,'ชาวไทย')+val(y,kind,'ชาวต่างชาติ');
+const spend=(y,who,kind)=>{const r=T.spend.find(x=>x.y===y&&x.who===who&&x.kind===kind);return r?r.v:null};
+const occOf=y=>{const r=T.occYear.find(x=>x.y===y);return r?r.v:null};
+
+function renderTour(){
+  const prev=TY-1;
+  const v=tot(TY,'ผู้เยี่ยมเยือน'), vPrev=tot(prev,'ผู้เยี่ยมเยือน');
+  const th=val(TY,'ผู้เยี่ยมเยือน','ชาวไทย'), fo=val(TY,'ผู้เยี่ยมเยือน','ชาวต่างชาติ');
+  const M=T.visitor.filter(x=>x.fy===2569), R=T.revenue.filter(x=>x.fy===2569), OC=T.occ.filter(x=>x.fy===2569);
+  const spotTot=Object.values(T.spotByType).reduce((a,b)=>a+b,0);
+
+  document.getElementById('v-tourism').innerHTML=`
+  <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start">
+    <span class="bigico icow img" data-bigico="tourism"></span>
+    <span><h2>ภาคการท่องเที่ยว</h2>
+    <p>รายได้จากการท่องเที่ยวคือเงินใหม่ที่ไหลเข้าจังหวัดจากภายนอก ต่างจากการค้าภายในที่เป็นการหมุนเงินก้อนเดิม</p></span></div>
+    <div class="r"><span class="chip real">ข้อมูลจริง</span>
+      <select class="sel" id="tYear">${YRS.slice().reverse().map(y=>`<option value="${y}"${y===TY?' selected':''}>ปี ${y}</option>`).join('')}</select></div></div>
+
+  <div class="grid g3 mb" id="tBig"></div>
+
+  <div class="grid g21 mb">
+    <div class="c"><header><h3>แนวโน้มผู้เยี่ยมเยือน</h3><span class="u">คน · ${YRS[0]}–${YRS[YRS.length-1]}</span>
+      <span class="r">${viewToggle('cTrend')}</span></header>
+      <div class="b">
+        <div id="cTrend-chart"><div class="ch lg"><canvas id="cTrend"></canvas></div></div>
+        <div id="cTrend-table" class="hide"><div class="sc" style="max-height:330px"><table class="t" id="tTrend"></table></div></div>
+        <div class="note" id="trendNote"></div>
+      </div></div>
+    <div class="c"><header><h3>สัดส่วนชาวไทยและชาวต่างชาติ</h3><span class="u">ปี ${TY}</span></header>
+      <div class="b"><div class="ch"><canvas id="cMix"></canvas></div>
+        <div id="spendBox" style="margin-top:10px"></div></div></div>
+  </div>
+
+  <div class="grid g2 mb">
+    <div class="c"><header><h3>ค่าใช้จ่ายเฉลี่ยต่อคนต่อวัน</h3><span class="u">บาท</span></header>
+      <div class="b"><div class="ch"><canvas id="cSpend"></canvas></div>
+        <div class="note" id="spendNote"></div></div></div>
+    <div class="c"><header><h3>อัตราการเข้าพักเฉลี่ย</h3><span class="u">ร้อยละ</span></header>
+      <div class="b"><div class="ch"><canvas id="cOcc"></canvas></div>
+        <div class="note" id="occNote"></div></div></div>
+  </div>
+
+  <div class="c mb"><header><h3>ผู้เยี่ยมเยือน รายได้ และอัตราการเข้าพักรายเดือน</h3>
+    <span class="u">ปีงบประมาณ 2569</span></header>
+    <div class="b"><div class="ch lg"><canvas id="cMon"></canvas></div>
+      <div class="note" id="monNote"></div></div></div>
+
+  <div class="grid g21 mb">
+    <div class="c"><header><h3>แหล่งท่องเที่ยว ${T.spots.length} แห่งบนแผนที่</h3>
+      <span class="u">คลิกหมุดเพื่อดูชื่อและตำบล</span></header>
+      <div class="b"><div class="mapwrap"><div id="tmap" style="height:460px"></div></div>
+        <div class="note">หมุดสีเขียวคือแหล่งท่องเที่ยวที่มีพิกัดในฐานข้อมูลจังหวัด ใช้วางแผนเส้นทางเชื่อมโยงกับแปลงใหญ่และร้าน OTOP ได้</div></div></div>
+    <div class="c"><header><h3>ประเภทแหล่งท่องเที่ยว</h3><span class="u">ปี ${T.spotYear} · ${spotTot} แห่ง</span>
+      <span class="r">${viewToggle('cSpot')}</span></header>
+      <div class="b">
+        <div id="cSpot-chart"><div class="ch"><canvas id="cSpot"></canvas></div></div>
+        <div id="cSpot-table" class="hide"><div class="sc"><table class="t" id="tSpot"></table></div></div>
+        <div id="spotAmp" style="margin-top:10px"></div>
+      </div></div>
+  </div>
+
+  <div class="grid g2 mb">
+    <div class="c"><header><h3>ที่พักแรมที่ถูกต้องตามกฎหมาย</h3><span class="u">ปี ${T.accYear} · ${T.accTotal} แห่ง ${f(T.accRooms,0)} ห้อง</span></header>
+      <div class="b"><div class="ch"><canvas id="cAcc"></canvas></div>
+        <div class="note" id="accNote"></div></div></div>
+    <div class="c"><header><h3>ศักยภาพที่ยังไม่ถูกใช้</h3></header>
+      <div class="b" id="gapBox2"></div></div>
+  </div>
+
+  <div class="c"><header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
+    <div class="b">${srcBar(['tour'],'ครอบคลุมสถิติผู้เยี่ยมเยือนรายปีและรายเดือน ค่าใช้จ่ายเฉลี่ยต่อคนต่อวัน อัตราการเข้าพัก ประเภทแหล่งท่องเที่ยว พิกัดแหล่งท่องเที่ยว และสถานประกอบการที่พักแรมที่ถูกต้องตามกฎหมาย')}</div></div>`;
+
+  /* ── KPI ใหญ่ 3 ตัว ── */
+  const cols=[cv('--lotus')||cv('--plum'),cv('--blue'),cv('--coral')];
+  document.getElementById('tBig').innerHTML=KINDS.map((k,i)=>{
+    const n=tot(TY,k), p=tot(prev,k), pc=p?pctc(n,p):null;
+    return `<div class="bigkpi" style="--bk:${cols[i]}">
+      <div class="bk-ic icow img">${icoImg(i===0?'visitor':i===1?'tourism':'migration',44)}</div>
+      <div class="bk-v">${f(n,0)}<small>คน</small></div>
+      <div class="bk-l">${k}</div>
+      <div class="bk-f">${pc==null?'':chip(pc)} ${statusBadge(pc,false,'จำนวน'+k+' เทียบปีก่อน')}</div>
+    </div>`}).join('');
+
+  /* ── แนวโน้ม ── */
+  mk('cTrend',{data:{labels:YRS.map(y=>'ปี '+y),datasets:[
+    {type:'bar',label:'ชาวไทย',data:YRS.map(y=>val(y,'ผู้เยี่ยมเยือน','ชาวไทย')),
+      backgroundColor:cv('--brand'),borderRadius:6,stack:'s',yAxisID:'y'},
+    {type:'bar',label:'ชาวต่างชาติ',data:YRS.map(y=>val(y,'ผู้เยี่ยมเยือน','ชาวต่างชาติ')),
+      backgroundColor:cv('--coral'),borderRadius:6,stack:'s',yAxisID:'y'},
+    {type:'line',label:'รวมผู้เยี่ยมเยือน',data:YRS.map(y=>tot(y,'ผู้เยี่ยมเยือน')),
+      borderColor:cv('--gold'),borderWidth:2.6,borderDash:[6,4],pointRadius:4,pointBackgroundColor:cv('--gold'),tension:.25,yAxisID:'y'}]},
+    options:{interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom',labels:{padding:11}},
+        tooltip:{callbacks:{footer:it=>{const y=YRS[it[0].dataIndex];
+          return 'นักท่องเที่ยว '+f(tot(y,'นักท่องเที่ยว'),0)+' คน · นักทัศนาจร '+f(tot(y,'นักทัศนาจร'),0)+' คน'}}}},
+      scales:{x:ax({grid:{display:false},stacked:true}),y:ax({stacked:true,ticks:{callback:v=>f(v/1000,0)+'K'}})}}});
+  document.getElementById('tTrend').innerHTML=`<thead><tr><th>ปี</th><th class="r">ชาวไทย</th><th class="r">ชาวต่างชาติ</th>
+    <th class="r">รวม</th><th class="r">%YoY</th><th class="r">เข้าพัก (%)</th></tr></thead><tbody>`+
+    YRS.map((y,i)=>`<tr><td>ปี ${y}</td><td class="r">${f(val(y,'ผู้เยี่ยมเยือน','ชาวไทย'),0)}</td>
+      <td class="r">${f(val(y,'ผู้เยี่ยมเยือน','ชาวต่างชาติ'),0)}</td>
+      <td class="r" style="font-weight:600">${f(tot(y,'ผู้เยี่ยมเยือน'),0)}</td>
+      <td class="r">${i?((tot(y,'ผู้เยี่ยมเยือน')-tot(YRS[i-1],'ผู้เยี่ยมเยือน'))/tot(YRS[i-1],'ผู้เยี่ยมเยือน')*100).toFixed(1)+'%':'—'}</td>
+      <td class="r">${occOf(y)!=null?occOf(y).toFixed(2):'—'}</td></tr>`).join('')+'</tbody>';
+  const low=YRS.reduce((a,y)=>tot(y,'ผู้เยี่ยมเยือน')<tot(a,'ผู้เยี่ยมเยือน')?y:a,YRS[0]);
+  document.getElementById('trendNote').innerHTML=
+    `ผู้เยี่ยมเยือนฟื้นจากจุดต่ำสุดปี ${low} ที่ ${f(tot(low,'ผู้เยี่ยมเยือน'),0)} คน มาเป็น ${f(v,0)} คนในปี ${YRS[YRS.length-1]}
+     หรือเพิ่มขึ้น ${((tot(YRS[YRS.length-1],'ผู้เยี่ยมเยือน')/tot(low,'ผู้เยี่ยมเยือน')-1)*100).toFixed(0)}%
+     ชาวต่างชาติยังมีสัดส่วนเพียง ${(fo/v*100).toFixed(2)}% ซึ่งเป็นช่องว่างที่ใหญ่ที่สุดของจังหวัด`;
+
+  /* ── สัดส่วน ── */
+  mk('cMix',{type:'doughnut',data:{labels:['ชาวไทย','ชาวต่างชาติ'],
+    datasets:[{data:[th,fo],backgroundColor:[cv('--brand'),cv('--coral')],borderColor:cv('--card'),borderWidth:3}]},
+    options:{cutout:'58%',plugins:{legend:{position:'bottom',labels:{padding:11}},
+      tooltip:{callbacks:{label:c=>c.label+' '+f(c.raw,0)+' คน',
+        footer:it=>(it[0].raw/v*100).toFixed(2)+'% ของผู้เยี่ยมเยือนทั้งหมด'}}}}});
+  const sTh=spend(TY,'ชาวไทย','ผู้เยี่ยมเยือน'), sFo=spend(TY,'ชาวต่างชาติ','ผู้เยี่ยมเยือน');
+  document.getElementById('spendBox').innerHTML=`<div class="grid g2" style="gap:9px">
+    <div class="mini"><div class="l">ค่าใช้จ่ายชาวไทย</div><div class="v">${f(sTh,0)}<small> บาท/คน/วัน</small></div></div>
+    <div class="mini"><div class="l">ค่าใช้จ่ายชาวต่างชาติ</div><div class="v" style="color:var(--coral)">${f(sFo,0)}<small> บาท/คน/วัน</small></div></div></div>`;
+
+  /* ── ค่าใช้จ่าย ── */
+  mk('cSpend',{type:'line',data:{labels:YRS.map(y=>y),datasets:[
+    {label:'ชาวต่างชาติ',data:YRS.map(y=>spend(y,'ชาวต่างชาติ','ผู้เยี่ยมเยือน')),borderColor:cv('--coral'),
+      backgroundColor:cv('--coral')+'22',borderWidth:2.4,pointRadius:4,tension:.3,fill:false},
+    {label:'ชาวไทย',data:YRS.map(y=>spend(y,'ชาวไทย','ผู้เยี่ยมเยือน')),borderColor:cv('--brand'),
+      backgroundColor:cv('--brand')+'22',borderWidth:2.4,pointRadius:4,tension:.3,fill:true}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:11}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+' '+f(c.raw,0)+' บาท/คน/วัน'}}},
+      scales:{x:ax({grid:{display:false}}),y:ax({ticks:{callback:v=>f(v,0)}})}}});
+  document.getElementById('spendNote').innerHTML=
+    `ชาวต่างชาติใช้จ่ายมากกว่าชาวไทย ${((sFo/sTh-1)*100).toFixed(0)}% ต่อคนต่อวัน
+     แม้มีจำนวนเพียง ${f(fo,0)} คน การเพิ่มชาวต่างชาติอีก 1% จะสร้างรายได้เท่ากับเพิ่มชาวไทยราว ${(sFo/sTh).toFixed(1)}%`;
+
+  /* ── เข้าพัก ── */
+  const OY=T.occYear.slice().sort((a,b)=>a.y-b.y);
+  mk('cOcc',{type:'bar',data:{labels:OY.map(x=>x.y),
+    datasets:[{data:OY.map(x=>x.v),backgroundColor:OY.map(x=>x.v>=45?cv('--brand'):x.v>=30?cv('--gold'):cv('--coral')),
+      borderRadius:6,barPercentage:.66}]},
+    options:{plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>'อัตราการเข้าพัก '+c.raw.toFixed(2)+'%'}}},
+      scales:{x:ax({grid:{display:false}}),y:ax({ticks:{callback:v=>v+'%'}})}}});
+  const oNow=OY[OY.length-1], oPeak=OY.reduce((a,b)=>b.v>a.v?b:a);
+  document.getElementById('occNote').innerHTML=
+    `อัตราการเข้าพักปี ${oNow.y} อยู่ที่ ${oNow.v.toFixed(2)}% ฟื้นตัวต่อเนื่องแต่ยังต่ำกว่าจุดสูงสุดปี ${oPeak.y} ที่ ${oPeak.v.toFixed(2)}%
+     ห้องพัก ${f(T.accRooms,0)} ห้องยังว่างมากกว่าครึ่งในแต่ละคืน เป็นกำลังผลิตที่พร้อมรองรับทันทีโดยไม่ต้องลงทุนเพิ่ม`;
+
+  /* ── รายเดือน ── */
+  mk('cMon',{data:{labels:M.map(x=>x.label),datasets:[
+    {type:'bar',label:'ผู้เยี่ยมเยือน (คน)',data:M.map(x=>x.v),backgroundColor:cv('--brand')+'cc',borderRadius:6,yAxisID:'y'},
+    {type:'line',label:'รายได้ (ล้านบาท)',data:R.map(x=>+(x.v/1e6).toFixed(1)),borderColor:cv('--gold'),
+      borderWidth:2.4,pointRadius:3,tension:.3,yAxisID:'y2'},
+    {type:'line',label:'อัตราการเข้าพัก (%)',data:OC.map(x=>x.v),borderColor:cv('--coral'),
+      borderWidth:2,borderDash:[5,4],pointRadius:3,tension:.3,yAxisID:'y3'}]},
+    options:{interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom',labels:{padding:11,font:{size:10}}}},
+      scales:{x:ax({grid:{display:false},ticks:{font:{size:9.5}}}),
+        y:ax({ticks:{callback:v=>f(v/1000,0)+'K'}}),
+        y2:{position:'right',grid:{display:false},border:{display:false},ticks:{callback:v=>f(v,0),font:{size:9.5}}},
+        y3:{display:false}}}});
+  const rSum=R.reduce((a,b)=>a+b.v,0);
+  document.getElementById('monNote').innerHTML=
+    `ปีงบประมาณ 2569 สะสม ${M.length} เดือน มีผู้เยี่ยมเยือน ${f(M.reduce((a,b)=>a+b.v,0),0)} คน
+     สร้างรายได้ ${f(rSum/1e6,0)} ล้านบาท เฉลี่ยเดือนละ ${f(rSum/1e6/M.length,1)} ล้านบาท
+     ดูสามเส้นพร้อมกันจะเห็นว่าเดือนที่คนมามากไม่ได้แปลว่ารายได้สูงตามเสมอไป`;
+
+  /* ── ประเภทแหล่ง ── */
+  const SP=Object.entries(T.spotByType).sort((a,b)=>b[1]-a[1]);
+  mk('cSpot',{type:'doughnut',data:{labels:SP.map(r=>r[0].replace('แหล่งท่องเที่ยว','')),
+    datasets:[{data:SP.map(r=>r[1]),backgroundColor:PAL(),borderColor:cv('--card'),borderWidth:3}]},
+    options:{cutout:'56%',plugins:{legend:{position:'bottom',labels:{padding:8,font:{size:10}}},
+      tooltip:{callbacks:{label:c=>c.label+' '+c.raw+' แห่ง',
+        footer:it=>(it[0].raw/spotTot*100).toFixed(1)+'% ของแหล่งท่องเที่ยวทั้งหมด'}}}}});
+  document.getElementById('tSpot').innerHTML=`<thead><tr><th>ประเภท</th><th class="r">แห่ง</th><th class="r">สัดส่วน</th></tr></thead><tbody>`+
+    SP.map(r=>`<tr><td>${r[0]}</td><td class="r">${r[1]}</td><td class="r">${(r[1]/spotTot*100).toFixed(1)}%</td></tr>`).join('')+
+    `</tbody><tfoot><tr><td>รวม</td><td class="r">${spotTot}</td><td class="r">100.0%</td></tr></tfoot>`;
+  const SA=Object.entries(T.spotByAmp).sort((a,b)=>b[1]-a[1]);
+  const saMax=SA.length?SA[0][1]:1;
+  document.getElementById('spotAmp').innerHTML='<div style="font-size:11px;color:var(--faint);margin-bottom:5px">แยกรายอำเภอ</div>'+
+    SA.map((r,i)=>`<div class="barrow"><span class="nm">${r[0]}</span>
+      <span class="tr"><i style="width:${(r[1]/saMax*100).toFixed(0)}%;background:${PAL()[i%7]}"></i></span>
+      <span class="vv">${r[1]}</span></div>`).join('');
+
+  /* ── ที่พัก ── */
+  const AC=Object.entries(T.accByAmp).sort((a,b)=>b[1].rooms-a[1].rooms);
+  mk('cAcc',{data:{labels:AC.map(r=>r[0]),datasets:[
+    {type:'bar',label:'ห้องพัก',data:AC.map(r=>r[1].rooms),backgroundColor:cv('--brand'),borderRadius:6,yAxisID:'y'},
+    {type:'line',label:'จำนวนแห่ง',data:AC.map(r=>r[1].n),borderColor:cv('--gold'),borderWidth:2.4,
+      pointRadius:4,pointBackgroundColor:cv('--gold'),tension:.25,yAxisID:'y2'}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:11}}},
+      scales:{x:ax({grid:{display:false},ticks:{font:{size:10}}}),y:ax({ticks:{callback:v=>f(v,0)}}),
+        y2:{position:'right',grid:{display:false},border:{display:false},ticks:{callback:v=>f(v,0),font:{size:9.5}}}}}});
+  document.getElementById('accNote').innerHTML=
+    `${AC[0][0]} มีห้องพักมากที่สุด ${f(AC[0][1].rooms,0)} ห้องจาก ${AC[0][1].n} แห่ง คิดเป็น ${(AC[0][1].rooms/T.accRooms*100).toFixed(0)}% ของทั้งจังหวัด
+     อำเภอที่มีแหล่งท่องเที่ยวมากแต่ห้องพักน้อย คือจุดที่นักท่องเที่ยวมาแล้วต้องกลับ ไม่ได้ค้างคืน`;
+
+  /* ── ช่องว่าง ── */
+  const revYear=rSum/1e6;
+  document.getElementById('gapBox2').innerHTML=[
+    ['ห้องพักที่ว่างเฉลี่ยต่อคืน',f(T.accRooms*(1-oNow.v/100),0),'ห้อง',cv('--coral'),
+     'อัตราเข้าพัก '+oNow.v.toFixed(1)+'% แปลว่าห้องว่างมากกว่าครึ่ง'],
+    ['สัดส่วนชาวต่างชาติ',(fo/v*100).toFixed(2),'%',cv('--gold'),
+     'ต่ำมาก ทั้งที่ใช้จ่ายสูงกว่าคนไทย '+((sFo/sTh-1)*100).toFixed(0)+'%'],
+    ['นักทัศนาจรที่ไม่ค้างคืน',f(tot(TY,'นักทัศนาจร'),0),'คน',cv('--blue'),
+     'คิดเป็น '+(tot(TY,'นักทัศนาจร')/v*100).toFixed(0)+'% ของผู้เยี่ยมเยือน หากเปลี่ยนเป็นค้างคืนได้แม้ 10% จะเพิ่มรายได้มหาศาล'],
+    ['แหล่งท่องเที่ยวเชิงเกษตร',T.spotByType['แหล่งท่องเที่ยวเชิงเกษตร']||0,'แห่ง',cv('--leaf'),
+     'เชื่อมกับแปลงใหญ่ 73 แปลงและร้าน OTOP 1,000 แห่งได้ทันที']
+  ].map(r=>`<div class="mini" style="margin-bottom:10px">
+      <div class="l">${r[0]}</div>
+      <div class="v" style="color:${r[3]}">${r[1]}<small> ${r[2]}</small></div>
+      <div style="font-size:11px;color:var(--faint);line-height:1.6;margin-top:4px">${r[4]}</div></div>`).join('');
+
+  drawSpotMap();
+}
+
+let TMAP=null;
+function drawSpotMap(){
+  if(typeof L==='undefined')return;
+  const el=document.getElementById('tmap'); if(!el)return;
+  if(TMAP){TMAP.remove();TMAP=null}
+  TMAP=L.map('tmap',{zoomControl:false,attributionControl:false,scrollWheelZoom:false,zoomSnap:.25});
+  L.control.zoom({position:'topright'}).addTo(TMAP);
+  fetch('assets/nbl-amphoe.geojson').then(r=>r.json()).then(j=>{
+    const g=L.geoJSON(j,{style:{color:'#fff',weight:2,fillColor:'#cfe9dc',fillOpacity:.85}}).addTo(TMAP);
+    try{TMAP.fitBounds(g.getBounds(),{padding:[20,20]})}catch(e){}
+    addSpots();
+  }).catch(()=>{TMAP.setView([17.22,102.36],9.3);addSpots()});
+  function addSpots(){
+    T.spots.forEach(s=>{
+      L.circleMarker([s.lat,s.lng],{radius:7,color:'#fff',weight:2,fillColor:cv('--brand'),fillOpacity:.95})
+        .addTo(TMAP)
+        .bindPopup(`<b>${s.n}</b><br><span style="color:#777">ต.${s.ta} อ.${s.a}</span>`);
+    });
+  }
+}
+
+DS.init('tourism',function(){
+  renderTour();
+  const sel=document.getElementById('tYear');
+  if(sel)sel.onchange=function(){TY=+sel.value;renderTour();};
+});
 </script>
 </body>
 </html>
