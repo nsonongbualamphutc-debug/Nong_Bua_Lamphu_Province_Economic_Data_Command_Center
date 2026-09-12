@@ -32,7 +32,7 @@
  *******************************************************************/
 
 var PROP = PropertiesService.getScriptProperties();
-var SHEETS = { DATA:'Data', USERS:'Users', LOG:'Log', META:'Meta', TABLES:'Tables' };
+var SHEETS = { DATA:'Data', USERS:'Users', LOG:'Log', META:'Meta', TABLES:'Tables', HISTORY:'History' };
 var TOKEN_TTL_MIN = 90;      // อายุ session
 var MAX_FAIL = 5;            // ผิดกี่ครั้งจึงล็อก
 var LOCK_MIN = 15;           // ล็อกนานกี่นาที
@@ -59,6 +59,8 @@ function route(e){
       case 'login':    out = actLogin(p);    break;
       case 'session':  out = actSession(p);  break;
       case 'mydata':   out = actMyData(p);   break;
+      case 'periods':  out = actPeriods(p);  break;   // งวดที่มีข้อมูลแล้ว
+      case 'history':  out = actHistory(p);  break;   // ประวัติการแก้ไข
       case 'submit':   out = actSubmit(p);   break;
       case 'approve':  out = actApprove(p);  break;
       case 'changepin':out = actChangePin(p);break;
@@ -324,13 +326,13 @@ function actSubmit(p){
     var idx = {};
     R.list.forEach(function(r){ idx[[r.domain, r.key, r.period, r.area].join('|')] = r._row; });
 
-    var appends = [], updates = 0, now = new Date();
+    var appends = [], hist = [], updates = 0, now = new Date();
     items.forEach(function(it){
       var domain = String(it.domain||'').trim(), key = String(it.key||'').trim();
       var period = String(it.period||'').trim(), area = String(it.area||'PROV').trim();
       if (!domain || !key || !period) return;
       if (!all && allow.indexOf(domain) < 0) throw new Error('ไม่มีสิทธิ์บันทึกชุดข้อมูล ' + domain);
-      if (!/^\d{4}(-\d{2})?$/.test(period)) throw new Error('รูปแบบงวดข้อมูลไม่ถูกต้อง: ' + period);
+      if (!/^\d{4}(-\d{2}|-Q[1-4])?$/.test(period)) throw new Error('รูปแบบงวดข้อมูลไม่ถูกต้อง: ' + period);
       var val = Number(it.value);
       if (isNaN(val)) throw new Error('ค่าตัวเลขไม่ถูกต้องที่ ' + domain + '/' + key);
 
@@ -338,6 +340,10 @@ function actSubmit(p){
       var status = (s.role === 'admin') ? 'approved' : 'submitted';
       if (idx[k]) {
         var row = idx[k];
+        var oldVal = sh.getRange(row, R.head.indexOf('value') + 1).getValue();
+        if (String(oldVal) !== String(val)) {
+          hist.push([now, domain, key, period, area, oldVal, val, s.a, it.note || '']);
+        }
         sh.getRange(row, R.head.indexOf('value') + 1).setValue(val);
         sh.getRange(row, R.head.indexOf('updated_at') + 1).setValue(now);
         sh.getRange(row, R.head.indexOf('updated_by') + 1).setValue(s.a);
@@ -347,9 +353,14 @@ function actSubmit(p){
       } else {
         appends.push([Utilities.getUuid().slice(0, 8), domain, key, period, area, val,
                       it.unit || '', it.agency || s.a, now, s.a, it.note || '', status]);
+        hist.push([now, domain, key, period, area, '', val, s.a, 'บันทึกครั้งแรก']);
       }
     });
     if (appends.length) sh.getRange(sh.getLastRow() + 1, 1, appends.length, appends[0].length).setValues(appends);
+    if (hist.length) {
+      var hs = sheet(SHEETS.HISTORY);
+      hs.getRange(hs.getLastRow() + 1, 1, hist.length, hist[0].length).setValues(hist);
+    }
     CacheService.getScriptCache().removeAll(['series::all::all']);
     logIt(s.a, 'submit', 'เพิ่ม ' + appends.length + ' แก้ไข ' + updates);
     return { ok:true, inserted:appends.length, updated:updates };
@@ -393,6 +404,55 @@ function actChangePin(p){
 
 
 
+
+/** งวดที่หน่วยงานนี้มีข้อมูลแล้ว — ใช้ทำจุดสถานะในหน้ากรอก */
+function actPeriods(p){
+  var s = requireAuth(p);
+  var allow = String(s.d||'').split(',').map(function(x){ return x.trim(); });
+  var all = allow.indexOf('*') >= 0;
+  var want = String(p.domain||'').trim();
+  var map = {};
+  rows(SHEETS.DATA).list.forEach(function(r){
+    var dom = String(r.domain||'');
+    if (!all && allow.indexOf(dom) < 0) return;
+    if (want && dom !== want) return;
+    var per = String(r.period||''), area = String(r.area||'PROV');
+    var k = per + '|' + area;
+    if (!map[k]) map[k] = { period:per, area:area, n:0, at:'', by:'' };
+    map[k].n++;
+    var t = r.updated_at ? new Date(r.updated_at) : null;
+    if (t && (!map[k].at || t > new Date(map[k].at))) { map[k].at = t.toISOString(); map[k].by = r.updated_by || ''; }
+  });
+  var list = [];
+  for (var k in map) list.push(map[k]);
+  list.sort(function(a,b){ return a.period < b.period ? 1 : -1; });
+  return { ok:true, periods:list };
+}
+
+/** ประวัติการแก้ไขย้อนหลัง */
+function actHistory(p){
+  var s = requireAuth(p);
+  var allow = String(s.d||'').split(',').map(function(x){ return x.trim(); });
+  var all = allow.indexOf('*') >= 0;
+  var want = String(p.domain||'').trim();
+  var per = String(p.period||'').trim();
+  var lim = Math.min(200, Number(p.limit||60));
+  var list = rows(SHEETS.HISTORY).list.filter(function(r){
+    var dom = String(r.domain||'');
+    if (!all && allow.indexOf(dom) < 0) return false;
+    if (want && dom !== want) return false;
+    if (per && String(r.period) !== per) return false;
+    return true;
+  }).map(function(r){
+    return { ts: r.ts ? new Date(r.ts).toISOString() : '', domain:r.domain, key:r.key,
+             period:String(r.period), area:String(r.area||'PROV'),
+             oldValue: r.old_value === '' ? null : Number(r.old_value),
+             newValue: Number(r.new_value), by: r.by, note: r.note || '' };
+  });
+  list.sort(function(a,b){ return a.ts < b.ts ? 1 : -1; });
+  return { ok:true, history: list.slice(0, lim), total: list.length };
+}
+
 /* ═══════════ ตารางรายละเอียด (พืชอายุสั้น ไม้ผล ราคา งบจังหวัด ฯลฯ) ═══════════ */
 
 /** หน่วยงานที่มีสิทธิ์แก้แต่ละตาราง — ต้องตรงกับคอลัมน์ domains ในชีต Users */
@@ -403,6 +463,13 @@ var TABLE_OWNER = {
   water:'crop',     // แหล่งน้ำเพื่อการเกษตร
   base:'crop',      // ฐานข้อมูลพื้นฐานการเกษตร แปลงใหญ่ ท่องเที่ยวเชิงเกษตร
   price:'cpi',      // ราคาสินค้าเกษตรและอุปโภคบริโภครายสัปดาห์
+  labor:'labor',    // ภาวะการทำงานของประชากร รายไตรมาส
+  otop:'otop',      // OTOP รายได้ ผลิตภัณฑ์ ผู้ประกอบการ
+  tour:'tour',      // ท่องเที่ยว ผู้เยี่ยมเยือน ที่พัก แหล่งท่องเที่ยว
+  pop:'popreg',     // ประชากร การเกิด การตาย การย้ายถิ่น
+  irrig:'irrig',    // ชลประทาน แหล่งน้ำ พื้นที่รับประโยชน์
+  house:'house',    // ครัวเรือน รายได้ ค่าใช้จ่าย หนี้สิน
+  agri2:'crop',     // เนื้อที่ใช้ประโยชน์ มาตรฐานสินค้าเกษตร
   gpp:'*'           // GPP — ผู้ดูแลระบบเท่านั้น
 };
 
@@ -594,7 +661,7 @@ function uiGenSecrets(){
 
 function uiSetPin(){
   var ui = SpreadsheetApp.getUi();
-  var a = ui.prompt('รหัสหน่วยงาน', 'klang, agri, industry, pea, commerce, smebank, energy, transport, labour, sso, mots, province, admin',
+  var a = ui.prompt('รหัสหน่วยงาน', 'klang, agri, industry, pea, commerce, smebank, energy, transport, labour, sso, mots, cdd, dopa, rid, nso, province, admin',
                     ui.ButtonSet.OK_CANCEL);
   if (a.getSelectedButton() !== ui.Button.OK) return;
   var b = ui.prompt('PIN ใหม่', 'ตัวเลข 6–10 หลัก (ระบบจะเก็บเป็นค่า hash เท่านั้น)', ui.ButtonSet.OK_CANCEL);
@@ -801,7 +868,8 @@ function scaffoldCore(){
     Users: ['agency_code','agency_name','pin_hash','domains','role','active','fail_count','locked_until','last_login'],
     Log  : ['ts','agency_code','action','detail','ip_hint'],
     Meta : ['key','value'],
-    Tables:['key','json','updated_at','updated_by']
+    Tables:['key','json','updated_at','updated_by'],
+    History:['ts','domain','key','period','area','old_value','new_value','by','note']
   };
   Object.keys(spec).forEach(function(name){
     var s = book.getSheetByName(name) || book.insertSheet(name);
@@ -825,7 +893,11 @@ function scaffoldCore(){
      ['transport','สำนักงานขนส่งจังหวัดหนองบัวลำภู','','car','agency',true,0,'',''],
      ['labour','สำนักงานแรงงานจังหวัดหนองบัวลำภู','','labor','agency',true,0,'',''],
      ['sso','สำนักงานประกันสังคมจังหวัดหนองบัวลำภู','','social','agency',true,0,'',''],
-     ['mots','สำนักงานการท่องเที่ยวและกีฬาจังหวัดหนองบัวลำภู','','tour','agency',true,0,'','']
+     ['mots','สำนักงานการท่องเที่ยวและกีฬาจังหวัดหนองบัวลำภู','','tour','agency',true,0,'',''],
+     ['cdd','สำนักงานพัฒนาชุมชนจังหวัดหนองบัวลำภู','','otop','agency',true,0,'',''],
+     ['dopa','ที่ทำการปกครองจังหวัดหนองบัวลำภู','','pop','agency',true,0,'',''],
+     ['rid','โครงการชลประทานหนองบัวลำภู','','irrig','agency',true,0,'',''],
+     ['nso','สำนักงานสถิติจังหวัดหนองบัวลำภู (ชุดสำรวจ)','','labor,house','agency',true,0,'','']
     ].forEach(function(r){ u.appendRow(r); });
   }
 }

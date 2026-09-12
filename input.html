@@ -218,6 +218,8 @@ body.signed .ftr a{color:var(--blue)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="data1.js"></script>
+<script src="data2.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -251,6 +253,10 @@ body.signed .ftr a{color:var(--blue)}
       <option value="labour">สำนักงานแรงงานจังหวัดหนองบัวลำภู</option>
       <option value="sso">สำนักงานประกันสังคมจังหวัดหนองบัวลำภู</option>
       <option value="mots">สำนักงานการท่องเที่ยวและกีฬาจังหวัดหนองบัวลำภู</option>
+      <option value="cdd">สำนักงานพัฒนาชุมชนจังหวัดหนองบัวลำภู</option>
+      <option value="dopa">ที่ทำการปกครองจังหวัดหนองบัวลำภู</option>
+      <option value="rid">โครงการชลประทานหนองบัวลำภู</option>
+      <option value="nso">สำนักงานสถิติจังหวัดหนองบัวลำภู (ชุดสำรวจ)</option>
       <option value="province">สำนักงานจังหวัดหนองบัวลำภู (ผู้ดูแลระบบ)</option>
       <option value="admin">สำนักงานสถิติจังหวัดหนองบัวลำภู (ผู้ดูแลระบบ)</option>
     </select>
@@ -278,6 +284,15 @@ body.signed .ftr a{color:var(--blue)}
       <div class="tabs" id="modeTabs" style="margin-bottom:14px">
         <button class="on" data-mode="form">กรอกทีละช่อง</button>
         <button data-mode="excel">นำเข้าจาก Excel</button>
+        <button data-mode="table">ตารางรายละเอียด</button>
+      </div>
+
+      <div id="pane-table" style="display:none">
+        <div class="crumb"><span class="stepnum">1</span><b>ตารางรายละเอียดที่หน่วยงานของท่านดูแล</b>
+          <span>ข้อมูลชุดนี้ไม่ใช่ตัวเลขรายเดือน แต่เป็นตารางที่แสดงบนแดชบอร์ดโดยตรง</span></div>
+        <div class="tpgrid" id="tblGrid"></div>
+        <div id="tblEditor" style="display:none;margin-top:16px"></div>
+        <div class="msg" id="tblMsg"></div>
       </div>
 
       <div id="pane-excel" style="display:none">
@@ -446,6 +461,8 @@ document.addEventListener('click',e=>{
   document.querySelectorAll('#modeTabs button').forEach(x=>x.classList.toggle('on',x===b));
   $('#pane-form').style.display=b.dataset.mode==='form'?'block':'none';
   $('#pane-excel').style.display=b.dataset.mode==='excel'?'block':'none';
+  $('#pane-table').style.display=b.dataset.mode==='table'?'block':'none';
+  if(b.dataset.mode==='table')renderTblList();
 });
 document.addEventListener('click',e=>{
   if(e.target.closest('#btnTplAll')){try{buildTemplate(true)}catch(err){say('#xlMsg','err','สร้างแบบฟอร์มไม่สำเร็จ: '+err.message)}return}
@@ -971,6 +988,162 @@ async function submitBatch(items){
     ins+=r.inserted;upd+=r.updated;
   }
   return {ins,upd};
+}
+
+
+/* ═══════════ ตารางรายละเอียด ═══════════ */
+const TBL_DEFS=[
+ {key:'crop',owner:'crop',store:'REAL',path:'crop.rows',name:'ภาวะการผลิตพืชอายุสั้น',
+  desc:'ครัวเรือน เนื้อที่ ผลผลิต และราคาที่เกษตรกรขายได้ รายชนิดพืช',
+  cols:[{k:'n',l:'ชนิดพืช',t:'text'},{k:'hh',l:'ครัวเรือน',t:'num'},{k:'area',l:'เนื้อที่ (ไร่)',t:'num',d:2},
+        {k:'y',l:'ผลผลิต (กก.)',t:'num'},{k:'per',l:'กก./ไร่',t:'num',d:2},{k:'price',l:'ราคา (บ./กก.)',t:'num',d:2}]},
+ {key:'fruit',owner:'crop',store:'REAL',path:'fruit',name:'ไม้ผลเศรษฐกิจสำคัญ',
+  desc:'เกษตรกร พื้นที่ปลูก พื้นที่ให้ผล ผลผลิต ช่วงเก็บเกี่ยวและราคา',
+  cols:[{k:'n',l:'ชนิด',t:'text'},{k:'farmers',l:'เกษตรกร (ราย)',t:'num'},{k:'area',l:'พื้นที่ปลูก (ไร่)',t:'num',d:2},
+        {k:'yieldArea',l:'พื้นที่ให้ผล (ไร่)',t:'num',d:2},{k:'kg',l:'ผลผลิต (กก./ปี)',t:'num'},
+        {k:'season',l:'ช่วงเก็บเกี่ยว',t:'text'},{k:'pmin',l:'ราคาต่ำสุด',t:'num'},{k:'pmax',l:'ราคาสูงสุด',t:'num'}]},
+ {key:'water',owner:'crop',store:'REAL',path:'water',name:'แหล่งน้ำเพื่อการเกษตร',
+  desc:'จำนวนและพื้นที่รับประโยชน์ของแหล่งน้ำแต่ละประเภท',
+  cols:[{k:'n',l:'ประเภทแหล่งน้ำ',t:'text'},{k:'cnt',l:'จำนวน',t:'num'},{k:'unit',l:'หน่วย',t:'text'},
+        {k:'benefit',l:'พื้นที่รับประโยชน์ (ไร่)',t:'num'}]},
+ {key:'fiscal',owner:'spend',store:'REAL',path:'fiscal.prov',name:'งบกรมและงบจังหวัด',
+  desc:'การเบิกจ่ายและใช้จ่ายงบจังหวัด พร้อมอันดับของประเทศ',
+  cols:[{k:'k',l:'รายการ',t:'text'},{k:'alloc',l:'จัดสรร (ลบ.)',t:'num',d:2},{k:'dis',l:'เบิกจ่าย (ลบ.)',t:'num',d:2},
+        {k:'dpct',l:'% เบิกจ่าย',t:'num',d:2},{k:'drank',l:'อันดับเบิกจ่าย',t:'num'},
+        {k:'use',l:'ใช้จ่าย (ลบ.)',t:'num',d:2},{k:'upct',l:'% ใช้จ่าย',t:'num',d:2},{k:'urank',l:'อันดับใช้จ่าย',t:'num'}]},
+ {key:'labor',owner:'labor',store:'REAL',path:'labor.quarters',name:'ภาวะการทำงานของประชากร รายไตรมาส',
+  desc:'กำลังแรงงาน ผู้มีงานทำ ผู้ว่างงาน และอัตราการมีส่วนร่วม',
+  cols:[{k:'q',l:'งวด',t:'text'},{k:'pop15',l:'ประชากร 15+',t:'num'},{k:'force',l:'กำลังแรงงาน',t:'num'},
+        {k:'emp',l:'ผู้มีงานทำ',t:'num'},{k:'ue',l:'ผู้ว่างงาน',t:'num'},{k:'ur',l:'อัตราว่างงาน (%)',t:'num',d:2},
+        {k:'lfpr',l:'มีส่วนร่วม (%)',t:'num',d:1},{k:'notin',l:'ไม่อยู่ในกำลังแรงงาน',t:'num'}]},
+ {key:'gpp',owner:'*',store:'REAL',path:'gpp.rows',name:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP)',
+  desc:'มูลค่า GPP และรายได้ต่อหัวรายปี — แก้ไขได้เฉพาะผู้ดูแลระบบ',
+  cols:[{k:'y',l:'ปี พ.ศ.',t:'num'},{k:'value',l:'GPP (ลบ.)',t:'num'},{k:'pc',l:'ต่อหัว (บาท/ปี)',t:'num'}]},
+ {key:'otop',owner:'otop',store:'DX',path:'otop.revMonthly',name:'รายได้ OTOP รายเดือน',
+  desc:'ยอดจำหน่ายผลิตภัณฑ์ชุมชนรายเดือนตามปีงบประมาณ',
+  cols:[{k:'fy',l:'ปีงบประมาณ',t:'num'},{k:'i',l:'ลำดับเดือน',t:'num'},{k:'label',l:'เดือน',t:'text'},
+        {k:'v',l:'รายได้ (บาท)',t:'num'}]},
+ {key:'tour',owner:'tour',store:'DX',path:'tour.visitor',name:'ผู้เยี่ยมเยือนรายเดือน',
+  desc:'จำนวนผู้เยี่ยมเยือนรายเดือนตามปีงบประมาณ',
+  cols:[{k:'fy',l:'ปีงบประมาณ',t:'num'},{k:'i',l:'ลำดับเดือน',t:'num'},{k:'label',l:'เดือน',t:'text'},
+        {k:'v',l:'ผู้เยี่ยมเยือน (คน)',t:'num'}]},
+ {key:'irrig',owner:'irrig',store:'DX',path:'irrig.byType',name:'แหล่งน้ำชลประทานจำแนกตามประเภท',
+  desc:'จำนวนแหล่งน้ำแต่ละประเภทในความรับผิดชอบ',kv:true,
+  cols:[{k:'_k',l:'ประเภทแหล่งน้ำ',t:'text'},{k:'_v',l:'จำนวน (แห่ง)',t:'num'}]},
+ {key:'house',owner:'house',store:'DX',path:'house.main',name:'รายได้ ค่าใช้จ่าย และหนี้สินครัวเรือน',
+  desc:'ผลสำรวจภาวะเศรษฐกิจและสังคมของครัวเรือน',
+  cols:[{k:'y',l:'ปี',t:'num'},{k:'k',l:'ประเภท',t:'text'},{k:'v',l:'ค่า',t:'num',d:2},{k:'u',l:'หน่วย',t:'text'}]}
+];
+let TBL_CUR=null, TBL_DATA=null;
+const storeOf=d=>d.store==='DX'?(typeof DX!=='undefined'?DX:null):(typeof REAL!=='undefined'?REAL:null);
+function pathGetIn(root,p){return p.split('.').reduce((o,k)=>o&&o[k],root)}
+function myTables(){
+  const dom=String((S.agency&&S.agency.domains)||'');
+  const all=dom.trim()==='*';
+  const list=dom.split(',').map(x=>x.trim()).filter(Boolean);
+  return TBL_DEFS.filter(d=>all||(d.owner!=='*'&&list.indexOf(d.owner)>=0));
+}
+function renderTblList(){
+  const list=myTables();
+  const g=$('#tblGrid');
+  if(!list.length){
+    g.innerHTML='<div class="card" style="grid-column:1/-1;color:var(--faint);font-size:12.5px">'+
+      'หน่วยงานของท่านยังไม่มีตารางรายละเอียดที่ต้องดูแล ข้อมูลที่ต้องส่งอยู่ในแท็บกรอกทีละช่องและนำเข้าจาก Excel</div>';
+    return;
+  }
+  g.innerHTML=list.map(d=>{
+    const rows=pathGetIn(storeOf(d),d.path);
+    const n=d.kv?Object.keys(rows||{}).length:(rows||[]).length;
+    return `<button class="tpcard" data-tbl="${d.key}" style="--ac:#0d9268;--acl:#e2f3ea">
+      <span class="tphead"><span class="tpic">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9.5h18M9 9.5V20M15 9.5V20"/></svg>
+      </span><b>${d.name}</b></span>
+      <span class="tpsub">${d.desc}</span>
+      <span class="tpfoot">${n} แถว · ${d.cols.length} คอลัมน์<span class="go">แก้ไข ${ARROW}</span></span></button>`}).join('');
+}
+function openTbl(key){
+  const d=TBL_DEFS.find(x=>x.key===key); if(!d)return;
+  TBL_CUR=d;
+  const src=pathGetIn(storeOf(d),d.path);
+  TBL_DATA=d.kv?Object.entries(src||{}).map(([k,v])=>({_k:k,_v:v})):JSON.parse(JSON.stringify(src||[]));
+  drawTbl();
+  $('#tblEditor').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function drawTbl(){
+  const d=TBL_CUR;
+  $('#tblEditor').style.display='block';
+  $('#tblEditor').innerHTML=`
+    <div class="crumb"><span class="stepnum">2</span><b>${d.name}</b>
+      <span>${d.desc}</span><span class="sp" style="flex:1"></span>
+      <button class="btn gh" id="tblBack">← เลือกตารางอื่น</button></div>
+    <div class="dom" style="padding:14px 16px 8px">
+      <div style="overflow:auto;max-height:460px">
+        <table class="grid"><thead><tr><th style="width:34px">#</th>
+          ${d.cols.map(c=>`<th${c.t==='num'?' style="text-align:right"':''}>${c.l}</th>`).join('')}
+          <th style="width:40px"></th></tr></thead><tbody>
+          ${TBL_DATA.map((r,i)=>`<tr>
+            <td style="color:var(--faint);font-size:11px">${i+1}</td>
+            ${d.cols.map(c=>`<td><input data-r="${i}" data-c="${c.k}" type="${c.t==='num'?'number':'text'}"
+              ${c.t==='num'?'step="any"':''} value="${r[c.k]==null?'':r[c.k]}"></td>`).join('')}
+            <td><button class="mini2" data-del="${i}" title="ลบแถว">✕</button></td></tr>`).join('')}
+        </tbody></table>
+      </div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 8px;align-items:center">
+        <button class="btn" id="tblAdd">+ เพิ่มแถว</button>
+        <span class="sp" style="flex:1"></span>
+        <span style="font-size:11.5px;color:var(--faint)">${TBL_DATA.length} แถว</span>
+        <button class="btn pri" id="tblSave">บันทึกขึ้นฐานข้อมูลกลาง</button>
+      </div>
+      <p class="hint" style="border-top:1px dashed var(--line);margin-top:4px">
+        ตารางนี้แสดงบนแดชบอร์ดโดยตรง เมื่อบันทึกแล้วทุกคนจะเห็นตัวเลขใหม่ทันที<br>
+        ระบบตรวจสิทธิ์ซ้ำที่ฝั่งเซิร์ฟเวอร์ หน่วยงานอื่นแก้ตารางนี้ไม่ได้ และทุกการบันทึกถูกบันทึกในชีต Log
+      </p>
+    </div>`;
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-tbl]'); if(t){openTbl(t.dataset.tbl);return}
+  if(e.target.closest('#tblBack')){$('#tblEditor').style.display='none';return}
+  if(e.target.closest('#tblAdd')){
+    const row={}; TBL_CUR.cols.forEach(c=>row[c.k]=c.t==='num'?0:'');
+    TBL_DATA.push(row); drawTbl(); return;
+  }
+  const del=e.target.closest('[data-del]');
+  if(del){ if(confirm('ลบแถวนี้?')){TBL_DATA.splice(+del.dataset.del,1);drawTbl()} return }
+  if(e.target.closest('#tblSave'))saveTbl();
+});
+document.addEventListener('input',e=>{
+  const el=e.target;
+  if(!el.matches('#tblEditor input[data-r]'))return;
+  const r=+el.dataset.r, c=el.dataset.c;
+  const col=TBL_CUR.cols.find(x=>x.k===c);
+  TBL_DATA[r][c]= col.t==='num' ? (el.value===''?null:Number(el.value)) : el.value;
+});
+async function saveTbl(){
+  const d=TBL_CUR;
+  const payload=d.kv
+    ? TBL_DATA.reduce((o,r)=>{if(r._k)o[r._k]=r._v;return o},{})
+    : TBL_DATA;
+  const root=d.path.split('.')[0];
+  const store=storeOf(d);
+  const obj=JSON.parse(JSON.stringify(store[root]));
+  const parts=d.path.split('.').slice(1);
+  if(!parts.length){ Object.assign(obj,payload); }
+  else{
+    let cur=obj;
+    for(let i=0;i<parts.length-1;i++)cur=cur[parts[i]];
+    cur[parts[parts.length-1]]=payload;
+  }
+  const btn=$('#tblSave'); btn.disabled=true; btn.textContent='กำลังบันทึก…';
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'savetable',token:S.token,key:root,json:JSON.stringify(obj)})});
+    const r=await res.json();
+    if(!r.ok)throw new Error(r.error||'บันทึกไม่สำเร็จ');
+    store[root]=obj;
+    say('#tblMsg','ok','บันทึก "'+d.name+'" ขึ้นฐานข้อมูลกลางแล้ว แดชบอร์ดจะแสดงตัวเลขใหม่ทันที');
+  }catch(err){
+    say('#tblMsg','err','บันทึกไม่สำเร็จ: '+err.message);
+  }finally{btn.disabled=false;btn.textContent='บันทึกขึ้นฐานข้อมูลกลาง'}
 }
 
 /* ─────────── offline queue ─────────── */
