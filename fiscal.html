@@ -74,7 +74,11 @@ function renderFiscal(){
         calc:'(เบิกจ่ายงบลงทุน ÷ งบลงทุนที่จัดสรร) × 100 = ('+f_num(F.fn.dis[2].val)+' ÷ '+f_num(F.fn.dis[2].alloc)+') × 100',
         src:'spend',when:'ข้อมูล ณ 4 กันยายน 2569'})}),
     kpiCard({icon:'chart',color:cv('--gold'),label:'งบจัดสรรทั้งจังหวัด',value:f(F.fn.dis[0].alloc,0),unit:'ลบ.',
-      chip:'<span class="chip">คงเหลือ '+f(F.fn.dis[0].alloc-F.fn.dis[0].val,0)+' ลบ.</span>',sub:'ปีงบประมาณ 2569'})
+      chip:'<span class="chip">คงเหลือ '+f(F.fn.dis[0].alloc-F.fn.dis[0].val,0)+' ลบ.</span>',sub:'ปีงบประมาณ 2569',
+      tip:tipOf({t:'งบประมาณที่จังหวัดได้รับจัดสรรทั้งปี',
+        d:'วงเงินตั้งต้นของทุกส่วนราชการในจังหวัดในปีงบประมาณนี้ เป็นตัวหารของทุกร้อยละการเบิกจ่ายในหน้านี้',
+        calc:'ผลรวมงบที่จัดสรรของทุกส่วนราชการ = งบประจำ '+f_num(F.fn.dis[1].alloc)+' + งบลงทุน '+f_num(F.fn.dis[2].alloc)+' ล้านบาท · คงเหลือรอเบิกจ่าย = '+f_num(F.fn.dis[0].alloc)+' − '+f_num(F.fn.dis[0].val),
+        src:'spend',when:'ปีงบประมาณ 2569 · ข้อมูล ณ 4 กันยายน 2569'})})
   ].join('');
   drawGauges();
 

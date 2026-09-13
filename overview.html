@@ -65,39 +65,80 @@ function renderOverview(){
     :last.v>=100?'เศรษฐกิจจังหวัดขับเคลื่อนด้วยเงินภาครัฐและภาคเกษตร'
     :last.v>=97?'เศรษฐกิจจังหวัดทรงตัว มีสัญญาณชะลอตัว':'เศรษฐกิจจังหวัดหดตัว ควรเร่งมาตรการกระตุ้น';
   $('#heroPil').innerHTML=[
-    ['93.16%','เบิกจ่ายงบประมาณ<br>อันดับ 1 ของประเทศ'],
-    [f(D.fiscal.fn.dis[0].val,0),'ล้านบาท เม็ดเงินรัฐ<br>ที่ลงสู่พื้นที่แล้ว'],
-    [f(cropValue(),0),'ล้านบาท มูลค่าผลผลิต<br>พืชอายุสั้น']
-  ].map(x=>`<div class="pil"><b class="n">${x[0]}</b><span>${x[1]}</span></div>`).join('');
+    [f_num(D.fiscal.fn.dis[0].pct)+'%','เบิกจ่ายงบประมาณ<br>อันดับ 1 ของประเทศ',
+      tipOf({t:'ร้อยละการเบิกจ่ายงบประมาณภาพรวม',
+        d:'จังหวัดหนองบัวลำภูอยู่อันดับ 1 ของประเทศในรอบรายงานนี้',
+        calc:'(ยอดเบิกจ่ายสะสม ÷ งบที่ได้รับจัดสรร) × 100 = ('+f_num(D.fiscal.fn.dis[0].val)+' ÷ '+f_num(D.fiscal.fn.dis[0].alloc)+') × 100',
+        src:'spend',when:'รายงานครั้งที่ 178/2569 · ข้อมูล ณ '+CFG.asof})],
+    [f(D.fiscal.fn.dis[0].val,0),'ล้านบาท เม็ดเงินรัฐ<br>ที่ลงสู่พื้นที่แล้ว',
+      tipOf({t:'เม็ดเงินภาครัฐที่ลงสู่พื้นที่แล้ว',
+        d:'ยอดเงินงบประมาณที่ออกจากระบบคลังจริงแล้วในปีงบประมาณนี้',
+        calc:'ยอดเบิกจ่ายสะสมของทุกส่วนราชการในจังหวัด ณ รายงานงวดล่าสุด · เป็นยอดสะสม ไม่นำรายเดือนมาบวกกัน',
+        src:'spend',when:'ปีงบประมาณ 2569 · ข้อมูล ณ '+CFG.asof})],
+    [f(cropValue(),0),'ล้านบาท มูลค่าผลผลิต<br>พืชอายุสั้น',
+      tipOf({t:'มูลค่าผลผลิตพืชอายุสั้น',
+        d:'เงินที่เกษตรกรได้รับจากการขายผลผลิตพืชอายุสั้นในฤดูกาลนี้',
+        calc:'Σ (ผลผลิตรายชนิด × ราคาที่เกษตรกรขายได้) ÷ 1,000,000 · รวม '+D.crop.rows.length+' ชนิด ยังไม่รวมข้าวนาปีที่อยู่ระหว่างฤดูกาล',
+        src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})]
+  ].map(x=>`<div class="pil" data-tip2="${x[2]}"><b class="n">${x[0]}</b><span>${x[1]}</span></div>`).join('');
+  const mb=document.querySelector('.meibox');
+  if(mb)mb.dataset.tip2=tipOf({t:'ดัชนีภาวะเศรษฐกิจรายเดือน NBL–MEI',
+    d:'ดัชนีที่จังหวัดสร้างขึ้นเองจากข้อมูลเร็วของหน่วยงานในพื้นที่ ใช้ดูภาพเศรษฐกิจเดือนต่อเดือนแทน GPP ที่ประกาศช้า 2 ปี',
+    calc:'แปลงข้อมูลแต่ละชุดเป็นดัชนีเทียบฐาน 100 = ค่าเฉลี่ยปี '+(CFG.latest.y-2)+' แล้วถ่วงน้ำหนักตามสัดส่วนของ '+SECTORS.length+' ภาคส่วน · ชุดที่ยิ่งน้อยยิ่งดี เช่น อัตราการว่างงาน กลับด้านก่อนเข้าสูตร · เดือนนี้ '+last.v.toFixed(1)+' จุด · เทียบปีก่อน '+(yo>0?'+':'')+yo.toFixed(1)+'%',
+    src:'ประมวลโดยสำนักงานสถิติจังหวัดหนองบัวลำภู จากข้อมูล '+DATASETS.length+' ชุดของหน่วยงานในจังหวัด',
+    when:MONTHS[35].label});
   drawRibbon();
 
   const pw=DB.power.ind,cp=DB.cpi.yoy,ca=DB.car.moto,lb=DB.labor.emp;
   $('#homeKpi').innerHTML=[
     kpiCard({icon:'bank',color:cv('--brand'),label:'เบิกจ่ายงบประมาณ',value:'93.16',unit:'%',
       chip:'<span class="chip up">อันดับ 1 ของประเทศ</span>',sub:'4,838 จาก 5,194 ลบ.',go:'fiscal',
-      tip:'ผลการเบิกจ่ายงบประมาณ|เงินที่ออกจากระบบคลังจริงแล้ว เทียบกับงบที่ได้รับจัดสรร|ที่มา: สนง.คลังจังหวัดหนองบัวลำภู ครั้งที่ 178/2569'}),
+      tip:tipOf({t:'ร้อยละการเบิกจ่ายงบประมาณภาพรวม',
+        d:'เงินที่ออกจากระบบคลังจริงแล้ว เทียบกับงบที่จังหวัดได้รับจัดสรรทั้งปี ยิ่งสูงยิ่งแปลว่าเงินลงถึงพื้นที่เร็ว',
+        calc:'(ยอดเบิกจ่ายสะสม ÷ งบที่ได้รับจัดสรร) × 100 = ('+f_num(D.fiscal.fn.dis[0].val)+' ÷ '+f_num(D.fiscal.fn.dis[0].alloc)+') × 100 = '+f_num(D.fiscal.fn.dis[0].pct)+'%',
+        src:'spend',when:'รายงานครั้งที่ 178/2569 · ข้อมูล ณ '+CFG.asof})}),
     kpiCard({icon:'coin',color:cv('--brand2'),label:'เม็ดเงินรัฐลงพื้นที่',value:f(D.fiscal.fn.dis[0].val,0),unit:'ลบ.',
       chip:'<span class="chip up">สูงกว่าเป้า 6.16%</span>',sub:'ปีงบประมาณ 2569',go:'fiscal',
-      tip:'เม็ดเงินภาครัฐ|ยิ่งเบิกจ่ายเร็ว เงินยิ่งหมุนในพื้นที่เร็ว กระทบผู้รับเหมา แรงงาน ร้านวัสดุโดยตรง'}),
+      tip:tipOf({t:'เม็ดเงินภาครัฐที่ลงสู่พื้นที่แล้ว',
+        d:'ยิ่งเบิกจ่ายเร็ว เงินยิ่งหมุนในพื้นที่เร็ว กระทบผู้รับเหมา แรงงาน และร้านวัสดุในจังหวัดโดยตรง',
+        calc:'ยอดเบิกจ่ายสะสมของทุกส่วนราชการในจังหวัด ณ รายงานงวดล่าสุด · เป็นยอดสะสมจึงไม่นำรายเดือนมาบวกกัน · สูงกว่าเป้าหมายของกรมบัญชีกลาง '+f_num(D.fiscal.fn.dis[0].over)+' จุด',
+        src:'spend',when:'ปีงบประมาณ 2569 · ข้อมูล ณ '+CFG.asof})}),
     kpiCard({icon:'leaf',color:cv('--leaf'),label:'มูลค่าผลผลิตเกษตร',value:f(cropValue(),0),unit:'ลบ.',
       chip:'<span class="chip">อ้อยโรงงาน 89%</span>',sub:'จาก 949,634 ไร่',go:'agri',
-      tip:'มูลค่าผลผลิตพืชอายุสั้น|คำนวณจาก ผลผลิต × ราคาที่เกษตรกรขายได้ ยังไม่รวมข้าวนาปีที่อยู่ระหว่างฤดูกาล|ที่มา: สนง.เกษตรจังหวัด ณ 8 ก.ย. 2569'}),
+      tip:tipOf({t:'มูลค่าผลผลิตพืชอายุสั้น',
+        d:'เงินที่เกษตรกรได้รับจากการขายผลผลิตพืชอายุสั้นในฤดูกาลนี้ เป็นฐานรายได้หลักของครัวเรือนในจังหวัด',
+        calc:'Σ (ผลผลิตรายชนิด × ราคาที่เกษตรกรขายได้) ÷ 1,000,000 · รวม '+D.crop.rows.length+' ชนิด ยังไม่รวมข้าวนาปีที่อยู่ระหว่างฤดูกาล',
+        src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})}),
     kpiCard({icon:'factory',color:cv('--blue'),label:'ไฟฟ้าภาคอุตสาหกรรม',value:f(pw[35].v,2),unit:'ล้านหน่วย',
       chip:chip(pctc(pw[35].v,pw[23].v)),spark:spark(pw.slice(-18).map(x=>x.v),cv('--blue')),go:'industry',
-      tip:'การใช้ไฟฟ้าภาคอุตสาหกรรม|ตัวชี้เชิงประจักษ์ที่บอกว่าโรงงานเดินเครื่องจริงหรือไม่'}),
+      tip:tipOf({t:'การใช้ไฟฟ้าภาคอุตสาหกรรม',
+        d:'ตัวชี้เชิงประจักษ์ที่บอกว่าโรงงานเดินเครื่องจริงหรือไม่ ปลอมแปลงไม่ได้ และมาเร็วกว่ายอดผลิตที่ต้องรอรายงาน',
+        calc:'หน่วยจำหน่ายไฟฟ้าประเภทกิจการขนาดกลางและขนาดใหญ่ในเดือนนั้น · เทียบปีก่อน = ('+f_num(pw[35].v)+' − '+f_num(pw[23].v)+') ÷ '+f_num(pw[23].v)+' × 100',
+        src:'power',when:MONTHS[35].label})}),
     kpiCard({icon:'chart',color:cv('--gold'),label:'อัตราเงินเฟ้อทั่วไป',value:f(cp[35].v,2),unit:'% YoY',
       chip:'<span class="chip fl">ดัชนี '+f(DB.cpi.idx[35].v,1)+'</span>',
       spark:spark(cp.slice(-18).map(x=>x.v),cv('--gold')),go:'trade',
-      tip:'อัตราเงินเฟ้อทั่วไป|บอกว่าเงินเท่าเดิมซื้อของได้น้อยลงแค่ไหน เทียบเดือนเดียวกันปีก่อน'}),
+      tip:tipOf({t:'อัตราเงินเฟ้อทั่วไป',
+        d:'บอกว่าเงินจำนวนเท่าเดิมซื้อของได้น้อยลงแค่ไหน เทียบกับเดือนเดียวกันปีก่อน',
+        calc:'((ดัชนีราคาผู้บริโภคเดือนนี้ ÷ ดัชนีเดือนเดียวกันปีก่อน) − 1) × 100 = (('+f_num(DB.cpi.idx[35].v)+' ÷ '+f_num(DB.cpi.idx[23].v)+') − 1) × 100',
+        src:'cpi',when:MONTHS[35].label})}),
     kpiCard({icon:'people',color:cv('--plum'),label:'ผู้มีงานทำ',value:f(lb[35].v,0),unit:'คน',
       chip:'<span class="chip">ว่างงาน '+f(DB.labor.ur[35].v,2)+'%</span>',
       spark:spark(lb.slice(-18).map(x=>x.v),cv('--plum')),go:'labor',
-      tip:'ผู้มีงานทำในจังหวัด|ฐานกำลังซื้อที่แท้จริง ถ้าตัวเลขนี้ลด ยอดขายปลีกจะตามลงในอีก 1–2 เดือน'})
+      tip:tipOf({t:'ผู้มีงานทำในจังหวัด',
+        d:'ฐานกำลังซื้อที่แท้จริงของจังหวัด ถ้าตัวเลขนี้ลด ยอดขายปลีกมักตามลงในอีก 1–2 เดือน',
+        calc:'ประมาณการจากการสำรวจภาวะการทำงานของประชากรรายไตรมาส ถ่วงน้ำหนักตามประชากรเป็นรายเดือน · อัตราการว่างงาน = ผู้ว่างงาน ÷ กำลังแรงงาน × 100 = '+f_num(DB.labor.ur[35].v)+'%',
+        src:'labor',when:MONTHS[35].label})})
   ].join('');
 
   $('#sectorTiles').innerHTML=SECTORS.map(sec=>{
     const rows=sec.datasets.map(id=>{const d=DATASETS.find(x=>x.id===id),ss=d.series[0],arr=DB[id][ss.key];
-      return`<div class="rw"><span>${ss.label}</span><b>${f(arr[35].v,ss.dec??0)}</b><i>${ss.unit}</i></div>`}).join('');
+      const pc=arr[23].v?pctc(arr[35].v,arr[23].v):null;
+      const tp=tipOf({t:ss.label,
+        d:'หน่วยวัด '+ss.unit+' · ค่าของเดือนล่าสุดที่หน่วยงานรายงาน'+(pc==null?'':' · เทียบปีก่อน '+(pc>0?'+':'')+pc.toFixed(1)+'%'),
+        calc:'ค่าที่หน่วยงานรายงานในเดือนนั้นโดยตรง'+(pc==null?'':' · เทียบปีก่อน = ('+f_num(arr[35].v)+' − '+f_num(arr[23].v)+') ÷ '+f_num(arr[23].v)+' × 100'),
+        src:id,when:MONTHS[35].label+' · ข้อมูลช้าประมาณ '+d.lag+' วัน'});
+      return`<div class="rw" data-tip2="${tp}"><span>${ss.label}</span><b>${f(arr[35].v,ss.dec??0)}</b><i>${ss.unit}</i></div>`}).join('');
     const agy=[...new Set(sec.datasets.map(id=>DATASETS.find(x=>x.id===id).agency))]
       .map(a=>a.replace('สำนักงาน','สนง.').replace('จังหวัดหนองบัวลำภู','จ.นภ.')).join(' · ');
     return`<button class="sect" data-go="${sec.id}">
@@ -117,7 +158,11 @@ function renderOverview(){
 
   $('#feed').innerHTML=DATASETS.slice().sort((a,b)=>a.lag-b.lag).map(d=>{
     const st=d.lag<=25?[cv('--good'),'ส่งแล้ว']:d.lag<=45?[cv('--warn'),'รอยืนยัน']:[cv('--bad'),'ค้างส่ง'];
-    return`<div style="display:flex;align-items:center;gap:9px;padding:6px 2px;border-bottom:1px solid var(--line2);font-size:12px">
+    const tp=tipOf({t:d.series[0].label,
+      d:'สถานะการส่งข้อมูล '+st[1]+' · ข้อมูลชุดนี้มาช้าประมาณ '+d.lag+' วันหลังสิ้นงวด',
+      calc:'เกณฑ์สถานะ: ช้าไม่เกิน 25 วัน = ส่งแล้ว · 26–45 วัน = รอยืนยัน · เกิน 45 วัน = ค้างส่ง',
+      src:d.id,when:MONTHS[35].label});
+    return`<div data-tip2="${tp}" style="display:flex;align-items:center;gap:9px;padding:6px 2px;border-bottom:1px solid var(--line2);font-size:12px">
       <span class="dot" style="background:${st[0]}"></span>
       <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dim)">${d.agency.split(' · ')[0].replace('สำนักงาน','สนง.')}</span>
       <span style="font-size:11px;color:${st[0]}">${st[1]}</span></div>`}).join('');

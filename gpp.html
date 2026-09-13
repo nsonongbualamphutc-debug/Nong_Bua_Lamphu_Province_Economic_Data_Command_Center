@@ -56,14 +56,28 @@ function renderGpp(){
   $('#gppKpi').innerHTML=[
     kpiCard({icon:'chart',color:cv('--brand'),label:'ดัชนีเศรษฐกิจรายเดือน',value:last.v.toFixed(1),
       chip:chip(pctc(last.v,s[23].v)),sub:'ฐาน 100 = เฉลี่ยปี 2567',
-      tip:'NBL–MEI|ดัชนีที่จังหวัดสร้างเองจากข้อมูลเร็ว 11 ชุด เพื่อไม่ต้องรอ GPP ที่ช้า 2 ปี'}),
+      tip:tipOf({t:'ดัชนีภาวะเศรษฐกิจรายเดือน NBL–MEI',
+        d:'ดัชนีที่จังหวัดสร้างขึ้นเองจากข้อมูลเร็วของหน่วยงานในพื้นที่ เพื่อไม่ต้องรอ GPP ที่ประกาศช้า 2 ปี',
+        calc:'แปลงข้อมูล '+DATASETS.length+' ชุดเป็นดัชนีเทียบฐาน 100 = ค่าเฉลี่ยปี '+(CFG.latest.y-2)+' แล้วถ่วงน้ำหนักตามสัดส่วนของ '+SECTORS.length+' ภาคส่วน · ชุดที่ยิ่งน้อยยิ่งดี เช่น อัตราการว่างงาน กลับด้านก่อนเข้าสูตร · เทียบปีก่อน = ('+last.v.toFixed(1)+' − '+s[23].v.toFixed(1)+') ÷ '+s[23].v.toFixed(1)+' × 100',
+        src:'ประมวลโดยสำนักงานสถิติจังหวัดหนองบัวลำภู',when:MONTHS[35].label})}),
     kpiCard({icon:'coin',color:cv('--brand2'),label:`GPP ปี ${G[n].y}`,value:f(G[n].value,0),unit:'ลบ.',
-      chip:chip(pctc(G[n].value,G[n-1].value)),sub:'ประกาศช้า 2 ปี'}),
+      chip:chip(pctc(G[n].value,G[n-1].value)),sub:'ประกาศช้า 2 ปี',
+      tip:tipOf({t:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) แบบ Chain Volume Measures',
+        d:'มูลค่าสินค้าและบริการขั้นสุดท้ายทั้งหมดที่ผลิตได้ในจังหวัดตลอดปี เป็นตัวเลขทางการที่ใช้อ้างอิงระดับประเทศ แต่ประกาศช้าราว 2 ปี',
+        calc:'สศช. ประมวลจากข้อมูลการผลิตรายสาขา 16 สาขา · เทียบปีก่อน = ('+f_num(G[n].value)+' − '+f_num(G[n-1].value)+') ÷ '+f_num(G[n-1].value)+' × 100',
+        src:'gpp',when:'ปี '+G[n].y+' (ประกาศล่าสุด)'})}),
     kpiCard({icon:'people',color:cv('--blue'),label:'GPP ต่อหัว',value:f(G[n].pc,0),unit:'บาท/คน/ปี',
-      chip:chip(pctc(G[n].pc,G[n-1].pc)),sub:'ประชากร '+f(D.base.pop,0)+' คน'}),
+      chip:chip(pctc(G[n].pc,G[n-1].pc)),sub:'ประชากร '+f(D.base.pop,0)+' คน',
+      tip:tipOf({t:'ผลิตภัณฑ์มวลรวมจังหวัดต่อหัว',
+        d:'รายได้เฉลี่ยต่อคนต่อปีของคนในจังหวัด ใช้เทียบฐานะทางเศรษฐกิจระหว่างจังหวัด ไม่ใช่รายได้ที่ครัวเรือนได้รับจริง',
+        calc:'GPP ทั้งจังหวัด ÷ จำนวนประชากรกลางปี = ('+f_num(G[n].value)+' ล้านบาท × 1,000,000) ÷ '+f_num(D.base.pop)+' คน',
+        src:'gpp',when:'ปี '+G[n].y})}),
     kpiCard({icon:'leaf',color:cv('--leaf'),label:'สัดส่วนภาคเกษตรใน GPP',value:'28.4',unit:'%',
       chip:'<span class="chip">ประเทศ 8.7%</span>',sub:'เศรษฐกิจฐานเกษตรชัดเจน',
-      tip:'โครงสร้างเศรษฐกิจ|ภาคเกษตรของจังหวัดมีสัดส่วนสูงกว่าค่าเฉลี่ยประเทศกว่า 3 เท่า นโยบายเกษตรจึงมีผลต่อ GPP มากเป็นพิเศษ'})
+      tip:tipOf({t:'สัดส่วนภาคเกษตรในโครงสร้าง GPP',
+        d:'ภาคเกษตรของจังหวัดมีสัดส่วนสูงกว่าค่าเฉลี่ยประเทศกว่า 3 เท่า นโยบายเกษตรและราคาพืชผลจึงส่งผลต่อ GPP ของจังหวัดมากเป็นพิเศษ',
+        calc:'(มูลค่าเพิ่มสาขาเกษตร ป่าไม้ และประมง ÷ GPP รวม) × 100 · เทียบค่าเฉลี่ยทั้งประเทศ 8.7%',
+        src:'gpp',when:'ปี '+G[n].y})})
   ].join('');
 
   mk('cMei',{type:'line',data:{labels:MONTHS.map(m=>m.label),datasets:[
@@ -122,10 +136,22 @@ function renderDS(){
   const dScore=score(dem), sScore=score(sup);
   const F=D.fiscal;
   const stability=[
-    ['ร้อยละการเบิกจ่ายภาพรวม',F.fn.dis[0].pct,'%',F.fn.dis[0].pct>=90],
-    ['ร้อยละการเบิกจ่ายงบลงทุน',F.fn.dis[2].pct,'%',F.fn.dis[2].pct>=85],
-    ['เงินกันเหลื่อมปีที่เบิกแล้ว',F.carry.pct,'%',F.carry.pct>=95],
-    ['งบคงเหลือรอเบิกจ่าย',F.fn.dis[0].alloc-F.fn.dis[0].val,'ลบ.',null]
+    ['ร้อยละการเบิกจ่ายภาพรวม',F.fn.dis[0].pct,'%',F.fn.dis[0].pct>=90,
+      tipOf({t:'ร้อยละการเบิกจ่ายงบประมาณภาพรวม',d:'เกณฑ์ของกรมบัญชีกลางกำหนดไว้ที่ 90% เมื่อสิ้นปีงบประมาณ',
+        calc:'(ยอดเบิกจ่ายสะสม ÷ งบที่ได้รับจัดสรร) × 100 = ('+f_num(F.fn.dis[0].val)+' ÷ '+f_num(F.fn.dis[0].alloc)+') × 100',
+        src:'spend',when:'ข้อมูล ณ '+CFG.asof})],
+    ['ร้อยละการเบิกจ่ายงบลงทุน',F.fn.dis[2].pct,'%',F.fn.dis[2].pct>=85,
+      tipOf({t:'ร้อยละการเบิกจ่ายงบลงทุน',d:'งบลงทุนกระตุ้นเศรษฐกิจในพื้นที่ได้มากที่สุด เกณฑ์ที่ใช้ประเมินคือ 85%',
+        calc:'(เบิกจ่ายงบลงทุน ÷ งบลงทุนที่จัดสรร) × 100 = ('+f_num(F.fn.dis[2].val)+' ÷ '+f_num(F.fn.dis[2].alloc)+') × 100',
+        src:'spend',when:'ข้อมูล ณ '+CFG.asof})],
+    ['เงินกันเหลื่อมปีที่เบิกแล้ว',F.carry.pct,'%',F.carry.pct>=95,
+      tipOf({t:'เงินกันไว้เบิกเหลื่อมปีที่เบิกจ่ายแล้ว',d:'งบของปีก่อนที่ขอกันไว้ข้ามปี ถ้าค้างนานแปลว่างานล่าช้า เงินยังไม่ลงพื้นที่',
+        calc:'(ยอดเบิกจ่ายเงินกันเหลื่อมปี ÷ วงเงินที่กันไว้) × 100',
+        src:'spend',when:'ข้อมูล ณ '+CFG.asof})],
+    ['งบคงเหลือรอเบิกจ่าย',F.fn.dis[0].alloc-F.fn.dis[0].val,'ลบ.',null,
+      tipOf({t:'งบคงเหลือรอเบิกจ่าย',d:'เม็ดเงินที่ยังผลักลงพื้นที่ได้ทันทีในงวดที่เหลือของปีงบประมาณ',
+        calc:'งบที่ได้รับจัดสรร − ยอดเบิกจ่ายสะสม = '+f_num(F.fn.dis[0].alloc)+' − '+f_num(F.fn.dis[0].val),
+        src:'spend',when:'ข้อมูล ณ '+CFG.asof})]
   ];
   const block=(ico,title,sc,rows,note,color)=>`
     <div class="c"><header><span class="hdico icow img">${icoImg(ico,26)}</span><h3>${title}</h3>
@@ -155,7 +181,7 @@ function renderDS(){
     `<div class="c"><header><span class="hdico icow img">${icoImg('stability',26)}</span><h3>เสถียรภาพการคลัง</h3>
       <span class="r">${statusBadge(F.fn.dis[0].pct-90,false,'ระดับการเบิกจ่ายเทียบเกณฑ์ 90%')}</span></header>
       <div class="b">
-        ${stability.map(r=>`<div class="barrow">
+        ${stability.map(r=>`<div class="barrow" data-tip2="${r[4]||''}">
           <span class="nm">${r[0]}</span>
           <span class="vv" style="color:${r[3]===null?cv('--dim'):(r[3]?cv('--good'):cv('--bad'))}">
             ${typeof r[1]==='number'?f(r[1],r[2]==='%'?2:0):r[1]} ${r[2]}</span></div>`).join('')}

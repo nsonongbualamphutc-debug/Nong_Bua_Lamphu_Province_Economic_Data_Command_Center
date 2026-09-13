@@ -160,6 +160,7 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const cv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function f(v,d){if(v==null||isNaN(v))return'—';
   return Number(v).toLocaleString('th-TH',{minimumFractionDigits:d??0,maximumFractionDigits:d??0})}
+function f_num(v){if(v==null||isNaN(v))return'—';return Number(v).toLocaleString('th-TH',{maximumFractionDigits:2})}
 function pctc(a,b){return b?((a-b)/Math.abs(b))*100:null}
 function chip(p){if(p==null)return'<span class="chip">—</span>';
   const c=p>.15?'up':p<-.15?'dn':'fl',a=p>.15?'▲':p<-.15?'▼':'▬';

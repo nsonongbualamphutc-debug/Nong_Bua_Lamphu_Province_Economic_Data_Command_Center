@@ -41,16 +41,32 @@ function priceHtml(){
   const P=D.price;
   const up=[],dn=[];
   P.groups.forEach(g=>g.rows.forEach(r=>{if(r.chg>0)up.push(r.n);if(r.chg<0)dn.push(r.n)}));
+  const nItem=P.groups.reduce((a,g)=>a+g.rows.length,0);
   const kpi=[
     kpiCard({icon:'cart',color:cv('--brand'),label:'สินค้าที่ราคาสูงขึ้น',value:up.length,unit:'รายการ',
-      chip:'<span class="chip up">'+(up[0]||'—')+'</span>',sub:'เทียบสัปดาห์ก่อน'}),
+      chip:'<span class="chip up">'+(up[0]||'—')+'</span>',sub:'เทียบสัปดาห์ก่อน',
+      tip:tipOf({t:'จำนวนสินค้าที่ราคาสูงขึ้น',
+        d:'นับรายการสินค้าที่ราคาสัปดาห์นี้สูงกว่าสัปดาห์ก่อน เป็นสัญญาณค่าครองชีพที่เร็วที่สุดของจังหวัด เร็วกว่าดัชนีราคาผู้บริโภคที่ประกาศรายเดือน',
+        calc:'นับรายการที่ผลต่างราคา (สัปดาห์นี้ − สัปดาห์ก่อน) > 0 จากสินค้าที่ติดตามทั้งหมด '+nItem+' รายการ',
+        src:'cpi',when:'ประจำวันที่ '+P.asof})}),
     kpiCard({icon:'chart',color:cv('--coral'),label:'สินค้าที่ราคาลดลง',value:dn.length,unit:'รายการ',
-      chip:'<span class="chip dn">'+(dn[0]||'—')+'</span>',sub:'เทียบสัปดาห์ก่อน'}),
+      chip:'<span class="chip dn">'+(dn[0]||'—')+'</span>',sub:'เทียบสัปดาห์ก่อน',
+      tip:tipOf({t:'จำนวนสินค้าที่ราคาลดลง',
+        d:'ราคาที่ลดลงช่วยผู้บริโภค แต่ถ้าเป็นสินค้าเกษตรจะกดรายได้เกษตรกรลงด้วย จึงต้องดูควบคู่กัน',
+        calc:'นับรายการที่ผลต่างราคา (สัปดาห์นี้ − สัปดาห์ก่อน) < 0 จากสินค้าที่ติดตามทั้งหมด '+nItem+' รายการ',
+        src:'cpi',when:'ประจำวันที่ '+P.asof})}),
     kpiCard({icon:'leaf',color:cv('--gold'),label:'ข้าวเปลือกหอมมะลิ',value:'17,000',unit:'บาท/ตัน',
       chip:chip(pctc(17000,14600)),sub:'เทียบปีก่อน 14,600 บาท/ตัน',
-      tip:'ข้าวเปลือกหอมมะลิ|ราคา ณ ลานรับซื้อ สีได้ต้นข้าว 36 กรัมขึ้นไป|ที่มา: สนง.พาณิชย์จังหวัด 8 ก.ย. 2569'}),
+      tip:tipOf({t:'ราคาข้าวเปลือกหอมมะลิ',
+        d:'ราคา ณ ลานรับซื้อในจังหวัด เงื่อนไขสีได้ต้นข้าว 36 กรัมขึ้นไป เป็นราคาที่กำหนดรายได้ของครัวเรือนปลูกข้าวโดยตรง',
+        calc:'ราคารับซื้อที่สำรวจในสัปดาห์นี้ · เทียบปีก่อน = (17,000 − 14,600) ÷ 14,600 × 100',
+        src:'cpi',when:'ประจำวันที่ '+P.asof})}),
     kpiCard({icon:'drop',color:cv('--brand2'),label:'น้ำยางสด',value:'70–71',unit:'บาท/กก.',
-      chip:chip(pctc(70.5,47.90)),sub:'เทียบปีก่อน 47.90 บาท/กก.'})
+      chip:chip(pctc(70.5,47.90)),sub:'เทียบปีก่อน 47.90 บาท/กก.',
+      tip:tipOf({t:'ราคาน้ำยางสด',
+        d:'ยางพาราเป็นพืชที่ราคาขยับขึ้นจากปีก่อนมากที่สุดของจังหวัด ช่วยหนุนรายได้เกษตรกรกลุ่มพืชไร่',
+        calc:'ราคารับซื้อที่สำรวจในสัปดาห์นี้เป็นช่วง 70–71 บาท/กก. · เทียบปีก่อนใช้ค่ากลางของช่วง = (70.50 − 47.90) ÷ 47.90 × 100',
+        src:'cpi',when:'ประจำวันที่ '+P.asof})})
   ].join('');
   const groups=P.groups.map(g=>`
     <div class="c mb"><header><h3>${g.g}</h3><span class="u">หน่วย: ${g.unit}</span>
@@ -61,7 +77,11 @@ function priceHtml(){
             <th style="width:110px">เปลี่ยนแปลง</th><th class="r">${P.prevLabel}</th><th class="r">${P.yearLabel}</th><th class="r">%เทียบปีก่อน</th></tr></thead>
           <tbody>${g.rows.map(r=>{
             const a=midOf(r.now),b=midOf(r.yr);
-            return `<tr><td>${r.n}${r.sub?`<div style="font-size:10px;color:var(--faint)">${r.sub}</div>`:''}</td>
+            const tp=tipOf({t:r.n+(r.sub?' ('+r.sub+')':''),
+              d:'หน่วย '+g.unit+' · ราคาที่สำรวจในตลาดของจังหวัด'+(r.chg?' · เปลี่ยนแปลงจากสัปดาห์ก่อน '+(r.chg>0?'+':'')+r.chg:' · ราคาทรงตัวจากสัปดาห์ก่อน'),
+              calc:(a!=null&&b)?'เทียบปีก่อน = (ราคาสัปดาห์นี้ − ราคาปีก่อน) ÷ ราคาปีก่อน × 100 = ('+f_num(a)+' − '+f_num(b)+') ÷ '+f_num(b)+' × 100'+(typeof r.now==='string'&&/[–-]/.test(String(r.now))?' · ราคาที่รายงานเป็นช่วง จึงใช้ค่ากลางของช่วงในการเทียบ':''):'ยังไม่มีราคาปีก่อนให้เทียบ จึงแสดงเฉพาะราคาปัจจุบัน',
+              src:'cpi',when:'ประจำวันที่ '+P.asof});
+            return `<tr data-tip2="${tp}"><td>${r.n}${r.sub?`<div style="font-size:10px;color:var(--faint)">${r.sub}</div>`:''}</td>
               <td class="r" style="font-weight:600">${r.now}</td><td class="r">${r.prev}</td>
               <td>${chgChip(r.chg)}</td>
               <td class="r">${r.mo==null?'—':(typeof r.mo==='number'?f(r.mo,2):r.mo)}</td>

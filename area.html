@@ -362,13 +362,26 @@ function renderCrumb(){
     : `<b>จังหวัดหนองบัวลำภู</b><span class="sep">·</span><span style="color:var(--faint)">6 อำเภอ 59 ตำบล</span>`;
 }
 
+/* ══ คำอธิบายตัวชี้วัดที่เลือก ══ */
+function areaSrcKey(){const o=curOpt();return o.id.indexOf('|')>0?o.id.split('|')[0]:'crop'}
+function areaTip(r,tot,rank,n){
+  const o=curOpt(), monthly=o.id.indexOf('|')>0;
+  return tipOf({t:o.label+' · อำเภอ'+r.n,
+    d:'หน่วยวัด '+o.unit+(rank?' · อยู่อันดับ '+rank+' จาก '+n+' อำเภอ':''),
+    calc:'สัดส่วนของจังหวัด = (ค่าของอำเภอ ÷ ผลรวมทุกอำเภอ) × 100 = ('+f_(r.v,o.dec)+' ÷ '+f_(tot,o.dec)+') × 100 = '+(r.v/tot*100).toFixed(1)+'%'+
+      (monthly?' · ค่ารายอำเภอเป็นค่าของเดือนล่าสุดที่หน่วยงานรายงาน ไม่ใช่ยอดสะสมทั้งปี':' · เป็นจำนวนคงค้าง ณ งวดที่ประกาศ ไม่นำแต่ละงวดมาบวกกัน'),
+    src:areaSrcKey(),
+    when:monthly?((typeof MONTHS!=='undefined'&&MONTHS[35])?MONTHS[35].label:''):'ข้อมูล ณ ก.ค. 2569'});
+}
+
 /* ══ รายการอำเภอ ══ */
 function renderList(){
   const o=curOpt(),vals=curVals();
   const rows=DISTRICTS.map(d=>({d,v:vals[d.code]})).sort((a,b)=>b.v-a.v);
   const mx=rows[0].v||1,tot=rows.reduce((a,b)=>a+b.v,0)||1;
   document.getElementById('ampList').innerHTML=rows.map((r,i)=>`
-    <div class="amprow${i===0?' top':''}${DRILL&&DRILL.code===r.d.code?' act':''}" data-amp="${r.d.code}">
+    <div class="amprow${i===0?' top':''}${DRILL&&DRILL.code===r.d.code?' act':''}" data-amp="${r.d.code}"
+      data-tip2="${areaTip({n:r.d.name,v:r.v},tot,i+1,rows.length)}">
       <span class="rk">${i+1}</span><span class="nm">${r.d.name}</span>
       <span class="bar"><i style="width:${(r.v/mx*100).toFixed(0)}%;background:${ramp(r.v/mx)}"></i></span>
       <span class="vl">${f_(r.v,o.dec)}</span></div>`).join('')+
@@ -415,7 +428,7 @@ function renderTable(){
   const tot=rows.reduce((a,b)=>a+b.v,0)||1,mx=rows[0].v||1;
   document.getElementById('tArea').innerHTML=`<thead><tr><th style="width:34px">#</th><th>อำเภอ</th>
     <th class="r">${o.unit}</th><th class="r">สัดส่วน</th><th style="width:120px"></th></tr></thead><tbody>`+
-    rows.map((r,i)=>`<tr><td class="r" style="color:var(--faint)">${i+1}</td><td>${r.n}</td>
+    rows.map((r,i)=>`<tr data-tip2="${areaTip(r,tot,i+1,rows.length)}"><td class="r" style="color:var(--faint)">${i+1}</td><td>${r.n}</td>
       <td class="r">${f_(r.v,o.dec)}</td><td class="r">${(r.v/tot*100).toFixed(1)}%</td>
       <td><div class="bar"><i style="width:${(r.v/mx*100).toFixed(0)}%;background:${ramp(r.v/mx)}"></i></div></td></tr>`).join('')+
     `</tbody><tfoot><tr><td></td><td>รวมทั้งจังหวัด</td><td class="r">${f_(tot,o.dec)}</td><td class="r">100.0%</td><td></td></tr></tfoot>`;
@@ -479,10 +492,14 @@ function refreshSide(){
   document.getElementById('areaTitle').textContent=o.label;
   document.getElementById('areaUnit').textContent='หน่วย: '+o.unit+(o.agency?' · '+o.agency.split(' · ')[0].replace('สำนักงาน','สนง.'):'');
   const B=D.base;
+  const adminTip=t=>tipOf({t:t,
+    d:'ข้อมูลฐานการปกครองที่ใช้เป็นตัวหารและขอบเขตอ้างอิงของทุกตัวชี้วัดเชิงพื้นที่ในหน้านี้',
+    calc:'ยอด ณ สิ้นงวดที่ประกาศ ไม่นำแต่ละงวดมาบวกกัน · ขอบเขตแผนที่ใช้ '+B.amphoe+' อำเภอ '+B.tambon+' ตำบล',
+    src:'popreg',when:'ข้อมูล ณ ก.ค. 2569'});
   document.getElementById('areaAdmin').innerHTML=`<div class="grid g2" style="gap:9px">
       ${[['อำเภอ',B.amphoe,''],['ตำบล',B.tambon,''],['หมู่บ้าน',f(B.muban,0),''],['ชุมชน',B.chumchon,''],
          ['ประชากร',f(B.pop,0),'คน'],['ครัวเรือนเกษตร',f(B.agriHH,0),'ครัวเรือน']].map(x=>
-        `<div class="mini"><div class="l">${x[0]}</div><div class="v">${x[1]}<small> ${x[2]}</small></div></div>`).join('')}</div>
+        `<div class="mini" data-tip2="${adminTip(x[0])}"><div class="l">${x[0]}</div><div class="v">${x[1]}<small> ${x[2]}</small></div></div>`).join('')}</div>
     <div class="note">อำเภอเมืองเป็นศูนย์กลางเศรษฐกิจและมีแหล่งท่องเที่ยวเชิงเกษตรมากที่สุด 18 แห่ง
     รองลงมาคืออำเภอนากลาง 17 แห่ง ขณะที่อำเภอโนนสังมีน้อยที่สุด 7 แห่ง ทั้งที่มีเขื่อนอุบลรัตน์เป็นทุนทางธรรมชาติ</div>`;
 }
