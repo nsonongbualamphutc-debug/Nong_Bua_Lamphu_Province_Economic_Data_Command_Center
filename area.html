@@ -24,7 +24,7 @@
     <div class="r"><select class="sel" id="areaSel"></select></div></div>
 
   <div class="grid g21 mb">
-    <div class="c"><header><h3 id="areaTitle">แผนที่จังหวัดหนองบัวลำภู</h3><span class="u" id="areaUnit"></span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="area"></span><h3 id="areaTitle">แผนที่จังหวัดหนองบัวลำภู</h3><span class="u" id="areaUnit"></span></header>
       <div class="b">
         <div class="mapwrap" id="mapWrapA">
           <div id="tilemap" class="tilemap"></div>
@@ -32,13 +32,13 @@
           <div class="mapbar">
             <div class="crumbm" id="crumbMap"></div>
             <button id="btnBackProv" class="hide"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>กลับทั้งจังหวัด</button>
-            ${fullscreenBtn('#mapWrapA')}
+            <span id="fsSlot"></span>
           </div>
           <div class="mapmode">
             <button id="btnTile" class="on">แผนผัง</button>
             <button id="btnReal" disabled>ขอบเขตจริง</button>
           </div>
-          ${baseSwitcher('abase')}
+          <div id="baseSlot"></div>
           <div class="scalebar" id="scaleBar"></div>
           <div class="maploading hide" id="mapLoad">กำลังโหลดขอบเขตตำบล…</div>
         </div>
@@ -46,19 +46,20 @@
         <div class="note" style="border-top:0;padding-top:0">เคล็ดลับ: กด Shift ค้างแล้วคลิกที่อำเภอ จะได้ป๊อปอัปพร้อมปุ่มนำทางด้วย Google Maps</div>
       </div></div>
 
-    <div class="c"><header><h3>อันดับรายอำเภอ</h3><span class="u">คลิกเพื่อซูมไปที่อำเภอนั้น</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="district"></span><h3>อันดับรายอำเภอ</h3><span class="u">คลิกเพื่อซูมไปที่อำเภอนั้น</span></header>
       <div class="b"><div id="ampList" style="max-height:470px;overflow:auto"></div></div></div>
   </div>
 
   <div class="grid g3 mb">
-    <div class="c"><header><h3>สัดส่วนต่อจังหวัด</h3></header><div class="b"><div class="ch"><canvas id="cAreaShare"></canvas></div></div></div>
-    <div class="c"><header><h3>เทียบกับค่าเฉลี่ยจังหวัด</h3><span class="u">ส่วนต่างจากค่าเฉลี่ย</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="compare"></span><h3>สัดส่วนต่อจังหวัด</h3></header><div class="b"><div class="ch"><canvas id="cAreaShare"></canvas></div></div></div>
+    <div class="c"><header><span class="hdico icow img" data-hdico="gap"></span><h3>เทียบกับค่าเฉลี่ยจังหวัด</h3><span class="u">ส่วนต่างจากค่าเฉลี่ย</span></header>
       <div class="b"><div class="ch"><canvas id="cAreaDev"></canvas></div>
       <div class="note" id="devNote"></div></div></div>
-    <div class="c"><header><h3>ข้อมูลพื้นฐานรายพื้นที่</h3></header><div class="b" id="areaAdmin"></div></div>
+    <div class="c"><header><span class="hdico icow img" data-hdico="base"></span><h3>ข้อมูลพื้นฐานรายพื้นที่</h3></header><div class="b" id="areaAdmin"></div></div>
   </div>
 
-  <div class="c"><header><h3>ตารางข้อมูลรายอำเภอ</h3><span class="r">${''}</span></header>
+  <div class="c"><header><span class="hdico icow img" data-hdico="report"></span><h3>ตารางข้อมูลรายอำเภอ</h3>
+    <span class="u" id="areaTblUnit"></span></header>
     <div class="b"><div class="sc"><table class="t" id="tArea"></table></div>
       <div class="note">ที่มาขอบเขตการปกครอง: ชุดข้อมูล OpenGISData-Thailand (github.com/chingchai/OpenGISData-Thailand) กรมการปกครอง กระทรวงมหาดไทย</div></div></div>
 </section>
@@ -437,6 +438,10 @@ function renderTable(){
 /* ══ เริ่มระบบ ══ */
 function renderArea(){
   const sel=document.getElementById('areaSel');
+  const fsSlot=document.getElementById('fsSlot');
+  if(fsSlot)fsSlot.outerHTML=fullscreenBtn('#mapWrapA');
+  const bSlot=document.getElementById('baseSlot');
+  if(bSlot)bSlot.outerHTML=baseSwitcher('abase');
   if(!sel.options.length){
     sel.innerHTML=AREA_OPTS.map((o,i)=>`<option value="${i}">${o.label}${o.real?' · ข้อมูลจริง':''}</option>`).join('');
     sel.onchange=()=>{DRILL=null;if(TLAYER){MAP.removeLayer(TLAYER);TLAYER=null}

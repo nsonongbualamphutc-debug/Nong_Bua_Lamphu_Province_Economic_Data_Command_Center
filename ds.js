@@ -854,6 +854,14 @@ function seriesPrevYear(arr,st,mode){
   if(st.freq==='M')return vals[vals.length-1];
   return aggVals(vals,mode);
 }
+/* วาดตัวควบคุมภายในแถบตัวกรองใหม่ โดยไม่แตะตัวแถบเอง จึงไม่เสียการผูกเหตุการณ์ */
+function redrawSlicer(id){
+  const el=document.querySelector('[data-slicer="'+id+'"]'); if(!el)return;
+  const tmp=document.createElement('div');
+  tmp.innerHTML=slicerBar(id,SLC[id]);
+  const fresh=tmp.firstElementChild; if(!fresh)return;
+  el.innerHTML=fresh.innerHTML;
+}
 function bindSlicers(onChange){
   document.querySelectorAll('[data-slicer]').forEach(el=>{
     if(el.dataset.bound)return; el.dataset.bound='1';
@@ -865,16 +873,20 @@ function bindSlicers(onChange){
       const cp=e.target.closest('[data-cmp]');
       const c=SLC[id]; if(!c)return;
       if(fq){c.freq=fq.dataset.fq;c.value=null}
-      else if(st){const ps=periodsOf(c.freq);const i=ps.findIndex(p=>p.k===c.value);
+      else if(st){const ps=periodsOf(c.freq);
+        if(!c.value||!ps.find(p=>p.k===c.value))c.value=ps[ps.length-1].k;
+        const i=ps.findIndex(p=>p.k===c.value);
         const n=ps[i+ +st.dataset.step]; if(n)c.value=n.k; else return}
       else if(nw){const ps=periodsOf(c.freq);c.value=ps[ps.length-1].k}
       else if(cp){c.cmp=!c.cmp}
       else return;
+      redrawSlicer(id);
       onChange&&onChange(id);
     });
     el.addEventListener('change',e=>{
       if(!e.target.matches('[data-pick]'))return;
       SLC[id].value=e.target.value;
+      redrawSlicer(id);
       onChange&&onChange(id);
     });
   });
@@ -1310,6 +1322,7 @@ function safeRender(){
   try{PAGE.render()}catch(e){console.error('render '+PAGE.id,e)}
   try{
     document.querySelectorAll('[data-bigico]').forEach(el=>{if(!el.innerHTML)el.innerHTML=icoImg(el.dataset.bigico,52)});
+    document.querySelectorAll('[data-hdico]').forEach(el=>{if(!el.innerHTML)el.innerHTML=icoImg(el.dataset.hdico,26)});
     pageBanner();bindToggle();revealCards();animateNums();
   }catch(e){}
 }

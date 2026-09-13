@@ -871,3 +871,14 @@ body.cover .ph{position:static}
 .yrpair .yrvs{font-size:11.5px;color:var(--faint)}
 .yrpair .tb{height:29px;min-width:30px;padding:0 8px;font-size:14px;line-height:1}
 @media(max-width:640px){.yrpair{width:100%;margin-top:6px}.yrpair .sel{flex:1;min-width:0}}
+
+@media (max-width:767px){
+  .cho-map{height:300px!important}
+  .cho-lg-v{width:100%;text-align:left}
+  .slicer{flex-wrap:wrap;gap:7px}
+  .slicer .sl-nav select{max-width:150px}
+  .slicer .sl-info{width:100%;order:9}
+}
+@media (min-width:768px) and (max-width:1150px){
+  .cho-map{height:340px!important}
+}
