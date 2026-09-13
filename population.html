@@ -74,10 +74,12 @@ function renderPop(){
   </div>
 
   <div class="grid g21 mb">
-    <div class="c"><header><h3>โครงสร้างอายุประชากร</h3><span class="u">พีระมิดประชากร · ${f(totalBand,0)} คน</span>
+    <div class="c"><header><h3>ปิรามิดประชากร</h3>
+      <span class="u">ในเขตเทศบาลเทียบนอกเขตเทศบาล · กดเล่นเพื่อดูการเปลี่ยนแปลงตามปี</span>
       <span class="r">${viewToggle('cAge')}</span></header>
       <div class="b">
-        <div id="cAge-chart"><div class="ch" style="height:400px"><canvas id="cAge"></canvas></div></div>
+        <div id="playerBox"></div>
+        <div id="cAge-chart"><div id="pyrBox"></div></div>
         <div id="cAge-table" class="hide"><div class="sc" style="max-height:380px"><table class="t" id="tAge"></table></div></div>
         <div class="note" id="ageNote"></div>
       </div></div>
@@ -172,7 +174,10 @@ function renderPop(){
      ปี ${bLast} เกิด ${f(birth,0)} คน แต่ตาย ${f(death,0)} คน ต่างกัน ${f(death-birth,0)} คน
      นี่คือสาเหตุหลักที่ประชากรลดลง ไม่ใช่การย้ายออกอย่างที่เข้าใจกัน`;
 
-  /* ── พีระมิดอายุ ── */
+  /* ── ปิรามิดประชากร ── */
+  buildPyramid();
+  /* ── (กราฟแท่งเดิมถูกแทนที่ด้วยปิรามิด) ── */
+  if(false){
   mk('cAge',{type:'bar',data:{labels:BAND_ORDER,
     datasets:[{label:'ประชากร (คน)',data:BAND_ORDER.map(bandVal),
       backgroundColor:BAND_ORDER.map(b=>ageOf(b)>=60?cv('--coral'):ageOf(b)<15?cv('--leaf'):cv('--brand')),
@@ -181,6 +186,7 @@ function renderPop(){
       tooltip:{callbacks:{label:c=>f(c.raw,0)+' คน',
         footer:it=>(it[0].raw/totalBand*100).toFixed(1)+'% ของประชากร'}}},
       scales:{x:ax({ticks:{callback:v=>f(v/1000,0)+'K'}}),y:ax({grid:{display:false},ticks:{font:{size:10}}})}}});
+  }
   document.getElementById('tAge').innerHTML=`<thead><tr><th>ช่วงอายุ</th><th class="r">คน</th><th class="r">สัดส่วน</th></tr></thead><tbody>`+
     BAND_ORDER.map(b=>`<tr><td>${b}</td><td class="r">${f(bandVal(b),0)}</td>
       <td class="r">${(bandVal(b)/totalBand*100).toFixed(1)}%</td></tr>`).join('')+
@@ -244,6 +250,64 @@ function renderPop(){
   document.getElementById('moveNote').innerHTML=
     `ปี ${bLast} ย้ายเข้า ${f(mv['ย้ายเข้า']||0,0)} คน ย้ายออก ${f(mv['ย้ายออก']||0,0)} คน สุทธิ ${net>=0?'+':''}${f(net,0)} คน
      การย้ายถิ่นเกือบสมดุล ต่างจากที่หลายคนเข้าใจ ประชากรที่ลดลงจึงมาจากการเกิดน้อยกว่าตายเป็นหลัก`;
+}
+
+
+/* ══════════ ปิรามิดประชากร ══════════ */
+const PYR=(typeof DX_PYR!=='undefined')?DX_PYR:null;
+let PYR_YEAR=null;
+function buildPyramid(){
+  if(!PYR){document.getElementById('pyrBox').innerHTML='<div class="svc-empty">ไม่พบข้อมูลโครงสร้างอายุรายปี</div>';return}
+  const box=document.getElementById('playerBox');
+  if(box&&!box.innerHTML){
+    box.innerHTML=playerBar('pyrPlay',{
+      frames:PYR.years.map(y=>({label:'พ.ศ. '+y,short:String(y).slice(-2),y})),
+      i:PYR.years.length-1, ms:1500, auto:false, hoverStop:'#pyrBox',
+      onFrame:fr=>{PYR_YEAR=fr.y;drawPyramid()}
+    });
+    bindPlayer('pyrPlay');
+  }else{ drawPyramid(); }
+}
+function drawPyramid(){
+  const y=PYR_YEAR||PYR.years[PYR.years.length-1];
+  const z=PYR.zone[y]; if(!z)return;
+  const B=PYR.bands;
+  const tIn=z.in.reduce((a,b)=>a+b,0), tOut=z.out.reduce((a,b)=>a+b,0);
+  const mx=Math.max(...z.in.map(v=>v/tIn), ...z.out.map(v=>v/tOut));
+  const pct=(v,t)=>v/t*100;
+  const old=(arr,t)=>arr.reduce((a,v,i)=>a+(ageOf(B[i])>=60?v:0),0)/t*100;
+  const kid=(arr,t)=>arr.reduce((a,v,i)=>a+(ageOf(B[i])<15?v:0),0)/t*100;
+  let h=`<div class="pyr">
+    <div class="pyr-h">ในเขตเทศบาล · ${f(tIn,0)} คน</div>
+    <div class="pyr-h">ช่วงอายุ</div>
+    <div class="pyr-h">นอกเขตเทศบาล · ${f(tOut,0)} คน</div>`;
+  for(let i=B.length-1;i>=0;i--){
+    const a=z.in[i], b=z.out[i];
+    const pa=pct(a,tIn), pb=pct(b,tOut);
+    const tip=tipOf({t:B[i],
+      d:'ในเขตเทศบาล '+f(a,0)+' คน ('+pa.toFixed(1)+'%) · นอกเขตเทศบาล '+f(b,0)+' คน ('+pb.toFixed(1)+'%)',
+      calc:'สัดส่วน = จำนวนในช่วงอายุ ÷ ประชากรรวมของเขตนั้น × 100',
+      src:'popreg',when:'พ.ศ. '+y});
+    h+=`<div class="pyr-row" data-tip2="${tip}">
+      <div class="pyr-l"><span class="pyr-n">${pa.toFixed(1)}%</span>
+        <i style="width:${(pa/mx*100*0.92).toFixed(1)}%"></i></div>
+      <div class="pyr-b">${B[i].replace(' ปี','').replace('ถึง','–').replace(' และมากกว่า','+')}</div>
+      <div class="pyr-r"><i style="width:${(pb/mx*100*0.92).toFixed(1)}%"></i>
+        <span class="pyr-n">${pb.toFixed(1)}%</span></div></div>`;
+  }
+  h+=`</div><div class="pyr-legend">
+    <span><i style="background:var(--blue)"></i>ในเขตเทศบาล</span>
+    <span><i style="background:var(--lotus,#cf5f92)"></i>นอกเขตเทศบาล</span></div>`;
+  document.getElementById('pyrBox').innerHTML=h;
+  const y0=PYR.years[0], z0=PYR.zone[y0];
+  const t0In=z0.in.reduce((a,b)=>a+b,0), t0Out=z0.out.reduce((a,b)=>a+b,0);
+  document.getElementById('ageNote').innerHTML=
+    `ปี ${y} ผู้สูงอายุ 60 ปีขึ้นไปคิดเป็น <b>${old(z.in,tIn).toFixed(1)}%</b> ในเขตเทศบาล
+     และ <b>${old(z.out,tOut).toFixed(1)}%</b> นอกเขตเทศบาล ขณะที่เด็กต่ำกว่า 15 ปีเหลือ
+     ${kid(z.in,tIn).toFixed(1)}% และ ${kid(z.out,tOut).toFixed(1)}% ตามลำดับ<br>
+     เทียบกับปี ${y0} ที่ผู้สูงอายุมีเพียง ${old(z0.in,t0In).toFixed(1)}% และ ${old(z0.out,t0Out).toFixed(1)}%
+     ฐานปิรามิดแคบลงเรื่อย ๆ ทุกปี นี่คือภาพของสังคมสูงวัยที่เกิดขึ้นจริงแล้ว
+     กดปุ่มเล่นอัตโนมัติเพื่อดูการเปลี่ยนแปลง ${PYR.years[0]}–${PYR.years[PYR.years.length-1]} · ชี้เมาส์ที่ปิรามิดจะหยุดชั่วคราว`;
 }
 
 DS.init('population',renderPop);

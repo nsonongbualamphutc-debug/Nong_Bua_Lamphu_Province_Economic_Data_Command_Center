@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'2.4.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'2.5.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -972,6 +972,69 @@ document.addEventListener('click',e=>{
   if(document.fullscreenElement)document.exitFullscreen();
   else if(el.requestFullscreen)el.requestFullscreen();
 });
+
+
+/* ─────────────── 33) ตัวเล่นอัตโนมัติ — เลื่อนตามปี หยุดเมื่อชี้เมาส์ ─────────────── */
+const PLAYERS={};
+/**
+ * cfg: {frames:[...], i:0, ms:1600, onFrame(v,i), hoverStop:'#selector'}
+ * คืน HTML ของแถบควบคุม แล้วเรียก bindPlayer(id) หลังใส่ลง DOM
+ */
+function playerBar(id,cfg){
+  const old=PLAYERS[id]||{};
+  PLAYERS[id]=Object.assign({i:0,ms:1600,playing:false},old,cfg,
+    {frames:cfg.frames,onFrame:cfg.onFrame,timer:old.timer,paused:old.paused});
+  if(old.i!=null&&cfg.keepIndex!==false)PLAYERS[id].i=old.i;
+  const p=PLAYERS[id];
+  return `<div class="player" data-player="${id}">
+    <button class="pl-btn" data-pl="play" title="เล่นอัตโนมัติ">
+      <svg viewBox="0 0 24 24" class="ic-play"><path d="M7 4.5 19 12 7 19.5z"/></svg>
+      <svg viewBox="0 0 24 24" class="ic-pause"><path d="M8 4.5h3.4v15H8zM12.6 4.5H16v15h-3.4z"/></svg>
+      <span class="pl-txt">เล่นอัตโนมัติ</span></button>
+    <span class="pl-track">
+      ${p.frames.map((fr,i)=>`<button class="pl-dot${i===p.i?' on':''}" data-plf="${i}" title="${fr.label||fr}">
+        <span>${fr.short||fr.label||fr}</span></button>`).join('')}
+    </span>
+    <span class="pl-now" id="${id}-now"></span>
+  </div>`;
+}
+/* noInit=true → ตั้งสถานะให้ถูกต้องโดยไม่เรียก onFrame (ใช้เมื่อหน้าถูกวาดใหม่ทั้งหน้า) */
+function bindPlayer(id,noInit){
+  const el=document.querySelector(`[data-player="${id}"]`); if(!el||el.dataset.b)return;
+  el.dataset.b='1';
+  const p=PLAYERS[id];
+  const step=()=>{ p.i=(p.i+1)%p.frames.length; apply(); };
+  const apply=()=>{
+    el.querySelectorAll('[data-plf]').forEach((d,i)=>d.classList.toggle('on',i===p.i));
+    const now=document.getElementById(id+'-now');
+    const fr=p.frames[p.i];
+    if(now)now.textContent=fr.label||fr;
+    p.onFrame(fr,p.i);
+  };
+  const play=()=>{ if(p.timer)return; p.playing=true; el.classList.add('playing');
+    p.timer=setInterval(()=>{ if(!p.paused){ const q=PLAYERS[id]; q.i=(q.i+1)%q.frames.length; q.onFrame(q.frames[q.i],q.i); } },p.ms); };
+  const stop=()=>{ clearInterval(p.timer); p.timer=null; p.playing=false; el.classList.remove('playing'); };
+  el.addEventListener('click',e=>{
+    const b=e.target.closest('[data-pl]'), d=e.target.closest('[data-plf]');
+    if(b){ p.playing?stop():play(); return; }
+    if(d){ stop(); p.i=+d.dataset.plf; apply(); }
+  });
+  /* ชี้ที่กราฟแล้วหยุดชั่วคราว ออกจากกราฟแล้วเล่นต่อ */
+  if(p.hoverStop){
+    const g=document.querySelector(p.hoverStop);
+    if(g){
+      g.addEventListener('mouseenter',()=>{p.paused=true;el.classList.add('paused')});
+      g.addEventListener('mouseleave',()=>{p.paused=false;el.classList.remove('paused')});
+    }
+  }
+  if(noInit){
+    el.querySelectorAll('[data-plf]').forEach((d,i)=>d.classList.toggle('on',i===p.i));
+    const now=document.getElementById(id+'-now');
+    if(now)now.textContent=(p.frames[p.i].label||p.frames[p.i]);
+    if(p.timer){el.classList.add('playing')}
+  }else apply();
+  if(p.auto&&!p.timer)play();
+}
 
 /* ─────────────── 22) โครงร่วม: แถบบน เมนู และการเริ่มระบบ ─────────────── */
 const NAVI=[

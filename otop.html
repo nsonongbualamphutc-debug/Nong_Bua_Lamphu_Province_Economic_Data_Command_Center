@@ -67,7 +67,7 @@ function renderOtop(){
 
   <div class="grid g3 mb">
     <div class="c"><header><h3>รายได้รายอำเภอ</h3><span class="u">ปี <b id="yLab">${SEL_YEAR}</b> · ล้านบาท</span></header>
-      <div class="b"><div id="ampBars"></div>
+      <div class="b"><div id="otopPlayer"></div><div id="ampBars"></div>
         <div class="note" id="ampNote"></div></div></div>
     <div class="c"><header><h3>ผลิตภัณฑ์จำแนกตามประเภท</h3><span class="u">ปี ${O.prodYear} · ${prodTot} ชนิด</span>
       <span class="r">${viewToggle('cType')}</span></header>
@@ -155,6 +155,16 @@ function renderOtop(){
      ข้อมูลรายเดือนช่วยให้วางแผนจัดงานแสดงสินค้าและช่วงโปรโมตได้ตรงจังหวะ`;
 
   renderAmp();
+  const pb=document.getElementById('otopPlayer');
+  if(pb){
+    pb.innerHTML=playerBar('otopPlay',{
+      frames:yearsOf(O).map(y=>({label:'ปี '+y,short:String(y).slice(-2),y})),
+      i:yearsOf(O).length-1, ms:1400, hoverStop:'#ampBars',
+      onFrame:fr=>{SEL_YEAR=fr.y;renderAmp();
+        const sl=document.getElementById('otopYear'); if(sl)sl.value=fr.y;}
+    });
+    bindPlayer('otopPlay',true);
+  }
 
   /* ── ประเภทผลิตภัณฑ์ ── */
   const T=Object.entries(O.prodByType).sort((a,b)=>b[1]-a[1]);

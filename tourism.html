@@ -52,6 +52,7 @@ function renderTour(){
     <div class="r"><span class="chip real">ข้อมูลจริง</span>
       <select class="sel" id="tYear">${YRS.slice().reverse().map(y=>`<option value="${y}"${y===TY?' selected':''}>ปี ${y}</option>`).join('')}</select></div></div>
 
+  <div id="tPlayer"></div>
   <div class="grid g3 mb" id="tBig"></div>
 
   <div class="grid g21 mb">
@@ -138,6 +139,17 @@ function renderTour(){
       <div class="bk-l">${k}</div>
       <div class="bk-f">${pc==null?'':chip(pc)} ${statusBadge(pc,false,'จำนวน'+k+' เทียบปีก่อน')}</div>
     </div>`}).join('');
+
+  const tp=document.getElementById('tPlayer');
+  if(tp){
+    tp.innerHTML=playerBar('tPlay',{
+      frames:YRS.map(y=>({label:'ปี '+y,short:String(y).slice(-2),y})),
+      i:YRS.length-1, ms:1500, hoverStop:'#tBig',
+      onFrame:fr=>{TY=fr.y;renderTour();wireSpotTools();
+        const sl=document.getElementById('tYear'); if(sl)sl.value=fr.y;}
+    });
+    bindPlayer('tPlay',true);
+  }
 
   /* ── แนวโน้ม ── */
   mk('cTrend',{data:{labels:YRS.map(y=>'ปี '+y),datasets:[

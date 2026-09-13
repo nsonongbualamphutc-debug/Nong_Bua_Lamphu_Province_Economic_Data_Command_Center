@@ -53,6 +53,7 @@ function renderHouse(){
     <div class="r"><span class="chip real">ข้อมูลจริง</span>
       <select class="sel" id="hYear">${YS.slice().reverse().map(y=>`<option value="${y}"${y===HY?' selected':''}>ปี ${y}</option>`).join('')}</select></div></div>
 
+  <div id="hPlayer"></div>
   <div class="grid g5 mb" id="hKpi"></div>
 
   <div class="grid g21 mb">
@@ -139,6 +140,17 @@ function renderHouse(){
         d:'ค่าระหว่าง 0 ถึง 1 · ยิ่งใกล้ 0 ยิ่งเท่าเทียม ยิ่งใกล้ 1 ยิ่งกระจุกตัว โดยทั่วไปต่ำกว่า 0.35 ถือว่าอยู่ในเกณฑ์ดี',
         calc:'คำนวณจากการกระจายรายได้ของครัวเรือนตัวอย่างทั้งจังหวัด',src:'house',when:'ปี '+(gLast?gLast.y:'')})})
   ].join('');
+
+  const hp=document.getElementById('hPlayer');
+  if(hp){
+    hp.innerHTML=playerBar('hPlay',{
+      frames:YS.map(y=>({label:'ปี '+y,short:String(y).slice(-2),y})),
+      i:YS.length-1, ms:1600, hoverStop:'#hKpi',
+      onFrame:fr=>{HY=fr.y;renderHouse();
+        const sl=document.getElementById('hYear'); if(sl)sl.value=fr.y;}
+    });
+    bindPlayer('hPlay',true);
+  }
 
   /* ── รายได้ vs ค่าใช้จ่าย ── */
   mk('cIE',{data:{labels:YS.map(y=>'ปี '+y),datasets:[
