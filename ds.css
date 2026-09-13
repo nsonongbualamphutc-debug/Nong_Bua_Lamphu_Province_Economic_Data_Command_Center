@@ -882,3 +882,7 @@ body.cover .ph{position:static}
 @media (min-width:768px) and (max-width:1150px){
   .cho-map{height:340px!important}
 }
+
+/* ══ แถบเลือกปี — ใช้โครงเดียวกับตัวกรองเวลา ══ */
+.yearbar .sl-nav select{min-width:112px}
+@media (max-width:767px){.yearbar{flex-wrap:wrap}.yearbar .sl-info{width:100%;order:9}}

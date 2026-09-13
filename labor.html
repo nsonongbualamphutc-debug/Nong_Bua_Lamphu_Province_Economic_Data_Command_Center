@@ -58,7 +58,7 @@ function lbVal(p,key){
 function lbBar(){
   const ps=lbPeriods(), cur=lbCur(), ci=ps.indexOf(cur);
   return `<div class="slicer" id="lbSlicer">
-    <span class="sl-lab">เลือกงวดข้อมูล</span>
+    <span class="sl-lab"><img class="slico" src="assets/icons/ic-filter.png" alt="" onerror="this.remove()">เลือกงวดข้อมูล</span>
     <span class="sl-seg">
       <button data-lfq="Q" class="${LB.freq==='Q'?'on':''}">รายไตรมาส</button>
       <button data-lfq="Y" class="${LB.freq==='Y'?'on':''}">รายปี</button></span>

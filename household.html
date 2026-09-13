@@ -51,8 +51,10 @@ function renderHouse(){
     <span class="bigico icow img" data-bigico="household"></span>
     <span><h2>ครัวเรือนและความเหลื่อมล้ำ</h2>
     <p>ตัวเลขเศรษฐกิจมหภาคดีขึ้นไม่ได้แปลว่าเงินถึงครัวเรือน หน้านี้ดูว่ารายได้ ค่าใช้จ่าย และหนี้สินของครัวเรือนจริงเป็นอย่างไร</p></span></div>
-    <div class="r"><span class="chip real">ข้อมูลจริง</span>
-      <select class="sel" id="hYear">${YS.slice().reverse().map(y=>`<option value="${y}"${y===HY?' selected':''}>ปี ${y}</option>`).join('')}</select></div></div>
+    <div class="r"><span class="chip real">ข้อมูลจริง</span></div></div>
+  ${yearBar('yb-hh',{years:YS,value:HY,selId:'hYear',
+    partial:YS.filter(y=>hv(y,K_INC)==null||hv(y,K_EXP)==null),
+    note:'สำรวจภาวะเศรษฐกิจและสังคมของครัวเรือน เก็บรายได้กับค่าใช้จ่ายคนละรอบ ปีที่เก็บไม่ครบจะกำกับไว้ในรายการ'})}
 
   <div id="hPlayer"></div>
   <div class="grid g5 mb" id="hKpi"></div>
@@ -263,9 +265,7 @@ function renderHouse(){
 
 DS.init('household',function(){
   renderHouse();
-  const sel=document.getElementById('hYear');
-  if(sel)sel.onchange=function(){HY=+sel.value;renderHouse();
-    const s2=document.getElementById('hYear'); if(s2)s2.onchange=sel.onchange;};
+  onYearChange('hYear',function(v){HY=+v;renderHouse()});
 });
 </script>
 </body>

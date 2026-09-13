@@ -854,6 +854,52 @@ function seriesPrevYear(arr,st,mode){
   if(st.freq==='M')return vals[vals.length-1];
   return aggVals(vals,mode);
 }
+/* ─────────────── 30ข) แถบเลือกปี — ใช้กับหน้าที่ข้อมูลเป็นรายปี ─────────────── */
+/* cfg: {years:[...], value, selId:'otopYear', label:'เลือกปีข้อมูล', note:'...'} */
+function yearBar(id,cfg){
+  const ys=(cfg.years||[]).slice().sort((a,b)=>a-b);
+  const cur=cfg.value!=null?cfg.value:ys[ys.length-1];
+  const i=ys.indexOf(cur);
+  const desc=ys.slice().reverse();
+  return `<div class="slicer yearbar" data-yearbar="${id}" data-sel="${cfg.selId}">
+    <span class="sl-lab"><img class="slico" src="assets/icons/ic-filter.png" alt="" onerror="this.remove()">${cfg.label||'เลือกปีข้อมูล'}</span>
+    <span class="sl-nav">
+      <button data-ystep="-1" ${i<=0?'disabled':''} aria-label="ปีก่อนหน้า">
+        <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <select class="sel" id="${cfg.selId}">${desc.map(y=>
+        `<option value="${y}"${y===cur?' selected':''}>ปี ${y}${(cfg.partial||[]).indexOf(y)>=0?' · ข้อมูลไม่ครบ':''}</option>`).join('')}</select>
+      <button data-ystep="1" ${i>=ys.length-1?'disabled':''} aria-label="ปีถัดไป">
+        <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    </span>
+    <button class="sl-now${i===ys.length-1?' on':''}" data-ynow>ปีล่าสุด</button>
+    <span class="sl-info">${cfg.note||('ข้อมูลชุดนี้ประกาศปีละครั้ง จึงเลือกดูได้เป็นรายปี ย้อนหลังถึงปี '+ys[0])}</span>
+  </div>`;
+}
+/* ปุ่มถอย/เดินหน้า/ปีล่าสุด สั่งงานผ่าน select เดิม จึงใช้ตัวจัดการเหตุการณ์ของหน้านั้นได้เลย
+   ผูกที่ document ครั้งเดียว แถบจึงยังทำงานหลังหน้าวาดใหม่ */
+document.addEventListener('click',function(e){
+  const bar=e.target.closest('[data-yearbar]'); if(!bar)return;
+  const st=e.target.closest('[data-ystep]'), nw=e.target.closest('[data-ynow]');
+  if(!st&&!nw)return;
+  const sel=document.getElementById(bar.dataset.sel); if(!sel)return;
+  const opts=[...sel.options].map(o=>o.value);   /* เรียงจากปีใหม่ไปเก่า */
+  let i=opts.indexOf(sel.value);
+  if(st)i=i-(+st.dataset.ystep);
+  else i=0;
+  if(i<0||i>=opts.length)return;
+  sel.value=opts[i];
+  sel.dispatchEvent(new Event('change',{bubbles:true}));
+});
+function bindYearBar(){}
+/* ผูกการเปลี่ยนปีที่ document ครั้งเดียว จึงไม่หลุดเมื่อหน้าถูกวาดใหม่ */
+const YEAR_HOOK={};
+document.addEventListener('change',function(e){
+  const el=e.target;
+  if(!el||!el.id||!YEAR_HOOK[el.id])return;
+  YEAR_HOOK[el.id](el.value);
+});
+function onYearChange(selId,fn){YEAR_HOOK[selId]=fn}
+
 /* วาดตัวควบคุมภายในแถบตัวกรองใหม่ โดยไม่แตะตัวแถบเอง จึงไม่เสียการผูกเหตุการณ์ */
 function redrawSlicer(id){
   const el=document.querySelector('[data-slicer="'+id+'"]'); if(!el)return;

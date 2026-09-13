@@ -49,8 +49,8 @@ function renderTour(){
     <span class="bigico icow img" data-bigico="tourism"></span>
     <span><h2>ภาคการท่องเที่ยว</h2>
     <p>รายได้จากการท่องเที่ยวคือเงินใหม่ที่ไหลเข้าจังหวัดจากภายนอก ต่างจากการค้าภายในที่เป็นการหมุนเงินก้อนเดิม</p></span></div>
-    <div class="r"><span class="chip real">ข้อมูลจริง</span>
-      <select class="sel" id="tYear">${YRS.slice().reverse().map(y=>`<option value="${y}"${y===TY?' selected':''}>ปี ${y}</option>`).join('')}</select></div></div>
+    <div class="r"><span class="chip real">ข้อมูลจริง</span></div></div>
+  ${yearBar('yb-tour',{years:YRS,value:TY,selId:'tYear',note:'ข้อมูลท่องเที่ยวประกาศปีละครั้ง เลือกดูย้อนหลังได้ 7 ปี'})}
 
   <div id="tPlayer"></div>
   <div class="grid g3 mb" id="tBig"></div>
@@ -417,8 +417,7 @@ function wireSpotTools(){
 DS.init('tourism',function(){
   renderTour();
   wireSpotTools();
-  const sel=document.getElementById('tYear');
-  if(sel)sel.onchange=function(){TY=+sel.value;renderTour();wireSpotTools();};
+  onYearChange('tYear',function(v){TY=+v;renderTour();wireSpotTools()});
 });
 </script>
 </body>

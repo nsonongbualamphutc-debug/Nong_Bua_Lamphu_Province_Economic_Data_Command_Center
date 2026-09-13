@@ -36,7 +36,10 @@ function fy(fyNo){return O.revMonthly.filter(x=>x.fy===fyNo)}
 function renderOtop(){
   const YS=yearsOf(O), last=YS[YS.length-1], prev=YS[YS.length-2];
   if(SEL_YEAR===null)SEL_YEAR=last;
-  const rev=totalRev(last), revPrev=totalRev(prev);
+  /* การ์ดสรุปใช้ปีที่เลือกจากแถบเลือกปี ไม่ใช่ปีล่าสุดเสมอไป */
+  const CY=YS.indexOf(SEL_YEAR)>=0?SEL_YEAR:last;
+  const CPREV=YS[YS.indexOf(CY)-1];
+  const rev=totalRev(CY), revPrev=CPREV!=null?totalRev(CPREV):null;
   const prodTot=Object.values(O.prodByType).reduce((a,b)=>a+b,0);
   const star5=Object.values(O.star5).reduce((a,b)=>a+b,0);
   const shops=Object.values(O.shops).reduce((a,b)=>a+b,0);
@@ -48,8 +51,8 @@ function renderOtop(){
     <span class="bigico icow img" data-bigico="otop"></span>
     <span><h2>OTOP และเศรษฐกิจชุมชน</h2>
     <p>รายได้จากผลิตภัณฑ์ชุมชนคือเงินที่ไหลถึงครัวเรือนโดยตรง ไม่ผ่านคนกลาง เป็นเครื่องยนต์เศรษฐกิจฐานรากที่จังหวัดควบคุมได้เอง</p></span></div>
-    <div class="r"><span class="chip real">ข้อมูลจริง</span>
-      <select class="sel" id="otopYear">${yearsOf(O).slice().reverse().map(y=>`<option value="${y}"${y===SEL_YEAR?' selected':''}>ปี ${y}</option>`).join('')}</select></div></div>
+    <div class="r"><span class="chip real">ข้อมูลจริง</span></div></div>
+  ${yearBar('yb-otop',{years:yearsOf(O),value:SEL_YEAR,selId:'otopYear',note:'รายได้และผลิตภัณฑ์ OTOP ประกาศปีละครั้ง เลือกดูย้อนหลังได้ 7 ปี'})}
 
   <div class="grid g5 mb" id="oKpi"></div>
 
@@ -106,13 +109,13 @@ function renderOtop(){
       tip:tipOf({t:'รายได้จากการจำหน่ายผลิตภัณฑ์ OTOP',
         d:'ยอดจำหน่ายผลิตภัณฑ์ชุมชนทั้งจังหวัดในรอบปี เป็นรายได้ที่ตกถึงกลุ่มผู้ผลิตในตำบลโดยตรง',
         calc:'รวมยอดจำหน่ายที่กลุ่มผู้ผลิตรายงานทุกเดือนในปีนั้น ÷ 1,000,000 · เทียบปีก่อน = ('+f_num(rev/1e6)+' − '+f_num(revPrev/1e6)+') ÷ '+f_num(revPrev/1e6)+' × 100',
-        src:'otop',when:'ปี '+last})}),
+        src:'otop',when:'ปี '+CY})}),
     kpiCard({icon:'people',img:'household',color:cv('--gold'),label:'ผู้ประกอบการ',value:f(O.entTotal,0),unit:'ราย',
       chip:'<span class="chip">ทุกอำเภอ</span>',sub:'ลงทะเบียนในระบบ OTOP',
       tip:tipOf({t:'ผู้ประกอบการ OTOP',
         d:'กลุ่มผู้ผลิตและผู้ประกอบการที่ลงทะเบียน OTOP กับจังหวัด นับรวมทุกอำเภอ ทั้งกลุ่มวิสาหกิจชุมชน กลุ่มอาชีพ และรายเดี่ยว',
         calc:'นับจำนวนรายที่ลงทะเบียนในระบบ OTOP ณ สิ้นปี · เป็นจำนวนคงค้าง ไม่นำแต่ละปีมาบวกกัน',
-        src:'otop',when:'ปี '+last})}),
+        src:'otop',when:'ปี '+CY})}),
     kpiCard({icon:'cart',img:'otop',color:cv('--leaf'),label:'ผลิตภัณฑ์',value:f(prodTot,0),unit:'ชนิด',
       chip:'<span class="chip">ปี '+O.prodYear+'</span>',sub:'5 ประเภทผลิตภัณฑ์',
       tip:tipOf({t:'จำนวนผลิตภัณฑ์ OTOP',
@@ -257,9 +260,7 @@ function renderAmp(){
 
 DS.init('otop',function(){
   renderOtop();
-  const sel=document.getElementById('otopYear');
-  if(sel)sel.onchange=function(){SEL_YEAR=+sel.value;renderOtop();
-    const s2=document.getElementById('otopYear'); if(s2)s2.onchange=sel.onchange;};
+  onYearChange('otopYear',function(v){SEL_YEAR=+v;renderOtop()});
 });
 </script>
 </body>
