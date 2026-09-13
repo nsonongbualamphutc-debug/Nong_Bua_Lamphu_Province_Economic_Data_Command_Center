@@ -59,6 +59,9 @@ function renderPop(){
 
   <div class="grid g5 mb" id="pKpi"></div>
 
+  <div class="secthead"><span class="sn">1</span><b>จำแนกรายปี</b>
+    <span>การเปลี่ยนแปลงของประชากรทั้งจังหวัดตลอด 7 ปี</span></div>
+
   <div class="grid g21 mb">
     <div class="c"><header><h3>จำนวนประชากรรายปี</h3><span class="u">${firstY}–${lastY}</span>
       <span class="r">${viewToggle('cPop')}</span></header>
@@ -73,10 +76,19 @@ function renderPop(){
         <div class="note" id="bdNote"></div></div></div>
   </div>
 
+  <div class="secthead"><span class="sn">2</span><b>โครงสร้างอายุ</b>
+    <span>ปิรามิดประชากร เลือกดูได้ทั้งจังหวัด รายอำเภอ และในเขตหรือนอกเขตเทศบาล</span></div>
+
   <div class="grid g21 mb">
     <div class="c"><header><h3>ปิรามิดประชากร</h3>
-      <span class="u">ในเขตเทศบาลเทียบนอกเขตเทศบาล · กดเล่นเพื่อดูการเปลี่ยนแปลงตามปี</span>
-      <span class="r">${viewToggle('cAge')}</span></header>
+      <span class="u" id="pyrSub">กดเล่นเพื่อดูการเปลี่ยนแปลงตามปี</span>
+      <span class="r">
+        <select class="sel" id="pyrScope">
+          <option value="zone">ทั้งจังหวัด · ในเขตเทียบนอกเขตเทศบาล</option>
+          <option value="prov">ทั้งจังหวัด · เทียบปีฐาน</option>
+          ${AMP6.map(a=>`<option value="A${a}">อำเภอ${a}</option>`).join('')}
+        </select>
+        ${viewToggle('cAge')}</span></header>
       <div class="b">
         <div id="playerBox"></div>
         <div id="cAge-chart"><div id="pyrBox"></div></div>
@@ -87,6 +99,9 @@ function renderPop(){
       <div class="b"><div class="ch"><canvas id="cDep"></canvas></div>
         <div id="depBox" style="margin-top:10px"></div></div></div>
   </div>
+
+  <div class="secthead"><span class="sn">3</span><b>จำแนกรายอำเภอ</b>
+    <span>เปรียบเทียบประชากร ครัวเรือน และการย้ายถิ่นระหว่าง 6 อำเภอ</span></div>
 
   <div class="grid g21 mb">
     <div class="c"><header><h3>ประชากรรายอำเภอ</h3><span class="u">แยกชายและหญิง</span>
@@ -255,59 +270,82 @@ function renderPop(){
 
 /* ══════════ ปิรามิดประชากร ══════════ */
 const PYR=(typeof DX_PYR!=='undefined')?DX_PYR:null;
-let PYR_YEAR=null;
+let PYR_YEAR=null, PYR_SCOPE='zone';
+function pyrSeries(scope,y){
+  /* คืน {left:{label,arr}, right:{label,arr}} */
+  const B=PYR.bands, base=PYR.years[0];
+  if(scope==='zone'){
+    return {left:{label:'ในเขตเทศบาล',arr:PYR.zone[y].in,color:'blue'},
+            right:{label:'นอกเขตเทศบาล',arr:PYR.zone[y].out,color:'pink'}};
+  }
+  if(scope==='prov'){
+    const sum=yy=>B.map((_,i)=>PYR.zone[yy].in[i]+PYR.zone[yy].out[i]);
+    return {left:{label:'พ.ศ. '+base,arr:sum(base),color:'blue'},
+            right:{label:'พ.ศ. '+y,arr:sum(y),color:'pink'}};
+  }
+  const a=scope.slice(1);
+  return {left:{label:'พ.ศ. '+base,arr:PYR.amp[base][a],color:'blue'},
+          right:{label:'พ.ศ. '+y,arr:PYR.amp[y][a],color:'pink'}};
+}
 function buildPyramid(){
   if(!PYR){document.getElementById('pyrBox').innerHTML='<div class="svc-empty">ไม่พบข้อมูลโครงสร้างอายุรายปี</div>';return}
   const box=document.getElementById('playerBox');
-  if(box&&!box.innerHTML){
+  if(box){
     box.innerHTML=playerBar('pyrPlay',{
       frames:PYR.years.map(y=>({label:'พ.ศ. '+y,short:String(y).slice(-2),y})),
-      i:PYR.years.length-1, ms:1500, auto:false, hoverStop:'#pyrBox',
+      i:PYR.years.length-1, ms:1500, hoverStop:'#pyrBox',
       onFrame:fr=>{PYR_YEAR=fr.y;drawPyramid()}
     });
-    bindPlayer('pyrPlay');
-  }else{ drawPyramid(); }
+    bindPlayer('pyrPlay',true);
+  }
+  const sc=document.getElementById('pyrScope');
+  if(sc){ sc.value=PYR_SCOPE;
+    if(!sc.dataset.b){sc.dataset.b='1';
+      sc.addEventListener('change',()=>{PYR_SCOPE=sc.value;drawPyramid()})}}
+  drawPyramid();
 }
 function drawPyramid(){
   const y=PYR_YEAR||PYR.years[PYR.years.length-1];
-  const z=PYR.zone[y]; if(!z)return;
-  const B=PYR.bands;
-  const tIn=z.in.reduce((a,b)=>a+b,0), tOut=z.out.reduce((a,b)=>a+b,0);
-  const mx=Math.max(...z.in.map(v=>v/tIn), ...z.out.map(v=>v/tOut));
-  const pct=(v,t)=>v/t*100;
+  const B=PYR.bands, S=pyrSeries(PYR_SCOPE,y);
+  const tL=S.left.arr.reduce((a,b)=>a+b,0)||1, tR=S.right.arr.reduce((a,b)=>a+b,0)||1;
+  const pctL=S.left.arr.map(v=>v/tL*100), pctR=S.right.arr.map(v=>v/tR*100);
+  const mx=Math.max(...pctL,...pctR)||1;              /* หน่วยเดียวกันแล้ว (ร้อยละ) */
   const old=(arr,t)=>arr.reduce((a,v,i)=>a+(ageOf(B[i])>=60?v:0),0)/t*100;
   const kid=(arr,t)=>arr.reduce((a,v,i)=>a+(ageOf(B[i])<15?v:0),0)/t*100;
   let h=`<div class="pyr">
-    <div class="pyr-h">ในเขตเทศบาล · ${f(tIn,0)} คน</div>
+    <div class="pyr-h">${S.left.label} · ${f(tL,0)} คน</div>
     <div class="pyr-h">ช่วงอายุ</div>
-    <div class="pyr-h">นอกเขตเทศบาล · ${f(tOut,0)} คน</div>`;
+    <div class="pyr-h">${S.right.label} · ${f(tR,0)} คน</div>`;
   for(let i=B.length-1;i>=0;i--){
-    const a=z.in[i], b=z.out[i];
-    const pa=pct(a,tIn), pb=pct(b,tOut);
+    const pa=pctL[i], pb=pctR[i];
     const tip=tipOf({t:B[i],
-      d:'ในเขตเทศบาล '+f(a,0)+' คน ('+pa.toFixed(1)+'%) · นอกเขตเทศบาล '+f(b,0)+' คน ('+pb.toFixed(1)+'%)',
-      calc:'สัดส่วน = จำนวนในช่วงอายุ ÷ ประชากรรวมของเขตนั้น × 100',
+      d:S.left.label+' '+f(S.left.arr[i],0)+' คน ('+pa.toFixed(1)+'%) · '+
+        S.right.label+' '+f(S.right.arr[i],0)+' คน ('+pb.toFixed(1)+'%)',
+      calc:'สัดส่วน = จำนวนในช่วงอายุ ÷ ประชากรรวมของกลุ่มนั้น × 100 · ความยาวแท่งเทียบกับช่วงอายุที่มีสัดส่วนสูงสุด '+mx.toFixed(1)+'%',
       src:'popreg',when:'พ.ศ. '+y});
     h+=`<div class="pyr-row" data-tip2="${tip}">
       <div class="pyr-l"><span class="pyr-n">${pa.toFixed(1)}%</span>
-        <i style="width:${(pa/mx*100*0.92).toFixed(1)}%"></i></div>
+        <i style="width:${(pa/mx*100).toFixed(1)}%"></i></div>
       <div class="pyr-b">${B[i].replace(' ปี','').replace('ถึง','–').replace(' และมากกว่า','+')}</div>
-      <div class="pyr-r"><i style="width:${(pb/mx*100*0.92).toFixed(1)}%"></i>
+      <div class="pyr-r"><i style="width:${(pb/mx*100).toFixed(1)}%"></i>
         <span class="pyr-n">${pb.toFixed(1)}%</span></div></div>`;
   }
   h+=`</div><div class="pyr-legend">
-    <span><i style="background:var(--blue)"></i>ในเขตเทศบาล</span>
-    <span><i style="background:var(--lotus,#cf5f92)"></i>นอกเขตเทศบาล</span></div>`;
+    <span><i style="background:var(--blue)"></i>${S.left.label}</span>
+    <span><i style="background:var(--lotus,#cf5f92)"></i>${S.right.label}</span>
+    <span style="color:var(--faint)">แท่งยาวสุด = ${mx.toFixed(1)}% ของกลุ่ม</span></div>`;
   document.getElementById('pyrBox').innerHTML=h;
-  const y0=PYR.years[0], z0=PYR.zone[y0];
-  const t0In=z0.in.reduce((a,b)=>a+b,0), t0Out=z0.out.reduce((a,b)=>a+b,0);
+  const sub=document.getElementById('pyrSub');
+  if(sub)sub.textContent=(PYR_SCOPE==='zone'?'ในเขตเทศบาลเทียบนอกเขตเทศบาล':
+    PYR_SCOPE==='prov'?'เทียบปีฐาน '+PYR.years[0]+' กับปีที่เลือก':
+    'อำเภอ'+PYR_SCOPE.slice(1)+' · เทียบปีฐานกับปีที่เลือก')+' · กดเล่นเพื่อดูการเปลี่ยนแปลง';
   document.getElementById('ageNote').innerHTML=
-    `ปี ${y} ผู้สูงอายุ 60 ปีขึ้นไปคิดเป็น <b>${old(z.in,tIn).toFixed(1)}%</b> ในเขตเทศบาล
-     และ <b>${old(z.out,tOut).toFixed(1)}%</b> นอกเขตเทศบาล ขณะที่เด็กต่ำกว่า 15 ปีเหลือ
-     ${kid(z.in,tIn).toFixed(1)}% และ ${kid(z.out,tOut).toFixed(1)}% ตามลำดับ<br>
-     เทียบกับปี ${y0} ที่ผู้สูงอายุมีเพียง ${old(z0.in,t0In).toFixed(1)}% และ ${old(z0.out,t0Out).toFixed(1)}%
-     ฐานปิรามิดแคบลงเรื่อย ๆ ทุกปี นี่คือภาพของสังคมสูงวัยที่เกิดขึ้นจริงแล้ว
-     กดปุ่มเล่นอัตโนมัติเพื่อดูการเปลี่ยนแปลง ${PYR.years[0]}–${PYR.years[PYR.years.length-1]} · ชี้เมาส์ที่ปิรามิดจะหยุดชั่วคราว`;
+    `ปี ${y} · ${S.left.label} มีผู้สูงอายุ 60 ปีขึ้นไป <b>${old(S.left.arr,tL).toFixed(1)}%</b>
+     และเด็กต่ำกว่า 15 ปี ${kid(S.left.arr,tL).toFixed(1)}%<br>
+     ${S.right.label} มีผู้สูงอายุ <b>${old(S.right.arr,tR).toFixed(1)}%</b>
+     และเด็ก ${kid(S.right.arr,tR).toFixed(1)}%<br>
+     ฐานปิรามิดที่แคบกว่ายอดคือสัญญาณว่าคนรุ่นใหม่เกิดน้อยกว่ารุ่นก่อน
+     ชี้เมาส์ที่แท่งจะหยุดเล่นชั่วคราวและแสดงตัวเลขจริง`;
 }
 
 DS.init('population',renderPop);

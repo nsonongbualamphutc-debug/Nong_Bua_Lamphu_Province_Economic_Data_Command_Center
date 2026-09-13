@@ -104,7 +104,7 @@
     </div>
     <div class="grid g3">
       <div class="c"><header><h3>สถาบันและศูนย์เรียนรู้</h3></header><div class="b" id="instBox"></div></div>
-      <div class="c"><header><h3>การรับรองมาตรฐาน</h3></header><div class="b" id="gapBox"></div></div>
+      <div class="c"><header><span class="hdico icow img">${icoImg('gap',26)}</span><h3>การรับรองมาตรฐาน</h3></header><div class="b" id="gapBox"></div></div>
       <div class="c"><header><h3>วิสาหกิจชุมชนเด่น</h3></header><div class="b" id="vsBox"></div></div>
     </div>
   </div>
@@ -135,7 +135,7 @@ function renderAgri(){
       tip:tipOf({t:'ครัวเรือนเกษตรกร',
         d:'จำนวนครัวเรือนที่ปลูกพืชอายุสั้นในฤดูกาลนี้ นับซ้ำได้ถ้าครัวเรือนหนึ่งปลูกหลายชนิดพืช จึงสูงกว่าจำนวนครัวเรือนที่ขึ้นทะเบียนเกษตรกร',
         calc:'ผลรวมครัวเรือนที่รายงานการปลูกในแต่ละชนิดพืช',src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})}),
-    kpiCard({icon:'leaf',color:cv('--brand'),label:'เนื้อที่ปลูกพืชอายุสั้น',value:f(C.area,0),unit:'ไร่',
+    kpiCard({icon:'leaf',img:'landuse',color:cv('--brand'),label:'เนื้อที่ปลูกพืชอายุสั้น',value:f(C.area,0),unit:'ไร่',
       chip:'<span class="chip">ข้าวนาปี 60.9%</span>',sub:'จากพื้นที่เกษตร 1.55 ล้านไร่'}),
     kpiCard({icon:'drop',color:cv('--brand2'),label:'ผลผลิตรวม',value:f(C.yieldKg/1e6,0),unit:'ล้าน กก.',
       chip:'<span class="chip">อ้อยโรงงาน 95%</span>',sub:'ข้าวนาปีอยู่ระหว่างฤดูกาล'}),
@@ -200,9 +200,11 @@ function renderAgri(){
       <td>${x.season}</td>${ec('fruit.'+i+'.kg',f(x.kg,0),0)}<td class="r">${x.pmin?x.pmin+'–'+x.pmax:'—'}</td></tr>`).join('')+'</tbody>';
 
   /* พืชเศรษฐกิจหลัก */
+  const CROP_ICO={'ข้าว':'rice','อ้อย':'sugarcane','มัน':'cassava','ยาง':'rubber'};
+  const cropIco=n=>{for(const k in CROP_ICO)if(n.indexOf(k)>=0)return CROP_ICO[k];return null};
   $('#tMainCrop').innerHTML=`<thead><tr><th>พืช · ฤดูการผลิต</th><th class="r">ครัวเรือน</th><th class="r">พื้นที่ปลูก (ไร่)</th>
     <th class="r">ผลผลิตเฉลี่ย (กก./ไร่)</th><th class="r">ผลผลิตรวม (ตัน)</th></tr></thead><tbody>`+
-    B.mainCrop.map((r,i)=>`<tr><td>${r.n}</td>${ec('base.mainCrop.'+i+'.hh',f(r.hh,0),0)}${ec('base.mainCrop.'+i+'.area',f(r.area,0),0)}
+    B.mainCrop.map((r,i)=>`<tr><td>${cropIco(r.n)?`<img class="rowico" src="assets/icons/ic-${cropIco(r.n)}.png" alt="" onerror="this.remove()">`:''}${r.n}</td>${ec('base.mainCrop.'+i+'.hh',f(r.hh,0),0)}${ec('base.mainCrop.'+i+'.area',f(r.area,0),0)}
       <td class="r">${r.per?f(r.per,2):'—'}</td><td class="r">${r.total?f(r.total,0):'<span style="color:var(--warn)">อยู่ระหว่างฤดูกาล</span>'}</td></tr>`).join('')+'</tbody>';
   mk('cMainCrop',{type:'doughnut',data:{labels:B.mainCrop.map(r=>r.n.split(' ')[0]),
     datasets:[{data:B.mainCrop.map(r=>r.area),backgroundColor:PAL(),borderColor:cv('--card'),borderWidth:3}]},
@@ -285,7 +287,7 @@ function renderAgri(){
     <span style="color:var(--dim);flex:1">${x[0]}</span><b class="n" style="font-size:14px">${f(x[1],0)}</b><span style="font-size:10px;color:var(--faint)">${x[2]}</span></div>`).join('');
   $('#gapBox').innerHTML=`<div class="grid g2" style="gap:9px;margin-bottom:10px">
       <div class="mini"><div class="l">แปลงที่ได้ GAP</div><div class="v">${f(B.gap.total,0)}<small> แปลง</small></div></div>
-      <div class="mini"><div class="l">เกษตรอินทรีย์</div><div class="v">${B.organic.farmers}<small> ราย</small></div></div></div>`+
+      <div class="mini"><div class="l"><img class="rowico" src="assets/icons/ic-organic.png" alt="" onerror="this.remove()">เกษตรอินทรีย์</div><div class="v">${B.organic.farmers}<small> ราย</small></div></div></div>`+
     B.gap.rows.map(x=>`<div style="display:flex;align-items:baseline;gap:9px;font-size:12px;padding:5px 0;border-bottom:1px solid var(--line2)">
       <span style="color:var(--dim);flex:1">${x[0]}</span><b class="n">${f(x[1],0)}</b><span style="font-size:10px;color:var(--faint)">ราย · ${f(x[2],2)} ไร่</span></div>`).join('')+
     `<div class="note">พื้นที่เกษตรอินทรีย์ที่ได้รับการรับรอง ${B.organic.area} ไร่ ยังเป็นสัดส่วนเล็กมากเมื่อเทียบกับพื้นที่เกษตร 1.55 ล้านไร่ เป็นโอกาสสร้างมูลค่าเพิ่ม</div>`;
