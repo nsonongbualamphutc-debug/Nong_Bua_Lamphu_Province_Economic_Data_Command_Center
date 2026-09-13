@@ -141,7 +141,7 @@ function renderAgri(){
         d:'พื้นที่เพาะปลูกจริงในฤดูกาลนี้ ไม่ใช่พื้นที่ถือครอง ข้าวนาปีครองสัดส่วนมากที่สุด รองลงมาคืออ้อยโรงงาน',
         calc:'ผลรวมเนื้อที่ปลูกของพืชอายุสั้นทุกชนิด = '+f_num(C.area)+' ไร่ · คิดเป็น '+(C.area/1550000*100).toFixed(1)+'% ของพื้นที่เกษตรทั้งจังหวัด 1.55 ล้านไร่',
         src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})}),
-    kpiCard({icon:'drop',color:cv('--brand2'),label:'ผลผลิตรวม',value:f(C.yieldKg/1e6,0),unit:'ล้าน กก.',
+    kpiCard({icon:'drop',img:'crop',color:cv('--brand2'),label:'ผลผลิตรวม',value:f(C.yieldKg/1e6,0),unit:'ล้าน กก.',
       chip:'<span class="chip">อ้อยโรงงาน 95%</span>',sub:'ข้าวนาปีอยู่ระหว่างฤดูกาล',
       tip:tipOf({t:'ผลผลิตรวมพืชอายุสั้น',
         d:'ปริมาณผลผลิตที่เก็บเกี่ยวได้แล้วในฤดูกาลนี้ อ้อยโรงงานมีน้ำหนักต่อไร่สูงจึงครองสัดส่วนเกือบทั้งหมดเมื่อวัดเป็นกิโลกรัม แต่มูลค่าต่อกิโลกรัมต่ำกว่าพืชอื่น',
@@ -153,7 +153,7 @@ function renderAgri(){
         d:'เงินที่เกษตรกรได้รับจริงจากการขายผลผลิต ไม่ใช่แค่ปริมาณผลผลิต ทำให้เทียบข้ามชนิดพืชได้ อ้อยโรงงานคิดเป็นราว 89% ของมูลค่าทั้งหมด',
         calc:'ผลรวมของ (ผลผลิต กก. × ราคาที่เกษตรกรขายได้ บาท/กก.) ทุกชนิดพืช · ข้าวนาปียังไม่มีตัวเลขผลผลิตเพราะอยู่ระหว่างฤดูกาล จึงยังไม่ถูกนับ',
         src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})}),
-    kpiCard({icon:'plane',color:cv('--plum'),label:'ท่องเที่ยวเชิงเกษตร',value:f(B.tour.total,0),unit:'แห่ง',
+    kpiCard({icon:'plane',img:'tourism',color:cv('--plum'),label:'ท่องเที่ยวเชิงเกษตร',value:f(B.tour.total,0),unit:'แห่ง',
       chip:'<span class="chip">แปลงใหญ่ '+B.bigPlot.plots+' แปลง</span>',sub:'กระจายทั้ง 6 อำเภอ',
       tip:tipOf({t:'แหล่งท่องเที่ยวเชิงเกษตร',
         d:'จุดที่เปิดให้เยี่ยมชมกิจกรรมการเกษตร เป็นช่องทางเพิ่มรายได้ให้เกษตรกรนอกเหนือจากการขายผลผลิต และเชื่อมกับเส้นทางท่องเที่ยวของจังหวัดได้',
@@ -242,20 +242,20 @@ function renderAgri(){
       tip:tipOf({t:'แหล่งน้ำชลประทาน',
         d:'ฝาย อ่างเก็บน้ำขนาดเล็ก ประตูระบายน้ำ และสถานีสูบน้ำด้วยไฟฟ้าในความรับผิดชอบของโครงการชลประทานจังหวัด',
         calc:'ผลรวมจำนวนแหล่งน้ำทุกประเภทที่ขึ้นทะเบียน',src:'irrig',when:IR?('ปี '+IR.year):''})}),
-    kpiCard({icon:'leaf',color:cv('--brand'),label:'พื้นที่รับประโยชน์',value:f(benefit,0),unit:'ไร่',
+    kpiCard({icon:'leaf',img:'irrigation',color:cv('--brand'),label:'พื้นที่รับประโยชน์',value:f(benefit,0),unit:'ไร่',
       chip:'<span class="chip">'+(benefit/1550000*100).toFixed(1)+'% ของพื้นที่เกษตร</span>',
       sub:'ครัวเรือนได้ประโยชน์ '+f(hhBen,0)+' ครัวเรือน',
       tip:tipOf({t:'พื้นที่รับประโยชน์ในเขตชลประทาน',
         d:'พื้นที่การเกษตรที่อยู่ในระยะที่ระบบชลประทานส่งน้ำถึง ใช้ประเมินว่าเกษตรกรกี่รายพ้นจากการพึ่งน้ำฝน',
         calc:'ผลรวมพื้นที่รับประโยชน์ของทุกโครงการ ÷ พื้นที่เกษตรทั้งจังหวัด 1.55 ล้านไร่',
         src:'irrig',when:IR?('ปี '+IR.benefitArea.year):''})}),
-    kpiCard({icon:'bolt',color:cv('--gold'),label:'ระบบสูบน้ำโซลาร์เซลล์',value:f(W[0].cnt,0),unit:'แห่ง',
+    kpiCard({icon:'bolt',img:'power',color:cv('--gold'),label:'ระบบสูบน้ำโซลาร์เซลล์',value:f(W[0].cnt,0),unit:'แห่ง',
       chip:'<span class="chip real">ข้อมูลจริง</span>',sub:'พื้นที่รับประโยชน์ '+f(W[0].benefit,0)+' ไร่',
       tip:tipOf({t:'ระบบสูบน้ำพลังงานแสงอาทิตย์',
         d:'ทางเลือกแทนระบบชลประทานขนาดใหญ่ในพื้นที่ที่น้ำส่งไม่ถึง ต้นทุนเดินเครื่องต่ำเพราะไม่ใช้น้ำมันหรือไฟฟ้า',
         calc:'นับจำนวนจุดติดตั้งที่ใช้งานได้ = '+f_num(W[0].cnt)+' แห่ง · พื้นที่รับประโยชน์รวม '+f_num(W[0].benefit)+' ไร่',
         src:'irrig',when:'ข้อมูล ณ ก.ค. 2569'})}),
-    kpiCard({icon:'drop',color:cv('--coral'),label:'พื้นที่เกษตรที่ยังพึ่งน้ำฝน',
+    kpiCard({icon:'drop',img:'water',color:cv('--coral'),label:'พื้นที่เกษตรที่ยังพึ่งน้ำฝน',
       value:((1550000-benefit)/1e6).toFixed(2),unit:'ล้านไร่',
       chip:'<span class="chip fl">'+((1550000-benefit)/1550000*100).toFixed(0)+'% ของพื้นที่เกษตร</span>',
       sub:'เป็นกลุ่มเสี่ยงที่สุดเมื่อฝนทิ้งช่วง',
@@ -313,25 +313,25 @@ function renderAgri(){
 
   /* ฐานข้อมูล */
   $('#baseKpi').innerHTML=[
-    kpiCard({icon:'people',color:cv('--blue'),label:'ประชากรจังหวัด',value:f(B.pop,0),unit:'คน',
+    kpiCard({icon:'people',img:'population',color:cv('--blue'),label:'ประชากรจังหวัด',value:f(B.pop,0),unit:'คน',
       chip:'<span class="chip">ชาย 49.67% · หญิง 50.33%</span>',sub:`${B.amphoe} อำเภอ ${B.tambon} ตำบล ${B.muban} หมู่บ้าน`,
       tip:tipOf({t:'ประชากรตามทะเบียนราษฎร',
         d:'จำนวนผู้มีชื่อในทะเบียนบ้านของจังหวัด ใช้เป็นตัวหารของตัวชี้วัดต่อหัวทุกตัวในระบบนี้ เช่น GPP ต่อหัว',
         calc:'ยอด ณ สิ้นงวดที่ประกาศ ไม่นำรายเดือนมาบวกกัน · กระจายใน '+B.amphoe+' อำเภอ '+B.tambon+' ตำบล '+f_num(B.muban)+' หมู่บ้าน',
         src:'popreg',when:'ข้อมูล ณ ก.ค. 2569'})}),
-    kpiCard({icon:'leaf',color:cv('--leaf'),label:'พื้นที่ภาคการเกษตร',value:'1.55',unit:'ล้านไร่',
+    kpiCard({icon:'leaf',img:'landuse',color:cv('--leaf'),label:'พื้นที่ภาคการเกษตร',value:'1.55',unit:'ล้านไร่',
       chip:'<span class="chip">ครัวเรือนเกษตร '+f(B.agriHH,0)+'</span>',sub:'ข้อมูล ณ ก.ค. 2569',
       tip:tipOf({t:'พื้นที่ภาคการเกษตรของจังหวัด',
         d:'พื้นที่ที่ใช้ประโยชน์ทางการเกษตรทั้งหมด ใช้เป็นตัวหารของสัดส่วนพื้นที่ชลประทานและสัดส่วนพื้นที่ปลูกพืชแต่ละชนิด',
         calc:'เนื้อที่ใช้ประโยชน์ทางการเกษตรตามทะเบียน 1.55 ล้านไร่ · ครัวเรือนที่ขึ้นทะเบียนเกษตรกร '+f_num(B.agriHH)+' ครัวเรือน',
         src:'crop',when:'ข้อมูล ณ ก.ค. 2569'})}),
-    kpiCard({icon:'factory',color:cv('--brand'),label:'แปลงใหญ่',value:f(B.bigPlot.plots,0),unit:'แปลง',
+    kpiCard({icon:'factory',img:'bigplot',color:cv('--brand'),label:'แปลงใหญ่',value:f(B.bigPlot.plots,0),unit:'แปลง',
       chip:'<span class="chip">'+f(B.bigPlot.farmers,0)+' ราย</span>',sub:f(B.bigPlot.area,0)+' ไร่',
       tip:tipOf({t:'เกษตรแปลงใหญ่',
         d:'การรวมแปลงของเกษตรกรรายย่อยเพื่อจัดการร่วมกัน ทำให้ต้นทุนต่อไร่ลดลงและมีอำนาจต่อรองราคากับผู้รับซื้อได้จริง',
         calc:'นับจำนวนแปลงที่ขึ้นทะเบียน = '+f_num(B.bigPlot.plots)+' แปลง · เกษตรกร '+f_num(B.bigPlot.farmers)+' ราย · พื้นที่รวม '+f_num(B.bigPlot.area)+' ไร่ · เฉลี่ย '+f_num(B.bigPlot.area/B.bigPlot.plots)+' ไร่ต่อแปลง',
         src:'crop',when:'ข้อมูล ณ ก.ค. 2569'})}),
-    kpiCard({icon:'brief',color:cv('--plum'),label:'องค์กรปกครองท้องถิ่น',value:B.org.obj+B.org.tessabanMuang+B.org.tessabanTambon+B.org.obt,unit:'แห่ง',
+    kpiCard({icon:'brief',img:'district',color:cv('--plum'),label:'องค์กรปกครองท้องถิ่น',value:B.org.obj+B.org.tessabanMuang+B.org.tessabanTambon+B.org.obt,unit:'แห่ง',
       chip:'<span class="chip">อบต. '+B.org.obt+'</span>',sub:'อบจ. 1 · ทม. 1 · ทต. '+B.org.tessabanTambon,
       tip:tipOf({t:'องค์กรปกครองส่วนท้องถิ่น',
         d:'หน่วยที่มีงบประมาณและอำนาจดำเนินโครงการในพื้นที่โดยตรง เป็นช่องทางผลักนโยบายเศรษฐกิจฐานรากให้ถึงตำบลได้เร็วที่สุด',
@@ -377,7 +377,7 @@ DS.init('agri',function(){
   const v=document.getElementById('v-agri');
   if(v&&!v.querySelector('.srcbar')){
     const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
-    d.innerHTML='<header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
+    d.innerHTML='<header><span class="hdico icow img">'+icoImg('source',26)+'</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
       srcBar(['crop','irrig'],'ภาวะการผลิตพืชอายุสั้น ณ 8 ก.ย. 2569 · ไม้ผลเศรษฐกิจ ณ มิ.ย. 2569 · ฐานข้อมูลการเกษตร ณ ก.ค. 2569 · ข้อมูลชลประทานรายปี')+'</div>';
     v.appendChild(d);
   }

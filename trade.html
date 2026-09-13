@@ -43,25 +43,25 @@ function priceHtml(){
   P.groups.forEach(g=>g.rows.forEach(r=>{if(r.chg>0)up.push(r.n);if(r.chg<0)dn.push(r.n)}));
   const nItem=P.groups.reduce((a,g)=>a+g.rows.length,0);
   const kpi=[
-    kpiCard({icon:'cart',color:cv('--brand'),label:'สินค้าที่ราคาสูงขึ้น',value:up.length,unit:'รายการ',
+    kpiCard({icon:'cart',img:'inflation',color:cv('--brand'),label:'สินค้าที่ราคาสูงขึ้น',value:up.length,unit:'รายการ',
       chip:'<span class="chip up">'+(up[0]||'—')+'</span>',sub:'เทียบสัปดาห์ก่อน',
       tip:tipOf({t:'จำนวนสินค้าที่ราคาสูงขึ้น',
         d:'นับรายการสินค้าที่ราคาสัปดาห์นี้สูงกว่าสัปดาห์ก่อน เป็นสัญญาณค่าครองชีพที่เร็วที่สุดของจังหวัด เร็วกว่าดัชนีราคาผู้บริโภคที่ประกาศรายเดือน',
         calc:'นับรายการที่ผลต่างราคา (สัปดาห์นี้ − สัปดาห์ก่อน) > 0 จากสินค้าที่ติดตามทั้งหมด '+nItem+' รายการ',
         src:'cpi',when:'ประจำวันที่ '+P.asof})}),
-    kpiCard({icon:'chart',color:cv('--coral'),label:'สินค้าที่ราคาลดลง',value:dn.length,unit:'รายการ',
+    kpiCard({icon:'chart',img:'cpi',color:cv('--coral'),label:'สินค้าที่ราคาลดลง',value:dn.length,unit:'รายการ',
       chip:'<span class="chip dn">'+(dn[0]||'—')+'</span>',sub:'เทียบสัปดาห์ก่อน',
       tip:tipOf({t:'จำนวนสินค้าที่ราคาลดลง',
         d:'ราคาที่ลดลงช่วยผู้บริโภค แต่ถ้าเป็นสินค้าเกษตรจะกดรายได้เกษตรกรลงด้วย จึงต้องดูควบคู่กัน',
         calc:'นับรายการที่ผลต่างราคา (สัปดาห์นี้ − สัปดาห์ก่อน) < 0 จากสินค้าที่ติดตามทั้งหมด '+nItem+' รายการ',
         src:'cpi',when:'ประจำวันที่ '+P.asof})}),
-    kpiCard({icon:'leaf',color:cv('--gold'),label:'ข้าวเปลือกหอมมะลิ',value:'17,000',unit:'บาท/ตัน',
+    kpiCard({icon:'leaf',img:'rice',color:cv('--gold'),label:'ข้าวเปลือกหอมมะลิ',value:'17,000',unit:'บาท/ตัน',
       chip:chip(pctc(17000,14600)),sub:'เทียบปีก่อน 14,600 บาท/ตัน',
       tip:tipOf({t:'ราคาข้าวเปลือกหอมมะลิ',
         d:'ราคา ณ ลานรับซื้อในจังหวัด เงื่อนไขสีได้ต้นข้าว 36 กรัมขึ้นไป เป็นราคาที่กำหนดรายได้ของครัวเรือนปลูกข้าวโดยตรง',
         calc:'ราคารับซื้อที่สำรวจในสัปดาห์นี้ · เทียบปีก่อน = (17,000 − 14,600) ÷ 14,600 × 100',
         src:'cpi',when:'ประจำวันที่ '+P.asof})}),
-    kpiCard({icon:'drop',color:cv('--brand2'),label:'น้ำยางสด',value:'70–71',unit:'บาท/กก.',
+    kpiCard({icon:'drop',img:'rubber',color:cv('--brand2'),label:'น้ำยางสด',value:'70–71',unit:'บาท/กก.',
       chip:chip(pctc(70.5,47.90)),sub:'เทียบปีก่อน 47.90 บาท/กก.',
       tip:tipOf({t:'ราคาน้ำยางสด',
         d:'ยางพาราเป็นพืชที่ราคาขยับขึ้นจากปีก่อนมากที่สุดของจังหวัด ช่วยหนุนรายได้เกษตรกรกลุ่มพืชไร่',
@@ -130,7 +130,7 @@ function renderTradePage(){
   pr.innerHTML=priceHtml(); v.appendChild(pr);
   bannerInto(pr,'assets/t-price.jpg','ราคาสินค้าเกษตรและอุปโภคบริโภครายสัปดาห์','สำนักงานพาณิชย์จังหวัดหนองบัวลำภู · ข้อมูล ณ 8 กันยายน 2569');
   const sb=document.createElement('div');sb.className='c';sb.style.marginTop='13px';
-  sb.innerHTML='<header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
+  sb.innerHTML='<header><span class="hdico icow img">'+icoImg('source',26)+'</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
     srcBar(['cpi','credit'],'ราคาสินค้าสำรวจรายสัปดาห์ ณ ลานรับซื้อและท้องตลาดทั่วไป · ข้อมูล ณ 8 กันยายน 2569')+'</div>';
   pr.appendChild(sb);
   renderPriceChart(); applyEditMode();

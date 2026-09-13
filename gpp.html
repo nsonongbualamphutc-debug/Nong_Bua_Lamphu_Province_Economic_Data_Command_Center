@@ -54,25 +54,25 @@
 function renderGpp(){
   const s=MEI.out,last=s[35],G=D.gpp.rows,n=G.length-1;
   $('#gppKpi').innerHTML=[
-    kpiCard({icon:'chart',color:cv('--brand'),label:'ดัชนีเศรษฐกิจรายเดือน',value:last.v.toFixed(1),
+    kpiCard({icon:'chart',img:'gpp',color:cv('--brand'),label:'ดัชนีเศรษฐกิจรายเดือน',value:last.v.toFixed(1),
       chip:chip(pctc(last.v,s[23].v)),sub:'ฐาน 100 = เฉลี่ยปี 2567',
       tip:tipOf({t:'ดัชนีภาวะเศรษฐกิจรายเดือน NBL–MEI',
         d:'ดัชนีที่จังหวัดสร้างขึ้นเองจากข้อมูลเร็วของหน่วยงานในพื้นที่ เพื่อไม่ต้องรอ GPP ที่ประกาศช้า 2 ปี',
         calc:'แปลงข้อมูล '+DATASETS.length+' ชุดเป็นดัชนีเทียบฐาน 100 = ค่าเฉลี่ยปี '+(CFG.latest.y-2)+' แล้วถ่วงน้ำหนักตามสัดส่วนของ '+SECTORS.length+' ภาคส่วน · ชุดที่ยิ่งน้อยยิ่งดี เช่น อัตราการว่างงาน กลับด้านก่อนเข้าสูตร · เทียบปีก่อน = ('+last.v.toFixed(1)+' − '+s[23].v.toFixed(1)+') ÷ '+s[23].v.toFixed(1)+' × 100',
         src:'ประมวลโดยสำนักงานสถิติจังหวัดหนองบัวลำภู',when:MONTHS[35].label})}),
-    kpiCard({icon:'coin',color:cv('--brand2'),label:`GPP ปี ${G[n].y}`,value:f(G[n].value,0),unit:'ลบ.',
+    kpiCard({icon:'coin',img:'gpp',color:cv('--brand2'),label:`GPP ปี ${G[n].y}`,value:f(G[n].value,0),unit:'ลบ.',
       chip:chip(pctc(G[n].value,G[n-1].value)),sub:'ประกาศช้า 2 ปี',
       tip:tipOf({t:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) แบบ Chain Volume Measures',
         d:'มูลค่าสินค้าและบริการขั้นสุดท้ายทั้งหมดที่ผลิตได้ในจังหวัดตลอดปี เป็นตัวเลขทางการที่ใช้อ้างอิงระดับประเทศ แต่ประกาศช้าราว 2 ปี',
         calc:'สศช. ประมวลจากข้อมูลการผลิตรายสาขา 16 สาขา · เทียบปีก่อน = ('+f_num(G[n].value)+' − '+f_num(G[n-1].value)+') ÷ '+f_num(G[n-1].value)+' × 100',
         src:'gpp',when:'ปี '+G[n].y+' (ประกาศล่าสุด)'})}),
-    kpiCard({icon:'people',color:cv('--blue'),label:'GPP ต่อหัว',value:f(G[n].pc,0),unit:'บาท/คน/ปี',
+    kpiCard({icon:'people',img:'income',color:cv('--blue'),label:'GPP ต่อหัว',value:f(G[n].pc,0),unit:'บาท/คน/ปี',
       chip:chip(pctc(G[n].pc,G[n-1].pc)),sub:'ประชากร '+f(D.base.pop,0)+' คน',
       tip:tipOf({t:'ผลิตภัณฑ์มวลรวมจังหวัดต่อหัว',
         d:'รายได้เฉลี่ยต่อคนต่อปีของคนในจังหวัด ใช้เทียบฐานะทางเศรษฐกิจระหว่างจังหวัด ไม่ใช่รายได้ที่ครัวเรือนได้รับจริง',
         calc:'GPP ทั้งจังหวัด ÷ จำนวนประชากรกลางปี = ('+f_num(G[n].value)+' ล้านบาท × 1,000,000) ÷ '+f_num(D.base.pop)+' คน',
         src:'gpp',when:'ปี '+G[n].y})}),
-    kpiCard({icon:'leaf',color:cv('--leaf'),label:'สัดส่วนภาคเกษตรใน GPP',value:'28.4',unit:'%',
+    kpiCard({icon:'leaf',img:'agri',color:cv('--leaf'),label:'สัดส่วนภาคเกษตรใน GPP',value:'28.4',unit:'%',
       chip:'<span class="chip">ประเทศ 8.7%</span>',sub:'เศรษฐกิจฐานเกษตรชัดเจน',
       tip:tipOf({t:'สัดส่วนภาคเกษตรในโครงสร้าง GPP',
         d:'ภาคเกษตรของจังหวัดมีสัดส่วนสูงกว่าค่าเฉลี่ยประเทศกว่า 3 เท่า นโยบายเกษตรและราคาพืชผลจึงส่งผลต่อ GPP ของจังหวัดมากเป็นพิเศษ',
@@ -203,7 +203,7 @@ DS.init('gpp',function(){
   const v=document.getElementById('v-gpp');
   if(v&&!v.querySelector('.srcbar')){
     const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
-    d.innerHTML='<header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
+    d.innerHTML='<header><span class="hdico icow img">'+icoImg('source',26)+'</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
       srcBar(['gpp'],'GPP ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี · ดัชนี NBL–MEI คำนวณโดยสำนักงานสถิติจังหวัดหนองบัวลำภู')+'</div>';
     v.appendChild(d);
   }

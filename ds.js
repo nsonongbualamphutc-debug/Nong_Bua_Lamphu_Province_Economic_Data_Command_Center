@@ -1037,6 +1037,89 @@ function bindPlayer(id,noInit){
   if(p.auto&&!p.timer)play();
 }
 
+/* ─────────────── 34) แผนที่เฉดสีรายอำเภอ — ใช้ร่วมได้ทุกหน้า ─────────────── */
+const CHO_RAMP=[[0,'#eaf6f0'],[.2,'#c2e7d4'],[.4,'#8fd3b3'],[.6,'#4fb98c'],[.8,'#1d8e64'],[1,'#0a5c42']];
+function choMix(a,b,k){const p=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16));
+  const A=p(a),B=p(b);
+  return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*k).toString(16).padStart(2,'0')).join('')}
+function choColor(t){t=Math.max(0,Math.min(1,isFinite(t)?t:0));
+  for(let i=1;i<CHO_RAMP.length;i++)if(t<=CHO_RAMP[i][0]){
+    const a=CHO_RAMP[i-1],b=CHO_RAMP[i];
+    return choMix(a[1],b[1],(t-a[0])/(b[0]-a[0]))}
+  return CHO_RAMP[CHO_RAMP.length-1][1]}
+let CHO_GEO=null;
+async function ampGeoJson(){
+  if(CHO_GEO)return CHO_GEO;
+  try{
+    const r=await fetch('assets/nbl-amphoe.geojson');
+    if(!r.ok)return null;
+    const j=await r.json();
+    if(!j||!j.features||!j.features.length)return null;
+    CHO_GEO=j; return j;
+  }catch(e){return null}
+}
+function choAmpName(f){
+  const p=(f&&f.properties)||{};
+  for(const k of ['amp_th','AMPHOE_T','amphoe','AP_TN','amp_name'])
+    if(p[k])return String(p[k]).replace(/^อ\./,'').trim();
+  return '';
+}
+function choLegend(mn,mx,unit,dec){
+  const stops=CHO_RAMP.map(r=>choColor(r[0]));
+  return `<div class="cho-lg">
+    <span class="cho-lg-t">น้อย</span>
+    <span class="cho-lg-bar" style="background:linear-gradient(90deg,${stops.join(',')})"></span>
+    <span class="cho-lg-t">มาก</span>
+    <span class="cho-lg-v">${f(mn,dec)} – ${f(mx,dec)} ${unit||''}</span></div>`;
+}
+/* แผนผังสำรอง ใช้เมื่อโหลดแผนที่ไม่ได้ — เฉดสีเดียวกับแผนที่ */
+function choFallback(rows,mn,span,o){
+  const sorted=rows.slice().sort((a,b)=>b.value-a.value);
+  return `<div class="cho-fb">`+sorted.map(r=>`
+    <div class="cho-fb-r" data-tip2="${o.tipOf?o.tipOf(r):''}">
+      <span class="nm">${r.name}</span>
+      <span class="tr"><i style="width:${Math.max(6,((r.value-mn)/span)*100).toFixed(0)}%;background:${choColor((r.value-mn)/span)}"></i></span>
+      <span class="vv">${f(r.value,o.dec??0)}</span></div>`).join('')+
+    `</div><div class="note">แสดงเป็นแผนผังสำรองเพราะโหลดขอบเขตแผนที่ไม่ได้ ตรวจว่าอัปโหลด <code>assets/nbl-amphoe.geojson</code> แล้วหรือยัง</div>`;
+}
+/* rows = [{name,value}] · o = {unit,dec,height,title,tipOf} */
+async function drawAmpChoropleth(boxId,rows,o){
+  const box=document.getElementById(boxId); if(!box)return;
+  o=o||{};
+  const vals=rows.map(r=>r.value).filter(v=>isFinite(v));
+  const mn=Math.min(...vals), mx=Math.max(...vals), span=(mx-mn)||1;
+  const geo=(typeof L!=='undefined')?await ampGeoJson():null;
+  if(!geo){box.innerHTML=choFallback(rows,mn,span,o)+choLegend(mn,mx,o.unit,o.dec??0);return}
+  const byName={}; rows.forEach(r=>byName[r.name]=r.value);
+  const pick=nm=>{
+    if(byName[nm]!=null)return byName[nm];
+    const hit=rows.find(r=>nm&&(nm.indexOf(r.name)>=0||r.name.indexOf(nm)>=0));
+    return hit?hit.value:null;
+  };
+  box.innerHTML=`<div class="cho-map" id="${boxId}-m" style="height:${o.height||390}px"></div>`+choLegend(mn,mx,o.unit,o.dec??0);
+  const el=document.getElementById(boxId+'-m');
+  if(box._map){try{box._map.remove()}catch(e){}}
+  const map=L.map(el,{zoomControl:true,scrollWheelZoom:false,attributionControl:false,dragging:true});
+  box._map=map;
+  const layer=L.geoJSON(geo,{
+    style:ft=>{const v=pick(choAmpName(ft));
+      return{color:'#ffffff',weight:1.6,fillColor:v==null?'#e8ecea':choColor((v-mn)/span),fillOpacity:.92}},
+    onEachFeature:(ft,lyr)=>{
+      const nm=choAmpName(ft), v=pick(nm);
+      const row={name:nm,value:v};
+      lyr.bindTooltip(`<b>${nm}</b><br>${v==null?'ไม่มีข้อมูล':f(v,o.dec??0)+' '+(o.unit||'')}`,
+        {sticky:true,direction:'top',className:'cho-tt'});
+      lyr.on('mouseover',()=>lyr.setStyle({weight:3,color:'#0b3c32'}));
+      lyr.on('mouseout',()=>lyr.setStyle({weight:1.6,color:'#ffffff'}));
+      if(v!=null)lyr.bindPopup(`<div class="cho-pop"><b>${nm}</b>
+        <span>${f(v,o.dec??0)} ${o.unit||''}</span>
+        <small>สูงสุด ${f(mx,o.dec??0)} · ต่ำสุด ${f(mn,o.dec??0)}</small></div>`);
+    }}).addTo(map);
+  try{map.fitBounds(layer.getBounds(),{padding:[12,12]})}catch(e){map.setView([17.22,102.33],9)}
+  setTimeout(()=>{try{map.invalidateSize()}catch(e){}},120);
+  return map;
+}
+
 /* ─────────────── 22) โครงร่วม: แถบบน เมนู และการเริ่มระบบ ─────────────── */
 const NAVI=[
  {id:'cover',   file:'index.html',    label:'หน้าปกจังหวัด',   ic:'<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.2V20h13v-9.8"/><path d="M9.6 20v-5.4h4.8V20"/>'},

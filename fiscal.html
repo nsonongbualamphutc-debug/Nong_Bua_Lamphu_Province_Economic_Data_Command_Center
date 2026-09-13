@@ -61,19 +61,19 @@ function renderFiscal(){
         d:'สัดส่วนเงินที่ออกจากระบบคลังจริงแล้ว เทียบกับงบที่จังหวัดได้รับจัดสรรทั้งปี ยิ่งสูงยิ่งแปลว่าเงินลงถึงพื้นที่เร็ว',
         calc:'(ยอดเบิกจ่ายสะสม ÷ งบที่ได้รับจัดสรร) × 100 = ('+f_num(F.fn.dis[0].val)+' ÷ '+f_num(F.fn.dis[0].alloc)+') × 100',
         src:'spend',when:'ข้อมูล ณ 4 กันยายน 2569 · รายงานครั้งที่ 178/2569'})}),
-    kpiCard({icon:'coin',color:cv('--brand2'),label:'ใช้จ่ายภาพรวม',value:F.fn.use[0].pct.toFixed(2),unit:'%',
+    kpiCard({icon:'coin',img:'spend',color:cv('--brand2'),label:'ใช้จ่ายภาพรวม',value:F.fn.use[0].pct.toFixed(2),unit:'%',
       chip:'<span class="chip up">อันดับ '+F.fn.use[0].rank+' ของประเทศ</span>',sub:f(F.fn.use[0].val,2)+' ล้านบาท',
       tip:tipOf({t:'ร้อยละการใช้จ่ายงบประมาณ',
         d:'กว้างกว่าการเบิกจ่าย เพราะรวมเงินที่ก่อหนี้ผูกพันแล้ว คือลงนามสัญญาแล้วแต่ยังไม่ได้จ่ายเงินออก',
         calc:'((ยอดเบิกจ่าย + ยอดก่อหนี้ผูกพัน) ÷ งบที่ได้รับจัดสรร) × 100',
         src:'spend',when:'ข้อมูล ณ 4 กันยายน 2569'})}),
-    kpiCard({icon:'factory',color:cv('--blue'),label:'เบิกจ่ายงบลงทุน',value:F.fn.dis[2].pct.toFixed(2),unit:'%',
+    kpiCard({icon:'factory',img:'invest',color:cv('--blue'),label:'เบิกจ่ายงบลงทุน',value:F.fn.dis[2].pct.toFixed(2),unit:'%',
       chip:'<span class="chip up">อันดับ '+F.fn.dis[2].rank+' ของประเทศ</span>',sub:'สูงกว่าเป้าหมาย '+F.fn.dis[2].over+'%',
       tip:tipOf({t:'ร้อยละการเบิกจ่ายงบลงทุน',
         d:'งบหมวดลงทุนกระตุ้นเศรษฐกิจในพื้นที่ได้มากที่สุด เพราะแปลงเป็นค่าก่อสร้างและจัดซื้อที่จ่ายให้ผู้รับเหมา แรงงาน และร้านวัสดุในจังหวัดโดยตรง',
         calc:'(เบิกจ่ายงบลงทุน ÷ งบลงทุนที่จัดสรร) × 100 = ('+f_num(F.fn.dis[2].val)+' ÷ '+f_num(F.fn.dis[2].alloc)+') × 100',
         src:'spend',when:'ข้อมูล ณ 4 กันยายน 2569'})}),
-    kpiCard({icon:'chart',color:cv('--gold'),label:'งบจัดสรรทั้งจังหวัด',value:f(F.fn.dis[0].alloc,0),unit:'ลบ.',
+    kpiCard({icon:'chart',img:'fiscal',color:cv('--gold'),label:'งบจัดสรรทั้งจังหวัด',value:f(F.fn.dis[0].alloc,0),unit:'ลบ.',
       chip:'<span class="chip">คงเหลือ '+f(F.fn.dis[0].alloc-F.fn.dis[0].val,0)+' ลบ.</span>',sub:'ปีงบประมาณ 2569',
       tip:tipOf({t:'งบประมาณที่จังหวัดได้รับจัดสรรทั้งปี',
         d:'วงเงินตั้งต้นของทุกส่วนราชการในจังหวัดในปีงบประมาณนี้ เป็นตัวหารของทุกร้อยละการเบิกจ่ายในหน้านี้',
@@ -129,7 +129,7 @@ function drawFiscalTrend(){
         d:'เงินงบประมาณหมวดลงทุนที่ออกจากระบบคลังแล้วจริง เช่น ค่าก่อสร้าง ครุภัณฑ์ และที่ดินสิ่งก่อสร้าง',
         calc:'ยอดเบิกจ่ายสะสมที่รายงาน ณ เดือนสุดท้ายของงวดที่เลือก · เป็นยอดสะสมจึงไม่นำรายเดือนมาบวกกัน',
         src:'spend',when:st.label})}),
-    kpiCard({icon:'coin',color:cv('--gold'),label:'งบประจำสะสม ณ '+st.label,
+    kpiCard({icon:'coin',img:'spend',color:cv('--gold'),label:'งบประจำสะสม ณ '+st.label,
       value:f(nowO,0),unit:'ลบ.',chip:(wasO?chip(pctc(nowO,wasO)):'<span class="chip">—</span>')+' '+statusBadge(wasO?pctc(nowO,wasO):null,false,'งบประจำเทียบงวดเดียวกันปีก่อน'),
       sub:wasO?('งวดเดียวกันปีก่อน '+f(wasO,0)+' ลบ.'):'ไม่มีข้อมูลปีก่อนให้เทียบ',
       tip:tipOf({t:'การเบิกจ่ายงบรายจ่ายประจำ',
@@ -171,7 +171,7 @@ DS.init('fiscal',function(){
   const v=document.getElementById('v-fiscal');
   if(v&&!v.querySelector('.srcbar')){
     const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
-    d.innerHTML='<header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
+    d.innerHTML='<header><span class="hdico icow img">'+icoImg('source',26)+'</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
       srcBar(['spend'],'ข้อมูล ณ 4 กันยายน 2569 · รายงานครั้งที่ 178/2569 · เผยแพร่รายสัปดาห์')+'</div>';
     v.appendChild(d);
   }

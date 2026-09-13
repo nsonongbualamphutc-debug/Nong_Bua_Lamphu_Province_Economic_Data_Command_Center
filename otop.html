@@ -94,7 +94,7 @@ function renderOtop(){
         <div class="note" id="cmpNote"></div></div></div>
   </div>
 
-  <div class="c"><header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
+  <div class="c"><header><span class="hdico icow img">${icoImg('source',26)}</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
     <div class="b">${srcBar(['otop'],'ชุดข้อมูลเผยแพร่ผ่านบัญชีข้อมูลจังหวัดหนองบัวลำภู (gdcatalog) · ครอบคลุมรายได้รายปีและรายเดือน ผลิตภัณฑ์จำแนกตามประเภท ผู้ประกอบการ ร้านค้าชุมชน ผลิตภัณฑ์ระดับ 5 ดาว และแหล่งเรียนรู้วิชชาลัย')}</div></div>`;
 
   /* ── KPI ── */
@@ -106,13 +106,13 @@ function renderOtop(){
         d:'ยอดจำหน่ายผลิตภัณฑ์ชุมชนทั้งจังหวัดในรอบปี เป็นรายได้ที่ตกถึงกลุ่มผู้ผลิตในตำบลโดยตรง',
         calc:'รวมยอดจำหน่ายที่กลุ่มผู้ผลิตรายงานทุกเดือนในปีนั้น ÷ 1,000,000 · เทียบปีก่อน = ('+f_num(rev/1e6)+' − '+f_num(revPrev/1e6)+') ÷ '+f_num(revPrev/1e6)+' × 100',
         src:'otop',when:'ปี '+last})}),
-    kpiCard({icon:'people',color:cv('--gold'),label:'ผู้ประกอบการ',value:f(O.entTotal,0),unit:'ราย',
+    kpiCard({icon:'people',img:'household',color:cv('--gold'),label:'ผู้ประกอบการ',value:f(O.entTotal,0),unit:'ราย',
       chip:'<span class="chip">ทุกอำเภอ</span>',sub:'ลงทะเบียนในระบบ OTOP',
       tip:tipOf({t:'ผู้ประกอบการ OTOP',
         d:'กลุ่มผู้ผลิตและผู้ประกอบการที่ลงทะเบียน OTOP กับจังหวัด นับรวมทุกอำเภอ ทั้งกลุ่มวิสาหกิจชุมชน กลุ่มอาชีพ และรายเดี่ยว',
         calc:'นับจำนวนรายที่ลงทะเบียนในระบบ OTOP ณ สิ้นปี · เป็นจำนวนคงค้าง ไม่นำแต่ละปีมาบวกกัน',
         src:'otop',when:'ปี '+last})}),
-    kpiCard({icon:'cart',color:cv('--leaf'),label:'ผลิตภัณฑ์',value:f(prodTot,0),unit:'ชนิด',
+    kpiCard({icon:'cart',img:'otop',color:cv('--leaf'),label:'ผลิตภัณฑ์',value:f(prodTot,0),unit:'ชนิด',
       chip:'<span class="chip">ปี '+O.prodYear+'</span>',sub:'5 ประเภทผลิตภัณฑ์',
       tip:tipOf({t:'จำนวนผลิตภัณฑ์ OTOP',
         d:'ชนิดผลิตภัณฑ์ที่ขึ้นทะเบียนแล้ว จำแนกเป็น 5 ประเภท คือ อาหาร เครื่องดื่ม ผ้าและเครื่องแต่งกาย ของใช้ของตกแต่ง และสมุนไพรที่ไม่ใช่อาหาร',
@@ -124,7 +124,7 @@ function renderOtop(){
         d:'ผ่านการคัดสรรสุดยอดหนึ่งตำบลหนึ่งผลิตภัณฑ์ไทยระดับประเทศ เป็นกลุ่มที่พร้อมผลักเข้าตลาดนอกจังหวัดและช่องทางออนไลน์ได้ทันที',
         calc:'นับรายการที่ได้ผลการคัดสรรระดับ 5 ดาวในรอบคัดสรรล่าสุด · การคัดสรรจัดทุก 2 ปี ตัวเลขจึงคงเดิมระหว่างรอบ',
         src:'otop',when:'ปี '+O.star5Year})}),
-    kpiCard({icon:'brief',color:cv('--blue'),label:'ร้านค้าชุมชน',value:f(shops,0),unit:'แห่ง',
+    kpiCard({icon:'brief',img:'trade',color:cv('--blue'),label:'ร้านค้าชุมชน',value:f(shops,0),unit:'แห่ง',
       chip:'<span class="chip">วิชชาลัย '+vich+' แห่ง</span>',sub:'ปี '+O.shopYear,
       tip:tipOf({t:'ร้านค้าชุมชน',
         d:'จุดจำหน่ายผลิตภัณฑ์ชุมชนในพื้นที่ ใช้เป็นช่องทางกระจายสินค้าและเชื่อมกับเส้นทางท่องเที่ยวของจังหวัดได้',

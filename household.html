@@ -95,7 +95,7 @@ function renderHouse(){
         <div class="note" id="distNote"></div></div></div>
   </div>
 
-  <div class="c"><header><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
+  <div class="c"><header><span class="hdico icow img">${icoImg('source',26)}</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
     <div class="b">${srcBar(['house'],'สำรวจทุก 2 ปี เก็บข้อมูลจากกลุ่มตัวอย่างครัวเรือนทั่วจังหวัด ครอบคลุมรายได้ ค่าใช้จ่าย หนี้สิน และการกระจายรายได้')}</div></div>`;
 
   /* ── KPI ── */
@@ -117,7 +117,7 @@ function renderHouse(){
       tip:tipOf({t:'ค่าใช้จ่ายทั้งสิ้นเฉลี่ยต่อเดือนของครัวเรือน',
         d:'รวมทั้งค่าอุปโภคบริโภคและค่าใช้จ่ายที่ไม่ใช่การบริโภค เช่น ภาษี เบี้ยประกัน และดอกเบี้ยเงินกู้',
         calc:'ผลรวมรายจ่ายทุกหมวด หารด้วยจำนวนครัวเรือนตัวอย่าง',src:'house',when:'ปี '+HY})}),
-    kpiCard({icon:'chart',color:left>=0?cv('--brand2'):cv('--bad'),label:'เงินเหลือต่อเดือน',
+    kpiCard({icon:'chart',img:'income',color:left>=0?cv('--brand2'):cv('--bad'),label:'เงินเหลือต่อเดือน',
       value:left!=null?f(left,0):'—',unit:'บาท',
       chip:left!=null?('<span class="chip '+(left>=0?'up':'dn')+'">'+(left>=0?'เหลือ ':'ติดลบ ')+(inc?Math.abs(left/inc*100).toFixed(1):'0')+'% ของรายได้</span>'):'',
       sub:left!=null&&left<0?'ใช้จ่ายเกินรายได้':'ส่วนที่เหลือไว้ออมหรือชำระหนี้',
