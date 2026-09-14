@@ -109,20 +109,20 @@ function renderLabor(){
   <div class="grid g4 mb" id="lbKpi"></div>
 
   <div class="grid g21 mb">
-    <div class="c"><header><h3>จำนวนผู้ว่างงานและอัตราการว่างงาน</h3><span class="u">12 ไตรมาสย้อนหลัง</span>
+    <div class="c"><header><span class="hdico icow img" data-hdico="unemployed"></span><h3>จำนวนผู้ว่างงานและอัตราการว่างงาน</h3><span class="u">12 ไตรมาสย้อนหลัง</span>
       <span class="r">${viewToggle('cUe')}</span></header>
       <div class="b">
         <div id="cUe-chart"><div class="ch lg"><canvas id="cUe"></canvas></div></div>
         <div id="cUe-table" class="hide"><div class="sc" style="max-height:340px"><table class="t" data-owner="labor" id="tUe"></table></div></div>
         <div class="note">แท่งสีทองคืองวดที่เลือกอยู่ · แท่งสีส้มคือไตรมาสที่ 1 ของแต่ละปีซึ่งเป็นช่วงหลังฤดูเก็บเกี่ยว<br>${L.note}</div>
       </div></div>
-    <div class="c"><header><h3>อัตราการว่างงานรายปี</h3><span class="u">ร้อยละ</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="unemprate"></span><h3>อัตราการว่างงานรายปี</h3><span class="u">ร้อยละ</span></header>
       <div class="b"><div class="ch lg"><canvas id="cAnn"></canvas></div>
         <div class="note" id="annNote"></div></div></div>
   </div>
 
   <div class="c mb" style="border-left:4px solid var(--coral)">
-    <header><h3>สัญญาณที่ต้องจับตา — คนหายจากกำลังแรงงาน</h3>
+    <header><span class="hdico icow img" data-hdico="alert"></span><h3>สัญญาณที่ต้องจับตา — คนหายจากกำลังแรงงาน</h3>
       <span class="u">เรื่องนี้สำคัญกว่าตัวเลขว่างงาน</span></header>
     <div class="b">
       <div class="grid g21">
@@ -133,26 +133,26 @@ function renderLabor(){
     </div></div>
 
   <div class="grid g2 mb">
-    <div class="c"><header><h3>ผู้มีงานทำแยกสาขาเศรษฐกิจ</h3><span class="u">${L.secQ.replace('-Q','  ไตรมาส ')}</span>
+    <div class="c"><header><span class="hdico icow img" data-hdico="employed"></span><h3>ผู้มีงานทำแยกสาขาเศรษฐกิจ</h3><span class="u">${L.secQ.replace('-Q','  ไตรมาส ')}</span>
       <span class="r">${viewToggle('cSec')}</span></header>
       <div class="b">
         <div id="cSec-chart"><div class="ch lg"><canvas id="cSec"></canvas></div></div>
         <div id="cSec-table" class="hide"><div class="sc" style="max-height:330px"><table class="t" id="tSec"></table></div></div>
         <div class="note" id="secNote"></div>
       </div></div>
-    <div class="c"><header><h3>สถานภาพการทำงาน</h3><span class="u">${L.statusQ.replace('-Q','  ไตรมาส ')}</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="labor"></span><h3>สถานภาพการทำงาน</h3><span class="u">${L.statusQ.replace('-Q','  ไตรมาส ')}</span></header>
       <div class="b"><div id="stBox"></div>
         <div class="ch sm" style="height:160px"><canvas id="cStatus"></canvas></div>
         <div class="note" id="stNote"></div></div></div>
   </div>
 
   <div class="grid g21 mb">
-    <div class="c"><header><h3>การทำงานต่ำกว่าระดับด้านชั่วโมงการทำงาน</h3>
+    <div class="c"><header><span class="hdico icow img" data-hdico="underemp"></span><h3>การทำงานต่ำกว่าระดับด้านชั่วโมงการทำงาน</h3>
       <span class="u">ผู้ที่ทำงานน้อยกว่า 35 ชั่วโมงต่อสัปดาห์และต้องการทำงานเพิ่ม</span>
       <span class="r"><span class="icow img" style="width:26px;height:26px;display:inline-grid;place-items:center">${icoImg('underemp',26)}</span></span></header>
       <div class="b"><div class="ch"><canvas id="cUnder"></canvas></div>
         <div class="note" id="underNote"></div></div></div>
-    <div class="c"><header><h3>ผู้ประกันตนในระบบประกันสังคม</h3><span class="u">รายเดือน · โครงร่าง</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="social"></span><h3>ผู้ประกันตนในระบบประกันสังคม</h3><span class="u">รายเดือน · โครงร่าง</span></header>
       <div class="b"><div class="ch"><canvas id="cSso"></canvas></div>
         <div class="note">ผู้ประกันตนมาตรา 40 ที่เพิ่มขึ้นคือสัญญาณที่ดี แปลว่าแรงงานอิสระเข้าสู่ระบบคุ้มครองมากขึ้น ตัวเลขชุดนี้ยังเป็นโครงร่าง รอข้อมูลจริงจากสำนักงานประกันสังคมจังหวัด</div></div></div>
   </div>

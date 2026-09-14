@@ -1354,21 +1354,82 @@ const DS={
       chDefaults();
       Object.values(CH).forEach(c=>{try{c.resize()}catch(e){}});
     },220)});
-    window.addEventListener('error',ev=>{
-      if(document.getElementById('bootErr'))return;
-      const d=document.createElement('div');d.id='bootErr';
-      d.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff;color:#c9452f;'+
-        'border:1px solid #f0c4bb;border-radius:12px;padding:12px 16px;font:14px/1.6 system-ui;box-shadow:0 12px 30px -14px rgba(0,0,0,.4)';
-      d.textContent='โหลดหน้าไม่สมบูรณ์: '+(ev.message||'ไม่ทราบสาเหตุ')+' — ตรวจว่าอัปโหลด ds.css และ ds.js ครบและชื่อไฟล์ตรงตัวพิมพ์เล็กใหญ่';
-      document.body.appendChild(d);});
+    window.addEventListener('error',ev=>showBootErr(ev),true);
+    bootSelfCheck();
   }
 };
+/* ─────────────── ตรวจสภาพการติดตั้ง — บอกให้ชัดว่าอะไรขาด ─────────────── */
+const DS_VERSION='3.2.0';
+function showBootErr(ev,extra){
+  let box=document.getElementById('bootErr');
+  if(!box){
+    box=document.createElement('div'); box.id='bootErr';
+    box.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff;color:#8a2f20;'+
+      'border:1px solid #f0c4bb;border-radius:13px;padding:13px 16px;font:13.5px/1.75 system-ui;'+
+      'box-shadow:0 14px 34px -14px rgba(0,0,0,.42);max-height:42vh;overflow:auto';
+    const x=document.createElement('button');
+    x.textContent='ปิด'; x.style.cssText='float:right;border:1px solid #f0c4bb;background:#fff;color:#8a2f20;'+
+      'border-radius:8px;padding:3px 11px;font:12px system-ui;cursor:pointer';
+    x.onclick=()=>box.remove(); box.appendChild(x);
+    const h=document.createElement('b'); h.textContent='โหลดหน้าไม่สมบูรณ์'; box.appendChild(h);
+    const ul=document.createElement('div'); ul.id='bootErrList'; box.appendChild(ul);
+    document.body.appendChild(box);
+  }
+  const list=document.getElementById('bootErrList');
+  if(list.childElementCount>=6)return;
+  const line=document.createElement('div');
+  if(extra){line.textContent='• '+extra}
+  else{
+    const t=ev.target;
+    if(t&&t!==window&&(t.src||t.href)){
+      /* โหลดไฟล์ไม่สำเร็จ เช่น รูป ไอคอน สคริปต์ */
+      const u=t.src||t.href;
+      line.textContent='• โหลดไฟล์ไม่สำเร็จ: '+String(u).replace(location.origin,'');
+    }else{
+      const where=ev.filename?(String(ev.filename).replace(location.origin,'')+' บรรทัด '+ev.lineno):'ไม่ทราบไฟล์';
+      const msg=ev.message||'ไม่ทราบสาเหตุ';
+      line.textContent='• '+msg+(msg==='Script error.'?' (ข้อผิดพลาดมาจากสคริปต์ภายนอก เช่น Chart.js หรือ Leaflet ที่โหลดไม่สำเร็จ)':'')+' — '+where;
+    }
+  }
+  list.appendChild(line);
+}
+/* ตรวจว่าไฟล์ร่วมมาครบและเป็นรุ่นเดียวกับหน้าหรือไม่ */
+function bootSelfCheck(){
+  const miss=[];
+  try{
+    const brand=getComputedStyle(document.documentElement).getPropertyValue('--brand').trim();
+    if(!brand)miss.push('ds.css ยังไม่ถูกโหลด หน้าจะไม่มีสีและเลย์เอาต์ — ตรวจว่าอัปโหลด ds.css แล้วและชื่อไฟล์เป็นตัวพิมพ์เล็กทั้งหมด');
+  }catch(e){}
+  if(typeof Chart==='undefined')miss.push('Chart.js โหลดไม่สำเร็จ กราฟทุกตัวจะไม่ขึ้น — ตรวจการเชื่อมต่ออินเทอร์เน็ตหรือการเข้าถึง cdn.jsdelivr.net');
+  if(document.querySelector('#map,.cho-map,#tilemap')&&typeof L==='undefined')
+    miss.push('Leaflet โหลดไม่สำเร็จ แผนที่จะไม่ขึ้น — ตรวจการเข้าถึง unpkg.com');
+  const need=['yearBar','drawAmpChoropleth','slicerBar','tipOf','f_num'];
+  const old=need.filter(n=>typeof window[n]!=='function');
+  if(old.length)miss.push('ds.js เป็นรุ่นเก่ากว่าหน้านี้ (ขาด '+old.join(', ')+') — อัปโหลด ds.js รุ่นล่าสุดทับ');
+  miss.forEach(m=>showBootErr(null,m));
+}
 let PAGE={id:'',render(){}};
+/* เติมไอคอนให้ทุกจุดที่ประกาศไว้ รวมถึงส่วนที่วาดทีหลัง */
+function fillIcons(root){
+  (root||document).querySelectorAll('[data-bigico]').forEach(el=>{if(!el.innerHTML)el.innerHTML=icoImg(el.dataset.bigico,52)});
+  (root||document).querySelectorAll('[data-hdico]').forEach(el=>{if(!el.innerHTML)el.innerHTML=icoImg(el.dataset.hdico,26)});
+}
+/* หน้าไหนวาดการ์ดเพิ่มทีหลัง ไอคอนก็ยังขึ้นเอง ไม่ต้องเรียกซ้ำ */
+(function(){
+  if(typeof MutationObserver==='undefined')return;
+  const mo=new MutationObserver(ms=>{
+    for(const m of ms)for(const n of m.addedNodes){
+      if(n.nodeType!==1)continue;
+      if(n.hasAttribute&&(n.hasAttribute('data-hdico')||n.hasAttribute('data-bigico')))fillIcons(n.parentNode||document);
+      else if(n.querySelector&&n.querySelector('[data-hdico],[data-bigico]'))fillIcons(n);
+    }
+  });
+  document.addEventListener('DOMContentLoaded',()=>mo.observe(document.body,{childList:true,subtree:true}));
+})();
 function safeRender(){
   try{PAGE.render()}catch(e){console.error('render '+PAGE.id,e)}
   try{
-    document.querySelectorAll('[data-bigico]').forEach(el=>{if(!el.innerHTML)el.innerHTML=icoImg(el.dataset.bigico,52)});
-    document.querySelectorAll('[data-hdico]').forEach(el=>{if(!el.innerHTML)el.innerHTML=icoImg(el.dataset.hdico,26)});
+    fillIcons();
     pageBanner();bindToggle();revealCards();animateNums();
   }catch(e){}
 }

@@ -219,6 +219,14 @@ body.signed .ftr a{color:var(--blue)}
   .who .ttl{margin-left:0;width:100%}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.lb .shows{display:block;margin-top:4px;font-size:11px;line-height:1.6;color:#5c7a70;font-weight:400}
+.lb .shows b{color:#0b3c32;font-weight:600}
+@media(max-width:640px){.lb .shows{font-size:10.5px}}
+
+.srcbadge{display:inline-block;padding:1px 7px;border-radius:7px;font-size:10px;line-height:1.7;border:1px solid}
+.srcbadge.man{background:#eef6f2;color:#0b3c32;border-color:#cfe4da}
+.srcbadge.imp{background:#fdf3e0;color:#8a6714;border-color:#ecd8a8}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data1.js"></script>
@@ -389,6 +397,52 @@ const TH_M=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ
 const DISTRICTS=[['3901','เมืองหนองบัวลำภู'],['3902','นากลาง'],['3903','โนนสัง'],
   ['3904','ศรีบุญเรือง'],['3905','สุวรรณคูหา'],['3906','นาวัง']];
 
+
+/* ══ ตัวเลขแต่ละช่องไปโผล่ตรงไหนบนแดชบอร์ด ══
+   ผู้กรอกจะได้รู้ว่าตัวเลขที่กรอกไปแสดงผลที่หน้าไหน การ์ดใบไหน
+   ถ้าเพิ่มตัวชี้วัดใหม่ อย่าลืมเพิ่มบรรทัดที่นี่ด้วย */
+const SHOWS={
+ 'spend.inv'   :['หน้าการคลัง · การ์ดเบิกจ่ายงบลงทุนสะสม','หน้าภาพรวม · แถวภาคการคลังในไทล์ 7 ภาคส่วน'],
+ 'spend.ope'   :['หน้าการคลัง · การ์ดงบประจำสะสม'],
+ 'spend.rate'  :['หน้าภาพรวม · การ์ดเบิกจ่ายงบประมาณ และเสาตัวเลขบนหน้าปก','หน้า GPP · แถวเสถียรภาพการคลัง'],
+ 'spend.rank'  :['หน้าภาพรวม · ป้ายอันดับ 1 ของประเทศ บนหน้าปก'],
+ 'crop.value'  :['หน้าภาพรวม · การ์ดมูลค่าผลผลิตเกษตร','หน้าเกษตร · การ์ดมูลค่าผลผลิต','หน้า GPP · บล็อกด้านอุปทาน'],
+ 'crop.area'   :['หน้าเกษตร · การ์ดเนื้อที่ปลูกพืชอายุสั้น'],
+ 'crop.yield'  :['หน้าเกษตร · การ์ดผลผลิตรวม'],
+ 'crop.hh'     :['หน้าเกษตร · การ์ดครัวเรือนเกษตรกร'],
+ 'factory.newf':['หน้าอุตสาหกรรม · การ์ดโรงงานใหม่ และกราฟแนวโน้ม 36 เดือน','หน้า GPP · บล็อกด้านอุปทาน'],
+ 'factory.cap' :['หน้าอุตสาหกรรม · การ์ดเงินลงทุนสะสม'],
+ 'factory.emp' :['หน้าอุตสาหกรรม · การ์ดแรงงานในโรงงาน'],
+ 'power.ind'   :['หน้าภาพรวม · การ์ดไฟฟ้าภาคอุตสาหกรรม','หน้าอุตสาหกรรม · กราฟแนวโน้ม 36 เดือน','หน้า GPP · บล็อกด้านอุปทาน'],
+ 'power.biz'   :['หน้าอุตสาหกรรม · การ์ดไฟฟ้าภาคธุรกิจ'],
+ 'power.user'  :['หน้าอุตสาหกรรม · การ์ดผู้ใช้ไฟฟ้าประเภทอุตสาหกรรม'],
+ 'cpi.idx'     :['หน้าการค้า · การ์ดดัชนีราคาผู้บริโภค และกราฟแนวโน้ม 36 เดือน'],
+ 'cpi.yoy'     :['หน้าภาพรวม · การ์ดอัตราเงินเฟ้อทั่วไป','หน้าการค้า · กราฟเงินเฟ้อ'],
+ 'credit.amt'  :['หน้าการค้า · การ์ดวงเงินสินเชื่ออนุมัติ','หน้า GPP · บล็อกด้านอุปสงค์'],
+ 'credit.cnt'  :['หน้าการค้า · การ์ดจำนวนรายที่ได้รับอนุมัติ'],
+ 'fuel.total'  :['หน้าการบริโภค · การ์ดปริมาณการใช้น้ำมันรวม','หน้า GPP · บล็อกด้านอุปสงค์'],
+ 'fuel.diesel' :['หน้าการบริโภค · การ์ดดีเซล'],
+ 'fuel.gaso'   :['หน้าการบริโภค · การ์ดเบนซินและแก๊สโซฮอล์'],
+ 'car.moto'    :['หน้าการบริโภค · การ์ดรถจักรยานยนต์จดทะเบียนใหม่','หน้า GPP · บล็อกด้านอุปสงค์'],
+ 'car.car'     :['หน้าการบริโภค · การ์ดรถยนต์นั่งส่วนบุคคล'],
+ 'car.comm'    :['หน้าการบริโภค · การ์ดรถเพื่อการพาณิชย์'],
+ 'labor.ue'    :['หน้าตลาดแรงงาน · การ์ดผู้ว่างงาน และกราฟผู้ว่างงานรายไตรมาส'],
+ 'labor.ur'    :['หน้าภาพรวม · ตัวเลขอัตราการว่างงานในคำอธิบายการ์ดผู้มีงานทำ','หน้าตลาดแรงงาน · การ์ดอัตราการว่างงาน'],
+ 'labor.emp'   :['หน้าภาพรวม · การ์ดผู้มีงานทำ','หน้าตลาดแรงงาน · การ์ดผู้มีงานทำ'],
+ 'labor.force' :['หน้าตลาดแรงงาน · การ์ดกำลังแรงงานรวม เป็นตัวหารของอัตราการว่างงาน'],
+ 'labor.informal':['หน้าตลาดแรงงาน · การ์ดแรงงานนอกระบบ'],
+ 'social.m33'  :['หน้าตลาดแรงงาน · การ์ดผู้ประกันตนในระบบประกันสังคม'],
+ 'social.m40'  :['หน้าตลาดแรงงาน · การ์ดผู้ประกันตนในระบบประกันสังคม'],
+ 'social.m39'  :['หน้าตลาดแรงงาน · การ์ดผู้ประกันตนในระบบประกันสังคม'],
+ 'social.estab':['หน้าตลาดแรงงาน · การ์ดสถานประกอบการในระบบ'],
+ 'tour.visit'  :['หน้าท่องเที่ยว · การ์ดใหญ่ผู้เยี่ยมเยือน และกราฟแนวโน้มรายปี'],
+ 'tour.rev'    :['หน้าท่องเที่ยว · การ์ดรายได้จากการท่องเที่ยว'],
+ 'tour.occ'    :['หน้าท่องเที่ยว · การ์ดอัตราการเข้าพักเฉลี่ย และกล่องศักยภาพที่ยังไม่ถูกใช้'],
+ 'tour.room'   :['หน้าท่องเที่ยว · ใช้คำนวณห้องพักที่ว่างเฉลี่ยต่อคืน']
+};
+function showsOf(dom,key){return SHOWS[dom+'.'+key]||[]}
+function showsText(dom,key){const a=showsOf(dom,key);return a.length?a.join(' · '):'ยังไม่ได้ผูกกับการ์ดใดบนแดชบอร์ด'}
+
 const DOMAINS=[
  {id:'spend',freq:'M',no:'การคลัง',name:'การใช้จ่ายภาครัฐ',head:'ผลการเบิกจ่ายและใช้จ่ายงบประมาณ (สนง.คลังจังหวัด)',
   series:[['inv','เบิกจ่ายงบลงทุนสะสม','ล้านบาท'],['ope','เบิกจ่ายงบประจำสะสม','ล้านบาท'],
@@ -482,6 +536,7 @@ document.addEventListener('change',async e=>{
     const wb=XLSX.read(buf,{type:'array'});
     const {items,bad}=parseWorkbook(wb);
     showPreview(items,bad);
+    XLFILE=file.name;
     say('#xlMsg', items.length?'ok':'warn', items.length?`อ่านไฟล์ "${file.name}" สำเร็จ ตรวจสอบข้อมูลด้านล่างก่อนกดส่ง`:'ไม่พบข้อมูลตัวเลขในไฟล์');
   }catch(err){say('#xlMsg','err',err.message);$('#xlPreview').innerHTML='';$('#btnXlSubmit').disabled=true}
   finally{e.target.value=''}
@@ -491,8 +546,8 @@ document.addEventListener('click',async e=>{
   if(!XLITEMS.length)return;
   const btn=$('#btnXlSubmit');btn.disabled=true;btn.textContent='กำลังส่ง…';
   try{
-    const r=await submitBatch(XLITEMS);
-    say('#xlMsg','ok',`ส่งสำเร็จ — เพิ่มใหม่ ${r.ins} รายการ แก้ไข ${r.upd} รายการ`);
+    const r=await submitBatch(XLITEMS,'นำเข้าจากไฟล์ '+(XLFILE||''));
+    say('#xlMsg','ok',`ส่งสำเร็จ — เพิ่มใหม่ ${r.ins} รายการ แก้ไข ${r.upd} รายการ · ดูและแก้ไขย้อนหลังได้ที่ประวัติการแก้ไขข้อมูล`);
     XLITEMS=[];$('#xlPreview').innerHTML='';
   }catch(err){
     queuePush(XLITEMS);
@@ -636,7 +691,8 @@ function buildForms(){
         <thead><tr><th style="width:48%">ตัวชี้วัด</th><th style="width:24%">ค่า</th><th class="un">หน่วย</th><th style="width:22%">หมายเหตุ</th></tr></thead>
         <tbody>${d.series.map(s=>`
           <tr>
-            <td class="lb">${s[1]}</td>
+            <td class="lb">${s[1]}
+              <span class="shows"><b>แสดงที่</b> ${showsText(d.id,s[0])}</span></td>
             <td><input type="number" step="any" inputmode="decimal" data-dom="${d.id}" data-key="${s[0]}" data-unit="${s[2]}" placeholder="—"><span class="flag" data-flag="${d.id}.${s[0]}"></span></td>
             <td class="un">${s[2]}</td>
             <td><input type="text" data-note="${d.id}.${s[0]}" placeholder="ถ้ามี"></td>
@@ -759,22 +815,49 @@ async function showHistory(){
       const d=DOMAINS.find(x=>x.id===dom); if(!d)return dom+'/'+key;
       const s2=d.series.find(x=>x[0]===key); return s2?s2[1]:key;
     };
+    const isImport=h=>/นำเข้าจากไฟล์/.test(h.note||'');
     $('#histBox').innerHTML=`<table><thead><tr>
-        <th style="width:132px">เวลา</th><th>ตัวชี้วัด</th><th style="width:120px">งวด · พื้นที่</th>
-        <th style="width:150px">ค่าเดิม → ค่าใหม่</th><th style="width:96px">โดย</th><th style="width:88px"></th>
+        <th style="width:128px">เวลา</th><th>ตัวชี้วัด</th><th style="width:180px">แสดงที่แดชบอร์ด</th>
+        <th style="width:116px">งวด · พื้นที่</th>
+        <th style="width:146px">ค่าเดิม → ค่าใหม่</th><th style="width:104px">ที่มา · โดย</th><th style="width:132px"></th>
       </tr></thead><tbody>`+
       r.history.map((h,i)=>`<tr>
         <td style="font-size:11px;color:var(--faint)">${new Date(h.ts).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'})}</td>
         <td>${nameOf(h.domain,h.key)}</td>
+        <td style="font-size:10.5px;color:#5c7a70;line-height:1.6">${showsText(h.domain,h.key)}</td>
         <td style="font-size:11px">${periodLabel(h.period)}<br><span style="color:var(--faint)">${areaLabel(h.area)}</span></td>
         <td>${h.oldValue==null?'<span style="color:var(--faint)">บันทึกครั้งแรก</span>':`<span class="oldv">${h.oldValue.toLocaleString('th-TH')}</span> → `}<span class="newv">${h.newValue.toLocaleString('th-TH')}</span></td>
-        <td style="font-size:11px;color:var(--dim)">${h.by||'—'}</td>
-        <td>${h.oldValue==null?'':`<button class="mini2" data-undo="${i}">คืนค่าเดิม</button>`}</td>
+        <td style="font-size:11px;color:var(--dim)">
+          <span class="srcbadge ${isImport(h)?'imp':'man'}">${isImport(h)?'นำเข้าไฟล์':'กรอกเอง'}</span><br>${h.by||'—'}</td>
+        <td><button class="mini2" data-hedit="${i}">แก้ไขค่า</button>
+          ${h.oldValue==null?'':`<button class="mini2" data-undo="${i}">คืนค่าเดิม</button>`}</td>
       </tr>`).join('')+'</tbody></table>';
     window.__HIST=r.history;
   }catch(e){
     $('#histBox').innerHTML=`<div style="padding:18px;color:var(--clay);font-size:12.5px">โหลดประวัติไม่สำเร็จ: ${e.message}</div>`;
   }
+}
+/* แก้ไขค่าจากหน้าประวัติได้ทันที ไม่ต้องย้อนกลับไปหาช่องกรอกเอง */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-hedit]'); if(!b)return;
+  const h=(window.__HIST||[])[+b.dataset.hedit]; if(!h)return;
+  const cur=h.newValue;
+  const ans=prompt(`แก้ไขค่าของ "${nameOfHist(h)}"\nงวด ${periodLabel(h.period)} · ${areaLabel(h.area)}\nค่าปัจจุบัน ${cur.toLocaleString('th-TH')}\n\nแสดงที่ ${showsText(h.domain,h.key)}\n\nกรอกค่าใหม่:`, String(cur));
+  if(ans===null)return;
+  const v=Number(String(ans).replace(/[, ]/g,''));
+  if(isNaN(v)){alert('ค่าที่กรอกไม่ใช่ตัวเลข');return}
+  setPeriod(h.period);
+  setTimeout(()=>{
+    const el=document.querySelector(`input[data-dom="${h.domain}"][data-key="${h.key}"]`);
+    if(el){el.value=v;el.classList.add('dirty');el.scrollIntoView({behavior:'smooth',block:'center'});el.focus();
+      checkAnomaly(el);
+      say('#saveMsg','warn','เติมค่าใหม่ให้แล้วที่ช่อง "'+nameOfHist(h)+'" ตรวจสอบแล้วกดบันทึกเพื่อยืนยัน');}
+    else say('#saveMsg','warn','ตัวชี้วัดนี้ไม่ได้อยู่ในประเด็นที่เลือกอยู่ ให้เลือกประเด็นให้ตรงก่อนแล้วลองใหม่');
+  },700);
+});
+function nameOfHist(h){
+  const d=DOMAINS.find(x=>x.id===h.domain); if(!d)return h.domain+'/'+h.key;
+  const s2=d.series.find(x=>x[0]===h.key); return s2?s2[1]:h.key;
 }
 document.addEventListener('click',e=>{
   const u=e.target.closest('[data-undo]'); if(!u)return;
@@ -867,6 +950,7 @@ $('#btnPin').onclick=async()=>{
 };
 
 /* ─────────── นำเข้าจาก Excel ─────────── */
+let XLFILE='';
 let XLITEMS=[];
 const TH_Q=['ไตรมาส 1','ไตรมาส 2','ไตรมาส 3','ไตรมาส 4'];
 const FREQ_LABEL={M:'รายเดือน',Q:'รายไตรมาส',Y:'รายปี'};
@@ -890,6 +974,7 @@ function buildTemplate(all){
     ['1. แต่ละประเด็นอยู่คนละชีต ดูชื่อชีตด้านล่างของโปรแกรม'],
     ['2. กรอกตัวเลขในช่องงวดที่มีข้อมูล ช่องว่างจะถูกข้าม ไม่ต้องใส่ 0'],
     ['3. ห้ามแก้คอลัมน์ code และห้ามลบแถวหัวตาราง เพราะระบบใช้จับคู่ตัวชี้วัด'],
+    ['3.1 คอลัมน์ "แสดงที่แดชบอร์ด" บอกว่าตัวเลขแถวนั้นไปขึ้นที่หน้าไหนการ์ดใบไหน อ่านอย่างเดียว ไม่ต้องกรอก'],
     ['4. กรอกเฉพาะแถว PROV ได้ ถ้ายังไม่มีข้อมูลรายอำเภอ'],
     ['5. ต้องการกรอกหลายปี ให้คัดลอกแถวแล้วเปลี่ยนเลขปี พ.ศ.'],
     ['6. ตัวเลขใส่เป็นตัวเลขล้วน ไม่ต้องมีจุลภาคหรือหน่วย'],
@@ -903,14 +988,16 @@ function buildTemplate(all){
   /* ชีตข้อมูลรายประเด็น */
   list.forEach(d=>{
     const cols=colsOf(d);
-    const head=['code','ตัวชี้วัด','หน่วย','รหัสพื้นที่','พื้นที่','ปี พ.ศ.',...cols];
+    const head=['code','ตัวชี้วัด','หน่วย','แสดงที่แดชบอร์ด','รหัสพื้นที่','พื้นที่','ปี พ.ศ.',...cols];
     const rows=[];
     d.series.forEach(sr=>areas.forEach(a=>
-      rows.push([d.id+'|'+sr[0], sr[1], sr[2], a[0], a[1], y].concat(cols.map(()=>'')))));
+      rows.push([d.id+'|'+sr[0], sr[1], sr[2], showsText(d.id,sr[0]), a[0], a[1], y].concat(cols.map(()=>'')))));
     const ws=XLSX.utils.aoa_to_sheet([
       [d.name+'  ·  '+FREQ_LABEL[d.freq||'M']+'  ·  '+((S.agency&&S.agency.name)||'')],
-      [d.head],[''],head,...rows]);
-    ws['!cols']=[{wch:16},{wch:38},{wch:16},{wch:11},{wch:20},{wch:9},...cols.map(()=>({wch:12}))];
+      [d.head],
+      ['คอลัมน์ "แสดงที่แดชบอร์ด" บอกว่าตัวเลขแถวนั้นไปขึ้นที่หน้าไหน การ์ดใบไหน · เป็นคอลัมน์อ่านอย่างเดียว ไม่ต้องแก้'],
+      head,...rows]);
+    ws['!cols']=[{wch:16},{wch:38},{wch:16},{wch:64},{wch:11},{wch:20},{wch:9},...cols.map(()=>({wch:12}))];
     ws['!freeze']={xSplit:2,ySplit:4};
     XLSX.utils.book_append_sheet(wb,ws,safeSheetName(d.name));
   });
@@ -971,8 +1058,10 @@ function showPreview(items,bad){
   XLITEMS=items;
   $('#btnXlSubmit').disabled=!items.length;
   const areaName=c=>c==='PROV'?'จังหวัด':('อ.'+((DISTRICTS.find(d=>d[0]===c)||[,c])[1]));
-  const head='<tr><th>ตัวชี้วัด</th><th>พื้นที่</th><th>งวด</th><th style="text-align:right">ค่า</th></tr>';
-  const body=items.slice(0,200).map(i=>`<tr><td>${i.label}</td><td>${areaName(i.area)}</td>
+  const head='<tr><th>ตัวชี้วัด</th><th>แสดงที่แดชบอร์ด</th><th>พื้นที่</th><th>งวด</th><th style="text-align:right">ค่า</th></tr>';
+  const body=items.slice(0,200).map(i=>`<tr><td>${i.label}</td>
+    <td style="font-size:11px;color:#5c7a70;line-height:1.6">${showsText(i.domain,i.key)}</td>
+    <td>${areaName(i.area)}</td>
     <td>${/Q/.test(i.period)?('ไตรมาส '+i.period.slice(-1)):TH_M[+i.period.slice(-2)-1]} ${i.period.slice(0,4)}</td>
     <td style="text-align:right;font-family:var(--fn)">${Number(i.value).toLocaleString('th-TH')}</td></tr>`).join('');
   $('#xlPreview').innerHTML=`
@@ -985,10 +1074,11 @@ function showPreview(items,bad){
       <table class="grid" style="font-size:12px"><thead>${head}</thead><tbody>${body}</tbody></table></div>
     ${items.length>200?`<div class="hint" style="border-top:0">แสดงตัวอย่าง 200 รายการแรกจากทั้งหมด ${items.length} รายการ</div>`:''}`;
 }
-async function submitBatch(items){
+async function submitBatch(items,srcNote){
   const CH=300;let ins=0,upd=0;
   for(let i=0;i<items.length;i+=CH){
-    const part=items.slice(i,i+CH).map(({label,...rest})=>rest);
+    const part=items.slice(i,i+CH).map(({label,...rest})=>
+      Object.assign({},rest,{note:rest.note||srcNote||'นำเข้าจากไฟล์'}));
     const r=await jsonp({action:'submit',token:S.token,payload:JSON.stringify(part)});
     if(!r.ok)throw new Error(r.error);
     ins+=r.inserted;upd+=r.updated;

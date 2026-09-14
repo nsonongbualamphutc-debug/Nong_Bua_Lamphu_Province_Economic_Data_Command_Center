@@ -35,17 +35,17 @@
 
   <div id="agri-crop">
     <div class="grid g21 mb">
-      <div class="c"><header><h3>ภาวะการผลิตพืชอายุสั้น</h3><span class="u">ณ 8 กันยายน 2569</span>
+      <div class="c"><header><span class="hdico icow img" data-hdico="crop"></span><h3>ภาวะการผลิตพืชอายุสั้น</h3><span class="u">ณ 8 กันยายน 2569</span>
         <span class="r">มูลค่า = ผลผลิต × ราคาที่เกษตรกรขายได้</span></header>
         <div class="b"><div class="sc" style="max-height:400px"><table class="t" data-owner="crop" id="tCrop"></table></div></div></div>
-      <div class="c"><header><h3>สัดส่วนเนื้อที่ปลูก</h3></header>
+      <div class="c"><header><span class="hdico icow img" data-hdico="landuse"></span><h3>สัดส่วนเนื้อที่ปลูก</h3></header>
         <div class="b"><div class="ch"><canvas id="cCropArea"></canvas></div>
         <div class="note">ข้าวนาปีครองเนื้อที่มากที่สุดแต่ยังไม่มีตัวเลขผลผลิตเพราะอยู่ระหว่างฤดูกาล ขณะที่อ้อยโรงงานเป็นตัวสร้างมูลค่าสูงสุด</div></div></div>
     </div>
     <div class="grid g2">
-      <div class="c"><header><h3>มูลค่าผลผลิตรายพืช</h3><span class="u">ล้านบาท · สเกลลอการิทึม</span></header>
+      <div class="c"><header><span class="hdico icow img" data-hdico="income"></span><h3>มูลค่าผลผลิตรายพืช</h3><span class="u">ล้านบาท · สเกลลอการิทึม</span></header>
         <div class="b"><div class="ch"><canvas id="cCropValue"></canvas></div></div></div>
-      <div class="c"><header><h3>ผลผลิตเฉลี่ยต่อไร่</h3><span class="u">กก./ไร่ · สเกลลอการิทึม</span></header>
+      <div class="c"><header><span class="hdico icow img" data-hdico="rice"></span><h3>ผลผลิตเฉลี่ยต่อไร่</h3><span class="u">กก./ไร่ · สเกลลอการิทึม</span></header>
         <div class="b"><div class="ch"><canvas id="cCropYield"></canvas></div></div></div>
     </div>
   </div>
@@ -53,22 +53,22 @@
   <div id="agri-fruit" class="hide">
     <div class="grid g3 mb" id="fruitCards"></div>
     <div class="grid g2">
-      <div class="c"><header><h3>พื้นที่ปลูกและพื้นที่ให้ผล</h3><span class="u">ไร่</span></header>
+      <div class="c"><header><span class="hdico icow img" data-hdico="fruit"></span><h3>พื้นที่ปลูกและพื้นที่ให้ผล</h3><span class="u">ไร่</span></header>
         <div class="b"><div class="ch"><canvas id="cFruit"></canvas></div>
         <div class="note">ช่องว่างระหว่างพื้นที่ปลูกกับพื้นที่ให้ผล คือผลผลิตที่กำลังจะเข้ามาในอีก 2–4 ปี ทุเรียนมีช่องว่างมากที่สุด (327 ไร่ ปลูก แต่ให้ผลเพียง 95 ไร่)</div></div></div>
-      <div class="c"><header><h3>ปฏิทินการเก็บเกี่ยวและราคา</h3></header>
+      <div class="c"><header><span class="hdico icow img" data-hdico="history"></span><h3>ปฏิทินการเก็บเกี่ยวและราคา</h3></header>
         <div class="b"><div class="sc"><table class="t" data-owner="crop" id="tFruit"></table></div></div></div>
     </div>
   </div>
 
   <div id="agri-main" class="hide">
     <div class="grid g21 mb">
-      <div class="c"><header><h3>พืชเศรษฐกิจหลักของจังหวัด</h3><span class="u">ฤดูการผลิต 2568/69–2569/70</span></header>
+      <div class="c"><header><span class="hdico icow img" data-hdico="maincrop"></span><h3>พืชเศรษฐกิจหลักของจังหวัด</h3><span class="u">ฤดูการผลิต 2568/69–2569/70</span></header>
         <div class="b"><div class="sc"><table class="t" data-owner="crop" id="tMainCrop"></table></div></div></div>
-      <div class="c"><header><h3>สัดส่วนพื้นที่ปลูก</h3></header>
+      <div class="c"><header><span class="hdico icow img" data-hdico="landuse"></span><h3>สัดส่วนพื้นที่ปลูก</h3></header>
         <div class="b"><div class="ch"><canvas id="cMainCrop"></canvas></div></div></div>
     </div>
-    <div class="c"><header><h3>ผลผลิตเฉลี่ยต่อไร่เทียบระหว่างพืช</h3><span class="u">กิโลกรัม/ไร่</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="compare"></span><h3>ผลผลิตเฉลี่ยต่อไร่เทียบระหว่างพืช</h3><span class="u">กิโลกรัม/ไร่</span></header>
       <div class="b"><div class="ch"><canvas id="cMainYield"></canvas></div>
       <div class="note">อ้อยโรงงานให้ผลผลิตต่อไร่สูงที่สุด แต่ราคาต่อกิโลกรัมต่ำที่สุด การเปรียบเทียบจึงต้องดูมูลค่าต่อไร่ควบคู่ไปด้วย</div></div></div>
   </div>
@@ -76,7 +76,7 @@
   <div id="agri-water" class="hide">
     <div class="grid g4 mb" id="waterKpi"></div>
     <div class="grid g21 mb">
-      <div class="c"><header><h3>แหล่งน้ำเพื่อการเกษตร</h3><span class="u">แยกตามประเภท</span>
+      <div class="c"><header><span class="hdico icow img" data-hdico="water"></span><h3>แหล่งน้ำเพื่อการเกษตร</h3><span class="u">แยกตามประเภท</span>
         <span class="r"><span class="chip mock">บางรายการรอยืนยัน</span></span></header>
         <div class="b"><div class="sc"><table class="t" data-owner="crop" id="tWater"></table></div></div></div>
       <div class="c"><header><span class="hdico icow img" data-hdico="irrigation"></span>
@@ -85,7 +85,7 @@
           <div class="note">ข้อมูลจากโครงการชลประทานหนองบัวลำภู กรมชลประทาน — เป็นแหล่งน้ำที่มีระบบส่งน้ำถึงแปลงจริง
           ต่างจากแหล่งน้ำธรรมชาติที่ยังต้องสูบเอง</div></div></div>
     </div>
-    <div class="c"><header><h3>ความเชื่อมโยงกับศูนย์บัญชาการข้อมูลสถานการณ์น้ำ</h3></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="network"></span><h3>ความเชื่อมโยงกับศูนย์บัญชาการข้อมูลสถานการณ์น้ำ</h3></header>
       <div class="b" style="font-size:12.5px;line-height:1.9;color:var(--dim)">
         <p style="margin-top:0">ข้อมูลระดับน้ำ อ่างเก็บน้ำ ประตูระบายน้ำ และปริมาณฝนรายตำบล อยู่ในระบบศูนย์บัญชาการข้อมูลสถานการณ์น้ำของจังหวัดอยู่แล้ว
         ระบบเศรษฐกิจนี้จะดึงเฉพาะตัวชี้วัดที่กระทบการผลิตทางการเกษตรมาแสดง เช่น ปริมาณน้ำต้นทุนต่อพื้นที่เพาะปลูก และพื้นที่เสี่ยงขาดน้ำในฤดูแล้ง</p>
@@ -96,25 +96,25 @@
 
   <div id="agri-org" class="hide">
     <div class="grid g21 mb">
-      <div class="c"><header><h3>โครงการระบบส่งเสริมการเกษตรแบบแปลงใหญ่</h3>
+      <div class="c"><header><span class="hdico icow img" data-hdico="bigplot"></span><h3>โครงการระบบส่งเสริมการเกษตรแบบแปลงใหญ่</h3>
         <span class="u">73 แปลง · 3,996 ราย · 36,900 ไร่</span></header>
         <div class="b"><div class="sc"><table class="t" data-owner="crop" id="tBigPlot"></table></div></div></div>
-      <div class="c"><header><h3>แหล่งท่องเที่ยวเชิงเกษตรรายอำเภอ</h3><span class="u">73 แห่ง</span></header>
+      <div class="c"><header><span class="hdico icow img" data-hdico="tourism"></span><h3>แหล่งท่องเที่ยวเชิงเกษตรรายอำเภอ</h3><span class="u">73 แห่ง</span></header>
         <div class="b"><div class="ch"><canvas id="cAgriTour"></canvas></div></div></div>
     </div>
     <div class="grid g3">
-      <div class="c"><header><h3>สถาบันและศูนย์เรียนรู้</h3></header><div class="b" id="instBox"></div></div>
+      <div class="c"><header><span class="hdico icow img" data-hdico="organic"></span><h3>สถาบันและศูนย์เรียนรู้</h3></header><div class="b" id="instBox"></div></div>
       <div class="c"><header><span class="hdico icow img" data-hdico="gap"></span><h3>การรับรองมาตรฐาน</h3></header><div class="b" id="gapBox"></div></div>
-      <div class="c"><header><h3>วิสาหกิจชุมชนเด่น</h3></header><div class="b" id="vsBox"></div></div>
+      <div class="c"><header><span class="hdico icow img" data-hdico="award"></span><h3>วิสาหกิจชุมชนเด่น</h3></header><div class="b" id="vsBox"></div></div>
     </div>
   </div>
 
   <div id="agri-base" class="hide">
     <div class="grid g4 mb" id="baseKpi"></div>
     <div class="grid g2">
-      <div class="c"><header><h3>โครงสร้างการปกครองและประชากร</h3><span class="u">ณ ก.ค. 2569</span></header>
+      <div class="c"><header><span class="hdico icow img" data-hdico="district"></span><h3>โครงสร้างการปกครองและประชากร</h3><span class="u">ณ ก.ค. 2569</span></header>
         <div class="b" id="baseInfo"></div></div>
-      <div class="c"><header><h3>ครัวเรือนเกษตรกรตามช่วงอายุ</h3><span class="u">คน · ทะเบียนเกษตรกร</span></header>
+      <div class="c"><header><span class="hdico icow img" data-hdico="household"></span><h3>ครัวเรือนเกษตรกรตามช่วงอายุ</h3><span class="u">คน · ทะเบียนเกษตรกร</span></header>
         <div class="b"><div class="ch"><canvas id="cAgeBand"></canvas></div>
         <div class="note">ช่วงอายุ 46–65 ปี เป็นกำลังหลักของภาคเกษตร ขณะที่กลุ่มอายุต่ำกว่า 35 ปีมีสัดส่วนน้อย เป็นสัญญาณเรื่องผู้สืบทอดอาชีพเกษตรกรรมในระยะยาว</div></div></div>
     </div>
@@ -130,7 +130,7 @@
 function renderAgri(){
   const C=D.crop,B=D.base,val=cropValue();
   $('#agriKpi').innerHTML=[
-    kpiCard({icon:'people',img:'population',color:cv('--leaf'),label:'ครัวเรือนเกษตรกร',value:f(C.hh,0),unit:'ครัวเรือน',
+    kpiCard({icon:'people',img:'household',color:cv('--leaf'),label:'ครัวเรือนเกษตรกร',value:f(C.hh,0),unit:'ครัวเรือน',
       chip:'<span class="chip">ทะเบียน '+f(B.agriHH,0)+'</span>',sub:'ราว 1 ใน 5 ของประชากร',
       tip:tipOf({t:'ครัวเรือนเกษตรกร',
         d:'จำนวนครัวเรือนที่ปลูกพืชอายุสั้นในฤดูกาลนี้ นับซ้ำได้ถ้าครัวเรือนหนึ่งปลูกหลายชนิดพืช จึงสูงกว่าจำนวนครัวเรือนที่ขึ้นทะเบียนเกษตรกร',

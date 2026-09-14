@@ -57,35 +57,35 @@ function renderOtop(){
   <div class="grid g5 mb" id="oKpi"></div>
 
   <div class="grid g21 mb">
-    <div class="c"><header><h3>รายได้จากผลิตภัณฑ์ OTOP รายปี</h3><span class="u">ล้านบาท · ${YS[0]}–${last}</span>
+    <div class="c"><header><span class="hdico icow img" data-hdico="otop"></span><h3>รายได้จากผลิตภัณฑ์ OTOP รายปี</h3><span class="u">ล้านบาท · ${YS[0]}–${last}</span>
       <span class="r">${viewToggle('cRev')}</span></header>
       <div class="b">
         <div id="cRev-chart"><div class="ch lg"><canvas id="cRev"></canvas></div></div>
         <div id="cRev-table" class="hide"><div class="sc" style="max-height:330px"><table class="t" id="tRev"></table></div></div>
         <div class="note" id="revNote"></div>
       </div></div>
-    <div class="c"><header><h3>รายได้รายเดือน ปีงบประมาณ 2569</h3><span class="u">ล้านบาท</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="history"></span><h3>รายได้รายเดือน ปีงบประมาณ 2569</h3><span class="u">ล้านบาท</span></header>
       <div class="b"><div class="ch lg"><canvas id="cMon"></canvas></div>
         <div class="note" id="monNote"></div></div></div>
   </div>
 
   <div class="grid g3 mb">
-    <div class="c"><header><h3>รายได้รายอำเภอ</h3><span class="u">ปี <b id="yLab">${SEL_YEAR}</b> · ล้านบาท</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="district"></span><h3>รายได้รายอำเภอ</h3><span class="u">ปี <b id="yLab">${SEL_YEAR}</b> · ล้านบาท</span></header>
       <div class="b"><div id="otopPlayer"></div><div id="ampBars"></div>
         <div class="note" id="ampNote"></div></div></div>
-    <div class="c"><header><h3>ผลิตภัณฑ์จำแนกตามประเภท</h3><span class="u">ปี ${O.prodYear} · ${prodTot} ชนิด</span>
+    <div class="c"><header><span class="hdico icow img" data-hdico="otopstar"></span><h3>ผลิตภัณฑ์จำแนกตามประเภท</h3><span class="u">ปี ${O.prodYear} · ${prodTot} ชนิด</span>
       <span class="r">${viewToggle('cType')}</span></header>
       <div class="b">
         <div id="cType-chart"><div class="ch"><canvas id="cType"></canvas></div></div>
         <div id="cType-table" class="hide"><div class="sc"><table class="t" id="tType"></table></div></div>
       </div></div>
-    <div class="c"><header><h3>ลักษณะผู้ประกอบการ</h3><span class="u">${f(O.entTotal,0)} ราย</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="household"></span><h3>ลักษณะผู้ประกอบการ</h3><span class="u">${f(O.entTotal,0)} ราย</span></header>
       <div class="b"><div id="entBox"></div>
         <div class="note">ผู้ประกอบการ OTOP ในระบบทั้งหมด ${f(O.entTotal,0)} ราย กระจายทุกอำเภอ กลุ่มที่มีสัดส่วนสูงสุดคือกลุ่มผู้ผลิตชุมชน ซึ่งเป็นรูปแบบที่กระจายรายได้ได้กว้างที่สุด</div></div></div>
   </div>
 
   <div class="grid g2 mb">
-    <div class="c"><header><h3>ศักยภาพผลิตภัณฑ์รายอำเภอ</h3>
+    <div class="c"><header><span class="hdico icow img" data-hdico="target"></span><h3>ศักยภาพผลิตภัณฑ์รายอำเภอ</h3>
       <span class="u">ผลิตภัณฑ์ 5 ดาว · ร้านค้าชุมชน · แหล่งเรียนรู้วิชชาลัย</span>
       <span class="r">${viewToggle('cCap')}</span></header>
       <div class="b">
@@ -93,7 +93,7 @@ function renderOtop(){
         <div id="cCap-table" class="hide"><div class="sc"><table class="t" id="tCap"></table></div></div>
         <div class="note" id="capNote"></div>
       </div></div>
-    <div class="c"><header><h3>รายได้ OTOP เทียบกับภาคเศรษฐกิจอื่น</h3><span class="u">ล้านบาทต่อปี</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="compare"></span><h3>รายได้ OTOP เทียบกับภาคเศรษฐกิจอื่น</h3><span class="u">ล้านบาทต่อปี</span></header>
       <div class="b"><div class="ch lg"><canvas id="cCmp"></canvas></div>
         <div class="note" id="cmpNote"></div></div></div>
   </div>

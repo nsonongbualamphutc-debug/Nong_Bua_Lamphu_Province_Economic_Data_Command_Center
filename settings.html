@@ -50,7 +50,7 @@
   <div id="setBody" class="hide">
 
   <div class="grid g2 mb">
-    <div class="c"><header><h3>ภาพพื้นหลังหน้าปก</h3><span class="u">แนะนำขนาด 2400×1350 px</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="area"></span><h3>ภาพพื้นหลังหน้าปก</h3><span class="u">แนะนำขนาด 2400×1350 px</span></header>
       <div class="b">
         <div class="fieldrow"><label>เลือกจากภาพที่เตรียมไว้</label>
           <div class="covpick" id="covPick"></div></div>
@@ -61,7 +61,7 @@
         <div class="fieldrow"><label>ความเข้มของภาพ <span class="n" id="setCoverOpV">34</span>%</label>
           <input type="range" id="setCoverOp" min="0" max="70" value="34"></div>
       </div></div>
-    <div class="c"><header><h3>ภาพพื้นหลังแถบเมนู</h3><span class="u">แนะนำภาพแนวตั้ง 600×1400 px</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="settings"></span><h3>ภาพพื้นหลังแถบเมนู</h3><span class="u">แนะนำภาพแนวตั้ง 600×1400 px</span></header>
       <div class="b">
         <div class="fieldrow"><label>วางลิงก์รูปภาพ (URL)</label>
           <input class="inp" id="setSideUrl" placeholder="https://... หรือ assets/side-forest.jpg"></div>
@@ -72,20 +72,20 @@
       </div></div>
   </div>
   <div class="grid g3 mb">
-    <div class="c"><header><h3>สีหลักของระบบ</h3></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="settings"></span><h3>สีหลักของระบบ</h3></header>
       <div class="b"><div class="grid g4" id="accentPick" style="gap:9px"></div>
       <div class="note">สีหลักใช้กับปุ่ม เมนูที่เลือก และเส้นกราฟหลัก</div></div></div>
-    <div class="c"><header><h3>โหมดจอนำเสนอ</h3></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="target"></span><h3>โหมดจอนำเสนอ</h3></header>
       <div class="b"><div class="fieldrow"><label>เปลี่ยนหน้าอัตโนมัติทุก <span class="n" id="setKioskV">20</span> วินาที</label>
         <input type="range" id="setKiosk" min="8" max="60" step="2" value="20"></div>
         <div class="note">กดปุ่ม “จอนำเสนอ” บนแถบบนเพื่อเริ่มหมุนหน้าอัตโนมัติ เหมาะกับจอในห้องประชุมหรือโถงสำนักงาน</div></div></div>
-    <div class="c"><header><h3>ข้อมูลที่แก้ไขไว้ในเครื่อง</h3></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="history"></span><h3>ข้อมูลที่แก้ไขไว้ในเครื่อง</h3></header>
       <div class="b"><div id="editStatus" style="font-size:12.5px;color:var(--dim);line-height:1.8"></div>
         <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap">
           <button class="tb" id="btnExportEdits">ส่งออกเป็น JSON</button>
           <button class="tb" id="btnResetEdits">คืนค่าเดิมทั้งหมด</button></div></div></div>
   </div>
-  <div class="c"><header><h3>การเชื่อมต่อฐานข้อมูล</h3></header>
+  <div class="c"><header><span class="hdico icow img" data-hdico="network"></span><h3>การเชื่อมต่อฐานข้อมูล</h3></header>
     <div class="b">
       <div class="grid g2">
         <div class="fieldrow"><label>Google Apps Script Web App URL (ลงท้ายด้วย /exec)</label>
@@ -286,7 +286,7 @@ function showGenerated(list){
   document.getElementById('pinReveal').classList.remove('hide');
   document.getElementById('pinReveal').innerHTML=`
     <div class="c" style="border-color:var(--gold);margin-bottom:13px">
-      <header><h3>รหัสใหม่ ${list.length} หน่วยงาน</h3>
+      <header><span class="hdico icow img" data-hdico="lock"></span><h3>รหัสใหม่ ${list.length} หน่วยงาน</h3>
         <span class="u">แสดงครั้งเดียว · ${new Date().toLocaleString('th-TH')}</span>
         <span class="r">
           <button class="tb" id="btnEyeAll">

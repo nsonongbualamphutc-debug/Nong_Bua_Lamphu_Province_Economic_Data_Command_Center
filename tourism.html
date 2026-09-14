@@ -56,34 +56,34 @@ function renderTour(){
   <div class="grid g3 mb" id="tBig"></div>
 
   <div class="grid g21 mb">
-    <div class="c"><header><h3>แนวโน้มผู้เยี่ยมเยือน</h3><span class="u">คน · ${YRS[0]}–${YRS[YRS.length-1]}</span>
+    <div class="c"><header><span class="hdico icow img" data-hdico="visitor"></span><h3>แนวโน้มผู้เยี่ยมเยือน</h3><span class="u">คน · ${YRS[0]}–${YRS[YRS.length-1]}</span>
       <span class="r">${viewToggle('cTrend')}</span></header>
       <div class="b">
         <div id="cTrend-chart"><div class="ch lg"><canvas id="cTrend"></canvas></div></div>
         <div id="cTrend-table" class="hide"><div class="sc" style="max-height:330px"><table class="t" id="tTrend"></table></div></div>
         <div class="note" id="trendNote"></div>
       </div></div>
-    <div class="c"><header><h3>สัดส่วนชาวไทยและชาวต่างชาติ</h3><span class="u">ปี ${TY}</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="migration"></span><h3>สัดส่วนชาวไทยและชาวต่างชาติ</h3><span class="u">ปี ${TY}</span></header>
       <div class="b"><div class="ch"><canvas id="cMix"></canvas></div>
         <div id="spendBox" style="margin-top:10px"></div></div></div>
   </div>
 
   <div class="grid g2 mb">
-    <div class="c"><header><h3>ค่าใช้จ่ายเฉลี่ยต่อคนต่อวัน</h3><span class="u">บาท</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="consume"></span><h3>ค่าใช้จ่ายเฉลี่ยต่อคนต่อวัน</h3><span class="u">บาท</span></header>
       <div class="b"><div class="ch"><canvas id="cSpend"></canvas></div>
         <div class="note" id="spendNote"></div></div></div>
-    <div class="c"><header><h3>อัตราการเข้าพักเฉลี่ย</h3><span class="u">ร้อยละ</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="accommodation"></span><h3>อัตราการเข้าพักเฉลี่ย</h3><span class="u">ร้อยละ</span></header>
       <div class="b"><div class="ch"><canvas id="cOcc"></canvas></div>
         <div class="note" id="occNote"></div></div></div>
   </div>
 
-  <div class="c mb"><header><h3>ผู้เยี่ยมเยือน รายได้ และอัตราการเข้าพักรายเดือน</h3>
+  <div class="c mb"><header><span class="hdico icow img" data-hdico="history"></span><h3>ผู้เยี่ยมเยือน รายได้ และอัตราการเข้าพักรายเดือน</h3>
     <span class="u">ปีงบประมาณ 2569</span></header>
     <div class="b"><div class="ch lg"><canvas id="cMon"></canvas></div>
       <div class="note" id="monNote"></div></div></div>
 
   <div class="grid g21 mb">
-    <div class="c"><header><h3>แหล่งท่องเที่ยว ${T.spots.length} แห่ง</h3>
+    <div class="c"><header><span class="hdico icow img" data-hdico="area"></span><h3>แหล่งท่องเที่ยว ${T.spots.length} แห่ง</h3>
       <span class="u">คลิกหมุดหรือรายชื่อ แล้วกดนำทางไปได้ทันที</span></header>
       <div class="b">
         <div class="svc-tools">
@@ -109,7 +109,7 @@ function renderTour(){
           กดที่หมุดจะมีปุ่มนำทางด้วย Google Maps เปิดแผนที่ และคัดลอกพิกัด
           พร้อมปุ่มค้นหาที่พักและร้านอาหารใกล้จุดนั้น ใช้วางแผนเส้นทางเชื่อมกับแปลงใหญ่และร้าน OTOP ได้</div>
       </div></div>
-    <div class="c"><header><h3>ประเภทแหล่งท่องเที่ยว</h3><span class="u">ปี ${T.spotYear} · ${spotTot} แห่ง</span>
+    <div class="c"><header><span class="hdico icow img" data-hdico="area"></span><h3>ประเภทแหล่งท่องเที่ยว</h3><span class="u">ปี ${T.spotYear} · ${spotTot} แห่ง</span>
       <span class="r">${viewToggle('cSpot')}</span></header>
       <div class="b">
         <div id="cSpot-chart"><div class="ch"><canvas id="cSpot"></canvas></div></div>
@@ -122,7 +122,7 @@ function renderTour(){
     <div class="c"><header><span class="hdico icow img">${icoImg('accommodation',26)}</span><h3>ที่พักแรมที่ถูกต้องตามกฎหมาย</h3><span class="u">ปี ${T.accYear} · ${T.accTotal} แห่ง ${f(T.accRooms,0)} ห้อง</span></header>
       <div class="b"><div class="ch"><canvas id="cAcc"></canvas></div>
         <div class="note" id="accNote"></div></div></div>
-    <div class="c"><header><h3>ศักยภาพที่ยังไม่ถูกใช้</h3></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="gap"></span><h3>ศักยภาพที่ยังไม่ถูกใช้</h3></header>
       <div class="b" id="gapBox2"></div></div>
   </div>
 

@@ -69,7 +69,7 @@ function priceHtml(){
         src:'cpi',when:'ประจำวันที่ '+P.asof})})
   ].join('');
   const groups=P.groups.map(g=>`
-    <div class="c mb"><header><h3>${g.g}</h3><span class="u">หน่วย: ${g.unit}</span>
+    <div class="c mb"><header><span class="hdico icow img" data-hdico="cpi"></span><h3>${g.g}</h3><span class="u">หน่วย: ${g.unit}</span>
       <span class="r"><span class="owner">สำนักงานพาณิชย์จังหวัด</span></span></header>
       <div class="b"><div class="sc" style="max-height:420px">
         <table class="t" data-owner="cpi">
@@ -89,12 +89,12 @@ function priceHtml(){
               <td class="r">${(a!=null&&b)?chip(pctc(a,b)):'—'}</td></tr>`}).join('')}</tbody>
         </table></div></div></div>`).join('');
   return `<div class="grid g4 mb">${kpi}</div>
-    <div class="c mb"><header><h3>ราคาเทียบปีก่อน — สินค้าเกษตรหลัก</h3><span class="u">สเกลลอการิทึม</span></header>
+    <div class="c mb"><header><span class="hdico icow img" data-hdico="compare"></span><h3>ราคาเทียบปีก่อน — สินค้าเกษตรหลัก</h3><span class="u">สเกลลอการิทึม</span></header>
       <div class="b"><div class="ch" style="height:330px"><canvas id="cPrice"></canvas></div>
       <div class="note">ยางพาราและมันสำปะหลังเป็นสองสินค้าที่ราคาขยับขึ้นจากปีก่อนมากที่สุด ขณะที่สินค้าปศุสัตว์ทรงตัว
       ราคาที่สูงขึ้นของยางและมันช่วยหนุนรายได้เกษตรกรในกลุ่มพืชไร่ ซึ่งเป็นฐานรายได้หลักของจังหวัด</div></div></div>
     ${groups}
-    <div class="c"><header><h3>หมายเหตุและช่องทางติดต่อ</h3></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="source"></span><h3>หมายเหตุและช่องทางติดต่อ</h3></header>
       <div class="b" style="font-size:12.5px;color:var(--dim);line-height:1.8">
         <p style="margin-top:0">${P.note}</p>
         <p style="margin:0">ข้อมูล ณ วันที่ ${P.asof} · ${P.contact}</p>

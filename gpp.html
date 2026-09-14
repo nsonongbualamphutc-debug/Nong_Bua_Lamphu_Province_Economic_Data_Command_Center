@@ -25,19 +25,19 @@
   <div id="gppSlc"></div>
   <div class="grid g4 mb" id="gppKpi"></div>
   <div class="grid g21 mb">
-    <div class="c"><header><h3>ดัชนีภาวะเศรษฐกิจ 36 เดือน</h3><span class="u">จังหวัด · ภาคอีสาน · ทั้งประเทศ</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="forecast"></span><h3>ดัชนีภาวะเศรษฐกิจ 36 เดือน</h3><span class="u">จังหวัด · ภาคอีสาน · ทั้งประเทศ</span></header>
       <div class="b"><div class="ch lg"><canvas id="cMei"></canvas></div></div></div>
-    <div class="c"><header><h3>โครงสร้างเศรษฐกิจ</h3><span class="u">สัดส่วน GPP ตามสาขา</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="industry"></span><h3>โครงสร้างเศรษฐกิจ</h3><span class="u">สัดส่วน GPP ตามสาขา</span></header>
       <div class="b"><div class="ch lg"><canvas id="cStruct"></canvas></div></div></div>
   </div>
   <div class="c mb" style="border-left:4px solid var(--brand)">
-    <header><h3>การวิเคราะห์ด้านอุปสงค์ อุปทาน และเสถียรภาพการคลัง</h3>
+    <header><span class="hdico icow img" data-hdico="stability"></span><h3>การวิเคราะห์ด้านอุปสงค์ อุปทาน และเสถียรภาพการคลัง</h3>
       <span class="u">อ่านทิศทางเศรษฐกิจจากสามด้านพร้อมกัน</span></header>
     <div class="b"><div class="note" id="dsNote" style="border-top:0;padding-top:0;margin-top:0"></div></div></div>
   <div class="grid g3 mb" id="dsGrid"></div>
 
   <div class="grid g21">
-    <div class="c"><header><h3>GPP รายปีและรายได้ต่อหัว</h3><span class="u">ล้านบาท · บาท/คน/ปี</span>
+    <div class="c"><header><span class="hdico icow img" data-hdico="gpp"></span><h3>GPP รายปีและรายได้ต่อหัว</h3><span class="u">ล้านบาท · บาท/คน/ปี</span>
       <span class="r"><button class="tb" id="btnGppEdit" style="height:27px;font-size:11px">แก้ไขตาราง</button></span></header>
       <div class="b"><div class="ch"><canvas id="cGpp"></canvas></div>
         <div class="sc" style="max-height:170px;margin-top:10px"><table class="t" data-owner="*" id="tGpp"></table></div></div></div>
@@ -68,7 +68,7 @@ function renderGpp(){
   const prvV=ST.freq==='M'?meiAt(PREV):meiAvg(ST.idx.map(i=>i-12).filter(i=>i>=0));
   const last={v:curV};
   $('#gppKpi').innerHTML=[
-    kpiCard({icon:'chart',img:'gpp',color:cv('--brand'),label:'ดัชนีเศรษฐกิจรายเดือน',value:last.v.toFixed(1),
+    kpiCard({icon:'chart',img:'forecast',color:cv('--brand'),label:'ดัชนีเศรษฐกิจรายเดือน',value:last.v.toFixed(1),
       chip:chip(prvV?pctc(last.v,prvV):null),sub:'ฐาน 100 = เฉลี่ยปี 2567',
       tip:tipOf({t:'ดัชนีภาวะเศรษฐกิจรายเดือน NBL–MEI',
         d:'ดัชนีที่จังหวัดสร้างขึ้นเองจากข้อมูลเร็วของหน่วยงานในพื้นที่ เพื่อไม่ต้องรอ GPP ที่ประกาศช้า 2 ปี',
