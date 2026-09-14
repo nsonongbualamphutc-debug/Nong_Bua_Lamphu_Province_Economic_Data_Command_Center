@@ -1360,38 +1360,59 @@ const DS={
 };
 /* ─────────────── ตรวจสภาพการติดตั้ง — บอกให้ชัดว่าอะไรขาด ─────────────── */
 const DS_VERSION='3.2.0';
-function showBootErr(ev,extra){
+const BOOT={miss:[],hard:[]};
+function bootBox(){
   let box=document.getElementById('bootErr');
   if(!box){
     box=document.createElement('div'); box.id='bootErr';
-    box.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff;color:#8a2f20;'+
-      'border:1px solid #f0c4bb;border-radius:13px;padding:13px 16px;font:13.5px/1.75 system-ui;'+
+    box.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#fff;'+
+      'border-radius:13px;padding:13px 16px;font:13.5px/1.75 system-ui;'+
       'box-shadow:0 14px 34px -14px rgba(0,0,0,.42);max-height:42vh;overflow:auto';
     const x=document.createElement('button');
-    x.textContent='ปิด'; x.style.cssText='float:right;border:1px solid #f0c4bb;background:#fff;color:#8a2f20;'+
-      'border-radius:8px;padding:3px 11px;font:12px system-ui;cursor:pointer';
+    x.textContent='ปิด'; x.style.cssText='float:right;border:1px solid currentColor;background:transparent;'+
+      'border-radius:8px;padding:3px 11px;font:12px system-ui;cursor:pointer;opacity:.75';
     x.onclick=()=>box.remove(); box.appendChild(x);
-    const h=document.createElement('b'); h.textContent='โหลดหน้าไม่สมบูรณ์'; box.appendChild(h);
+    const h=document.createElement('b'); h.id='bootErrHead'; box.appendChild(h);
     const ul=document.createElement('div'); ul.id='bootErrList'; box.appendChild(ul);
     document.body.appendChild(box);
   }
-  const list=document.getElementById('bootErrList');
-  if(list.childElementCount>=6)return;
-  const line=document.createElement('div');
-  if(extra){line.textContent='• '+extra}
-  else{
-    const t=ev.target;
-    if(t&&t!==window&&(t.src||t.href)){
-      /* โหลดไฟล์ไม่สำเร็จ เช่น รูป ไอคอน สคริปต์ */
-      const u=t.src||t.href;
-      line.textContent='• โหลดไฟล์ไม่สำเร็จ: '+String(u).replace(location.origin,'');
-    }else{
-      const where=ev.filename?(String(ev.filename).replace(location.origin,'')+' บรรทัด '+ev.lineno):'ไม่ทราบไฟล์';
-      const msg=ev.message||'ไม่ทราบสาเหตุ';
-      line.textContent='• '+msg+(msg==='Script error.'?' (ข้อผิดพลาดมาจากสคริปต์ภายนอก เช่น Chart.js หรือ Leaflet ที่โหลดไม่สำเร็จ)':'')+' — '+where;
-    }
+  return box;
+}
+/* ไฟล์รูปที่หายไม่ทำให้หน้าพัง เพราะมี onerror ถอดออกให้อยู่แล้ว
+   จึงรวบเป็นข้อความเตือนบรรทัดเดียว ไม่ปนกับข้อผิดพลาดจริง */
+function bootPaint(){
+  const box=bootBox(), head=document.getElementById('bootErrHead'), list=document.getElementById('bootErrList');
+  const hard=BOOT.hard.length>0;
+  box.style.background='#fff';
+  box.style.border='1px solid '+(hard?'#f0c4bb':'#ecd8a8');
+  box.style.color=hard?'#8a2f20':'#7a5c12';
+  head.textContent=hard?'โหลดหน้าไม่สมบูรณ์':'หน้าทำงานได้ แต่มีไฟล์ประกอบขาดอยู่';
+  list.innerHTML='';
+  BOOT.hard.slice(0,6).forEach(m=>{
+    const d=document.createElement('div'); d.textContent='• '+m; list.appendChild(d);
+  });
+  if(BOOT.miss.length){
+    const names=[...new Set(BOOT.miss)];
+    const d=document.createElement('div');
+    d.textContent='• ไฟล์รูปหรือไอคอนที่ยังไม่ได้อัปโหลด '+names.length+' ไฟล์: '+
+      names.slice(0,12).join(', ')+(names.length>12?' และอีก '+(names.length-12)+' ไฟล์':'')+
+      ' — จุดที่ใช้ไฟล์เหล่านี้จะถอยไปใช้ไอคอนเส้นแทน ไม่กระทบการใช้งาน';
+    list.appendChild(d);
   }
-  list.appendChild(line);
+}
+function showBootErr(ev,extra){
+  if(extra){BOOT.hard.push(extra);bootPaint();return}
+  const t=ev&&ev.target;
+  if(t&&t!==window&&(t.src||t.href)){
+    const u=String(t.src||t.href);
+    const name=u.split('/').pop().split('?')[0];
+    if(/\.(png|jpg|jpeg|webp|gif|svg)$/i.test(name)){BOOT.miss.push(name);bootPaint();return}
+    BOOT.hard.push('โหลดไฟล์ไม่สำเร็จ: '+u.replace(location.origin,''));bootPaint();return;
+  }
+  const where=ev&&ev.filename?(String(ev.filename).replace(location.origin,'')+' บรรทัด '+ev.lineno):'ไม่ทราบไฟล์';
+  const msg=(ev&&ev.message)||'ไม่ทราบสาเหตุ';
+  BOOT.hard.push(msg+(msg==='Script error.'?' (มาจากสคริปต์ภายนอก เช่น Chart.js หรือ Leaflet ที่โหลดไม่สำเร็จ)':'')+' — '+where);
+  bootPaint();
 }
 /* ตรวจว่าไฟล์ร่วมมาครบและเป็นรุ่นเดียวกับหน้าหรือไม่ */
 function bootSelfCheck(){
