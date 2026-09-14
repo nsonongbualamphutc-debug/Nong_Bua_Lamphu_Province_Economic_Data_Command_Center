@@ -174,17 +174,27 @@ function spark(vals,color){
   <stop offset="0" stop-color="${color}" stop-opacity=".3"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
   <path d="${dl} L${w},${h} L0,${h} Z" fill="url(#${id})"/><path d="${dl}" fill="none" stroke="${color}" stroke-width="1.7" stroke-linejoin="round"/>
   <circle cx="${w}" cy="${p[p.length-1][1].toFixed(1)}" r="2.2" fill="${color}"/></svg>`}
+/* ชื่อไอคอนใส่หลายตัวคั่นด้วย | ได้ เช่น 'product|otop'
+   ถ้าตัวแรกยังไม่มีไฟล์ จะไล่ไปตัวถัดไปเอง หมดแล้วจึงถอยไปใช้ไอคอนเส้น
+   ทำให้เพิ่มไอคอนใหม่ทีหลังได้โดยไม่ต้องแก้โค้ด และระหว่างที่ยังไม่มีก็ไม่มีช่องว่าง */
 function icoImg(name,px){
-  return `<img class="ico" src="assets/icons/ic-${name}.png" alt="" width="${px||30}" height="${px||30}"
-    loading="lazy" onerror="this.closest('.icow')?this.closest('.icow').classList.add('noimg'):0;this.remove()">`;
+  const chain=String(name||'').split('|').filter(Boolean);
+  const first=chain[0]||'';
+  const rest=chain.slice(1).join('|');
+  const onerr=rest
+    ? `if(this.dataset.chain){var c=this.dataset.chain.split('|');if(c.length&&c[0]){this.dataset.chain=c.slice(1).join('|');this.src='assets/icons/ic-'+c[0]+'.png';return}}this.closest('.icow')?this.closest('.icow').classList.add('noimg'):0;this.remove()`
+    : `this.closest('.icow')?this.closest('.icow').classList.add('noimg'):0;this.remove()`;
+  return `<img class="ico" src="assets/icons/ic-${first}.png" alt="" width="${px||30}" height="${px||30}"
+    ${rest?`data-chain="${rest}"`:''} loading="lazy" onerror="${onerr}">`;
 }
+function icoBase(name){const c=String(name||'').split('|').filter(Boolean);return c[c.length-1]||''}
 /* พื้นหลังศิลป์ของการ์ด KPI — ใช้ชื่อเดียวกับไอคอนของการ์ดนั้น
    เป็น background-image ใน CSS ถ้าไฟล์ยังไม่มีจะไม่ขึ้นเฉย ๆ ไม่มี error และไม่กระทบข้อความ */
 const CARD_BG_DIR='assets/cardbg/';
 function cardBg(name){return name?`<span class="kpibg" style="background-image:url('${CARD_BG_DIR}bg-${name}.webp')"></span>`:''}
 function kpiCard(o){
   const T=o.go?'button':'div';
-  const bg=o.bg===false?'':cardBg(o.bg||o.img);
+  const bg=o.bg===false?'':cardBg(o.bg||icoBase(o.img));
   return`<${T} class="kpi${bg?' hasbg':''}"${o.go?` data-go="${o.go}"`:''}${o.tip?` data-tip2="${o.tip}"`:''}
     ${o.color?`style="--kpi:${o.color}"`:''}>
     ${bg}

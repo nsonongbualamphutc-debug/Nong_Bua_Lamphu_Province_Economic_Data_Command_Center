@@ -103,7 +103,7 @@ function renderOtop(){
 
   /* ── KPI ── */
   document.getElementById('oKpi').innerHTML=[
-    kpiCard({icon:'coin',img:'otop',color:cv('--brand'),label:'รายได้ OTOP ปี '+last,
+    kpiCard({icon:'coin',img:'otoprevenue|otop',bg:'otop',color:cv('--brand'),label:'รายได้ OTOP ปี '+last,
       value:f(rev/1e6,0),unit:'ลบ.',chip:chip(pctc(rev,revPrev)),
       sub:'เทียบปี '+prev+' · '+f(revPrev/1e6,0)+' ลบ.',
       tip:tipOf({t:'รายได้จากการจำหน่ายผลิตภัณฑ์ OTOP',
@@ -116,7 +116,7 @@ function renderOtop(){
         d:'กลุ่มผู้ผลิตและผู้ประกอบการที่ลงทะเบียน OTOP กับจังหวัด นับรวมทุกอำเภอ ทั้งกลุ่มวิสาหกิจชุมชน กลุ่มอาชีพ และรายเดี่ยว',
         calc:'นับจำนวนรายที่ลงทะเบียนในระบบ OTOP ณ สิ้นปี · เป็นจำนวนคงค้าง ไม่นำแต่ละปีมาบวกกัน',
         src:'otop',when:'ปี '+CY})}),
-    kpiCard({icon:'cart',img:'otop',color:cv('--leaf'),label:'ผลิตภัณฑ์',value:f(prodTot,0),unit:'ชนิด',
+    kpiCard({icon:'cart',img:'product|otop',bg:'otop',color:cv('--leaf'),label:'ผลิตภัณฑ์',value:f(prodTot,0),unit:'ชนิด',
       chip:'<span class="chip">ปี '+O.prodYear+'</span>',sub:'5 ประเภทผลิตภัณฑ์',
       tip:tipOf({t:'จำนวนผลิตภัณฑ์ OTOP',
         d:'ชนิดผลิตภัณฑ์ที่ขึ้นทะเบียนแล้ว จำแนกเป็น 5 ประเภท คือ อาหาร เครื่องดื่ม ผ้าและเครื่องแต่งกาย ของใช้ของตกแต่ง และสมุนไพรที่ไม่ใช่อาหาร',
