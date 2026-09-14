@@ -886,3 +886,39 @@ body.cover .ph{position:static}
 /* ══ แถบเลือกปี — ใช้โครงเดียวกับตัวกรองเวลา ══ */
 .yearbar .sl-nav select{min-width:112px}
 @media (max-width:767px){.yearbar{flex-wrap:wrap}.yearbar .sl-info{width:100%;order:9}}
+
+/* ══ พื้นหลังศิลป์ของการ์ด KPI ══
+   รูปวางชิดขวา จางลงทางซ้าย ตัวเลขและป้ายจึงอ่านชัดเสมอ
+   ถ้ายังไม่ได้อัปโหลดไฟล์ การ์ดก็ยังเป็นสีพื้นเหมือนเดิม ไม่พัง */
+.kpi.hasbg{overflow:hidden;isolation:isolate}
+.kpi .kpibg{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-repeat:no-repeat;background-position:right center;background-size:auto 118%;
+  opacity:.5;
+  -webkit-mask-image:linear-gradient(100deg,transparent 0%,transparent 34%,#000 78%,#000 100%);
+          mask-image:linear-gradient(100deg,transparent 0%,transparent 34%,#000 78%,#000 100%)}
+.kpi.hasbg::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(96deg,var(--card) 0%,var(--card) 40%,rgba(255,255,255,.55) 66%,rgba(255,255,255,0) 92%)}
+.kpi.hasbg>*{position:relative;z-index:2}
+.kpi.hasbg{border-top:1px solid var(--line);
+  box-shadow:var(--sh),inset 3px 0 0 -1px color-mix(in srgb,var(--kpi,var(--brand)) 55%,transparent)}
+button.kpi.hasbg:hover .kpibg{opacity:.62;background-size:auto 126%;transition:.25s}
+.kpi .kpibg{transition:.25s}
+
+/* ══ พื้นหลังแถบตัวกรองเวลาและแถบเลือกปี ══ */
+.slicer{position:relative;overflow:hidden;isolation:isolate}
+.slicer::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:url('assets/cardbg/bg-slicer.webp');
+  background-repeat:no-repeat;background-position:right center;background-size:cover;
+  opacity:.42;
+  -webkit-mask-image:linear-gradient(95deg,transparent 0%,transparent 28%,#000 72%,#000 100%);
+          mask-image:linear-gradient(95deg,transparent 0%,transparent 28%,#000 72%,#000 100%)}
+.slicer::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(94deg,var(--card) 0%,var(--card) 38%,rgba(255,255,255,.6) 68%,rgba(255,255,255,0) 95%)}
+.slicer>*{position:relative;z-index:2}
+
+@media (max-width:767px){
+  .kpi .kpibg{background-size:auto 105%;opacity:.42}
+  .kpi.hasbg::after{background:linear-gradient(100deg,var(--card) 0%,var(--card) 46%,rgba(255,255,255,.6) 74%,rgba(255,255,255,0) 96%)}
+  .slicer::before{opacity:.3}
+}
+@media print{.kpi .kpibg,.slicer::before{display:none}}

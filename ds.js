@@ -178,9 +178,16 @@ function icoImg(name,px){
   return `<img class="ico" src="assets/icons/ic-${name}.png" alt="" width="${px||30}" height="${px||30}"
     loading="lazy" onerror="this.closest('.icow')?this.closest('.icow').classList.add('noimg'):0;this.remove()">`;
 }
+/* พื้นหลังศิลป์ของการ์ด KPI — ใช้ชื่อเดียวกับไอคอนของการ์ดนั้น
+   เป็น background-image ใน CSS ถ้าไฟล์ยังไม่มีจะไม่ขึ้นเฉย ๆ ไม่มี error และไม่กระทบข้อความ */
+const CARD_BG_DIR='assets/cardbg/';
+function cardBg(name){return name?`<span class="kpibg" style="background-image:url('${CARD_BG_DIR}bg-${name}.webp')"></span>`:''}
 function kpiCard(o){
   const T=o.go?'button':'div';
-  return`<${T} class="kpi"${o.go?` data-go="${o.go}"`:''}${o.tip?` data-tip2="${o.tip}"`:''}>
+  const bg=o.bg===false?'':cardBg(o.bg||o.img);
+  return`<${T} class="kpi${bg?' hasbg':''}"${o.go?` data-go="${o.go}"`:''}${o.tip?` data-tip2="${o.tip}"`:''}
+    ${o.color?`style="--kpi:${o.color}"`:''}>
+    ${bg}
     <div class="h">${o.img?`<span class="ic icow img" style="background:${o.color}14">${icoImg(o.img,26)}<svg viewBox="0 0 24 24" style="stroke:${o.color}">${IC[o.icon]||''}</svg></span>`
       :o.icon?`<span class="ic" style="background:${o.color}1e"><svg viewBox="0 0 24 24" style="stroke:${o.color}">${IC[o.icon]}</svg></span>`:''}<span>${o.label}</span></div>
     <div class="v n">${o.value}${o.unit?`<small>${o.unit}</small>`:''}</div>
