@@ -141,8 +141,10 @@ function renderTour(){
         (pc==null?'':' · เทียบปีก่อน = ('+f_num(n)+' − '+f_num(p)+') ÷ '+f_num(p)+' × 100')+
         (k==='ผู้เยี่ยมเยือน'?' · ผู้เยี่ยมเยือน = นักท่องเที่ยว + นักทัศนาจร':''),
       src:'tour',when:'ปี '+TY});
-    return `<div class="bigkpi" data-tip2="${tpk}" style="--bk:${cols[i]}">
-      <div class="bk-ic icow img">${icoImg(i===0?'visitor':i===1?'tourism':'migration',44)}</div>
+    const bkn=i===0?'visitor':i===1?'tourism':'migration';
+    return `<div class="bigkpi hasbg" data-tip2="${tpk}" style="--bk:${cols[i]}">
+      <span class="kpibg" style="background-image:url('assets/cardbg/bg-${bkn}.webp')"></span>
+      <div class="bk-ic icow img">${icoImg(bkn,44)}</div>
       <div class="bk-v">${f(n,0)}<small>คน</small></div>
       <div class="bk-l">${k}</div>
       <div class="bk-f">${pc==null?'':chip(pc)} ${statusBadge(pc,false,'จำนวน'+k+' เทียบปีก่อน')}</div>

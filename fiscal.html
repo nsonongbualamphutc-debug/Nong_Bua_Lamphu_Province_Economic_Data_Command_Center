@@ -153,7 +153,9 @@ function drawFiscalTrend(){
 }
 function drawGauges(){
   const arr=D.fiscal.fn[fiscalMode],cols=[cv('--brand'),cv('--gold'),cv('--blue')];
-  $('#fiscalGauges').innerHTML=arr.map((r,i)=>`<div class="gau">
+  const gbg=['gauge-overall','gauge-current','gauge-capital'];
+  $('#fiscalGauges').innerHTML=arr.map((r,i)=>`<div class="gau hasbg">
+      <span class="kpibg" style="background-image:url('assets/cardbg/bg-${gbg[i]}.webp')"></span>
       <div class="gh"><b>${r.k}</b><span class="rank ${r.rank<=5?'top':''}">อันดับ ${r.rank}</span></div>
       <div class="arc">${gaugeSvg(r.pct,cols[i])}
         <div class="nums"><span class="pc" style="color:${cols[i]}">${r.pct.toFixed(2)}%</span>

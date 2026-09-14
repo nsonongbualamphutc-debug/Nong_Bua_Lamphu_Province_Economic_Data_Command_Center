@@ -1423,7 +1423,7 @@ function showBootErr(ev,extra){
 }
 function checkCardBg(){
   const urls=new Set();
-  document.querySelectorAll('.kpibg').forEach(el=>{
+  document.querySelectorAll('.kpibg,.fruitbg').forEach(el=>{
     const m=/url\(["']?([^"')]+)["']?\)/.exec(el.style.backgroundImage||'');
     if(m)urls.add(m[1]);
   });

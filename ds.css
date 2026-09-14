@@ -927,3 +927,26 @@ button.kpi.hasbg:hover>.kpibg{opacity:.62;background-size:auto 126%}
   .slicer::before{opacity:.3}
 }
 @media print{.kpi.hasbg>.kpibg,.slicer::before{display:none}}
+
+/* ══ พื้นหลังศิลป์ของบล็อกอื่นที่ไม่ใช่การ์ด KPI ══ */
+.bigkpi.hasbg,.gau.hasbg,.fruit.hasbg{position:relative;overflow:hidden;isolation:isolate}
+.bigkpi.hasbg>.kpibg,.gau.hasbg>.kpibg{position:absolute;inset:0;z-index:0;pointer-events:none;display:block;
+  background-repeat:no-repeat;background-position:right center;background-size:auto 118%;opacity:.46;transition:.25s;
+  -webkit-mask-image:linear-gradient(100deg,transparent 0%,transparent 32%,#000 76%,#000 100%);
+          mask-image:linear-gradient(100deg,transparent 0%,transparent 32%,#000 76%,#000 100%)}
+.bigkpi.hasbg::after,.gau.hasbg::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(96deg,var(--card) 0%,var(--card) 38%,rgba(255,255,255,.55) 66%,rgba(255,255,255,0) 92%)}
+.bigkpi.hasbg>*:not(.kpibg),.gau.hasbg>*:not(.kpibg){position:relative;z-index:2}
+
+/* การ์ดไม้ผล — ภาพเต็มใบ จางลงจากล่างขึ้นบน ตัวเลขอยู่ชิดขวาจึงต้องเว้นขวาให้โล่ง */
+.fruit.hasbg>.fruitbg{position:absolute;left:0;right:0;top:38px;bottom:0;z-index:0;pointer-events:none;display:block;
+  background-repeat:no-repeat;background-position:left bottom;background-size:auto 112%;opacity:.5;
+  -webkit-mask-image:linear-gradient(80deg,#000 0%,#000 34%,transparent 74%);
+          mask-image:linear-gradient(80deg,#000 0%,#000 34%,transparent 74%)}
+.fruit.hasbg::after{content:'';position:absolute;left:0;right:0;top:38px;bottom:0;z-index:1;pointer-events:none;
+  background:linear-gradient(272deg,var(--card) 0%,var(--card) 34%,rgba(255,255,255,.5) 64%,rgba(255,255,255,0) 92%)}
+
+@media (max-width:767px){
+  .bigkpi.hasbg>.kpibg,.gau.hasbg>.kpibg,.fruit.hasbg>.fruitbg{opacity:.36;background-size:auto 104%}
+}
+@media print{.bigkpi .kpibg,.gau .kpibg,.fruit .fruitbg{display:none}}

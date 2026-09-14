@@ -191,9 +191,11 @@ function renderAgri(){
       scales:{x:ax({type:'logarithmic',ticks:{callback:v=>f(v,0)}}),y:ax({grid:{display:false},ticks:{font:{size:10.5}}})}}});
 
   /* ไม้ผล */
-  $('#fruitCards').innerHTML=D.fruit.map((fr,i)=>`<div class="fruit" style="border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card);box-shadow:var(--sh)">
-      <div style="padding:9px 13px;color:#fff;font-family:var(--fd);font-weight:600;font-size:14.5px;background:${fr.c}">${fr.n}</div>
-      <div style="padding:10px 13px;display:flex;flex-direction:column;gap:6px">
+  const FRUIT_BG={'ทุเรียน':'durian','ลำไย':'longan','กาแฟ':'coffee','เงาะ':'rambutan','ลิ้นจี่':'lychee','อินทผลัม':'date'};
+  $('#fruitCards').innerHTML=D.fruit.map((fr,i)=>`<div class="fruit hasbg" style="border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card);box-shadow:var(--sh);position:relative;isolation:isolate">
+      ${FRUIT_BG[fr.n]?`<span class="fruitbg" style="background-image:url('assets/cardbg/bg-fruit-${FRUIT_BG[fr.n]}.webp')"></span>`:''}
+      <div style="padding:9px 13px;color:#fff;font-family:var(--fd);font-weight:600;font-size:14.5px;background:${fr.c};position:relative;z-index:2">${fr.n}</div>
+      <div style="padding:10px 13px;display:flex;flex-direction:column;gap:6px;position:relative;z-index:2">
         ${[['เกษตรกร',f(fr.farmers,0),'ราย'],['พื้นที่ปลูก',f(fr.area,2),'ไร่'],
            ['พื้นที่ให้ผล',f(fr.yieldArea,2),'ไร่'],['ผลผลิต',f(fr.kg,0),'กก./ปี']].map(x=>
           `<div style="display:flex;align-items:baseline;font-size:11.5px;color:var(--dim);gap:8px">
