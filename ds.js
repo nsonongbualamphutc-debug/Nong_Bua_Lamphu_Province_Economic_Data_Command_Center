@@ -1421,6 +1421,19 @@ function showBootErr(ev,extra){
   BOOT.hard.push(msg+(msg==='Script error.'?' (มาจากสคริปต์ภายนอก เช่น Chart.js หรือ Leaflet ที่โหลดไม่สำเร็จ)':'')+' — '+where);
   bootPaint();
 }
+function checkCardBg(){
+  const urls=new Set();
+  document.querySelectorAll('.kpibg').forEach(el=>{
+    const m=/url\(["']?([^"')]+)["']?\)/.exec(el.style.backgroundImage||'');
+    if(m)urls.add(m[1]);
+  });
+  if(document.querySelector('.slicer'))urls.add(CARD_BG_DIR+'bg-slicer.webp');
+  urls.forEach(u=>{
+    const img=new Image();
+    img.onerror=()=>{BOOT.miss.push(u.split('/').pop());bootPaint()};
+    img.src=u;
+  });
+}
 /* ตรวจว่าไฟล์ร่วมมาครบและเป็นรุ่นเดียวกับหน้าหรือไม่ */
 function bootSelfCheck(){
   const miss=[];
@@ -1431,6 +1444,9 @@ function bootSelfCheck(){
   if(typeof Chart==='undefined')miss.push('Chart.js โหลดไม่สำเร็จ กราฟทุกตัวจะไม่ขึ้น — ตรวจการเชื่อมต่ออินเทอร์เน็ตหรือการเข้าถึง cdn.jsdelivr.net');
   if(document.querySelector('#map,.cho-map,#tilemap')&&typeof L==='undefined')
     miss.push('Leaflet โหลดไม่สำเร็จ แผนที่จะไม่ขึ้น — ตรวจการเข้าถึง unpkg.com');
+  /* พื้นหลังการ์ดเป็น background-image ของ CSS ซึ่งพังเงียบ ๆ ถ้าไฟล์ไม่มี
+     จึงยิงตรวจซ้ำด้วย Image() เบราว์เซอร์ดึงจากแคชอยู่แล้ว ไม่เพิ่มโหลดจริง */
+  setTimeout(checkCardBg,900);
   const need=['yearBar','drawAmpChoropleth','slicerBar','tipOf','f_num'];
   const old=need.filter(n=>typeof window[n]!=='function');
   if(old.length)miss.push('ds.js เป็นรุ่นเก่ากว่าหน้านี้ (ขาด '+old.join(', ')+') — อัปโหลด ds.js รุ่นล่าสุดทับ');

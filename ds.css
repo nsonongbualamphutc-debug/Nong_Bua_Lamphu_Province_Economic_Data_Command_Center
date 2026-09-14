@@ -890,19 +890,24 @@ body.cover .ph{position:static}
 /* ══ พื้นหลังศิลป์ของการ์ด KPI ══
    รูปวางชิดขวา จางลงทางซ้าย ตัวเลขและป้ายจึงอ่านชัดเสมอ
    ถ้ายังไม่ได้อัปโหลดไฟล์ การ์ดก็ยังเป็นสีพื้นเหมือนเดิม ไม่พัง */
-.kpi.hasbg{overflow:hidden;isolation:isolate}
-.kpi .kpibg{position:absolute;inset:0;z-index:0;pointer-events:none;
+.kpi.hasbg{overflow:hidden;isolation:isolate;border-top:1px solid var(--line);
+  box-shadow:var(--sh),inset 3px 0 0 -1px var(--kpi,var(--brand))}
+
+/* ชั้นรูป — ต้องประกาศหลังกฎ z-index ของลูก และเจาะจงกว่า ไม่งั้นจะโดนทับจนยุบหาย */
+.kpi.hasbg>.kpibg{position:absolute;inset:0;z-index:0;pointer-events:none;display:block;
   background-repeat:no-repeat;background-position:right center;background-size:auto 118%;
-  opacity:.5;
+  opacity:.5;transition:.25s;
   -webkit-mask-image:linear-gradient(100deg,transparent 0%,transparent 34%,#000 78%,#000 100%);
           mask-image:linear-gradient(100deg,transparent 0%,transparent 34%,#000 78%,#000 100%)}
+
+/* ชั้นสีขาวโปร่งทับครึ่งซ้าย ให้ตัวเลขอ่านชัด */
 .kpi.hasbg::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;border-radius:inherit;
   background:linear-gradient(96deg,var(--card) 0%,var(--card) 40%,rgba(255,255,255,.55) 66%,rgba(255,255,255,0) 92%)}
-.kpi.hasbg>*{position:relative;z-index:2}
-.kpi.hasbg{border-top:1px solid var(--line);
-  box-shadow:var(--sh),inset 3px 0 0 -1px color-mix(in srgb,var(--kpi,var(--brand)) 55%,transparent)}
-button.kpi.hasbg:hover .kpibg{opacity:.62;background-size:auto 126%;transition:.25s}
-.kpi .kpibg{transition:.25s}
+
+/* เนื้อหาการ์ดอยู่บนสุด แต่ต้องไม่รวมชั้นรูป */
+.kpi.hasbg>*:not(.kpibg){position:relative;z-index:2}
+
+button.kpi.hasbg:hover>.kpibg{opacity:.62;background-size:auto 126%}
 
 /* ══ พื้นหลังแถบตัวกรองเวลาและแถบเลือกปี ══ */
 .slicer{position:relative;overflow:hidden;isolation:isolate}
@@ -917,8 +922,8 @@ button.kpi.hasbg:hover .kpibg{opacity:.62;background-size:auto 126%;transition:.
 .slicer>*{position:relative;z-index:2}
 
 @media (max-width:767px){
-  .kpi .kpibg{background-size:auto 105%;opacity:.42}
+  .kpi.hasbg>.kpibg{background-size:auto 105%;opacity:.42}
   .kpi.hasbg::after{background:linear-gradient(100deg,var(--card) 0%,var(--card) 46%,rgba(255,255,255,.6) 74%,rgba(255,255,255,0) 96%)}
   .slicer::before{opacity:.3}
 }
-@media print{.kpi .kpibg,.slicer::before{display:none}}
+@media print{.kpi.hasbg>.kpibg,.slicer::before{display:none}}
