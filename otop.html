@@ -196,14 +196,14 @@ function renderOtop(){
       tooltip:{callbacks:{label:c=>c.label+' '+c.raw+' ชนิด',
         footer:it=>(it[0].raw/prodTot*100).toFixed(1)+'% ของผลิตภัณฑ์ทั้งหมด'}}}}});
   document.getElementById('tType').innerHTML=`<thead><tr><th>ประเภท</th><th class="r">ชนิด</th><th class="r">สัดส่วน</th></tr></thead><tbody>`+
-    T.map(r=>`<tr><td>${r[0]}</td><td class="r">${r[1]}</td><td class="r">${(r[1]/prodTot*100).toFixed(1)}%</td></tr>`).join('')+
+    T.map(r=>`<tr><td>${rowIco(r[0])}${r[0]}</td><td class="r">${r[1]}</td><td class="r">${(r[1]/prodTot*100).toFixed(1)}%</td></tr>`).join('')+
     `</tbody><tfoot><tr><td>รวม</td><td class="r">${prodTot}</td><td class="r">100.0%</td></tr></tfoot>`;
 
   /* ── ลักษณะผู้ประกอบการ ── */
   const E=Object.entries(O.entByType||{}).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const eMax=E.length?E[0][1]:1;
   document.getElementById('entBox').innerHTML=E.map((r,i)=>`<div class="barrow">
-    <span class="nm">${r[0]}</span><span class="tr"><i style="width:${(r[1]/eMax*100).toFixed(0)}%;background:${PAL()[i%7]}"></i></span>
+    <span class="nm">${rowIco(r[0],17)}${r[0]}</span><span class="tr"><i style="width:${(r[1]/eMax*100).toFixed(0)}%;background:${PAL()[i%7]}"></i></span>
     <span class="vv">${f(r[1],0)}</span></div>`).join('');
 
   /* ── ศักยภาพรายอำเภอ ── */

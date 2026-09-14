@@ -81,7 +81,7 @@ function priceHtml(){
               d:'หน่วย '+g.unit+' · ราคาที่สำรวจในตลาดของจังหวัด'+(r.chg?' · เปลี่ยนแปลงจากสัปดาห์ก่อน '+(r.chg>0?'+':'')+r.chg:' · ราคาทรงตัวจากสัปดาห์ก่อน'),
               calc:(a!=null&&b)?'เทียบปีก่อน = (ราคาสัปดาห์นี้ − ราคาปีก่อน) ÷ ราคาปีก่อน × 100 = ('+f_num(a)+' − '+f_num(b)+') ÷ '+f_num(b)+' × 100'+(typeof r.now==='string'&&/[–-]/.test(String(r.now))?' · ราคาที่รายงานเป็นช่วง จึงใช้ค่ากลางของช่วงในการเทียบ':''):'ยังไม่มีราคาปีก่อนให้เทียบ จึงแสดงเฉพาะราคาปัจจุบัน',
               src:'cpi',when:'ประจำวันที่ '+P.asof});
-            return `<tr data-tip2="${tp}"><td>${r.n}${r.sub?`<div style="font-size:10px;color:var(--faint)">${r.sub}</div>`:''}</td>
+            return `<tr data-tip2="${tp}"><td>${rowIco(r.n)}${r.n}${r.sub?`<div style="font-size:10px;color:var(--faint);padding-left:26px">${r.sub}</div>`:''}</td>
               <td class="r" style="font-weight:600">${r.now}</td><td class="r">${r.prev}</td>
               <td>${chgChip(r.chg)}</td>
               <td class="r">${r.mo==null?'—':(typeof r.mo==='number'?f(r.mo,2):r.mo)}</td>

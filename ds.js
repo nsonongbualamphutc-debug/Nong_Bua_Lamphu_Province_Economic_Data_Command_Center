@@ -177,6 +177,65 @@ function spark(vals,color){
 /* ชื่อไอคอนใส่หลายตัวคั่นด้วย | ได้ เช่น 'product|otop'
    ถ้าตัวแรกยังไม่มีไฟล์ จะไล่ไปตัวถัดไปเอง หมดแล้วจึงถอยไปใช้ไอคอนเส้น
    ทำให้เพิ่มไอคอนใหม่ทีหลังได้โดยไม่ต้องแก้โค้ด และระหว่างที่ยังไม่มีก็ไม่มีช่องว่าง */
+/* ─────────────── ไอคอนหน้าแถวตาราง ───────────────
+   จับคู่จากชื่อรายการ เรียงจากคำที่เจาะจงที่สุดไปกว้างที่สุด
+   ไฟล์อยู่ที่ assets/icons/ic-row-<slug>.png ถ้ายังไม่มีจะไม่ขึ้นเฉย ๆ ไม่พัง */
+const ROW_ICO=[
+  /* ── ภาคเกษตร · พืช ── */
+  [/ข้าวโพด/,'corn'],
+  [/น้ำมันพืช|น้ำมันปาล์มบรรจุ|น้ำมันถั่วเหลือง/,'cookingoil'],
+  [/ข้าวเปลือกเหนียว|ข้าวสารเหนียว|ข้าวเหนียว/,'stickyrice'],
+  [/ข้าวนาปี|ข้าวเปลือก|ข้าวสาร|^ข้าว/,'rice'],
+  [/อ้อย/,'sugarcane'],
+  [/มันสำปะหลัง/,'cassava'],
+  [/มันเทศ/,'sweetpotato'],
+  [/พืชผัก|ผักสด/,'vegetable'],
+  [/ถั่วลิสง/,'peanut'],
+  [/ถั่วเหลือง/,'soybean'],
+  [/ถั่วเขียว/,'mungbean'],
+  [/ปอเทือง/,'sunhemp'],
+  [/ปาล์ม/,'oilpalm'],
+  [/ยางก้อน|น้ำยาง|ยางพารา/,'rubber'],
+  /* ── ภาคเกษตร · ปศุสัตว์และประมง ── */
+  [/สุกร|หมู/,'pork'],
+  [/เนื้อโค|โคเนื้อ|วัว/,'beef'],
+  [/ไข่ไก่|ไข่เป็ด|^ไข่/,'egg'],
+  [/ไก่/,'chicken'],
+  [/ปลานิล|ปลา/,'fish'],
+  /* ── อุตสาหกรรมและการผลิต ── */
+  [/แปรรูปผลผลิตการเกษตร|แปรรูปการเกษตร/,'agroprocess'],
+  [/โลหะ|วัสดุก่อสร้าง/,'metal'],
+  [/อาหารและเครื่องดื่ม/,'foodbev'],
+  [/พลังงาน|ชีวมวล/,'bioenergy'],
+  [/ไม้และเฟอร์|เฟอร์นิเจอร์|ไม้แปรรูป/,'woodfurn'],
+  /* ── OTOP ── */
+  [/^ผ้า/,'cloth'],
+  [/ของใช้|ของตกแต่ง|ของที่ระลึก/,'houseware'],
+  [/สมุนไพร/,'herb'],
+  [/เครื่องดื่ม/,'drink'],
+  [/^อาหาร/,'food'],
+  [/กลุ่มผู้ผลิตชุมชน/,'groupmaker'],
+  [/รายเดียว|เจ้าของรายเดียว/,'singlemaker'],
+  [/วิสาหกิจ|SME/i,'sme'],
+  /* ── อื่น ๆ ── */
+  [/GPP/i,'gpp'],
+  [/งบประมาณ|เบิกจ่าย/,'spend'],
+  [/OTOP/i,'otop']
+];
+function rowIcoName(label){
+  const t=String(label||'');
+  for(const [re,ic] of ROW_ICO)if(re.test(t))return ic;
+  return null;
+}
+/* คืน <img> ไว้วางหน้าข้อความในตาราง · px ปกติ 18 */
+function rowIco(label,px){
+  const n=rowIcoName(label); if(!n)return '';
+  const core=['rice','sugarcane','cassava','rubber','otop','gpp','spend'].indexOf(n)>=0;
+  const file=core?('ic-'+n):('ic-row-'+n);
+  return `<img class="rowico" src="assets/icons/${file}.png" alt="" width="${px||18}" height="${px||18}"
+    loading="lazy" onerror="this.remove()">`;
+}
+
 function icoImg(name,px){
   const chain=String(name||'').split('|').filter(Boolean);
   const first=chain[0]||'';
@@ -327,7 +386,7 @@ function renderSector(sid){
       <div class="c"><header><h3>แนวโน้มรายเดือน 36 เดือน</h3>
         <span class="r"><span class="segs" data-dom="${sid}"><button class="on" data-mode="line">ค่าจริง</button><button data-mode="yoy">%YoY</button></span></span></header>
         <div class="b"><div class="ch lg"><canvas id="c-${sid}"></canvas></div><div class="note">${M.insight}</div></div></div>
-      <div class="c"><header><h3>${M.extra?M.extra.title:'เปรียบเทียบรายปี'}</h3>${M.extra?`<span class="u">${M.extra.unit}</span>`:''}</header>
+      <div class="c"><header><span class="hdico icow img" data-hdico="${M.extra?'industry':'compare'}"></span><h3>${M.extra?M.extra.title:'เปรียบเทียบรายปี'}</h3>${M.extra?`<span class="u">${M.extra.unit}</span>`:''}</header>
         <div class="b">${M.extra?'<div class="sc"><table class="t" id="tx-'+sid+'"></table></div>':'<div class="ch lg"><canvas id="cy-'+sid+'"></canvas></div>'}</div></div>
     </div>
     <div class="grid g2">
@@ -378,7 +437,7 @@ function renderSector(sid){
   bindSlicers(()=>renderSector(sid));
   if(M.extra){const m2=M.extra.rows[0][1];
     $('#tx-'+sid).innerHTML=`<thead><tr><th>รายการ</th><th class="r">${M.extra.unit}</th><th style="width:80px"></th></tr></thead><tbody>`+
-      M.extra.rows.map(r=>`<tr><td>${r[0]}</td><td class="r">${f(r[1],0)}</td>
+      M.extra.rows.map(r=>`<tr><td>${rowIco(r[0])}${r[0]}</td><td class="r">${f(r[1],0)}</td>
         <td><div class="bar"><i style="width:${(r[1]/m2*100).toFixed(0)}%;background:${sec.color}"></i></div></td></tr>`).join('')+'</tbody>';}
 }
 function drawSectorChart(sid,mode){

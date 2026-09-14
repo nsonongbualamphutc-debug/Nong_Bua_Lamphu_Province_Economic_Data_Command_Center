@@ -166,7 +166,7 @@ function renderAgri(){
   $('#tCrop').innerHTML=`<thead><tr><th>ชนิดพืช</th><th class="r">ครัวเรือน</th><th class="r">เนื้อที่ (ไร่)</th>
     <th class="r">ผลผลิต (กก.)</th><th class="r">กก./ไร่</th><th class="r">ราคา</th><th class="r">มูลค่า (ลบ.)</th><th style="width:66px"></th></tr></thead><tbody>`+
     C.rows.map((r,i)=>{const v=r.price?r.y*r.price/1e6:0;
-      return`<tr><td>${r.n}</td>${ec('crop.rows.'+i+'.hh',f(r.hh,0),0)}${ec('crop.rows.'+i+'.area',f(r.area,2),2)}
+      return`<tr><td>${rowIco(r.n)}${r.n}</td>${ec('crop.rows.'+i+'.hh',f(r.hh,0),0)}${ec('crop.rows.'+i+'.area',f(r.area,2),2)}
         ${ec('crop.rows.'+i+'.y',f(r.y,0),0)}<td class="r">${f(r.per,2)}</td>
         ${ec('crop.rows.'+i+'.price',r.price!=null?f(r.price,2):'—',2)}
         <td class="r" style="font-weight:600">${v?f(v,2):'—'}</td>
