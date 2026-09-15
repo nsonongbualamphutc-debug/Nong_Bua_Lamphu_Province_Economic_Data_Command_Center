@@ -97,13 +97,52 @@ function renderFiscal(){
     `</tbody><tfoot><tr><td colspan="6" style="font-family:var(--fb);font-weight:400;color:var(--faint);font-size:10.5px">หน่วย: ล้านบาท · #n = อันดับของประเทศ</td></tr></tfoot>`;
 
   const C=F.carry;
-  $('#carryOver').innerHTML=`<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-      <div><div style="font-size:11px;color:var(--faint)">เบิกจ่ายแล้ว</div><div class="big2" style="color:var(--brand)">${C.pct}%</div></div>
-      <div style="flex:1;min-width:150px">
-        <div class="bar" style="height:11px"><i style="width:${C.pct}%;background:linear-gradient(90deg,var(--brand),var(--brand2))"></i></div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--faint);margin-top:5px">
-          <span>เบิกจ่าย ${f(C.dis,2)} ลบ.</span><span>จัดสรร ${f(C.alloc,2)} ลบ.</span></div></div></div>
-    <div class="note">เงินกันไว้เบิกเหลื่อมปี 2568 เหลือรอเบิกอีก ${f(C.left,2)} ล้านบาท เป็นเม็ดเงินที่ผลักลงพื้นที่ได้ทันทีหากเร่งกระบวนการ</div>`;
+  /* การ์ดนี้เคยมีแค่แถบเดียวแล้วเหลือที่ว่างครึ่งใบ
+     ใส่เกจแบบเดียวกับการ์ดงบส่วนราชการ พร้อมตัวเลขแยกส่วนและแถบเทียบขนาดกับงบปีปัจจุบัน */
+  const thisYear=F.fn.dis[0].alloc;
+  const shareOfYear=thisYear?(C.alloc/thisYear*100):0;
+  $('#carryOver').innerHTML=`
+    <div class="gau hasbg" style="margin-bottom:11px">
+      <span class="kpibg" style="background-image:url('assets/cardbg/bg-gauge-carry.webp')"></span>
+      <div class="gh"><b>ความคืบหน้าการเบิกจ่าย</b>
+        <span class="rank ${C.pct>=95?'top':''}">${C.pct>=95?'เกือบปิดยอด':'ยังค้าง'}</span></div>
+      <div class="arc">${gaugeSvg(C.pct,cv('--brand'))}
+        <div class="nums"><span class="pc" style="color:var(--brand)">${C.pct}%</span>
+          <span><em>${f(C.dis,2)}</em> จาก <em>${f(C.alloc,2)}</em> ลบ.</span>
+          <span style="color:${C.left>0?'var(--warn)':'var(--good)'}">คงเหลือรอเบิก ${f(C.left,2)} ลบ.</span></div></div></div>
+
+    <div class="grid g3" style="gap:9px;margin-bottom:11px">
+      <div class="mini" data-tip2="${tipOf({t:'วงเงินที่กันไว้เบิกเหลื่อมปี',
+        d:'งบของปีงบประมาณ 2568 ที่เบิกไม่ทันสิ้นปี จึงขอกันไว้ข้ามมาเบิกในปี 2569',
+        calc:'วงเงินที่ได้รับอนุมัติให้กันไว้ทั้งหมด',src:'spend',when:'ข้อมูล ณ '+CFG.asof})}">
+        <div class="l">วงเงินที่กันไว้</div><div class="v">${f(C.alloc,2)}<small> ลบ.</small></div></div>
+      <div class="mini" data-tip2="${tipOf({t:'เบิกจ่ายแล้ว',
+        d:'ส่วนที่เบิกออกจากระบบคลังไปแล้วจริง เงินถึงผู้รับเหมาและร้านค้าในพื้นที่แล้ว',
+        calc:'(เบิกจ่าย ÷ วงเงินที่กันไว้) × 100 = ('+f_num(C.dis)+' ÷ '+f_num(C.alloc)+') × 100',
+        src:'spend',when:'ข้อมูล ณ '+CFG.asof})}">
+        <div class="l">เบิกจ่ายแล้ว</div><div class="v" style="color:var(--brand)">${f(C.dis,2)}<small> ลบ.</small></div></div>
+      <div class="mini" data-tip2="${tipOf({t:'คงเหลือรอเบิก',
+        d:'เม็ดเงินที่ผลักลงพื้นที่ได้ทันทีถ้าเร่งกระบวนการ ถ้าค้างนานแปลว่างานล่าช้า',
+        calc:'วงเงินที่กันไว้ − เบิกจ่ายแล้ว = '+f_num(C.alloc)+' − '+f_num(C.dis),
+        src:'spend',when:'ข้อมูล ณ '+CFG.asof})}">
+        <div class="l">คงเหลือรอเบิก</div><div class="v" style="color:var(--warn)">${f(C.left,2)}<small> ลบ.</small></div></div>
+    </div>
+
+    <div class="barrow" style="margin-bottom:6px" data-tip2="${tipOf({t:'ขนาดเทียบกับงบปีปัจจุบัน',
+      d:'เงินกันเหลื่อมปีมีขนาดใหญ่แค่ไหนเมื่อเทียบกับงบที่จังหวัดได้รับจัดสรรทั้งปี 2569',
+      calc:'(วงเงินกันเหลื่อมปี ÷ งบจัดสรรปี 2569) × 100 = ('+f_num(C.alloc)+' ÷ '+f_num(thisYear)+') × 100',
+      src:'spend',when:'ข้อมูล ณ '+CFG.asof})}">
+      <span class="nm">เงินกันเหลื่อมปี 2568</span>
+      <span class="tr"><i style="width:${Math.min(100,shareOfYear).toFixed(1)}%;background:var(--gold)"></i></span>
+      <span class="vv">${shareOfYear.toFixed(1)}%</span></div>
+    <div class="barrow">
+      <span class="nm">งบจัดสรรปี 2569</span>
+      <span class="tr"><i style="width:100%;background:var(--brand)"></i></span>
+      <span class="vv">100%</span></div>
+
+    <div class="note">เงินกันไว้เบิกเหลื่อมปี 2568 เบิกไปแล้ว ${C.pct}% เหลือรอเบิกอีก ${f(C.left,2)} ล้านบาท
+      คิดเป็นเงินก้อนขนาด ${shareOfYear.toFixed(1)}% ของงบที่จังหวัดได้รับจัดสรรทั้งปี 2569
+      เป็นเม็ดเงินที่ผลักลงพื้นที่ได้ทันทีหากเร่งกระบวนการ ไม่ต้องรอจัดสรรรอบใหม่</div>`;
 
   const box=document.getElementById('fiscalSlc');
   if(box&&!box.innerHTML)box.innerHTML=slicerBar('slc-fiscal',{freqs:['M','Q','Y'],freq:'M',label:'เลือกงวดข้อมูล',compare:true});

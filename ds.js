@@ -196,7 +196,29 @@ const ROW_ICO=[
   [/ปอเทือง/,'sunhemp'],
   [/ปาล์ม/,'oilpalm'],
   [/ยางก้อน|น้ำยาง|ยางพารา/,'rubber'],
+  /* ── ภาคเกษตร · ไม้ผลเศรษฐกิจ ── */
+  [/ทุเรียน/,'durian'],
+  [/ลำไย/,'longan'],
+  [/กาแฟ/,'coffee'],
+  [/เงาะ/,'rambutan'],
+  [/ลิ้นจี่/,'lychee'],
+  [/อินทผลัม/,'date'],
+  [/^ไม้ผล|ไม้ผลเศรษฐกิจ/,'fruit'],
+  /* ── ภาคเกษตร · แหล่งน้ำ ── */
+  [/สูบน้ำ|โซลาร์|พลังงานแสงอาทิตย์/,'solarpump'],
+  [/อ่างเก็บน้ำ|ชลประทาน|ฝาย|คลองส่งน้ำ|ประตูระบายน้ำ/,'irrigation'],
+  [/บ่อบาดาล|บ่อน้ำ|สระน้ำ|แหล่งน้ำ/,'pond'],
+  /* ── ภาคเกษตร · สถาบันและกลุ่ม ── */
+  [/ศูนย์เรียนรู้|ศพก/,'learncenter'],
+  [/ศัตรูพืช|ศจช/,'pest'],
+  [/ดินปุ๋ย|ศดปช/,'soil'],
+  [/กลุ่มส่งเสริมอาชีพ|กลุ่มแม่บ้าน|ยุวเกษตรกร/,'groupmaker'],
+  [/วิสาหกิจชุมชน/,'sme'],
+  [/แปลงใหญ่/,'bigplot'],
+  [/เกษตรอินทรีย์|อินทรีย์/,'organic'],
   /* ── ภาคเกษตร · ปศุสัตว์และประมง ── */
+  [/ปศุสัตว์/,'livestock'],
+  [/ประมง/,'fish'],
   [/สุกร|หมู/,'pork'],
   [/เนื้อโค|โคเนื้อ|วัว/,'beef'],
   [/ไข่ไก่|ไข่เป็ด|^ไข่/,'egg'],
@@ -230,7 +252,8 @@ function rowIcoName(label){
 /* คืน <img> ไว้วางหน้าข้อความในตาราง · px ปกติ 18 */
 function rowIco(label,px){
   const n=rowIcoName(label); if(!n)return '';
-  const core=['rice','sugarcane','cassava','rubber','otop','gpp','spend'].indexOf(n)>=0;
+  const core=['rice','sugarcane','cassava','rubber','otop','gpp','spend',
+               'fruit','irrigation','bigplot','organic'].indexOf(n)>=0;
   const file=core?('ic-'+n):('ic-row-'+n);
   return `<img class="rowico" src="assets/icons/${file}.png" alt="" width="${px||18}" height="${px||18}"
     loading="lazy" onerror="this.remove()">`;

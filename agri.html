@@ -210,7 +210,7 @@ function renderAgri(){
     options:{plugins:{legend:{position:'bottom',labels:{padding:11}}},
       scales:{x:ax({grid:{display:false}}),y:ax({ticks:{callback:v=>f(v,0)}})}}});
   $('#tFruit').innerHTML=`<thead><tr><th>ไม้ผล</th><th>ช่วงเก็บเกี่ยว</th><th class="r">ผลผลิต (กก./ปี)</th><th class="r">ราคา (บ./กก.)</th></tr></thead><tbody>`+
-    D.fruit.map((x,i)=>`<tr><td><span class="dot" style="background:${x.c};margin-right:7px"></span>${x.n}</td>
+    D.fruit.map((x,i)=>`<tr><td><span class="dot" style="background:${x.c};margin-right:7px"></span>${rowIco(x.n)}${x.n}</td>
       <td>${x.season}</td>${ec('fruit.'+i+'.kg',f(x.kg,0),0)}<td class="r">${x.pmin?x.pmin+'–'+x.pmax:'—'}</td></tr>`).join('')+'</tbody>';
 
   /* พืชเศรษฐกิจหลัก */
@@ -218,7 +218,7 @@ function renderAgri(){
   const cropIco=n=>{for(const k in CROP_ICO)if(n.indexOf(k)>=0)return CROP_ICO[k];return null};
   $('#tMainCrop').innerHTML=`<thead><tr><th>พืช · ฤดูการผลิต</th><th class="r">ครัวเรือน</th><th class="r">พื้นที่ปลูก (ไร่)</th>
     <th class="r">ผลผลิตเฉลี่ย (กก./ไร่)</th><th class="r">ผลผลิตรวม (ตัน)</th></tr></thead><tbody>`+
-    B.mainCrop.map((r,i)=>`<tr><td>${cropIco(r.n)?`<img class="rowico" src="assets/icons/ic-${cropIco(r.n)}.png" alt="" onerror="this.remove()">`:''}${r.n}</td>${ec('base.mainCrop.'+i+'.hh',f(r.hh,0),0)}${ec('base.mainCrop.'+i+'.area',f(r.area,0),0)}
+    B.mainCrop.map((r,i)=>`<tr><td>${rowIco(r.n)}${r.n}</td>${ec('base.mainCrop.'+i+'.hh',f(r.hh,0),0)}${ec('base.mainCrop.'+i+'.area',f(r.area,0),0)}
       <td class="r">${r.per?f(r.per,2):'—'}</td><td class="r">${r.total?f(r.total,0):'<span style="color:var(--warn)">อยู่ระหว่างฤดูกาล</span>'}</td></tr>`).join('')+'</tbody>';
   mk('cMainCrop',{type:'doughnut',data:{labels:B.mainCrop.map(r=>r.n.split(' ')[0]),
     datasets:[{data:B.mainCrop.map(r=>r.area),backgroundColor:PAL(),borderColor:cv('--card'),borderWidth:3}]},
@@ -283,7 +283,7 @@ function renderAgri(){
   }
   $('#tWater').innerHTML=`<thead><tr><th>ประเภทแหล่งน้ำ</th><th class="r">จำนวน</th><th>หน่วย</th>
     <th class="r">พื้นที่รับประโยชน์ (ไร่)</th><th style="width:90px">สถานะ</th></tr></thead><tbody>`+
-    W.map((w,i)=>`<tr><td>${w.n}</td>${ec('water.'+i+'.cnt',w.cnt!=null?f(w.cnt,0):'—',0)}<td>${w.unit}</td>
+    W.map((w,i)=>`<tr><td>${rowIco(w.n)}${w.n}</td>${ec('water.'+i+'.cnt',w.cnt!=null?f(w.cnt,0):'—',0)}<td>${w.unit}</td>
       ${ec('water.'+i+'.benefit',w.benefit!=null?f(w.benefit,0):'—',0)}
       <td>${w.ok?'<span class="chip real">ยืนยันแล้ว</span>':'<span class="chip mock">รอข้อมูล</span>'}</td></tr>`).join('')+
     `</tbody><tfoot><tr><td colspan="5" style="font-family:var(--fb);font-weight:400;color:var(--faint);font-size:10.5px">
@@ -293,7 +293,7 @@ function renderAgri(){
   /* แปลงใหญ่ */
   const mxA=Math.max(...B.bigPlot.rows.map(r=>r[3]));
   $('#tBigPlot').innerHTML=`<thead><tr><th>ชนิดสินค้า</th><th class="r">แปลง</th><th class="r">เกษตรกร</th><th class="r">พื้นที่ (ไร่)</th><th style="width:70px"></th></tr></thead><tbody>`+
-    B.bigPlot.rows.map((r,i)=>`<tr><td>${r[0]}</td>${ec('base.bigPlot.rows.'+i+'.1',f(r[1],0),0)}${ec('base.bigPlot.rows.'+i+'.2',f(r[2],0),0)}${ec('base.bigPlot.rows.'+i+'.3',f(r[3],0),0)}
+    B.bigPlot.rows.map((r,i)=>`<tr><td>${rowIco(r[0])}${r[0]}</td>${ec('base.bigPlot.rows.'+i+'.1',f(r[1],0),0)}${ec('base.bigPlot.rows.'+i+'.2',f(r[2],0),0)}${ec('base.bigPlot.rows.'+i+'.3',f(r[3],0),0)}
       <td><div class="bar"><i style="width:${(r[3]/mxA*100).toFixed(0)}%;background:var(--brand)"></i></div></td></tr>`).join('')+
     `</tbody><tfoot><tr><td>รวม</td><td class="r">${B.bigPlot.plots}</td><td class="r">${f(B.bigPlot.farmers,0)}</td><td class="r">${f(B.bigPlot.area,0)}</td><td></td></tr></tfoot>`;
   const tr=DISTRICTS.map(d=>({n:d.name,v:B.tour.byAmphoe[d.code]||0})).sort((a,b)=>b.v-a.v);
@@ -302,7 +302,7 @@ function renderAgri(){
     options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+' แห่ง'}}},
       scales:{x:ax({ticks:{stepSize:5}}),y:ax({grid:{display:false},ticks:{font:{size:11}}})}}});
   $('#instBox').innerHTML=B.inst.map(x=>`<div style="display:flex;align-items:baseline;gap:9px;font-size:12px;padding:6px 0;border-bottom:1px solid var(--line2)">
-    <span style="color:var(--dim);flex:1">${x[0]}</span><b class="n" style="font-size:14px">${f(x[1],0)}</b><span style="font-size:10px;color:var(--faint)">${x[2]}</span></div>`).join('');
+    <span style="color:var(--dim);flex:1">${rowIco(x[0],17)}${x[0]}</span><b class="n" style="font-size:14px">${f(x[1],0)}</b><span style="font-size:10px;color:var(--faint)">${x[2]}</span></div>`).join('');
   $('#gapBox').innerHTML=`<div class="grid g2" style="gap:9px;margin-bottom:10px">
       <div class="mini"><div class="l">แปลงที่ได้ GAP</div><div class="v">${f(B.gap.total,0)}<small> แปลง</small></div></div>
       <div class="mini"><div class="l"><img class="rowico" src="assets/icons/ic-organic.png" alt="" onerror="this.remove()">เกษตรอินทรีย์</div><div class="v">${B.organic.farmers}<small> ราย</small></div></div></div>`+
@@ -310,7 +310,7 @@ function renderAgri(){
       <span style="color:var(--dim);flex:1">${x[0]}</span><b class="n">${f(x[1],0)}</b><span style="font-size:10px;color:var(--faint)">ราย · ${f(x[2],2)} ไร่</span></div>`).join('')+
     `<div class="note">พื้นที่เกษตรอินทรีย์ที่ได้รับการรับรอง ${B.organic.area} ไร่ ยังเป็นสัดส่วนเล็กมากเมื่อเทียบกับพื้นที่เกษตร 1.55 ล้านไร่ เป็นโอกาสสร้างมูลค่าเพิ่ม</div>`;
   $('#vsBox').innerHTML=B.vs.map((v,i)=>`<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2)">
-    <span class="n" style="color:var(--brand);font-weight:600">${i+1}</span><span style="font-size:12.5px;color:var(--dim);line-height:1.6">${v}</span></div>`).join('')+
+    <span class="n" style="color:var(--brand);font-weight:600">${i+1}</span><span style="font-size:12.5px;color:var(--dim);line-height:1.6">${rowIco(v,17)}${v}</span></div>`).join('')+
     `<div class="note">วิสาหกิจชุมชนที่ยกระดับเป็นแปลงใหญ่ คือกลไกที่ทำให้เกษตรกรรายย่อยมีอำนาจต่อรองราคาและเข้าถึงตลาดได้จริง</div>`;
 
   /* ฐานข้อมูล */
