@@ -80,23 +80,21 @@ function renderPop(){
   </div>
 
   <div class="secthead"><span class="sn">2</span><b>โครงสร้างอายุ</b>
-    <span>ปิรามิดประชากร เลือกดูได้ทั้งจังหวัด รายอำเภอ และในเขตหรือนอกเขตเทศบาล</span></div>
+    <span>ปิรามิดประชากร ชายฝั่งซ้าย หญิงฝั่งขวา เลือกดูได้ทั้งจังหวัดและรายอำเภอ</span></div>
 
   <div class="grid g21 mb">
     <div class="c"><header><span class="hdico icow img">${icoImg('pyramid',26)}</span><h3>ปิรามิดประชากร</h3>
       <span class="u" id="pyrSub">กดเล่นเพื่อดูการเปลี่ยนแปลงตามปี</span>
       <span class="r">
         <select class="sel" id="pyrScope">
-          <option value="zone">ทั้งจังหวัด · ในเขตเทียบนอกเขตเทศบาล</option>
-          <option value="prov">ทั้งจังหวัด · เทียบสองปี</option>
-          ${AMP6.map(a=>`<option value="A${a}">อำเภอ${a}</option>`).join('')}
+          <optgroup label="ชายเทียบหญิง">
+            <option value="S|PROV">ทั้งจังหวัด · ชายเทียบหญิง</option>
+            ${AMP6.map(a=>`<option value="S|${a}">อำเภอ${a} · ชายเทียบหญิง</option>`).join('')}
+          </optgroup>
+          <optgroup label="เทียบแบบอื่น">
+            <option value="Z|PROV">ทั้งจังหวัด · ในเขตเทียบนอกเขตเทศบาล</option>
+          </optgroup>
         </select>
-        <span class="yrpair" id="pyrYears">
-          <select class="sel" id="pyrLeft" title="ปีของฝั่งซ้าย"></select>
-          <span class="yrvs">เทียบ</span>
-          <select class="sel" id="pyrRight" title="ปีของฝั่งขวา"></select>
-          <button class="tb" id="pyrSwap" title="สลับซ้ายขวา">⇄</button>
-        </span>
         ${viewToggle('cAge')}</span></header>
       <div class="b">
         <div id="playerBox"></div>
@@ -233,26 +231,9 @@ function renderPop(){
   /* ── ปิรามิดประชากร ── */
   buildPyramid();
   renderPopMap();
-  /* ── (กราฟแท่งเดิมถูกแทนที่ด้วยปิรามิด) ── */
-  if(false){
-  mk('cAge',{type:'bar',data:{labels:BAND_ORDER,
-    datasets:[{label:'ประชากร (คน)',data:BAND_ORDER.map(bandVal),
-      backgroundColor:BAND_ORDER.map(b=>ageOf(b)>=60?cv('--coral'):ageOf(b)<15?cv('--leaf'):cv('--brand')),
-      borderRadius:5,barThickness:16}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:c=>f(c.raw,0)+' คน',
-        footer:it=>(it[0].raw/totalBand*100).toFixed(1)+'% ของประชากร'}}},
-      scales:{x:ax({ticks:{callback:v=>f(v/1000,0)+'K'}}),y:ax({grid:{display:false},ticks:{font:{size:10}}})}}});
-  }
-  document.getElementById('tAge').innerHTML=`<thead><tr><th>ช่วงอายุ</th><th class="r">คน</th><th class="r">สัดส่วน</th></tr></thead><tbody>`+
-    BAND_ORDER.map(b=>`<tr><td>${b}</td><td class="r">${f(bandVal(b),0)}</td>
-      <td class="r">${(bandVal(b)/totalBand*100).toFixed(1)}%</td></tr>`).join('')+
-    `</tbody><tfoot><tr><td>รวม</td><td class="r">${f(totalBand,0)}</td><td class="r">100.0%</td></tr></tfoot>`;
-  const peak=BAND_ORDER.reduce((a,b)=>bandVal(b)>bandVal(a)?b:a);
-  document.getElementById('ageNote').innerHTML=
-    `ช่วงอายุที่มีคนมากที่สุดคือ <b>${peak}</b> ที่ ${f(bandVal(peak),0)} คน
-     ขณะที่เด็ก 0–4 ปีมีเพียง ${f(bandVal('0 ถึง 4 ปี'),0)} คน น้อยกว่ากลุ่มใหญ่สุดเกือบ ${(bandVal(peak)/bandVal('0 ถึง 4 ปี')).toFixed(1)} เท่า
-     ในอีก 15 ปีกลุ่มใหญ่จะเข้าสู่วัยเกษียณพร้อมกัน แต่ไม่มีคนรุ่นใหม่มาแทนในจำนวนเท่ากัน`;
+  /* กราฟแท่งช่วงอายุแบบเดิมถูกแทนที่ด้วยปิรามิดแล้ว
+     โค้ดเดิมยังเขียนทับตาราง #tAge และคำอธิบาย #ageNote ของปิรามิดทุกครั้ง
+     ตารางและคำอธิบายของปิรามิดจึงไม่เคยแสดงผลจริง ลบทิ้งทั้งบล็อก */
 
   /* ── สัดส่วนวัย ── */
   mk('cDep',{type:'doughnut',data:{labels:['เด็ก 0–14 ปี','วัยทำงาน 15–59 ปี','ผู้สูงอายุ 60 ปีขึ้นไป'],
@@ -310,76 +291,87 @@ function renderPop(){
 }
 
 
-/* ══════════ ปิรามิดประชากร ══════════ */
+/* ══════════ ปิรามิดประชากร ══════════
+   โหมดหลักคือ ชาย (ซ้าย) เทียบ หญิง (ขวา) ในปีและพื้นที่ที่เลือก
+   ต้องมีข้อมูล DX_PYR.sex ซึ่งเป็นจำนวนประชากรแยกเพศตามช่วงอายุ
+   ถ้ายังไม่มี ระบบจะบอกตรง ๆ ว่ายังไม่มีข้อมูล และสลับไปโหมดในเขต/นอกเขตให้แทน
+   รูปแบบข้อมูลที่ต้องเติมใน data2.js — ค่าทุกชุดต้องยาวเท่ากับ bands (17 ช่วง)
+     DX_PYR.sex = { "2568": { "PROV": {"ชาย":[...17 ค่า...], "หญิง":[...17 ค่า...]},
+                              "เมืองหนองบัวลำภู": {"ชาย":[...], "หญิง":[...]} } }
+*/
 const PYR=(typeof DX_PYR!=='undefined')?DX_PYR:null;
-let PYR_SCOPE='zone', PYR_L=null, PYR_R=null;
+const PYR_SEX=(PYR&&PYR.sex)?PYR.sex:null;
+let PYR_MODE='S', PYR_AREA='PROV', PYR_YEAR=null;
 const pyrYears=()=>PYR?PYR.years:[];
-function pyrSum(yy){const B=PYR.bands;return B.map((_,i)=>PYR.zone[yy].in[i]+PYR.zone[yy].out[i])}
-function pyrAmp(yy,a){return (PYR.amp[yy]&&PYR.amp[yy][a])||PYR.bands.map(()=>0)}
-function pyrSeries(scope,yL,yR){
-  if(scope==='zone'){
-    return {left :{label:'ในเขตเทศบาล · พ.ศ. '+yR, arr:PYR.zone[yR].in},
-            right:{label:'นอกเขตเทศบาล · พ.ศ. '+yR,arr:PYR.zone[yR].out}};
-  }
-  if(scope==='prov'){
-    return {left:{label:'พ.ศ. '+yL,arr:pyrSum(yL)}, right:{label:'พ.ศ. '+yR,arr:pyrSum(yR)}};
-  }
-  const a=scope.slice(1);
-  return {left :{label:'อำเภอ'+a+' · พ.ศ. '+yL,arr:pyrAmp(yL,a)},
-          right:{label:'อำเภอ'+a+' · พ.ศ. '+yR,arr:pyrAmp(yR,a)}};
+const pyrZero=()=>PYR.bands.map(()=>0);
+function sexAt(y,area){
+  if(!PYR_SEX)return null;
+  const box=PYR_SEX[y]||PYR_SEX[String(y)];
+  if(!box)return null;
+  const rec=box[area]||(area==='PROV'?box['PROV']||box['ทั้งจังหวัด']:null);
+  if(!rec||!rec['ชาย']||!rec['หญิง'])return null;
+  return rec;
 }
-function fillYearSel(id,val){
-  const el=document.getElementById(id); if(!el)return;
-  el.innerHTML=pyrYears().map(y=>`<option value="${y}"${y===val?' selected':''}>พ.ศ. ${y}</option>`).join('');
-  el.value=String(val);
+function sexYears(){
+  if(!PYR_SEX)return [];
+  return pyrYears().filter(y=>sexAt(y,PYR_AREA));
 }
-function syncYearUI(){
-  const wrap=document.getElementById('pyrYears');
-  const left=document.getElementById('pyrLeft');
-  const vs=document.querySelector('#pyrYears .yrvs');
-  if(!wrap)return;
-  const zone=PYR_SCOPE==='zone';
-  if(left)left.style.display=zone?'none':'';
-  if(vs)vs.textContent=zone?'ปี':'เทียบ';
-  const sw=document.getElementById('pyrSwap');
-  if(sw)sw.style.display=zone?'none':'';
-  fillYearSel('pyrLeft',PYR_L); fillYearSel('pyrRight',PYR_R);
+function pyrSeries(){
+  if(PYR_MODE==='S'){
+    const rec=sexAt(PYR_YEAR,PYR_AREA);
+    if(!rec)return null;
+    const where=PYR_AREA==='PROV'?'ทั้งจังหวัด':'อำเภอ'+PYR_AREA;
+    return {left :{label:'ชาย · '+where+' · พ.ศ. '+PYR_YEAR, arr:rec['ชาย'],  color:'var(--blue)'},
+            right:{label:'หญิง · '+where+' · พ.ศ. '+PYR_YEAR,arr:rec['หญิง'],color:'var(--lotus,#cf5f92)'}};
+  }
+  const z=PYR.zone[PYR_YEAR]||PYR.zone[String(PYR_YEAR)];
+  if(!z)return null;
+  return {left :{label:'ในเขตเทศบาล · พ.ศ. '+PYR_YEAR, arr:z.in, color:'var(--blue)'},
+          right:{label:'นอกเขตเทศบาล · พ.ศ. '+PYR_YEAR,arr:z.out,color:'var(--lotus,#cf5f92)'}};
 }
 function buildPyramid(){
   if(!PYR){document.getElementById('pyrBox').innerHTML='<div class="svc-empty">ไม่พบข้อมูลโครงสร้างอายุรายปี</div>';return}
-  const YS=pyrYears();
-  if(PYR_L==null)PYR_L=YS[0];
-  if(PYR_R==null)PYR_R=YS[YS.length-1];
+  const sc=document.getElementById('pyrScope');
+  /* ถ้ายังไม่มีข้อมูลแยกเพศ ให้เริ่มที่โหมดในเขต/นอกเขตแทน จะได้ไม่เปิดมาเจอหน้าว่าง */
+  if(!PYR_SEX&&PYR_MODE==='S'){PYR_MODE='Z';PYR_AREA='PROV';if(sc)sc.value='Z|PROV'}
+  /* โหมดชายหญิงมีข้อมูลแค่บางปี ปุ่มเล่นจึงไล่เฉพาะปีที่มีจริง ไม่พาไปเจอหน้าว่าง */
+  const YS=(PYR_MODE==='S'&&sexYears().length)?sexYears():pyrYears();
+  if(PYR_YEAR==null||YS.indexOf(PYR_YEAR)<0)PYR_YEAR=YS[YS.length-1];
   const box=document.getElementById('playerBox');
   if(box){
     box.innerHTML=playerBar('pyrPlay',{
       frames:YS.map(y=>({label:'พ.ศ. '+y,short:String(y).slice(-2),y})),
-      i:YS.indexOf(PYR_R)<0?YS.length-1:YS.indexOf(PYR_R), ms:1500, hoverStop:'#pyrBox',
-      onFrame:fr=>{PYR_R=fr.y;fillYearSel('pyrRight',PYR_R);drawPyramid()}
+      i:Math.max(0,YS.indexOf(PYR_YEAR)), ms:1500, hoverStop:'#pyrBox',
+      onFrame:fr=>{PYR_YEAR=fr.y;drawPyramid()}
     });
     bindPlayer('pyrPlay',true);
   }
-  const sc=document.getElementById('pyrScope');
-  if(sc){ sc.value=PYR_SCOPE;
-    if(!sc.dataset.b){sc.dataset.b='1';
-      sc.addEventListener('change',()=>{PYR_SCOPE=sc.value;syncYearUI();drawPyramid()})}}
-  ['pyrLeft','pyrRight'].forEach(id=>{
-    const el=document.getElementById(id); if(!el||el.dataset.b)return;
-    el.dataset.b='1';
-    el.addEventListener('change',()=>{
-      if(id==='pyrLeft')PYR_L=+el.value; else PYR_R=+el.value;
-      drawPyramid();
+  if(sc&&!sc.dataset.b){sc.dataset.b='1';
+    sc.addEventListener('change',()=>{
+      const v=sc.value.split('|');
+      PYR_MODE=v[0]; PYR_AREA=v[1]||'PROV';
+      buildPyramid();
     });
-  });
-  const sw=document.getElementById('pyrSwap');
-  if(sw&&!sw.dataset.b){sw.dataset.b='1';
-    sw.addEventListener('click',()=>{const t=PYR_L;PYR_L=PYR_R;PYR_R=t;syncYearUI();drawPyramid()})}
-  syncYearUI();
+  }
   drawPyramid();
 }
+function pyrEmpty(){
+  const where=PYR_AREA==='PROV'?'ทั้งจังหวัด':'อำเภอ'+PYR_AREA;
+  document.getElementById('pyrBox').innerHTML=
+    `<div class="svc-empty" style="text-align:left;line-height:1.9">
+      <b>ยังไม่มีข้อมูลประชากรแยกเพศตามช่วงอายุของ${where} ปี ${PYR_YEAR}</b><br>
+      ข้อมูลที่ระบบมีตอนนี้คือจำนวนประชากรตามช่วงอายุรวมทั้งสองเพศ
+      และจำนวนชายหญิงรวมทุกช่วงอายุ ยังไม่มีชุดที่ตัดขวางทั้งสองอย่างพร้อมกัน<br>
+      ต้องขอจาก <b>ที่ทำการปกครองจังหวัดหนองบัวลำภู</b>
+      เป็นรายงานทะเบียนราษฎรแบบแยกรายอายุและเพศ แล้วรวมเป็นช่วงอายุ 5 ปีทั้ง 17 ช่วง<br>
+      ระหว่างนี้เลือก <b>ในเขตเทียบนอกเขตเทศบาล</b> จากช่องด้านบนเพื่อดูโครงสร้างอายุได้ตามปกติ</div>`;
+  const tb=document.getElementById('tAge'); if(tb)tb.innerHTML='';
+  const nt=document.getElementById('ageNote'); if(nt)nt.textContent='';
+  const sub=document.getElementById('pyrSub'); if(sub)sub.textContent='รอข้อมูลแยกเพศตามช่วงอายุ';
+}
 function drawPyramid(){
-  const B=PYR.bands, yL=PYR_L, yR=PYR_R;
-  const S=pyrSeries(PYR_SCOPE,yL,yR);
+  const B=PYR.bands, S=pyrSeries();
+  if(!S){pyrEmpty();return}
   const tL=S.left.arr.reduce((a,b)=>a+b,0)||1, tR=S.right.arr.reduce((a,b)=>a+b,0)||1;
   const pctL=S.left.arr.map(v=>v/tL*100), pctR=S.right.arr.map(v=>v/tR*100);
   const mx=Math.max(...pctL,...pctR)||1;
@@ -394,43 +386,50 @@ function drawPyramid(){
     const tip=tipOf({t:B[i],
       d:S.left.label+' '+f(S.left.arr[i],0)+' คน ('+pa.toFixed(1)+'%) · '+
         S.right.label+' '+f(S.right.arr[i],0)+' คน ('+pb.toFixed(1)+'%)',
-      calc:'สัดส่วน = จำนวนในช่วงอายุ ÷ ประชากรรวมของกลุ่มนั้น × 100 · ผลต่างสองฝั่ง '+
+      calc:'สัดส่วน = จำนวนในช่วงอายุ ÷ ประชากรรวมของฝั่งนั้น × 100 · ผลต่างสองฝั่ง '+
         (d>0?'+':'')+d.toFixed(1)+' จุด · ความยาวแท่งเทียบกับช่วงอายุที่มีสัดส่วนสูงสุด '+mx.toFixed(1)+'%',
-      src:'popreg',when:PYR_SCOPE==='zone'?('พ.ศ. '+yR):('พ.ศ. '+yL+' เทียบ พ.ศ. '+yR)});
+      src:'popreg',when:'พ.ศ. '+PYR_YEAR});
     h+=`<div class="pyr-row" data-tip2="${tip}">
       <div class="pyr-l"><span class="pyr-n">${pa.toFixed(1)}%</span>
-        <i style="width:${(pa/mx*100).toFixed(1)}%"></i></div>
+        <i style="width:${(pa/mx*100).toFixed(1)}%;background:${S.left.color}"></i></div>
       <div class="pyr-b">${B[i].replace(' ปี','').replace('ถึง','–').replace(' และมากกว่า','+')}</div>
-      <div class="pyr-r"><i style="width:${(pb/mx*100).toFixed(1)}%"></i>
+      <div class="pyr-r"><i style="width:${(pb/mx*100).toFixed(1)}%;background:${S.right.color}"></i>
         <span class="pyr-n">${pb.toFixed(1)}%</span></div></div>`;
   }
   h+=`</div><div class="pyr-legend">
-    <span><i style="background:var(--blue)"></i>${S.left.label}</span>
-    <span><i style="background:var(--lotus,#cf5f92)"></i>${S.right.label}</span>
-    <span style="color:var(--faint)">แท่งยาวสุด = ${mx.toFixed(1)}% ของกลุ่ม</span></div>`;
+    <span><i style="background:${S.left.color}"></i>${S.left.label}</span>
+    <span><i style="background:${S.right.color}"></i>${S.right.label}</span>
+    <span style="color:var(--faint)">แท่งยาวสุด = ${mx.toFixed(1)}% ของฝั่งนั้น</span></div>`;
   document.getElementById('pyrBox').innerHTML=h;
   const sub=document.getElementById('pyrSub');
-  if(sub)sub.textContent=(PYR_SCOPE==='zone'?'ในเขตเทศบาลเทียบนอกเขตเทศบาล ปี '+yR:
-    (PYR_SCOPE==='prov'?'ทั้งจังหวัด':'อำเภอ'+PYR_SCOPE.slice(1))+' · พ.ศ. '+yL+' เทียบ พ.ศ. '+yR)+
-    ' · เลือกปีได้ทั้งสองฝั่ง หรือกดเล่นเพื่อไล่ปีฝั่งขวา';
-  /* ตารางรายละเอียดของปิรามิด */
+  if(sub)sub.textContent=(PYR_MODE==='S'
+      ?'ชายอยู่ฝั่งซ้าย หญิงอยู่ฝั่งขวา '+(PYR_AREA==='PROV'?'ทั้งจังหวัด':'อำเภอ'+PYR_AREA)
+      :'ในเขตเทศบาลเทียบนอกเขตเทศบาล ทั้งจังหวัด')+
+    ' · พ.ศ. '+PYR_YEAR+' · กดเล่นเพื่อไล่ปี';
   const tb=document.getElementById('tAge');
   if(tb)tb.innerHTML=`<thead><tr><th>ช่วงอายุ</th>
       <th class="r">${S.left.label}</th><th class="r">%</th>
-      <th class="r">${S.right.label}</th><th class="r">%</th><th class="r">ผลต่าง</th></tr></thead><tbody>`+
+      <th class="r">${S.right.label}</th><th class="r">%</th>
+      <th class="r">รวม</th><th class="r">ผลต่าง</th></tr></thead><tbody>`+
     B.map((b,i)=>`<tr><td>${b}</td>
       <td class="r">${f(S.left.arr[i],0)}</td><td class="r">${pctL[i].toFixed(1)}%</td>
       <td class="r">${f(S.right.arr[i],0)}</td><td class="r">${pctR[i].toFixed(1)}%</td>
+      <td class="r">${f(S.left.arr[i]+S.right.arr[i],0)}</td>
       <td class="r">${(pctR[i]-pctL[i]>0?'+':'')+(pctR[i]-pctL[i]).toFixed(1)}</td></tr>`).reverse().join('')+
     `</tbody><tfoot><tr><td>รวม</td><td class="r">${f(tL,0)}</td><td class="r">100.0%</td>
-      <td class="r">${f(tR,0)}</td><td class="r">100.0%</td><td></td></tr></tfoot>`;
+      <td class="r">${f(tR,0)}</td><td class="r">100.0%</td>
+      <td class="r">${f(tL+tR,0)}</td><td></td></tr></tfoot>`;
+  const ratio=tR?(tL/tR*100):0;
   document.getElementById('ageNote').innerHTML=
     `${S.left.label} มีผู้สูงอายุ 60 ปีขึ้นไป <b>${old(S.left.arr,tL).toFixed(1)}%</b>
      และเด็กต่ำกว่า 15 ปี ${kid(S.left.arr,tL).toFixed(1)}%<br>
      ${S.right.label} มีผู้สูงอายุ <b>${old(S.right.arr,tR).toFixed(1)}%</b>
-     และเด็ก ${kid(S.right.arr,tR).toFixed(1)}%<br>
-     ฐานปิรามิดที่แคบกว่ายอดคือสัญญาณว่าคนรุ่นใหม่เกิดน้อยกว่ารุ่นก่อน
-     ชี้เมาส์ที่แท่งจะหยุดเล่นชั่วคราวและแสดงตัวเลขจริง`;
+     และเด็ก ${kid(S.right.arr,tR).toFixed(1)}%<br>`+
+    (PYR_MODE==='S'
+      ? `อัตราส่วนเพศ = ชาย ${ratio.toFixed(1)} คนต่อหญิง 100 คน
+         ช่วงอายุที่ผลต่างสองฝั่งกว้างที่สุดมักเป็นกลุ่มสูงอายุ เพราะผู้หญิงมีอายุคาดเฉลี่ยยาวกว่า`
+      : `ฐานปิรามิดที่แคบกว่ายอดคือสัญญาณว่าคนรุ่นใหม่เกิดน้อยกว่ารุ่นก่อน`)+
+    `<br>ชี้เมาส์ที่แท่งจะหยุดเล่นชั่วคราวและแสดงตัวเลขจริง`;
 }
 
 /* ══════════ แผนที่ประชากรรายอำเภอ ══════════ */
