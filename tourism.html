@@ -12,6 +12,87 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="ds.css">
 
+<style>
+.tchips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:2px 0 11px}
+.tchips .tc-l{font-size:11px;color:var(--faint);font-weight:600;margin-right:2px}
+.tchip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:16px;border:1px solid var(--line);
+  background:var(--card);font-size:12px;color:var(--dim);white-space:nowrap;transition:.15s}
+.tchip i{width:10px;height:10px;border-radius:50%;background:var(--tc);flex:none;box-shadow:0 0 0 2px #fff}
+.tchip b{font-family:var(--fn);font-weight:600;color:var(--ink,inherit);font-size:11.5px}
+.tchip:hover{border-color:var(--tc,var(--brand))}
+.tchip.on{background:var(--tc,var(--brand));border-color:var(--tc,var(--brand));color:#fff}
+.tchip.on b{color:#fff}.tchip.on i{background:#fff;box-shadow:none}
+.tchip.dim{opacity:.45}
+.tdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+.pri-tb{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+.pri-tb:hover{color:#fff;filter:brightness(1.08)}
+.tb.pri-tb.on{background:#0b3c32;border-color:#0b3c32}
+.pop .pimg{margin:-1px -1px 0;height:150px;overflow:hidden;border-radius:10px 10px 0 0;background:var(--card2)}
+.pop .pimg img{width:100%;height:100%;object-fit:cover;display:block}
+/* เส้นทาง */
+.routebox{border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(180deg,var(--brand-l),var(--card) 70%);padding:12px 14px;margin-bottom:12px}
+.rt-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-end;margin-bottom:10px}
+.rt-head>b{font-family:var(--fd);font-size:14.5px;align-self:center;margin-right:4px}
+.rt-head label{display:flex;flex-direction:column;gap:4px;font-size:10.5px;color:var(--faint);font-weight:600}
+.rt-head .sel{height:34px;min-width:120px}
+.rt-sp{flex:1}
+.rt-grid{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:14px;align-items:start}
+.rt-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+.rt-row:last-child{border:0}
+.rt-no{width:26px;height:26px;border-radius:50%;color:#fff;display:grid;place-items:center;font:600 12px var(--fn);flex:none;box-shadow:0 0 0 3px #fff}
+.rt-body{flex:1;min-width:0}.rt-body b{display:block;font-family:var(--fd);font-size:13px}
+.rt-body span{font-size:11px;color:var(--faint)}
+.rt-time{text-align:right;font:600 15px var(--fn);color:var(--brand);white-space:nowrap}
+.rt-time small{display:block;font:400 10.5px var(--fb,inherit);color:var(--faint)}
+.rt-lunch{font-size:11.5px;color:#8a6714;background:#fdf3e0;border:1px solid #ecd8a8;border-radius:8px;padding:5px 10px;margin:6px 0}
+.rt-sum{display:flex;flex-direction:column;gap:8px}
+.rt-sum .mini .s{font-size:10.5px;color:var(--faint);margin-top:2px}
+.rt-go{justify-content:center;height:40px;text-decoration:none}
+.rt-hint{font-size:10.5px;color:var(--faint);line-height:1.6}
+.rt-pin span{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;color:#fff;font:700 12px var(--fn);
+  border:2.5px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.rt-pin.st span{width:40px;height:22px;border-radius:11px;background:#0b3c32;font:600 11px var(--fd)}
+/* ตรวจพิกัด */
+.ck-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.ck-form{display:flex;flex-direction:column;gap:9px}
+.ck-form label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--faint);font-weight:600;min-width:0;flex:1}
+.ck-form .inp,.ck-form .sel{height:37px;width:100%;border:1px solid var(--line);border-radius:9px;padding:0 10px;background:var(--card);font-size:13px}
+.ck-row{display:flex;gap:10px}
+.ck-act{display:flex;gap:8px}
+.ck-out{border:1px solid var(--line);border-radius:var(--r);background:var(--card2);padding:12px 14px;min-height:190px}
+.ck-empty{font-size:12px;color:var(--faint);line-height:1.8}
+.ck-badge{display:inline-block;font:600 12.5px var(--fd);padding:5px 12px;border-radius:9px;margin-bottom:8px}
+.ck-badge.ok{background:#e4f5ec;color:#11734b}.ck-badge.warn{background:#fdf3e0;color:#8a6714}.ck-badge.bad{background:#fde8e6;color:#b3342a}
+.ck-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.ck-list li,.ck-mini{font-size:12px;line-height:1.55;padding-left:20px;position:relative}
+.ck-list li:before,.ck-mini:before{position:absolute;left:0;top:0;font-weight:700}
+.ck-list li.ok:before,.ck-mini.ok:before{content:'✓';color:#11734b}
+.ck-list li.warn:before,.ck-mini.warn:before{content:'!';color:#b7791f;left:4px}
+.ck-list li.bad:before,.ck-mini.bad:before{content:'✕';color:#b3342a}
+.ck-img{margin-top:10px;border-radius:9px;overflow:hidden;max-height:160px;font-size:11.5px;color:var(--bad)}
+.ck-img img{width:100%;max-height:160px;object-fit:cover;display:block}
+.ck-json{margin-top:10px;display:flex;flex-direction:column;gap:5px}
+.ck-json span{font-size:10.5px;color:var(--faint)}
+.ck-json code{font-size:11px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 9px;overflow-wrap:anywhere;line-height:1.5}
+.ck-json .tb{align-self:flex-start}
+.ck-audit{margin-top:14px}
+.ck-ah{display:flex;gap:10px;align-items:center;margin-bottom:8px;font-family:var(--fd);font-size:13.5px}
+.ck-pin span{display:grid;place-items:center;width:42px;height:24px;border-radius:12px 12px 12px 2px;color:#fff;font:600 11px var(--fd);
+  box-shadow:0 3px 10px rgba(0,0,0,.35);border:2px solid #fff}
+.ck-pin.ok span{background:#11734b}.ck-pin.warn span{background:#c98a1b}.ck-pin.bad span{background:#c0392b}
+/* รายเดือนเทียบปีก่อน */
+.yoy-tools{margin-bottom:10px}
+.yoy-wrap{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:14px;align-items:start}
+.yoy-side{display:flex;flex-direction:column;gap:8px}
+.yoy-side .mini .s{font-size:10.5px;color:var(--faint);margin-top:2px;line-height:1.5}
+@media (max-width:1150px){.rt-grid,.yoy-wrap{grid-template-columns:1fr}.yoy-side{display:grid;grid-template-columns:1fr 1fr}}
+@media (max-width:767px){
+  .ck-grid{grid-template-columns:1fr}.ck-row{flex-direction:column}
+  .rt-head .sel{min-width:0;width:100%}.rt-head label{flex:1 1 45%}
+  .tchips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+  .yoy-side{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
 <div id="tip"></div>
@@ -82,6 +163,22 @@ function renderTour(){
     <div class="b"><div class="ch lg"><canvas id="cMon"></canvas></div>
       <div class="note" id="monNote"></div></div></div>
 
+  <div class="c mb"><header><span class="hdico icow img" data-hdico="visitortrend"></span><h3>เทียบรายเดือนกับปีก่อน</h3>
+    <span class="u" id="yoySub">ปีงบประมาณ ต.ค.–ก.ย.</span>
+    <span class="r">${viewToggle('cYoY')}</span></header>
+    <div class="b">
+      <div class="yoy-tools"><div class="segs" id="yoyMetric">
+        <button data-v="visitor" class="on">ผู้เยี่ยมเยือน</button><button data-v="revenue">รายได้</button><button data-v="occ">อัตราเข้าพัก</button></div></div>
+      <div class="yoy-wrap">
+        <div class="yoy-main">
+          <div id="cYoY-chart"><div class="ch lg"><canvas id="cYoY"></canvas></div></div>
+          <div id="cYoY-table" class="hide"><div class="sc" style="max-height:340px"><table class="t" id="tYoY"></table></div></div>
+        </div>
+        <aside class="yoy-side" id="yoySide"></aside>
+      </div>
+      <div class="note" id="yoyNote"></div>
+    </div></div>
+
   <div class="grid g21 mb">
     <div class="c"><header><span class="hdico icow img" data-hdico="area"></span><h3>แหล่งท่องเที่ยว ${T.spots.length} แห่ง</h3>
       <span class="u">คลิกหมุดหรือรายชื่อ แล้วกดนำทางไปได้ทันที</span></header>
@@ -96,8 +193,13 @@ function renderTour(){
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
             ใกล้ฉัน</button>
           ${fullscreenBtn('#tmapWrap')}
+          <button class="tb pri-tb" id="spotRoute">
+            <svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="6" r="2.4"/><path d="M8.4 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.6"/></svg>
+            เส้นทาง 1 วัน</button>
           <button class="tb" id="spotReset">ล้างตัวกรอง</button>
         </div>
+        <div class="tchips" id="spotTypes"></div>
+        <div class="routebox hide" id="routeBox"></div>
         <div class="svc">
           <div class="mapwrap" id="tmapWrap">
             <div id="tmap" style="height:520px"></div>
@@ -105,9 +207,9 @@ function renderTour(){
           </div>
           <div class="svc-list" id="spotList"></div>
         </div>
-        <div class="note">หมุดสีเขียวคือแหล่งท่องเที่ยวที่มีพิกัดในฐานข้อมูลจังหวัด
-          กดที่หมุดจะมีปุ่มนำทางด้วย Google Maps เปิดแผนที่ และคัดลอกพิกัด
-          พร้อมปุ่มค้นหาที่พักและร้านอาหารใกล้จุดนั้น ใช้วางแผนเส้นทางเชื่อมกับแปลงใหญ่และร้าน OTOP ได้</div>
+        <div class="note">สีหมุดบอกประเภทแหล่งท่องเที่ยว กดชิปประเภทด้านบนหรือกดที่วงกลมประเภทด้านขวาเพื่อกรอง
+          กดหมุดเพื่อนำทาง เปิดแผนที่ คัดลอกพิกัด หรือค้นหาที่พักและร้านอาหารใกล้จุดนั้น
+          ปุ่ม <b>เส้นทาง 1 วัน</b> จัดลำดับแหล่งท่องเที่ยวที่อยู่ใกล้กันตามตัวกรองที่เลือก แล้วเปิดใน Google Maps ได้ทันที</div>
       </div></div>
     <div class="c"><header><span class="hdico icow img" data-hdico="area"></span><h3>ประเภทแหล่งท่องเที่ยว</h3><span class="u">ปี ${T.spotYear} · ${spotTot} แห่ง</span>
       <span class="r">${viewToggle('cSpot')}</span></header>
@@ -125,6 +227,29 @@ function renderTour(){
     <div class="c"><header><span class="hdico icow img" data-hdico="gap"></span><h3>ศักยภาพที่ยังไม่ถูกใช้</h3></header>
       <div class="b" id="gapBox2"></div></div>
   </div>
+
+  <div class="c mb" id="checker"><header><span class="hdico icow img">${icoImg('formula',26)}</span><h3>ตรวจพิกัดแหล่งท่องเที่ยวก่อนบันทึก</h3>
+    <span class="u">สำหรับหน่วยงานที่เพิ่มหรือแก้ไขแหล่งท่องเที่ยว</span></header>
+    <div class="b">
+      <div class="ck-grid">
+        <div class="ck-form">
+          <label>ชื่อแหล่งท่องเที่ยว<input class="inp" id="ckName" placeholder="เช่น น้ำตกเฒ่าโต้"></label>
+          <div class="ck-row">
+            <label>อำเภอ<select class="sel" id="ckAmp"></select></label>
+            <label>ตำบล<input class="inp" id="ckTa" placeholder="เช่น หนองบัว"></label>
+          </div>
+          <div class="ck-row">
+            <label>ประเภท<select class="sel" id="ckType"></select></label>
+            <label>พิกัด (วางจาก Google Maps ได้)<input class="inp" id="ckLL" placeholder="17.2282, 102.4613"></label>
+          </div>
+          <label>ลิงก์รูป Google Drive (ไม่บังคับ)<input class="inp" id="ckImg" placeholder="https://drive.google.com/file/d/…/view"></label>
+          <div class="ck-act"><button class="tb pri-tb" id="ckRun">ตรวจพิกัด</button><button class="tb" id="ckClear">ล้าง</button></div>
+        </div>
+        <div class="ck-out" id="ckOut"><div class="ck-empty">กรอกข้อมูลแล้วกด <b>ตรวจพิกัด</b> ระบบจะตรวจว่าพิกัดอยู่ในจังหวัด ตรงกับอำเภอที่เลือก
+          ไม่ซ้ำกับแหล่งเดิม และละเอียดพอสำหรับนำทาง พร้อมปักหมุดให้ดูบนแผนที่ด้านบน</div></div>
+      </div>
+      <div class="ck-audit" id="ckAudit"></div>
+    </div></div>
 
   <div class="c"><header><span class="hdico icow img">${icoImg('source',26)}</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
     <div class="b">${srcBar(['tour'],'ครอบคลุมสถิติผู้เยี่ยมเยือนรายปีและรายเดือน ค่าใช้จ่ายเฉลี่ยต่อคนต่อวัน อัตราการเข้าพัก ประเภทแหล่งท่องเที่ยว พิกัดแหล่งท่องเที่ยว และสถานประกอบการที่พักแรมที่ถูกต้องตามกฎหมาย')}</div></div>`;
@@ -231,7 +356,7 @@ function renderTour(){
   /* ── รายเดือน ── */
   mk('cMon',{data:{labels:M.map(x=>x.label),datasets:[
     {type:'bar',label:'ผู้เยี่ยมเยือน (คน)',data:M.map(x=>x.v),backgroundColor:cv('--brand')+'cc',borderRadius:6,yAxisID:'y'},
-    {type:'line',label:'รายได้ (ล้านบาท)',data:R.map(x=>+(x.v/1e6).toFixed(1)),borderColor:cv('--gold'),
+    {type:'line',label:'รายได้ (ล้านบาท)',data:R.map(x=>+(+x.v).toFixed(2)),borderColor:cv('--gold'),
       borderWidth:2.4,pointRadius:3,tension:.3,yAxisID:'y2'},
     {type:'line',label:'อัตราการเข้าพัก (%)',data:OC.map(x=>x.v),borderColor:cv('--coral'),
       borderWidth:2,borderDash:[5,4],pointRadius:3,tension:.3,yAxisID:'y3'}]},
@@ -244,13 +369,13 @@ function renderTour(){
   const rSum=R.reduce((a,b)=>a+b.v,0);
   document.getElementById('monNote').innerHTML=
     `ปีงบประมาณ 2569 สะสม ${M.length} เดือน มีผู้เยี่ยมเยือน ${f(M.reduce((a,b)=>a+b.v,0),0)} คน
-     สร้างรายได้ ${f(rSum/1e6,0)} ล้านบาท เฉลี่ยเดือนละ ${f(rSum/1e6/M.length,1)} ล้านบาท
+     สร้างรายได้ ${f(rSum,1)} ล้านบาท เฉลี่ยเดือนละ ${f(rSum/M.length,1)} ล้านบาท
      ดูสามเส้นพร้อมกันจะเห็นว่าเดือนที่คนมามากไม่ได้แปลว่ารายได้สูงตามเสมอไป`;
 
   /* ── ประเภทแหล่ง ── */
   const SP=Object.entries(T.spotByType).sort((a,b)=>b[1]-a[1]);
   mk('cSpot',{type:'doughnut',data:{labels:SP.map(r=>r[0].replace('แหล่งท่องเที่ยว','')),
-    datasets:[{data:SP.map(r=>r[1]),backgroundColor:PAL(),borderColor:cv('--card'),borderWidth:3}]},
+    datasets:[{data:SP.map(r=>r[1]),backgroundColor:SP.map((r,i)=>{const k=tKeyByDb(r[0]);return k?SPOT_T[k].c:PAL()[i%7]}),borderColor:cv('--card'),borderWidth:3}]},
     options:{cutout:'56%',plugins:{legend:{position:'bottom',labels:{padding:8,font:{size:10}}},
       tooltip:{callbacks:{label:c=>c.label+' '+c.raw+' แห่ง',
         footer:it=>(it[0].raw/spotTot*100).toFixed(1)+'% ของแหล่งท่องเที่ยวทั้งหมด'}}}}});
@@ -278,7 +403,6 @@ function renderTour(){
      อำเภอที่มีแหล่งท่องเที่ยวมากแต่ห้องพักน้อย คือจุดที่นักท่องเที่ยวมาแล้วต้องกลับ ไม่ได้ค้างคืน`;
 
   /* ── ช่องว่าง ── */
-  const revYear=rSum/1e6;
   document.getElementById('gapBox2').innerHTML=[
     ['ห้องพักที่ว่างเฉลี่ยต่อคืน',f(T.accRooms*(1-oNow.v/100),0),'ห้อง',cv('--coral'),
      'อัตราเข้าพัก '+oNow.v.toFixed(1)+'% แปลว่าห้องว่างมากกว่าครึ่ง',
@@ -309,18 +433,46 @@ function renderTour(){
       <div class="v" style="color:${r[3]}">${r[1]}<small> ${r[2]}</small></div>
       <div style="font-size:11px;color:var(--faint);line-height:1.6;margin-top:4px">${r[4]}</div></div>`).join('');
 
+  renderYoY();
   drawSpotMap();
 }
 
-let TMAP=null, TMARK=[], SPOT_FILTER={q:'',amp:''}, ME=null, MEMARK=null, TGEO=null,
+/* ══════════ แหล่งท่องเที่ยว: ประเภท · แผนที่ · เส้นทาง 1 วัน · ตรวจพิกัด ══════════ */
+let TMAP=null, TMARK=[], SPOT_FILTER={q:'',amp:'',types:[]}, ME=null, MEMARK=null, TGEO=null, GEOJ=null,
+    RLAYER=null, CKMARK=null,
     TBASE={layer:null,key:'plain',onChange:k=>{if(TGEO)TGEO.setStyle(geoStyleFor(k))}};
 /* กรอบจังหวัดหนองบัวลำภู ใช้กันพิกัดผิดดึงแผนที่ไปที่อื่น */
 const NBL_BOX={s:16.6,n:17.9,w:101.8,e:102.9};
 const inNBL=s=>s&&s.lat>NBL_BOX.s&&s.lat<NBL_BOX.n&&s.lng>NBL_BOX.w&&s.lng<NBL_BOX.e;
+const HALL={lat:17.2046,lng:102.4406,n:'ศาลากลางจังหวัดหนองบัวลำภู'};
+
+/* ประเภทแหล่งท่องเที่ยว · stay = เวลาเที่ยวโดยประมาณ (นาที) ใช้คำนวณเส้นทาง 1 วัน
+   key ตรงกับหมวดในฐานข้อมูลจังหวัด (T.spotByType) เพื่อให้กดวงกลมประเภทแล้วกรองหมุดได้ */
+const SPOT_T={
+  nat:{n:'ธรรมชาติ',       c:'#1f9d6b',stay:90, db:'แหล่งท่องเที่ยวทางธรรมชาติ'},
+  his:{n:'ประวัติศาสตร์',   c:'#b7791f',stay:45, db:'แหล่งท่องเที่ยวทางประวัติศาสตร์'},
+  cul:{n:'วัฒนธรรม ศาสนา', c:'#7c5cc4',stay:40, db:'แหล่งท่องเที่ยวทางวัฒนธรรม'},
+  art:{n:'ศิลปะ วัฒนธรรม',  c:'#d0527f',stay:60, db:'แหล่งท่องเที่ยวทางศิลปะ วัฒนธรรม'},
+  agr:{n:'เชิงเกษตร',      c:'#6aa52c',stay:60, db:'แหล่งท่องเที่ยวเชิงเกษตร'},
+  rec:{n:'นันทนาการ',      c:'#2f7fd0',stay:120,db:'แหล่งท่องเที่ยวทางนันทนาการ'}
+};
+const tOf=s=>SPOT_T[s.t]||{n:'ไม่ระบุประเภท',c:'#7a8a84',stay:45};
+const tKeyByDb=db=>Object.keys(SPOT_T).find(k=>SPOT_T[k].db===db);
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* รูปจาก Google Drive: รับทั้งลิงก์แชร์ ลิงก์ open?id= หรือรหัสไฟล์ล้วน */
+function driveThumb(u,w){
+  if(!u)return '';
+  const m=String(u).match(/\/d\/([\w-]{20,})/)||String(u).match(/[?&]id=([\w-]{20,})/)||String(u).match(/^([\w-]{25,})$/);
+  if(m)return 'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w'+(w||640);
+  return /^https?:\/\//.test(u)?u:'';
+}
+
 function spotsFiltered(){
-  const q=SPOT_FILTER.q.trim();
+  const q=SPOT_FILTER.q.trim(), ty=SPOT_FILTER.types;
   let list=T.spots.filter(s=>
     (!SPOT_FILTER.amp||s.a===SPOT_FILTER.amp) &&
+    (!ty.length||ty.indexOf(s.t)>=0) &&
     (!q||s.n.includes(q)||s.ta.includes(q)||s.a.includes(q)));
   if(ME){
     list=list.map(s=>Object.assign({},s,{km:distKm(ME.lat,ME.lng,s.lat,s.lng)}))
@@ -331,51 +483,78 @@ function spotsFiltered(){
 function drawSpotMap(){
   if(typeof L==='undefined')return;
   const el=document.getElementById('tmap'); if(!el)return;
-  if(TMAP){TMAP.remove();TMAP=null;TMARK=[]}
+  if(TMAP){TMAP.remove();TMAP=null;TMARK=[];RLAYER=null;CKMARK=null}
   TMAP=L.map('tmap',{zoomControl:false,attributionControl:false,scrollWheelZoom:false,zoomSnap:.25});
   L.control.zoom({position:'topright'}).addTo(TMAP);
   TGEO=null;
   bindBase('tbase',TMAP,TBASE);
-  fetch('assets/nbl-amphoe.geojson').then(r=>r.json()).then(j=>{
+  const done=j=>{
+    GEOJ=j;
     const g=TGEO=L.geoJSON(j,{style:geoStyleFor(TBASE.key||'plain'),
       onEachFeature:(f,l)=>{const nm=f.properties.amp_th;
         l.bindTooltip('อ.'+nm,{direction:'center',className:'amplbl'})}}).addTo(TMAP);
     try{TMAP.fitBounds(g.getBounds(),{padding:[20,20]})}catch(e){}
-    addSpots();
-  }).catch(()=>{TMAP.setView([17.22,102.36],9.3);addSpots()});
+    addSpots(); renderAudit();
+  };
+  if(GEOJ)done(GEOJ);
+  else fetch('assets/nbl-amphoe.geojson').then(r=>r.json()).then(done)
+    .catch(()=>{TMAP.setView([17.22,102.36],9.3);addSpots();renderAudit()});
+}
+function spotPopup(s){
+  const tt=tOf(s), im=driveThumb(s.img,640);
+  const html=servicePopup({
+    name:esc(s.n), sub:'ต.'+esc(s.ta)+' · อ.'+esc(s.a),
+    rows:[['ประเภท',`<span class="tdot" style="background:${tt.c}"></span>${tt.n}`],['อำเภอ','อ.'+esc(s.a)],['ตำบล','ต.'+esc(s.ta)]],
+    km:s.km, lat:s.lat,lng:s.lng,nearby:'ที่พักและร้านอาหาร'});
+  return im?html.replace('<div class="pop">',`<div class="pop"><div class="pimg"><img src="${im}" alt="${esc(s.n)}" loading="lazy"
+     onerror="this.parentNode.remove()"></div>`):html;
 }
 function addSpots(){
+  if(!TMAP)return;
   TMARK.forEach(m=>TMAP.removeLayer(m)); TMARK=[];
   const list=spotsFiltered();
   const off=list.filter(s=>!inNBL(s));
   if(off.length)console.warn('พิกัดแหล่งท่องเที่ยวอยู่นอกจังหวัด:',off.map(s=>s.n+' ('+s.lat+', '+s.lng+')').join(' · '));
   list.forEach((s,i)=>{
-    const m=L.circleMarker([s.lat,s.lng],{radius:8,color:'#fff',weight:2,
-      fillColor:cv('--brand'),fillOpacity:.95}).addTo(TMAP);
-    m.bindPopup(servicePopup({
-      name:s.n, sub:'ต.'+s.ta+' · อ.'+s.a,
-      rows:[['อำเภอ','อ.'+s.a],['ตำบล','ต.'+s.ta]],
-      km:s.km, lat:s.lat,lng:s.lng,nearby:'ที่พักและร้านอาหาร'
-    }),{maxWidth:310});
+    const m=L.circleMarker([s.lat,s.lng],{radius:8.5,color:'#fff',weight:2.2,
+      fillColor:tOf(s).c,fillOpacity:.96}).addTo(TMAP);
+    m.bindPopup(spotPopup(s),{maxWidth:310});
     m.on('click',()=>highlight(i));
     TMARK.push(m);
   });
-  if(list.length){
+  if(list.length&&!RLAYER){
     const inside=TMARK.filter((m,i)=>inNBL(list[i]));
     try{TMAP.fitBounds(L.featureGroup(inside.length?inside:TMARK).getBounds(),{padding:[34,34],maxZoom:12})}catch(e){}
   }
   renderSpotList(list);
+  renderTypeChips();
 }
 function renderSpotList(list){
   const el=document.getElementById('spotList');
   if(!list.length){el.innerHTML='<div class="svc-empty">ไม่พบแหล่งท่องเที่ยวที่ตรงกับตัวกรอง</div>';return}
   el.innerHTML=(ME?`<div style="padding:9px 13px;font-size:11.5px;color:var(--brand);background:var(--brand-l);
       border-bottom:1px solid var(--line)">เรียงตามระยะทางจากตำแหน่งของท่าน</div>`:'')+
-    list.map((s,i)=>`<button class="svc-item" data-spot="${i}">
-      <span class="no">${i+1}</span>
-      <span style="flex:1"><b>${s.n}</b><span>ต.${s.ta} · อ.${s.a}</span></span>
+    list.map((s,i)=>{const tt=tOf(s);return `<button class="svc-item" data-spot="${i}">
+      <span class="no" style="background:${tt.c}">${i+1}</span>
+      <span style="flex:1"><b>${esc(s.n)}</b><span>${tt.n} · ต.${esc(s.ta)} · อ.${esc(s.a)}</span></span>
       ${s.km!=null?`<span class="km">${s.km.toFixed(1)} กม.<br><span style="font-weight:400;color:var(--faint)">~${driveMin(s.km)} นาที</span></span>`:''}
-    </button>`).join('');
+    </button>`}).join('');
+}
+function renderTypeChips(){
+  const el=document.getElementById('spotTypes'); if(!el)return;
+  const base=T.spots.filter(s=>!SPOT_FILTER.amp||s.a===SPOT_FILTER.amp);
+  const sel=SPOT_FILTER.types;
+  el.innerHTML=`<span class="tc-l">ประเภท</span>`+
+    `<button class="tchip${sel.length?'':' on'}" data-ty="">ทั้งหมด <b>${base.length}</b></button>`+
+    Object.entries(SPOT_T).map(([k,v])=>{const n=base.filter(s=>s.t===k).length;
+      return `<button class="tchip${sel.indexOf(k)>=0?' on':''}${n?'':' dim'}" data-ty="${k}" style="--tc:${v.c}">
+        <i></i>${v.n} <b>${n}</b></button>`}).join('');
+}
+function toggleType(k,only){
+  if(!k){SPOT_FILTER.types=[]}
+  else if(only){SPOT_FILTER.types=SPOT_FILTER.types.length===1&&SPOT_FILTER.types[0]===k?[]:[k]}
+  else{const i=SPOT_FILTER.types.indexOf(k);if(i>=0)SPOT_FILTER.types.splice(i,1);else SPOT_FILTER.types.push(k)}
+  addSpots();
 }
 function highlight(i){
   document.querySelectorAll('.svc-item').forEach((el,j)=>el.classList.toggle('on',j===i));
@@ -388,16 +567,299 @@ function focusSpot(i){
   if(TMARK[i])TMARK[i].openPopup();
   highlight(i);
 }
+
+/* ══════════ เส้นทางแนะนำ 1 วัน ══════════
+   เลือกจุดตามตัวกรองปัจจุบัน (อำเภอ ประเภท คำค้น) → เริ่มจากจุดใกล้จุดออกเดินทางที่สุด
+   → ไปจุดที่ใกล้ที่สุดถัดไป (nearest neighbour) → ปรับลำดับด้วย 2-opt ให้ระยะรวมสั้นลง
+   ระยะทางถนนประมาณจากระยะเส้นตรง × 1.3 · เวลาเดินทางใช้ driveMin() ตัวเดียวกับทั้งระบบ */
+const RT={start:'hall',stops:4,t0:'08:30'};
+const roadKm=km=>km*1.3;
+function routeStart(){
+  if(RT.start==='me'&&ME)return {lat:ME.lat,lng:ME.lng,n:'ตำแหน่งของท่าน'};
+  if(RT.start&&RT.start.indexOf('amp:')===0){
+    const a=RT.start.slice(4), ss=T.spots.filter(s=>s.a===a);
+    if(ss.length)return {lat:ss.reduce((x,s)=>x+s.lat,0)/ss.length,lng:ss.reduce((x,s)=>x+s.lng,0)/ss.length,n:'กลางอำเภอ'+a};
+  }
+  return HALL;
+}
+function pathKm(st,arr){let d=0,p=st;arr.forEach(s=>{d+=distKm(p.lat,p.lng,s.lat,s.lng);p=s});return d}
+function planRoute(){
+  const st=routeStart();
+  const pool=spotsFiltered().filter(inNBL).map(s=>Object.assign({},s));
+  if(!pool.length)return {st,list:[],msg:'ไม่มีแหล่งท่องเที่ยวตามตัวกรองที่เลือก'};
+  const want=Math.min(RT.stops,pool.length);
+  let cur=st, left=pool.slice(), list=[];
+  while(list.length<want){
+    left.sort((a,b)=>distKm(cur.lat,cur.lng,a.lat,a.lng)-distKm(cur.lat,cur.lng,b.lat,b.lng));
+    cur=left.shift(); list.push(cur);
+  }
+  /* 2-opt สำหรับเส้นทางเปิด (จุดเริ่มคงที่ ไม่บังคับกลับจุดเดิม) */
+  let better=true,guard=0;
+  while(better&&guard++<60){better=false;
+    for(let i=0;i<list.length-1;i++)for(let k=i+1;k<list.length;k++){
+      const cand=list.slice(0,i).concat(list.slice(i,k+1).reverse(),list.slice(k+1));
+      if(pathKm(st,cand)+1e-9<pathKm(st,list)){list=cand;better=true}
+    }}
+  return {st,list};
+}
+const hm=m=>{m=Math.round(m);return String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
+function drawRoute(){
+  const box=document.getElementById('routeBox'); if(!box)return;
+  const R=planRoute();
+  if(RLAYER&&TMAP){TMAP.removeLayer(RLAYER);RLAYER=null}
+  const amps=[...new Set(T.spots.map(s=>s.a))].sort();
+  const head=`<div class="rt-head">
+      <b>เส้นทางแนะนำ 1 วัน</b>
+      <label>ออกเดินทางจาก<select class="sel" id="rtStart">
+        <option value="hall"${RT.start==='hall'?' selected':''}>ศาลากลางจังหวัด</option>
+        <option value="me"${RT.start==='me'?' selected':''}>ตำแหน่งของฉัน</option>
+        ${amps.map(a=>`<option value="amp:${a}"${RT.start==='amp:'+a?' selected':''}>กลางอำเภอ${a}</option>`).join('')}</select></label>
+      <label>จำนวนจุด<select class="sel" id="rtStops">${[3,4,5,6].map(n=>`<option${n===RT.stops?' selected':''}>${n}</option>`).join('')}</select></label>
+      <label>เริ่มเวลา<select class="sel" id="rtT0">${['07:30','08:00','08:30','09:00','10:00'].map(t=>`<option${t===RT.t0?' selected':''}>${t}</option>`).join('')}</select></label>
+      <span class="rt-sp"></span>
+      <button class="tb" id="rtClose">ปิดเส้นทาง</button></div>`;
+  if(!R.list.length){box.innerHTML=head+`<div class="svc-empty">${R.msg}</div>`;return}
+  let t=+RT.t0.slice(0,2)*60+ +RT.t0.slice(3), p=R.st, km=0, lunch=false;
+  const rows=R.list.map((s,i)=>{
+    let brk='';
+    /* เลย 11:30 แล้วยังไม่พัก → พักกลางวันใกล้จุดล่าสุดก่อนเดินทางต่อ */
+    if(!lunch&&i>0&&t>=11*60+30){brk=`<div class="rt-lunch">พักกลางวัน ${hm(t)}–${hm(t+60)} ใกล้${esc(p.n)} ·
+      <a href="https://www.google.com/maps/search/${encodeURIComponent('ร้านอาหาร')}/@${p.lat},${p.lng},15z" target="_blank" rel="noopener">หาร้านอาหารใกล้ที่นี่</a></div>`;t+=60;lunch=true}
+    const d=distKm(p.lat,p.lng,s.lat,s.lng), dr=driveMin(d); km+=roadKm(d); t+=dr;
+    const arr=t, stay=tOf(s).stay; t+=stay; p=s;
+    return brk+`<div class="rt-row">
+      <span class="rt-no" style="background:${tOf(s).c}">${i+1}</span>
+      <span class="rt-body"><b>${esc(s.n)}</b><span>${tOf(s).n} · อ.${esc(s.a)} · ขับรถ ~${dr} นาที (${roadKm(d).toFixed(1)} กม.)</span></span>
+      <span class="rt-time">${hm(arr)}<small>อยู่ ${stay} นาที</small></span></div>`;
+  }).join('');
+  const back=distKm(p.lat,p.lng,R.st.lat,R.st.lng);
+  const wp=R.list.slice(0,-1).map(s=>s.lat+','+s.lng).join('|');
+  const last=R.list[R.list.length-1];
+  const gm=`https://www.google.com/maps/dir/?api=1&origin=${R.st.lat},${R.st.lng}&destination=${last.lat},${last.lng}`+
+    (wp?`&waypoints=${encodeURIComponent(wp)}`:'')+'&travelmode=driving';
+  box.innerHTML=head+`<div class="rt-grid"><div class="rt-list">${rows}</div>
+    <div class="rt-sum">
+      <div class="mini"><div class="l">ระยะทางรวมโดยประมาณ</div><div class="v">${km.toFixed(0)}<small> กม.</small></div>
+        <div class="s">กลับจุดเริ่มอีก ~${roadKm(back).toFixed(0)} กม. · ${driveMin(back)} นาที</div></div>
+      <div class="mini"><div class="l">เที่ยวเสร็จประมาณ</div><div class="v">${hm(t)}<small> น.</small></div>
+        <div class="s">${R.list.length} จุด · เริ่ม ${RT.t0} น. จาก${R.st.n}</div></div>
+      <a class="tb pri-tb rt-go" href="${gm}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8z"/></svg>เปิดเส้นทางใน Google Maps</a>
+      <div class="rt-hint">ระยะทางและเวลาเป็นค่าประมาณจากระยะเส้นตรง Google Maps จะคำนวณตามถนนจริงอีกครั้ง
+        ${RT.start==='me'&&!ME?'<br><b>ยังไม่ได้ระบุตำแหน่ง</b> กดปุ่ม ใกล้ฉัน ก่อน ระบบใช้ศาลากลางแทนชั่วคราว':''}</div>
+    </div></div>`;
+  if(TMAP){
+    const pts=[[R.st.lat,R.st.lng]].concat(R.list.map(s=>[s.lat,s.lng]));
+    const g=L.layerGroup();
+    L.polyline(pts,{color:'#0b3c32',weight:5,opacity:.25}).addTo(g);
+    L.polyline(pts,{color:'#ffb020',weight:3,dashArray:'8 7'}).addTo(g);
+    L.marker([R.st.lat,R.st.lng],{icon:L.divIcon({className:'rt-pin st',html:'<span>เริ่ม</span>',iconSize:[40,22],iconAnchor:[20,11]})}).addTo(g);
+    R.list.forEach((s,i)=>L.marker([s.lat,s.lng],{icon:L.divIcon({className:'rt-pin',
+      html:`<span style="background:${tOf(s).c}">${i+1}</span>`,iconSize:[26,26],iconAnchor:[13,13]})})
+      .bindPopup(spotPopup(s),{maxWidth:310}).addTo(g));
+    RLAYER=g.addTo(TMAP);
+    try{TMAP.fitBounds(L.latLngBounds(pts),{padding:[40,40],maxZoom:13})}catch(e){}
+  }
+}
+function openRoute(show){
+  const box=document.getElementById('routeBox'), b=document.getElementById('spotRoute'); if(!box)return;
+  box.classList.toggle('hide',!show); if(b)b.classList.toggle('on',show);
+  if(show)drawRoute();
+  else if(RLAYER&&TMAP){TMAP.removeLayer(RLAYER);RLAYER=null;addSpots()}
+}
+const routeOpen=()=>{const b=document.getElementById('routeBox');return b&&!b.classList.contains('hide')};
+function afterFilter(){addSpots();if(routeOpen())drawRoute()}
+
+/* ══════════ ตรวจพิกัดก่อนบันทึก ══════════ */
+function pipRing(x,y,r){let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const xi=r[i][0],yi=r[i][1],xj=r[j][0],yj=r[j][1];
+  if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c}return c}
+function polysOf(f){const g=f.geometry;return g.type==='MultiPolygon'?g.coordinates:[g.coordinates]}
+function ampAt(lat,lng){
+  if(!GEOJ)return null;
+  const f=GEOJ.features.find(f=>polysOf(f).some(p=>pipRing(lng,lat,p[0])&&!p.slice(1).some(h=>pipRing(lng,lat,h))));
+  return f?f.properties.amp_th:'';
+}
+function edgeKm(lat,lng,amp){
+  if(!GEOJ)return null;
+  const f=GEOJ.features.find(f=>f.properties.amp_th===amp); if(!f)return null;
+  const kx=111.32*Math.cos(lat*Math.PI/180), ky=110.57; let best=1e9;
+  polysOf(f).forEach(p=>p.forEach(r=>{for(let i=0;i<r.length-1;i++){
+    const ax=(r[i][0]-lng)*kx, ay=(r[i][1]-lat)*ky, bx=(r[i+1][0]-lng)*kx, by=(r[i+1][1]-lat)*ky;
+    const dx=bx-ax, dy=by-ay, L2=dx*dx+dy*dy, t=L2?Math.max(0,Math.min(1,-(ax*dx+ay*dy)/L2)):0;
+    best=Math.min(best,Math.hypot(ax+t*dx,ay+t*dy));}}));
+  return best;
+}
+function parseLL(txt){
+  const t=String(txt||'').trim();
+  let m=t.match(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/)||t.match(/(-?\d{1,3}\.\d+)\s*[, ]\s*(-?\d{1,3}\.\d+)/);
+  if(!m)return null;
+  let a=+m[1], b=+m[2], swapped=false;
+  if(Math.abs(a)>90&&Math.abs(b)<=90){[a,b]=[b,a];swapped=true}
+  const dec=Math.min((m[1].split('.')[1]||'').length,(m[2].split('.')[1]||'').length);
+  return {lat:a,lng:b,swapped,dec};
+}
+/* คืนรายการผลตรวจ: [ระดับ ok|warn|bad, ข้อความ] */
+function checkSpot(o,skipName,selfIdx){
+  const out=[];
+  if(!(isFinite(o.lat)&&isFinite(o.lng))){out.push(['bad','อ่านพิกัดไม่ได้ ใช้รูปแบบ ละติจูด, ลองจิจูด เช่น 17.2282, 102.4613']);return out}
+  if(o.swapped)out.push(['warn','สลับละติจูดกับลองจิจูดให้แล้ว ค่าที่วางมาเรียงกลับด้าน']);
+  if(!inNBL(o)){
+    out.push(['bad',`พิกัดอยู่นอกจังหวัดหนองบัวลำภู (ละติจูดควรอยู่ราว 16.8–17.8 ลองจิจูดราว 101.9–102.8)`]);
+    return out;
+  }
+  const at=ampAt(o.lat,o.lng);
+  if(at===null)out.push(['warn','ยังโหลดขอบเขตอำเภอไม่เสร็จ ตรวจอำเภอไม่ได้ในขณะนี้']);
+  else if(!at){const e=o.a?edgeKm(o.lat,o.lng,o.a):null;
+    out.push(e!=null&&e<=0.6?['ok',`อยู่ชิดขอบ อ.${o.a} (ห่างเส้นแบ่ง ${Math.round(e*1000)} ม.) ถือว่าถูกต้อง`]:['bad','พิกัดไม่อยู่ในอำเภอใดของจังหวัด'])}
+  else if(o.a&&at!==o.a){const e=edgeKm(o.lat,o.lng,o.a);
+    out.push(e!=null&&e<=0.6?['warn',`ตกใน อ.${at} แต่ห่างขอบ อ.${o.a} เพียง ${Math.round(e*1000)} ม. น่าจะเป็นจุดบนเส้นแบ่ง`]
+      :['bad',`พิกัดตกใน <b>อ.${at}</b> แต่เลือก อ.${o.a}${e!=null?` (ห่างขอบ อ.${o.a} ${e.toFixed(1)} กม.)`:''} ตรวจพิกัดหรืออำเภออีกครั้ง`])}
+  else out.push(['ok',`อยู่ในเขต อ.${at} ตรงกับที่เลือก`]);
+  const others=T.spots.filter((s,k)=>k!==selfIdx&&(!skipName||s.n!==o.n));
+  const near=others.map(s=>({s,d:distKm(o.lat,o.lng,s.lat,s.lng)})).sort((a,b)=>a.d-b.d)[0];
+  if(near){
+    if(near.d<0.03)out.push(['bad',`พิกัดซ้ำกับ <b>${esc(near.s.n)}</b> (ห่าง ${Math.round(near.d*1000)} ม.) มักเกิดจากคัดลอกพิกัดมาจากแถวอื่น`]);
+    else if(near.d<0.3)out.push(['warn',`ใกล้ ${esc(near.s.n)} มาก (${Math.round(near.d*1000)} ม.) ตรวจว่าไม่ใช่ที่เดียวกัน`]);
+    else out.push(['ok',`จุดที่ใกล้ที่สุดคือ ${esc(near.s.n)} ห่าง ${near.d.toFixed(1)} กม.`]);
+  }
+  if(o.dec!=null&&o.dec<4)out.push(['warn',`ทศนิยม ${o.dec} ตำแหน่ง คลาดเคลื่อนได้หลายร้อยเมตร ควรใช้อย่างน้อย 5 ตำแหน่ง`]);
+  if(!o.n)out.push(['warn','ยังไม่ได้ใส่ชื่อแหล่งท่องเที่ยว']);
+  else if(skipName&&T.spots.some(s=>s.n===o.n))out.push(['warn','มีชื่อนี้ในฐานข้อมูลแล้ว ถ้าแก้พิกัดของแหล่งเดิมให้แทนที่แถวเดิม ไม่ต้องเพิ่มใหม่']);
+  return out;
+}
+function runChecker(){
+  const g=id=>document.getElementById(id);
+  const ll=parseLL(g('ckLL').value)||{lat:NaN,lng:NaN};
+  const o={n:g('ckName').value.trim(),a:g('ckAmp').value,ta:g('ckTa').value.trim().replace(/^ต\.\s*/,''),t:g('ckType').value,
+    lat:ll.lat,lng:ll.lng,swapped:ll.swapped,dec:ll.dec,img:g('ckImg').value.trim()};
+  const res=checkSpot(o,true);
+  const lv=res.some(r=>r[0]==='bad')?'bad':res.some(r=>r[0]==='warn')?'warn':'ok';
+  const row={n:o.n,a:o.a,ta:o.ta,lat:+(+o.lat).toFixed(6),lng:+(+o.lng).toFixed(6),t:o.t,img:o.img};
+  const im=driveThumb(o.img,400);
+  g('ckOut').innerHTML=`<div class="ck-badge ${lv}">${lv==='ok'?'ผ่านทุกข้อ บันทึกได้':lv==='warn'?'บันทึกได้ แต่ควรตรวจข้อที่เตือน':'ยังไม่ควรบันทึก แก้ข้อที่เป็นสีแดงก่อน'}</div>
+    <ul class="ck-list">${res.map(r=>`<li class="${r[0]}">${r[1]}</li>`).join('')}</ul>
+    ${im?`<div class="ck-img"><img src="${im}" alt="" onerror="this.parentNode.innerHTML='เปิดรูปไม่ได้ ตรวจว่าแชร์ไฟล์เป็น ทุกคนที่มีลิงก์ดูได้'"></div>`:''}
+    ${lv!=='bad'&&isFinite(o.lat)?`<div class="ck-json"><span>แถวข้อมูลสำหรับ data2.js · DX.tour.spots</span>
+      <code id="ckCode">${esc(JSON.stringify(row))}</code>
+      <button class="tb" id="ckCopy">คัดลอก</button></div>`:''}`;
+  const cp=g('ckCopy'); if(cp)cp.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(JSON.stringify(row));cp.textContent='คัดลอกแล้ว'};
+  if(TMAP&&isFinite(o.lat)&&isFinite(o.lng)){
+    if(CKMARK)TMAP.removeLayer(CKMARK);
+    CKMARK=L.marker([o.lat,o.lng],{icon:L.divIcon({className:'ck-pin '+lv,html:'<span>ตรวจ</span>',iconSize:[42,24],iconAnchor:[21,24]})})
+      .bindPopup(`<div class="pop"><div class="ph2"><b>${esc(o.n||'จุดที่กำลังตรวจ')}</b><span>${o.lat.toFixed(6)}, ${o.lng.toFixed(6)}</span></div></div>`).addTo(TMAP);
+    TMAP.setView([o.lat,o.lng],inNBL(o)?13:6);
+    const w=document.getElementById('tmapWrap'); if(w)w.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+function renderAudit(){
+  const el=document.getElementById('ckAudit'); if(!el)return;
+  const rows=T.spots.map((s,i)=>({s,i,r:checkSpot(Object.assign({},s),false,i).filter(x=>x[0]!=='ok')}))
+    .filter(x=>x.r.some(r=>r[0]==='bad'||/ซ้ำ|ไม่อยู่|ตกใน/.test(r[1])));
+  el.innerHTML=`<div class="ck-ah"><b>ผลตรวจแหล่งท่องเที่ยวที่มีอยู่ ${T.spots.length} แห่ง</b>
+    <span class="chip ${rows.length?'dn':'up'}">${rows.length?'พบ '+rows.length+' แห่งที่ควรตรวจ':'ไม่พบปัญหา'}</span></div>`+
+    (rows.length?`<div class="sc"><table class="t"><thead><tr><th>แหล่งท่องเที่ยว</th><th>ปัญหา</th><th></th></tr></thead><tbody>`+
+      rows.map(x=>`<tr><td><b>${esc(x.s.n)}</b><br><span style="color:var(--faint);font-size:11px">ต.${esc(x.s.ta)} อ.${esc(x.s.a)} · ${x.s.lat.toFixed(5)}, ${x.s.lng.toFixed(5)}</span></td>
+        <td>${x.r.map(r=>`<div class="ck-mini ${r[0]}">${r[1]}</div>`).join('')}</td>
+        <td><button class="tb" data-ckfix="${x.i}">แก้ในแบบตรวจ</button></td></tr>`).join('')+`</tbody></table></div>`:'');
+}
+function fillChecker(i){
+  const s=T.spots[i]; if(!s)return; const g=id=>document.getElementById(id);
+  g('ckName').value=s.n; g('ckAmp').value=s.a; g('ckTa').value=s.ta; g('ckType').value=s.t||'';
+  g('ckLL').value=s.lat+', '+s.lng; g('ckImg').value=s.img||'';
+  document.getElementById('checker').scrollIntoView({behavior:'smooth',block:'start'});
+  g('ckLL').focus(); g('ckLL').select();
+}
+
+/* ══════════ เทียบรายเดือนกับปีก่อน ══════════ */
+const FEST={1:'ออกพรรษา',2:'ลอยกระทง',3:'หน้าหนาว วันหยุดยาวสิ้นปี',4:'ปีใหม่',5:'ตรุษจีน มาฆบูชา',6:'ปิดเทอม',
+  7:'สงกรานต์',8:'บุญบั้งไฟ วิสาขบูชา',9:'',10:'เข้าพรรษา',11:'วันแม่',12:''};
+const MON=['ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.'];
+let YOY_KEY='visitor';
+const YOY_M={visitor:{n:'ผู้เยี่ยมเยือน',u:'คน',dec:0,sum:true},revenue:{n:'รายได้',u:'ล้านบาท',dec:2,sum:true},occ:{n:'อัตราการเข้าพัก',u:'%',dec:2,sum:false}};
+function renderYoY(){
+  const cfg=YOY_M[YOY_KEY], D=T[YOY_KEY]||[];
+  const FY=[...new Set(D.map(x=>x.fy))].sort((a,b)=>a-b); if(!FY.length)return;
+  const cur=FY[FY.length-1], prv=FY[FY.length-2];
+  const at=(fy,i)=>{const r=D.find(x=>x.fy===fy&&x.i===i);return r?+r.v:null};
+  const n=Math.max(...D.filter(x=>x.fy===cur).map(x=>x.i));
+  const COL=['#9fb8ae','#c98a1b',cv('--brand')];
+  mk('cYoY',{data:{labels:MON.map((m,i)=>m+(FEST[i+1]?' ★':'')),datasets:FY.map((fy,k)=>({type:fy===cur?'bar':'line',
+      label:'ปีงบ '+fy,data:MON.map((_,i)=>at(fy,i+1)),
+      backgroundColor:fy===cur?cv('--brand')+'cc':undefined,borderRadius:6,order:fy===cur?2:1,
+      borderColor:COL[(k+COL.length-FY.length)%COL.length]||COL[0],borderWidth:fy===cur?0:2.4,
+      borderDash:fy===FY[0]&&FY.length>2?[5,4]:undefined,pointRadius:3,tension:.3,spanGaps:false}))},
+    options:{interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom',labels:{padding:11}},
+        tooltip:{callbacks:{label:c=>c.raw==null?null:c.dataset.label+' '+f(c.raw,cfg.dec)+' '+cfg.u,
+          footer:it=>{const i=it[0].dataIndex, a=at(cur,i+1), b=prv?at(prv,i+1):null;
+            const fe=FEST[i+1]?'เทศกาล: '+FEST[i+1]:'';
+            if(a==null||b==null)return fe;
+            const g=cfg.sum?(a-b)/b*100:a-b;
+            return (cfg.sum?'เทียบปีก่อน '+(g>=0?'+':'')+g.toFixed(1)+'%':'เทียบปีก่อน '+(g>=0?'+':'')+g.toFixed(2)+' จุด')+(fe?'\n'+fe:'')}}}},
+      scales:{x:ax({grid:{display:false},ticks:{font:{size:10}}}),
+        y:ax({ticks:{callback:v=>YOY_KEY==='visitor'?f(v/1000,0)+'K':f(v,0)}})}}});
+  /* สรุป */
+  const rows=MON.map((m,i)=>{const a=at(cur,i+1), b=prv?at(prv,i+1):null;
+    return {i:i+1,m,a,b,g:a!=null&&b!=null&&b?(cfg.sum?(a-b)/b*100:a-b):null}});
+  const got=rows.filter(r=>r.a!=null&&r.b!=null);
+  const sa=got.reduce((x,r)=>x+r.a,0), sb=got.reduce((x,r)=>x+r.b,0);
+  const cum=cfg.sum?(sb?(sa-sb)/sb*100:0):(got.length?(sa-sb)/got.length:0);
+  const best=got.slice().sort((x,y)=>y.g-x.g)[0], worst=got.slice().sort((x,y)=>x.g-y.g)[0];
+  const allCur=rows.filter(r=>r.a!=null), peak=allCur.slice().sort((x,y)=>y.a-x.a)[0];
+  const avg=allCur.reduce((x,r)=>x+r.a,0)/(allCur.length||1);
+  const hot=allCur.filter(r=>r.a>=avg*1.05);
+  const gtxt=v=>cfg.sum?(v>=0?'+':'')+v.toFixed(1)+'%':(v>=0?'+':'')+v.toFixed(2)+' จุด';
+  const col=v=>v>=0?'var(--good)':'var(--bad)';
+  document.getElementById('yoySub').textContent=`ปีงบ ${cur} เทียบ ${prv||'—'} · ${cfg.n} (${cfg.u}) · ★ = เดือนที่มีเทศกาล`;
+  document.getElementById('yoySide').innerHTML=`
+    <div class="mini"><div class="l">${cfg.sum?'สะสม':'เฉลี่ย'} ${got.length} เดือนแรก ปีงบ ${cur}</div>
+      <div class="v">${f(cfg.sum?sa:sa/(got.length||1),cfg.dec)}<small> ${cfg.u}</small></div>
+      <div class="s" style="color:${col(cum)}">${gtxt(cum)} จากช่วงเดียวกันปีก่อน</div></div>
+    ${best?`<div class="mini"><div class="l">เดือนที่โตมากที่สุด</div><div class="v">${best.m}<small> ${gtxt(best.g)}</small></div>
+      <div class="s">${FEST[best.i]?'ตรงกับ'+FEST[best.i]:'ไม่มีเทศกาลหลัก ควรหาสาเหตุ'}</div></div>`:''}
+    ${worst&&worst!==best?`<div class="mini"><div class="l">เดือนที่ลดลงมากที่สุด</div><div class="v">${worst.m}<small style="color:${col(worst.g)}"> ${gtxt(worst.g)}</small></div>
+      <div class="s">${FEST[worst.i]?'แม้มี'+FEST[worst.i]:'เดือนนอกเทศกาล'}</div></div>`:''}
+    <div class="mini"><div class="l">เดือนคนมากเกินค่าเฉลี่ย 5%</div>
+      <div class="v" style="font-size:15px">${hot.map(r=>r.m).join(' · ')||'—'}</div>
+      <div class="s">สูงสุด ${peak?peak.m+' '+f(peak.a,cfg.dec)+' '+cfg.u:'—'}</div></div>`;
+  document.getElementById('tYoY').innerHTML=`<thead><tr><th>เดือน</th><th>เทศกาล</th>${FY.map(y=>`<th class="r">ปีงบ ${y}</th>`).join('')}<th class="r">เทียบปีก่อน</th></tr></thead><tbody>`+
+    rows.map(r=>`<tr><td>${r.m}</td><td style="color:var(--faint)">${FEST[r.i]||''}</td>${FY.map(y=>`<td class="r">${at(y,r.i)==null?'—':f(at(y,r.i),cfg.dec)}</td>`).join('')}
+      <td class="r" style="color:${r.g==null?'inherit':col(r.g)}">${r.g==null?'—':gtxt(r.g)}</td></tr>`).join('')+'</tbody>';
+  document.getElementById('yoyNote').innerHTML=
+    `${cfg.n} ${got.length} เดือนแรกของปีงบ ${cur} ${cum>=0?'สูงกว่า':'ต่ำกว่า'}ช่วงเดียวกันของปีก่อน <b>${gtxt(Math.abs(cum)).replace(/^[+-]/,'')}</b>
+     ${hot.length?'· เดือนที่คนมามากคือ '+hot.map(r=>r.m+(FEST[r.i]?' ('+FEST[r.i]+')':'')).join(', '):''}
+     <br>ใช้วางปฏิทินกิจกรรมจังหวัด: จัดงานเสริมในเดือนที่ต่ำกว่าปีก่อน และเตรียมที่พักกับที่จอดรถในเดือนที่คนมามาก
+     · เทศกาลที่ระบุเป็นเทศกาลทั่วประเทศ ถ้ามีงานประจำจังหวัด แก้ได้ที่ตัวแปร FEST ใน tourism.html`;
+  const seg=document.getElementById('yoyMetric');
+  if(seg&&!seg.dataset.b){seg.dataset.b='1';seg.addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(!b)return;
+    seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));YOY_KEY=b.dataset.v;renderYoY()})}
+}
+
 function wireSpotTools(){
   const q=document.getElementById('spotQ'), sel=document.getElementById('spotAmpSel');
+  const amps=[...new Set(T.spots.map(s=>s.a))].filter(Boolean).sort();
   if(sel&&!sel.options.length){
-    const amps=[...new Set(T.spots.map(s=>s.a))].filter(Boolean).sort();
     sel.innerHTML='<option value="">ทุกอำเภอ</option>'+amps.map(a=>`<option value="${a}">อ.${a}</option>`).join('');
+    sel.value=SPOT_FILTER.amp;
   }
-  if(q&&!q.dataset.b){q.dataset.b='1';
-    q.addEventListener('input',()=>{SPOT_FILTER.q=q.value;addSpots()})}
+  if(q&&!q.dataset.b){q.dataset.b='1';q.value=SPOT_FILTER.q;
+    q.addEventListener('input',()=>{SPOT_FILTER.q=q.value;afterFilter()})}
   if(sel&&!sel.dataset.b){sel.dataset.b='1';
-    sel.addEventListener('change',()=>{SPOT_FILTER.amp=sel.value;addSpots()})}
+    sel.addEventListener('change',()=>{SPOT_FILTER.amp=sel.value;afterFilter()})}
+  const tc=document.getElementById('spotTypes');
+  if(tc&&!tc.dataset.b){tc.dataset.b='1';
+    tc.addEventListener('click',e=>{const b=e.target.closest('[data-ty]');if(!b)return;toggleType(b.dataset.ty,false);if(routeOpen())drawRoute()})}
+  /* กดส่วนของวงกลมประเภท → กรองหมุดประเภทนั้น */
+  const ch=typeof CH!=='undefined'?CH.cSpot:null;
+  if(ch&&!ch.$nblClick){ch.$nblClick=true;
+    ch.canvas.style.cursor='pointer';
+    ch.canvas.addEventListener('click',ev=>{
+      const pts=ch.getElementsAtEventForMode(ev,'nearest',{intersect:true},true); if(!pts.length)return;
+      const lb='แหล่งท่องเที่ยว'+ch.data.labels[pts[0].index], k=tKeyByDb(lb); if(!k)return;
+      toggleType(k,true); if(routeOpen())drawRoute();
+      const w=document.getElementById('tmapWrap'); if(w)w.scrollIntoView({behavior:'smooth',block:'center'});
+    });
+  }
   const nr=document.getElementById('spotNear');
   if(nr&&!nr.dataset.b){nr.dataset.b='1';
     nr.onclick=async()=>{
@@ -408,20 +870,49 @@ function wireSpotTools(){
         MEMARK=L.circleMarker([ME.lat,ME.lng],{radius:9,className:'mebadge',color:'#fff',weight:3,
           fillColor:cv('--blue'),fillOpacity:1}).addTo(TMAP)
           .bindPopup('<div class="pop"><div class="ph2"><b>ตำแหน่งของท่าน</b><span>คลาดเคลื่อนราว '+Math.round(ME.acc)+' เมตร</span></div></div>');
-        addSpots();
+        if(routeOpen()){RT.start='me'}
+        afterFilter();
         nr.classList.add('on');
       }catch(e){alert(e.message)}
       finally{nr.disabled=false;nr.innerHTML=old}
     }}
+  const rb=document.getElementById('spotRoute');
+  if(rb&&!rb.dataset.b){rb.dataset.b='1';rb.onclick=()=>openRoute(!routeOpen())}
+  const box=document.getElementById('routeBox');
+  if(box&&!box.dataset.b){box.dataset.b='1';
+    box.addEventListener('change',e=>{
+      if(e.target.id==='rtStart')RT.start=e.target.value;
+      if(e.target.id==='rtStops')RT.stops=+e.target.value;
+      if(e.target.id==='rtT0')RT.t0=e.target.value;
+      drawRoute()});
+    box.addEventListener('click',e=>{if(e.target.closest('#rtClose'))openRoute(false)});
+  }
   const rs=document.getElementById('spotReset');
   if(rs&&!rs.dataset.b){rs.dataset.b='1';
-    rs.onclick=()=>{SPOT_FILTER={q:'',amp:''};ME=null;
+    rs.onclick=()=>{SPOT_FILTER={q:'',amp:'',types:[]};ME=null;
       if(MEMARK&&TMAP){TMAP.removeLayer(MEMARK);MEMARK=null}
+      if(CKMARK&&TMAP){TMAP.removeLayer(CKMARK);CKMARK=null}
       const n=document.getElementById('spotNear');if(n)n.classList.remove('on');
-      if(q)q.value='';if(sel)sel.value='';addSpots()}}
+      if(q)q.value='';if(sel)sel.value='';openRoute(false);addSpots()}}
   const lst=document.getElementById('spotList');
   if(lst&&!lst.dataset.b){lst.dataset.b='1';
     lst.addEventListener('click',e=>{const b=e.target.closest('[data-spot]');if(b)focusSpot(+b.dataset.spot)})}
+  /* แบบตรวจพิกัด */
+  const ca=document.getElementById('ckAmp'), ct=document.getElementById('ckType');
+  if(ca&&!ca.options.length)ca.innerHTML=amps.map(a=>`<option value="${a}">อ.${a}</option>`).join('');
+  if(ct&&!ct.options.length)ct.innerHTML=Object.entries(SPOT_T).map(([k,v])=>`<option value="${k}">${v.n}</option>`).join('');
+  const cr=document.getElementById('ckRun');
+  if(cr&&!cr.dataset.b){cr.dataset.b='1';cr.onclick=runChecker;
+    document.getElementById('ckLL').addEventListener('keydown',e=>{if(e.key==='Enter')runChecker()});
+    document.getElementById('ckClear').onclick=()=>{['ckName','ckTa','ckLL','ckImg'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('ckOut').innerHTML='<div class="ck-empty">ล้างแล้ว กรอกข้อมูลใหม่แล้วกด <b>ตรวจพิกัด</b></div>';
+      if(CKMARK&&TMAP){TMAP.removeLayer(CKMARK);CKMARK=null}};
+  }
+  const au=document.getElementById('ckAudit');
+  if(au&&!au.dataset.b){au.dataset.b='1';au.addEventListener('click',e=>{const b=e.target.closest('[data-ckfix]');if(b)fillChecker(+b.dataset.ckfix)})}
+  if(routeOpen())drawRoute();
+  if(location.hash==='#checker'&&!wireSpotTools.jumped){wireSpotTools.jumped=true;
+    setTimeout(()=>document.getElementById('checker').scrollIntoView({block:'start'}),600)}
 }
 
 DS.init('tourism',function(){
