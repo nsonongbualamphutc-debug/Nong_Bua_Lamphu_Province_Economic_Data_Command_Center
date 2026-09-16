@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'2.6.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'2.6.1', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -270,6 +270,178 @@ function icoImg(name,px){
     ${rest?`data-chain="${rest}"`:''} loading="lazy" onerror="${onerr}">`;
 }
 function icoBase(name){const c=String(name||'').split('|').filter(Boolean);return c[c.length-1]||''}
+
+/* ─────────────── ไอคอนเฉพาะจุด (จับคู่จากข้อความจริงบนการ์ด/หัวข้อ/แถว) ───────────────
+   ทุกจุดที่ความหมายต่างกันจะได้ไอคอนของตัวเอง ไม่ใช้ซ้ำกับจุดอื่น
+   ถ้าไฟล์ใหม่ยังไม่อัปโหลด จะถอยไปใช้ไอคอนเดิมเอง หน้าไม่มีช่องว่าง
+   วิธีเพิ่ม: เพิ่มบรรทัด [/ข้อความ/,'ชื่อไฟล์'] แล้ววางไฟล์ assets/icons/ic-<ชื่อไฟล์>.png */
+const ICO_REMAP={
+ /* หัวข้อกล่อง (h3) */
+ hd:[
+  [/^สัดส่วน(เนื้อที่|พื้นที่)ปลูก/,'landshare'],
+  [/^มูลค่าผลผลิตรายพืช/,'cropvalue'],
+  [/^ผลผลิตเฉลี่ยต่อไร่/,'yieldperrai'],
+  [/^พื้นที่ปลูกและพื้นที่ให้ผล/,'orchardarea'],
+  [/^ปฏิทินการเก็บเกี่ยว/,'harvestcal'],
+  [/^แหล่งน้ำเพื่อการเกษตรแยกตามประเภท/,'watertype'],
+  [/^แหล่งน้ำชลประทานจำแนก/,'irrigationtype'],
+  [/^ความเชื่อมโยงกับศูนย์บัญชาการ/,'waterlink'],
+  [/^แหล่งท่องเที่ยวเชิงเกษตร/,'agrotourism'],
+  [/^สถาบันและศูนย์เรียนรู้/,'institution'],
+  [/^โครงสร้างการปกครอง/,'admin'],
+  [/^ครัวเรือนเกษตรกรตามช่วงอายุ/,'farmerage'],
+  [/^อันดับรายอำเภอ/,'ranking'],
+  [/^สัดส่วนต่อจังหวัด/,'share'],
+  [/^เทียบกับค่าเฉลี่ยจังหวัด/,'vsavg'],
+  [/^ตารางข้อมูลรายอำเภอ/,'table'],
+  [/^งบส่วนราชการ/,'budgetfunc'],
+  [/^สัดส่วนงบที่เบิกจ่าย/,'budgetsplit'],
+  [/^งบกรมและงบจังหวัด/,'provbudget'],
+  [/^เงินกันไว้เบิกเหลื่อมปี/,'carryover'],
+  [/^เม็ดเงินภาครัฐตามงวด/,'govflow'],
+  [/^ดัชนีภาวะเศรษฐกิจ/,'mei'],
+  [/^โครงสร้างเศรษฐกิจ/,'structure'],
+  [/^การวิเคราะห์ด้านอุปสงค์/,'analysis'],
+  [/^ตัวขับเคลื่อนดัชนี/,'drivers'],
+  [/^รายได้และค่าใช้จ่ายเฉลี่ย/,'incexp'],
+  [/^แหล่งที่มาของรายได้/,'incsource'],
+  [/^หนี้ในระบบและนอกระบบ/,'debttype'],
+  [/^ค่าใช้จ่ายตามขนาดครัวเรือน/,'hhsize'],
+  [/^การกระจายค่าใช้จ่าย/,'expdist'],
+  [/^5 กลุ่มอุตสาหกรรม/,'topindustry'],
+  [/^จำนวนผู้ว่างงานและอัตรา/,'uetrend'],
+  [/^อัตราการว่างงานรายปี/,'urtrend'],
+  [/^ผู้มีงานทำแยกสาขา/,'empsector'],
+  [/^สถานภาพการทำงาน/,'workstatus'],
+  [/^รายได้จากผลิตภัณฑ์ OTOP รายปี/i,'otoptrend'],
+  [/^รายได้รายเดือน/,'monthlyrev'],
+  [/^รายได้รายอำเภอ/,'districtrev'],
+  [/^ผลิตภัณฑ์จำแนกตามประเภท/,'producttype'],
+  [/^ลักษณะผู้ประกอบการ/,'entrepreneur'],
+  [/^ศักยภาพผลิตภัณฑ์รายอำเภอ/,'potential'],
+  [/^รายได้ OTOP เทียบ/i,'sectorcompare'],
+  [/^ความเร็วของข้อมูล/,'datalag'],
+  [/^สถานะการส่งข้อมูล/,'datastatus'],
+  [/^จำนวนประชากรรายปี/,'poptrend'],
+  [/^การเกิดและการตาย/,'birthdeath'],
+  [/^สัดส่วนวัย/,'agegroup'],
+  [/^ประชากรรายอำเภอ/,'districtpop'],
+  [/^แผนที่ประชากร/,'popmap'],
+  [/^สรุปภาวะเศรษฐกิจจังหวัด/,'summary'],
+  [/^ตารางสรุปตัวชี้วัด/,'kpitable'],
+  [/^สิ่งที่ยังขาด/,'datagap'],
+  [/^ภาพพื้นหลังหน้าปก/,'coverimg'],
+  [/^ภาพพื้นหลังแถบเมนู/,'sidebarimg'],
+  [/^สีหลัก/,'palette'],
+  [/^โหมดจอนำเสนอ/,'presenter'],
+  [/^ข้อมูลที่แก้ไขไว้ในเครื่อง/,'localdata'],
+  [/^การเชื่อมต่อฐานข้อมูล/,'database'],
+  [/^ทะเบียนชุดข้อมูล/,'catalog'],
+  [/^วิธีคำนวณดัชนี/,'formula'],
+  [/ช่องทางติดต่อ$/,'contact'],
+  [/^แนวโน้มผู้เยี่ยมเยือน/,'visitortrend'],
+  [/^สัดส่วนชาวไทยและชาวต่างชาติ/,'nationality'],
+  [/^ค่าใช้จ่ายเฉลี่ยต่อคน/,'touristspend'],
+  [/^อัตราการเข้าพัก/,'occupancy'],
+  [/^ผู้เยี่ยมเยือน รายได้/,'monthlytour'],
+  [/^แหล่งท่องเที่ยว(\s*[\d,]+ แห่ง)?$/,'attractionmap'],
+  [/^ประเภทแหล่งท่องเที่ยว/,'attractiontype'],
+  [/^ศักยภาพที่ยังไม่ถูกใช้/,'untapped'],
+  [/^ราคาเทียบปีก่อน/,'agriprice'],
+  [/^พืชเศรษฐกิจ$/,'pricecrop'],
+  [/^พืชไร่และพืชพลังงาน/,'pricefield'],
+  [/^ปศุสัตว์และประมง/,'pricemeat'],
+  [/^สินค้าอุปโภคบริโภค/,'pricegoods']
+ ],
+ /* การ์ดตัวเลข (ชื่อการ์ด) */
+ kpi:[
+  [/^ครัวเรือนเกษตรกร$/,'farmhh'],
+  [/^ผลผลิตรวม/,'yield'],
+  [/^มูลค่าผลผลิต(เกษตร)?$/,'cropvalue'],
+  [/^ท่องเที่ยวเชิงเกษตร/,'agrotourism'],
+  [/^พื้นที่รับประโยชน์/,'irrigatedarea'],
+  [/^ระบบสูบน้ำโซลาร์/,'solarpump'],
+  [/^พื้นที่เกษตรที่ยังพึ่งน้ำฝน/,'rainfed'],
+  [/^องค์กรปกครองท้องถิ่น/,'localgov'],
+  [/^พื้นที่ภาคการเกษตร/,'farmland'],
+  [/^เบิกจ่ายภาพรวม|^เบิกจ่ายงบประมาณ/,'disburse'],
+  [/^(เบิกจ่าย)?งบลงทุน/,'capex'],
+  [/^(เบิกจ่าย)?งบประจำ/,'opex'],
+  [/^งบจัดสรรทั้งจังหวัด/,'allocation'],
+  [/^เม็ดเงินรัฐลงพื้นที่/,'govflow'],
+  [/^ดัชนีเศรษฐกิจรายเดือน/,'mei'],
+  [/^GPP ต่อหัว/,'gpppc'],
+  [/^สัดส่วนภาคเกษตรใน GPP/,'agrishare'],
+  [/^เงินเหลือต่อเดือน/,'savings'],
+  [/^ไฟฟ้าภาคธุรกิจ/,'powerbiz'],
+  [/^ผู้ประกอบการ/,'entrepreneur'],
+  [/^ร้านค้าชุมชน/,'communityshop'],
+  [/^ดีเซล/,'diesel'],
+  [/^รถจักรยานยนต์/,'motorcycle'],
+  [/^รถยนต์นั่ง/,'car'],
+  [/^รถเพื่อการพาณิชย์/,'truck'],
+  [/^จำนวนรายที่ได้รับอนุมัติ/,'borrowers'],
+  [/^สินค้าที่ราคาสูงขึ้น/,'priceup'],
+  [/^สินค้าที่ราคาลดลง/,'pricedown'],
+  [/^น้ำยางสด/,'latex'],
+  [/^นักท่องเที่ยว/,'tourist'],
+  [/^นักทัศนาจร/,'excursionist']
+ ],
+ /* ไอคอนหน้าแถวตาราง (ข้อความทั้งช่อง รวมบรรทัดรายละเอียด) */
+ row:[
+  [/ข้าวสารหอมมะลิ/,'row-milledrice'],
+  [/ข้าวเปลือกเหนียว/,'row-paddysticky'],
+  [/มันสำปะหลัง.*ลานมัน/,'row-cassavayard'],
+  [/มันสำปะหลัง.*โรงแป้ง/,'row-cassavastarch'],
+  [/ข้าวโพด.*ฝัก/,'row-cornear'],
+  [/ข้าวโพด.*เมล็ด.*14\.5/,'row-corndry'],
+  [/ข้าวโพด.*เมล็ด/,'row-cornkernel'],
+  [/ยางก้อนถ้วย/,'row-cuplump'],
+  [/น้ำยางสด/,'row-latex'],
+  [/สามชั้น/,'row-porkbelly'],
+  [/เนื้อโคชำแหละ/,'row-beefcut'],
+  [/^โคเนื้อ/,'row-cattle'],
+  [/ไก่.*อก/,'row-chickenbreast'],
+  [/ไก่.*(น่อง|สะโพก)/,'row-chickenleg'],
+  [/^ประมง/,'row-fishery'],
+  [/สูบน้ำด้วยไฟฟ้า/,'row-electricpump'],
+  [/บ่อบาดาล/,'row-groundwell'],
+  [/แหล่งน้ำในไร่นา/,'row-farmpond'],
+  [/อ่างเก็บน้ำ/,'row-reservoir'],
+  [/^พื้นที่ชลประทาน/,'row-irrigatedarea'],
+  [/กลุ่มส่งเสริมอาชีพ/,'row-farmgroup'],
+  [/กลุ่มแม่บ้าน/,'row-housewife'],
+  [/ยุวเกษตรกร/,'row-youthfarmer']
+ ]
+};
+function icoCtxOf(img){
+  const tx=el=>el?String(el.textContent||'').replace(/\s+/g,' ').trim():'';
+  const k=img.closest('.kpi');if(k)return['kpi',tx(k.querySelector('.h>span:last-child'))];
+  const b=img.closest('.bigkpi');if(b)return['kpi',tx(b.querySelector('.bk-l'))];
+  if(img.classList.contains('rowico'))return['row',tx(img.closest('td,.nm,span,div'))];
+  const h=img.closest('header');if(h)return['hd',tx(h.querySelector('h3,h2'))];
+  return['',''];
+}
+function icoFallback(){
+  const c=String(this.dataset.fb||'').split('|').filter(Boolean);
+  if(c.length){this.dataset.fb=c.slice(1).join('|');this.src='assets/icons/'+c[0]+'.png';return}
+  const w=this.closest('.icow');if(w)w.classList.add('noimg');this.remove();
+}
+function relabelIcons(root){
+  const r=root||document;if(!r.querySelectorAll)return;
+  const imgs=r.matches&&r.matches('img.ico,img.rowico')?[r]:r.querySelectorAll('img.ico:not([data-rl]),img.rowico:not([data-rl])');
+  imgs.forEach(img=>{
+    if(img.dataset.rl)return;img.dataset.rl='1';
+    const [ctx,t]=icoCtxOf(img);const list=ICO_REMAP[ctx];if(!list||!t)return;
+    const hit=list.find(x=>x[0].test(t));if(!hit)return;
+    const m=(img.getAttribute('src')||'').match(/icons\/(ic-[^\/]+?)\.png/);const cur=m?m[1]:'';
+    const want='ic-'+hit[1];if(want===cur)return;
+    const rest=img.dataset.chain?img.dataset.chain.split('|').filter(Boolean).map(x=>'ic-'+x):[];
+    img.dataset.fb=[cur].concat(rest).filter(Boolean).join('|');
+    img.onerror=icoFallback;
+    img.src='assets/icons/'+want+'.png';
+  });
+}
 /* พื้นหลังศิลป์ของการ์ด KPI — ใช้ชื่อเดียวกับไอคอนของการ์ดนั้น
    เป็น background-image ใน CSS ถ้าไฟล์ยังไม่มีจะไม่ขึ้นเฉย ๆ ไม่มี error และไม่กระทบข้อความ */
 const CARD_BG_DIR='assets/cardbg/';
@@ -1549,6 +1721,7 @@ let PAGE={id:'',render(){}};
 function fillIcons(root){
   (root||document).querySelectorAll('[data-bigico]').forEach(el=>{if(!el.innerHTML)el.innerHTML=icoImg(el.dataset.bigico,52)});
   (root||document).querySelectorAll('[data-hdico]').forEach(el=>{if(!el.innerHTML)el.innerHTML=icoImg(el.dataset.hdico,26)});
+  relabelIcons(root||document);
 }
 /* หน้าไหนวาดการ์ดเพิ่มทีหลัง ไอคอนก็ยังขึ้นเอง ไม่ต้องเรียกซ้ำ */
 (function(){
@@ -1558,6 +1731,7 @@ function fillIcons(root){
       if(n.nodeType!==1)continue;
       if(n.hasAttribute&&(n.hasAttribute('data-hdico')||n.hasAttribute('data-bigico')))fillIcons(n.parentNode||document);
       else if(n.querySelector&&n.querySelector('[data-hdico],[data-bigico]'))fillIcons(n);
+      if(n.tagName==='IMG'||(n.querySelector&&n.querySelector('img.ico,img.rowico')))relabelIcons(n);
     }
   });
   document.addEventListener('DOMContentLoaded',()=>mo.observe(document.body,{childList:true,subtree:true}));
