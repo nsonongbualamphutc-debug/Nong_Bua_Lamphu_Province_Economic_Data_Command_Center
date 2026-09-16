@@ -950,3 +950,28 @@ button.kpi.hasbg:hover>.kpibg{opacity:.62;background-size:auto 126%}
   .bigkpi.hasbg>.kpibg,.gau.hasbg>.kpibg,.fruit.hasbg>.fruitbg{opacity:.36;background-size:auto 104%}
 }
 @media print{.bigkpi .kpibg,.gau .kpibg,.fruit .fruitbg{display:none}}
+
+/* ── มือถือ: แถบบนต้องไม่ดันหน้ากว้างเกินจอ (เดิมกว้าง 472px ทำให้ทั้งหน้าถูกย่อ) ── */
+@media (max-width:767px){
+  .top{overflow:hidden}
+  .top #btnKiosk,.top #btnPrint,.top .asof,.top .sp{display:none}
+  .top .brand{flex:1;min-width:0}
+  .top .brand h1{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top .brand p{font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top .seal{width:34px;height:34px}
+  .top .tb{flex:none}
+}
+@media (max-width:767px){
+  .app,.main,.view,.ph,.ph .t,.ph .r,.grid>*,.c,.c>.b{min-width:0;max-width:100%}
+  .main{overflow-x:hidden}
+  .ph .r{flex-wrap:wrap}
+  .ph .r .chip{white-space:normal;max-width:100%}
+  .sel,select{max-width:100%;min-width:0}
+  .segs{max-width:100%}
+  .slicer{flex-wrap:wrap;max-width:100%}
+  .pf-links{flex-wrap:wrap}
+}
+@media (max-width:767px){
+  .pl-track{flex:1 1 100%;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
+  .pl-dot{flex:none}
+}

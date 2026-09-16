@@ -312,7 +312,11 @@ function renderTour(){
   drawSpotMap();
 }
 
-let TMAP=null, TMARK=[], SPOT_FILTER={q:'',amp:''}, ME=null, MEMARK=null, TBASE={layer:null};
+let TMAP=null, TMARK=[], SPOT_FILTER={q:'',amp:''}, ME=null, MEMARK=null, TGEO=null,
+    TBASE={layer:null,key:'plain',onChange:k=>{if(TGEO)TGEO.setStyle(geoStyleFor(k))}};
+/* กรอบจังหวัดหนองบัวลำภู ใช้กันพิกัดผิดดึงแผนที่ไปที่อื่น */
+const NBL_BOX={s:16.6,n:17.9,w:101.8,e:102.9};
+const inNBL=s=>s&&s.lat>NBL_BOX.s&&s.lat<NBL_BOX.n&&s.lng>NBL_BOX.w&&s.lng<NBL_BOX.e;
 function spotsFiltered(){
   const q=SPOT_FILTER.q.trim();
   let list=T.spots.filter(s=>
@@ -330,9 +334,10 @@ function drawSpotMap(){
   if(TMAP){TMAP.remove();TMAP=null;TMARK=[]}
   TMAP=L.map('tmap',{zoomControl:false,attributionControl:false,scrollWheelZoom:false,zoomSnap:.25});
   L.control.zoom({position:'topright'}).addTo(TMAP);
+  TGEO=null;
   bindBase('tbase',TMAP,TBASE);
   fetch('assets/nbl-amphoe.geojson').then(r=>r.json()).then(j=>{
-    const g=L.geoJSON(j,{style:{color:'#fff',weight:2,fillColor:'#cfe9dc',fillOpacity:.85},
+    const g=TGEO=L.geoJSON(j,{style:geoStyleFor(TBASE.key||'plain'),
       onEachFeature:(f,l)=>{const nm=f.properties.amp_th;
         l.bindTooltip('อ.'+nm,{direction:'center',className:'amplbl'})}}).addTo(TMAP);
     try{TMAP.fitBounds(g.getBounds(),{padding:[20,20]})}catch(e){}
@@ -342,6 +347,8 @@ function drawSpotMap(){
 function addSpots(){
   TMARK.forEach(m=>TMAP.removeLayer(m)); TMARK=[];
   const list=spotsFiltered();
+  const off=list.filter(s=>!inNBL(s));
+  if(off.length)console.warn('พิกัดแหล่งท่องเที่ยวอยู่นอกจังหวัด:',off.map(s=>s.n+' ('+s.lat+', '+s.lng+')').join(' · '));
   list.forEach((s,i)=>{
     const m=L.circleMarker([s.lat,s.lng],{radius:8,color:'#fff',weight:2,
       fillColor:cv('--brand'),fillOpacity:.95}).addTo(TMAP);
@@ -354,7 +361,8 @@ function addSpots(){
     TMARK.push(m);
   });
   if(list.length){
-    try{TMAP.fitBounds(L.featureGroup(TMARK).getBounds(),{padding:[34,34],maxZoom:12})}catch(e){}
+    const inside=TMARK.filter((m,i)=>inNBL(list[i]));
+    try{TMAP.fitBounds(L.featureGroup(inside.length?inside:TMARK).getBounds(),{padding:[34,34],maxZoom:12})}catch(e){}
   }
   renderSpotList(list);
 }

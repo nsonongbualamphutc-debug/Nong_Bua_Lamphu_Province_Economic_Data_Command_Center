@@ -116,7 +116,8 @@ function inProvince(f){
   return false;
 }
 let MAP=null,LAYER=null,TLAYER=null,BASE=null,GEO=null,TGEO=null,LABELS=[],DRILL=null,BASEON=false;
-let ABASE={layer:null,onChange:k=>{ if(LAYER)LAYER.setStyle({fillOpacity:k==='plain'?.92:.55}) }};
+const ampFill=k=>k==='sat'?.28:(k&&k!=='plain')?.42:.92;
+let ABASE={layer:null,key:'plain',onChange:k=>{ if(LAYER)LAYER.setStyle({fillOpacity:ampFill(k)}) }};
 
 const AREA_OPTS=(()=>{
   const o=[{id:'tour',label:'แหล่งท่องเที่ยวเชิงเกษตร',unit:'แห่ง',dec:0,real:true,
@@ -257,7 +258,7 @@ function paintProvince(){
 
   LAYER=L.geoJSON(GEO,{
     style:f=>{const dt=dtByName(ampName(f));const v=dt?vals[dt.code]:null;
-      return{color:'#ffffff',weight:2.2,fillOpacity:v==null?.25:.92,
+      return{color:'#ffffff',weight:2.2,fillOpacity:v==null?.25:ampFill(ABASE.key),
         fillColor:v==null?'#dfe8e3':ramp((v-mn)/r)}},
     onEachFeature:(f,l)=>{
       const dt=dtByName(ampName(f)); if(!dt)return;

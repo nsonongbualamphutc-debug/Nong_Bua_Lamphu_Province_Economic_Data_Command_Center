@@ -1248,30 +1248,53 @@ function servicePopup(o){
 /* ─────────────── 32) เครื่องมือแผนที่ฟรี — ไม่ต้องใช้ API key ─────────────── */
 const BASEMAPS={
   plain :{n:'เรียบ',   url:null},
-  street:{n:'ถนน',     url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-          sub:'abcd',max:19},
+  street:{n:'ถนน',     url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+          max:19,att:'แผนที่ © Esri'},
   sat   :{n:'ดาวเทียม',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          max:17},
+          max:19,att:'ภาพดาวเทียม © Esri, Maxar, Earthstar Geographics',
+          over:['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+                'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}']},
   topo  :{n:'ภูมิประเทศ',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-          max:17}
+          max:19,att:'แผนที่ © Esri'}
 };
+/* สไตล์ขอบเขตอำเภอตามพื้นหลัง — บนภาพจริงต้องโปร่ง ไม่อย่างนั้นสีเขียวอ่อนจะทับจนดูไม่ออก */
+function geoStyleFor(k,base){
+  base=base||{};
+  if(k==='plain')return Object.assign({color:'#fff',weight:2,fillColor:'#cfe9dc',fillOpacity:.85},base.plain||{});
+  if(k==='sat')  return {color:'#ffe066',weight:2.4,dashArray:'',fillOpacity:0};
+  return {color:'#0b7a55',weight:2.2,dashArray:'6 4',fillOpacity:0};
+}
 function baseSwitcher(id){
   return `<div class="basesw" data-base="${id}">${Object.entries(BASEMAPS).map(([k,v],i)=>
     `<button data-bm="${k}" class="${i===0?'on':''}">${v.n}</button>`).join('')}</div>`;
 }
+function applyBase(map,state,k){
+  const cfg=BASEMAPS[k]||BASEMAPS.plain;
+  if(state.layer){map.removeLayer(state.layer);state.layer=null}
+  state.key=k;
+  if(cfg.url){
+    const ls=[L.tileLayer(cfg.url,{maxZoom:cfg.max||18,maxNativeZoom:17,subdomains:cfg.sub||'abc',attribution:cfg.att||''})]
+      .concat((cfg.over||[]).map(u=>L.tileLayer(u,{maxZoom:cfg.max||18,maxNativeZoom:17,opacity:.95})));
+    state.layer=L.layerGroup(ls).addTo(map);
+    ls.forEach(l=>l.bringToBack&&l.bringToBack());
+    ls[0].bringToBack();
+    if(!map.attributionControl){map.attributionControl=L.control.attribution({prefix:false,position:'bottomright'}).addTo(map)}
+  }
+  const el=map.getContainer();
+  el.classList.toggle('bm-plain',k==='plain');el.classList.toggle('bm-sat',k==='sat');
+  if(state.onChange)state.onChange(k);
+}
 function bindBase(id,map,state){
-  const el=document.querySelector(`[data-base="${id}"]`); if(!el||el.dataset.b)return;
+  const el=document.querySelector(`[data-base="${id}"]`); if(!el)return;
+  state.map=map;
+  if(state.key&&state.key!=='plain')applyBase(map,state,state.key);
+  el.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.bm===(state.key||'plain')));
+  if(el.dataset.b)return;
   el.dataset.b='1';
   el.addEventListener('click',e=>{
-    const b=e.target.closest('[data-bm]'); if(!b)return;
+    const b=e.target.closest('[data-bm]'); if(!b||!state.map)return;
     el.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
-    const k=b.dataset.bm, cfg=BASEMAPS[k];
-    if(state.layer){map.removeLayer(state.layer);state.layer=null}
-    if(cfg.url){
-      state.layer=L.tileLayer(cfg.url,{maxZoom:cfg.max||18,subdomains:cfg.sub||'abc',opacity:.92}).addTo(map);
-      state.layer.bringToBack();
-    }
-    if(state.onChange)state.onChange(k);
+    applyBase(state.map,state,b.dataset.bm);
   });
 }
 /* ระยะทางเส้นตรงแบบ Haversine (กิโลเมตร) */
@@ -1676,6 +1699,10 @@ function showBootErr(ev,extra){
   const t=ev&&ev.target;
   if(t&&t!==window&&(t.src||t.href)){
     const u=String(t.src||t.href);
+    /* ภาพแผนที่พื้นหลังหลุดบางแผ่นเป็นเรื่องปกติของผู้ให้บริการ tile ไม่ใช่หน้าเว็บพัง จึงไม่แจ้งเตือน */
+    if((t.classList&&t.classList.contains('leaflet-tile'))||/arcgisonline|cartocdn|tile\.openstreetmap/.test(u))return;
+    /* ไอคอนที่มีไฟล์สำรองจะสลับไปใช้ไฟล์สำรองเอง ไม่นับว่าหาย */
+    if(t.dataset&&(t.dataset.fb||t.dataset.chain))return;
     const name=u.split('/').pop().split('?')[0];
     if(/\.(png|jpg|jpeg|webp|gif|svg)$/i.test(name)){BOOT.miss.push(name);bootPaint();return}
     BOOT.hard.push('โหลดไฟล์ไม่สำเร็จ: '+u.replace(location.origin,''));bootPaint();return;
