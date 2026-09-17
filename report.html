@@ -66,7 +66,10 @@ function renderReport(){
   const F=D.fiscal,val=cropValue();
   const drv=MEI.comps.map(c=>({n:c.sec.name,v:(c.idx[35]-c.idx[23])*c.sec.weight})).sort((a,b)=>b.v-a.v);
   $('#briefAsof').textContent='ข้อมูล ณ '+CFG.asof;
-  $('#brief').innerHTML=`
+  const simWarn=MEI.real<.999?`<div class="trust bad" style="margin:0 0 10px"><div class="tr-h"><span class="tr-dot"></span><span class="tr-t">
+      <b>ข้อควรระวัง:</b> ดัชนี NBL–MEI เดือนล่าสุดคำนวณจากค่าจริงเพียง ${Math.round(MEI.real*100)}% ของน้ำหนัก ส่วนที่เหลือเป็นข้อมูลจำลอง
+      ข้อความในส่วนภาพรวมจึงยังใช้อ้างอิงไม่ได้ ตัวชี้วัดที่ยังไม่มีค่าจริงระบุไว้ในตารางด้านล่าง</span></div></div>`:'';
+  $('#brief').innerHTML=simWarn+`
     <p><b>ภาพรวม</b> — ดัชนีภาวะเศรษฐกิจจังหวัดหนองบัวลำภู (NBL–MEI) เดือน${TH_M[last.m-1]} ${last.y} อยู่ที่ <b>${last.v.toFixed(1)}</b>
     ${yo>0?'ขยายตัว':'ลดลง'} <b>${Math.abs(yo).toFixed(1)}%</b> เมื่อเทียบกับเดือนเดียวกันปีก่อน
     โดยมี <b>${drv[0].n}</b> เป็นแรงหนุนหลัก และ <b>${drv[drv.length-1].n}</b> เป็นตัวฉุด</p>
@@ -95,8 +98,8 @@ function renderReport(){
 
   let rows='';
   DATASETS.forEach(d=>d.series.forEach(s=>{const a=DB[d.id][s.key];
-    rows+=`<tr><td>${SECTORS.find(x=>x.id===d.sector).name}</td><td>${s.label}</td>
-      <td class="r">${f(a[35].v,s.dec??0)}</td><td>${s.unit}</td><td class="r">${chip(pctc(a[35].v,a[23].v))}</td></tr>`}));
+    rows+=`<tr><td>${SECTORS.find(x=>x.id===d.sector).name}</td><td>${s.label}${simChip({sim:a[35].sim?1:0,real:0},true)}</td>
+      <td class="r">${f(a[35].v,s.dec??0)}</td><td>${s.unit}</td><td class="r">${(a[35].sim||a[23].sim)?'<span class="chip">—</span>':chip(pctc(a[35].v,a[23].v))}</td></tr>`}));
   $('#tAll').innerHTML=`<thead><tr><th>ภาคส่วน</th><th>ตัวชี้วัด</th><th class="r">ค่าล่าสุด</th><th>หน่วย</th><th class="r">%YoY</th></tr></thead><tbody>${rows}</tbody>`;
 
   $('#tGap').innerHTML=`<thead><tr><th style="width:120px">ภาคส่วน</th><th>ชุดข้อมูลที่ต้องขอเพิ่ม</th><th>หน่วยงานที่ต้องประสาน</th><th style="width:80px">ความสำคัญ</th></tr></thead><tbody>`+
@@ -104,9 +107,9 @@ function renderReport(){
       <td>${g[3]==='สูง'?'<span class="chip dn">สูง</span>':'<span class="chip fl">กลาง</span>'}</td></tr>`).join('')+'</tbody>';
 }
 function toCsv(){
-  const L=['sector,dataset,indicator,unit,period,value'];
+  const L=['sector,dataset,indicator,unit,period,value,status'];
   DATASETS.forEach(d=>d.series.forEach(s=>DB[d.id][s.key].forEach(x=>
-    L.push([SECTORS.find(y=>y.id===d.sector).name,d.id,s.label,s.unit,x.key,x.v].map(v=>`"${v}"`).join(',')))));
+    L.push([SECTORS.find(y=>y.id===d.sector).name,d.id,s.label,s.unit,x.key,x.v,x.sim?'simulated':'actual'].map(v=>`"${v}"`).join(',')))));
   return L.join('\n')}
 function dl(name,text,type){
   const b=new Blob(['\ufeff'+text],{type:type||'text/plain;charset=utf-8'});

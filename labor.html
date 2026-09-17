@@ -168,7 +168,13 @@ function renderLabor(){
   const SRC='labor';
   document.getElementById('lbKpi').innerHTML=[
     kpiCard({icon:'people',img:'unemployed',color:cv('--coral'),label:'จำนวนผู้ว่างงาน',value:f(last.ue,0),unit:'คน',
-      chip:(ueY==null?'<span class="chip">—</span>':chip(ueY))+' '+statusBadge(ueY,true,'จำนวนผู้ว่างงานเทียบงวดเดียวกันปีก่อน'),
+      /* ฐานปีก่อนเล็กมาก (เช่น 64 คน) ร้อยละจะพุ่งหลายพัน% จนอ่านผิด → แสดงเป็นจำนวนคนที่เปลี่ยน และตัดสถานะจากอัตราว่างงานแทน */
+      chip:(ueY==null?'<span class="chip">—</span>'
+          :(yoy&&yoy.ue<500)?`<span class="chip ${last.ue>=yoy.ue?'dn':'up'}">${last.ue>=yoy.ue?'+':'−'}${f(Math.abs(last.ue-yoy.ue),0)} คน</span>`
+          :chip(ueY))+' '+
+        ((yoy&&yoy.ue<500&&last.ur!=null&&yoy.ur!=null)
+          ?statusBadge((last.ur-yoy.ur)*10,true,'อัตราการว่างงานเปลี่ยน '+(last.ur-yoy.ur>=0?'+':'')+(last.ur-yoy.ur).toFixed(2)+' จุด (ใช้แทนร้อยละเพราะฐานปีก่อนมีผู้ว่างงานน้อยมาก)')
+          :statusBadge(ueY,true,'จำนวนผู้ว่างงานเทียบงวดเดียวกันปีก่อน')),
       sub:yoy?('เทียบ '+prevLabel+' · '+f(yoy.ue,0)+' คน'):'ไม่มีงวดปีก่อนให้เทียบ',
       tip:tipOf({t:'จำนวนผู้ว่างงาน',
         d:'ผู้ที่ไม่ได้ทำงานเลยแม้แต่ชั่วโมงเดียวในสัปดาห์สำรวจ พร้อมทำงาน และกำลังหางาน · '+aggNote,

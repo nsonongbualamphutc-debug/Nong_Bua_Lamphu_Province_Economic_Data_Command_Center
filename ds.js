@@ -483,7 +483,10 @@ const CARD_BG_DIR='assets/cardbg/';
 function cardBg(name){return name?`<span class="kpibg" style="background-image:url('${CARD_BG_DIR}bg-${name}.webp')"></span>`:''}
 function kpiCard(o){
   const T=o.go?'button':'div';
-  const sc=o.sim===false?(SIM_TOUCH=null,''):simChip(simTake());
+  let sc=o.sim===false?(SIM_TOUCH=null,''):simChip(simTake());
+  /* การ์ดดัชนี NBL–MEI ไม่ได้อ่านผ่าน seriesAt จึงตรวจจากสัดส่วนน้ำหนักที่เป็นค่าจริงแทน */
+  if(!sc&&o.sim!==false&&typeof MEI!=='undefined'&&MEI.real<.999&&/NBL|ดัชนีเศรษฐกิจรายเดือน|ดัชนีภาวะเศรษฐกิจ/.test(String(o.label||'')))
+    sc=simChip({sim:1,real:MEI.real>0?1:0});
   const bg=o.bg===false?'':cardBg(o.bg||icoBase(o.img));
   return`<${T} class="kpi${bg?' hasbg':''}"${o.go?` data-go="${o.go}"`:''}${o.tip?` data-tip2="${o.tip}"`:''}
     ${o.color?`style="--kpi:${o.color}"`:''}>

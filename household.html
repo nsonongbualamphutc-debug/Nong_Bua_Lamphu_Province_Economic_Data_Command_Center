@@ -37,7 +37,8 @@ let HY=null;
 function renderHouse(){
   const incY=hYears(K_INC), expY=hYears(K_EXP);
   const YS=[...new Set([...incY,...expY])].sort((a,b)=>a-b);
-  if(HY===null)HY=YS[YS.length-1];
+  /* เปิดหน้าที่ปีล่าสุดที่มีทั้งรายได้และค่าใช้จ่าย · ปีที่สำรวจไม่ครบยังเลือกดูได้ */
+  if(HY===null){const full=YS.filter(y=>hv(y,K_INC)!=null&&hv(y,K_EXP)!=null);HY=full.length?full[full.length-1]:YS[YS.length-1]}
   const inc=hv(HY,K_INC), exp=hv(HY,K_EXP);
   const debt=hv(HY,K_DEBT)??hv(YS[YS.length-2],K_DEBT);
   const debtY=hv(HY,K_DEBT)!=null?HY:YS.filter(y=>hv(y,K_DEBT)!=null).pop();
@@ -172,8 +173,12 @@ function renderHouse(){
         <td class="r">${(a&&b)?(b/a*100).toFixed(1)+'%':'—'}</td></tr>`}).join('')+'</tbody>';
   const ratio=(inc&&exp)?(exp/inc*100):null;
   document.getElementById('ieNote').innerHTML=
-    `ปี ${HY} ครัวเรือนมีรายได้เฉลี่ย <b>${f(inc,0)} บาทต่อเดือน</b> ใช้จ่าย <b>${f(exp,0)} บาท</b>
-     คิดเป็น ${ratio?ratio.toFixed(1):'—'}% ของรายได้ เหลือเก็บ ${f(left,0)} บาท
+    (inc==null||exp==null)
+    ?`ปี ${HY} ${inc==null?'ยังไม่มีข้อมูลรายได้':''}${inc==null&&exp==null?' และ':''}${exp==null?'ยังไม่มีข้อมูลค่าใช้จ่าย':''}
+       ${exp!=null?'มีเฉพาะค่าใช้จ่ายเฉลี่ย <b>'+f(exp,0)+' บาทต่อเดือน</b>':''}${inc!=null?'มีเฉพาะรายได้เฉลี่ย <b>'+f(inc,0)+' บาทต่อเดือน</b>':''}
+       จึงคำนวณเงินเหลือเก็บไม่ได้ เลือกปีที่สำรวจครบเพื่อดูภาพเต็ม`
+    :`ปี ${HY} ครัวเรือนมีรายได้เฉลี่ย <b>${f(inc,0)} บาทต่อเดือน</b> ใช้จ่าย <b>${f(exp,0)} บาท</b>
+     คิดเป็น ${ratio.toFixed(1)}% ของรายได้ เหลือเก็บ ${f(left,0)} บาท
      ตัวเลขนี้สำคัญกว่า GPP ต่อหัว เพราะเป็นเงินที่ครัวเรือนสัมผัสได้จริง`;
 
   /* ── หนี้สิน ── */
