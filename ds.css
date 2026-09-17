@@ -986,3 +986,34 @@ button.kpi.hasbg:hover>.kpibg{opacity:.62;background-size:auto 126%}
 .ph.mini .t{align-items:center!important}
 .ph.mini .bigico,.ph.mini .bigico img.ico{width:30px!important;height:30px!important}
 body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
+
+/* ── ป้ายข้อมูลจำลอง และแถบความน่าเชื่อถือของตัวเลข ── */
+.simchip{display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:6px;font-size:10px;font-weight:600;
+  letter-spacing:.2px;background:repeating-linear-gradient(135deg,#fde8e6 0 6px,#fbd9d5 6px 12px);color:#b3342a;
+  border:1px dashed #e7a39b;white-space:nowrap;margin-right:5px;vertical-align:middle;cursor:help}
+.simchip.part{background:repeating-linear-gradient(135deg,#fdf3e0 0 6px,#f8e6c2 6px 12px);color:#8a6714;border-color:#e3c27a}
+.simchip.mini{height:16px;padding:0 5px;font-size:9px;margin:0 0 0 5px}
+.trust{border:1px solid var(--line);border-radius:12px;background:var(--card);margin:-2px 0 12px;overflow:hidden;font-size:12px}
+.trust .tr-h{display:flex;align-items:center;gap:10px;padding:8px 12px}
+.trust .tr-dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--good)}
+.trust.warn{border-color:#ecd8a8;background:#fffaf0}.trust.warn .tr-dot{background:#c98a1b}
+.trust.bad{border-color:#f0c2bd;background:#fff6f5}.trust.bad .tr-dot{background:#c0392b;animation:trPulse 1.8s infinite}
+@keyframes trPulse{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.45)}50%{box-shadow:0 0 0 6px rgba(192,57,43,0)}}
+.trust .tr-t{flex:1;line-height:1.55;color:var(--dim)}
+.trust .tr-btn{height:28px;font-size:11.5px;flex:none}
+.trust .tr-list{display:none;border-top:1px dashed var(--line);padding:6px 12px 10px}
+.trust.open .tr-list{display:block}
+.trust .tr-row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) 120px 74px 90px;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line2,var(--line))}
+.trust .tr-row .nm{font-weight:600;color:var(--ink,inherit);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trust .tr-row .ag,.trust .tr-row .ls{color:var(--faint);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trust .tr-row .bar{height:6px;border-radius:3px;background:#f1d6d2;overflow:hidden}
+.trust .tr-row .bar i{display:block;height:100%;background:var(--good)}
+.trust .tr-row .pc{font-weight:600;font-size:11px;text-align:right}
+.trust .pc.ok{color:#11734b}.trust .pc.warn{color:#8a6714}.trust .pc.bad{color:#b3342a}
+.trust .tr-note{font-size:10.5px;color:var(--faint);margin-top:7px}
+[data-theme="dark"] .trust.warn{background:rgba(201,138,27,.08)}[data-theme="dark"] .trust.bad{background:rgba(192,57,43,.08)}
+@media (max-width:767px){
+  .trust .tr-h{flex-wrap:wrap}.trust .tr-btn{margin-left:auto}
+  .trust .tr-row{grid-template-columns:minmax(0,1fr) 70px;row-gap:3px}
+  .trust .tr-row .ag,.trust .tr-row .ls{display:none}.trust .tr-row .bar{grid-column:1/-1;order:3}
+}

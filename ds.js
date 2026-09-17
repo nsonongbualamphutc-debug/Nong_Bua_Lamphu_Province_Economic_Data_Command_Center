@@ -109,13 +109,43 @@ DATASETS.forEach((d,di)=>{DB[d.id]={};DBD[d.id]={};
       let v=s.base*t*sea*nz;
       if(s.pct)v=s.base+(sea-1)*s.base*1.6+(R()-.5)*.6;
       if(s.int)v=Math.round(v);
-      return{...mo,v:+v.toFixed(s.dec??(s.int?0:2))}});
+      return{...mo,v:+v.toFixed(s.dec??(s.int?0:2)),sim:true}});
     DB[d.id][s.key]=arr;
     const last=arr[arr.length-1].v,R2=rnd(3571*(di+1)+97*(si+1));
     DBD[d.id][s.key]={};
     DISTRICTS.forEach(dt=>{DBD[d.id][s.key][dt.code]=+(last*dt.w*(.84+R2()*.36)).toFixed(s.int?0:2)});
   })});
 function baseAvg(a,y){const q=a.filter(x=>x.y===y);return q.reduce((p,c)=>p+c.v,0)/(q.length||1)}
+/* ─────────────── 3b) สถานะข้อมูลจริง/จำลอง ───────────────
+   ทุกจุดใน DB เริ่มเป็น sim:true (ค่าจำลองจากค่าฐาน) · loadLive() เปลี่ยนเป็น sim:false เมื่อมีค่าที่อนุมัติแล้วจากชีต
+   SIM_TOUCH เก็บว่าตัวเลขที่เพิ่งดึงผ่าน seriesAt() เป็นค่าจริงหรือจำลอง แล้ว kpiCard() ติดป้ายให้เอง */
+const LIVE={ok:false,err:false,at:'',rows:0,pending:0};
+const DBD_REAL={};
+let SIM_TOUCH=null;
+function simTouch(arr,idx){
+  if(!arr||!arr.length||arr[0].sim===undefined)return;
+  const pts=(idx&&idx.length?idx.map(i=>arr[i]):[arr[arr.length-1]]).filter(Boolean);
+  if(!pts.length)return;
+  SIM_TOUCH=SIM_TOUCH||{sim:0,real:0};
+  pts.forEach(p=>p.sim?SIM_TOUCH.sim++:SIM_TOUCH.real++);
+}
+function simTake(){const t=SIM_TOUCH;SIM_TOUCH=null;return t}
+function simChip(t,mini){
+  if(!t||!t.sim)return '';
+  const part=t.real>0;
+  const tip=(part?'ข้อมูลจริงบางเดือน':'ข้อมูลจำลอง')+'|'+(part
+    ?`งวดนี้มีค่าจริง ${t.real} เดือน อีก ${t.sim} เดือนยังเป็นค่าจำลอง ตัวเลขรวมจึงยังไม่ใช่ค่าจริง`
+    :'หน่วยงานยังไม่ได้ส่งค่าจริงของงวดนี้ หรือส่งแล้วแต่ยังรออนุมัติ ตัวเลขนี้สร้างจากค่าฐานเพื่อทดสอบการแสดงผล ห้ามนำไปอ้างอิง');
+  return `<span class="simchip${part?' part':''}${mini?' mini':''}" data-tip2="${tip}">${part?'จริงบางส่วน':'จำลอง'}</span>`;
+}
+/* สรุปรายชุด: เดือนที่มีค่าจริงใน 12 เดือนล่าสุด */
+function realStat(id){
+  const d=DATASETS.find(x=>x.id===id); if(!d)return null;
+  let real=0,tot=0,last=null;
+  d.series.forEach(se=>{const arr=DB[id][se.key]||[];
+    arr.slice(-12).forEach(x=>{tot++;if(!x.sim){real++;if(!last||x.key>last)last=x.key}})});
+  return {real,tot,share:tot?real/tot:0,last};
+}
 function buildMei(){
   const base=CFG.latest.y-2;
   const comps=SECTORS.map(sec=>{const idx=MONTHS.map(()=>0);
@@ -124,7 +154,12 @@ function buildMei(){
     return{sec,idx}});
   const out=MONTHS.map((mo,i)=>{let v=0,w=0;comps.forEach(c=>{v+=c.idx[i]*c.sec.weight;w+=c.sec.weight});
     return{...mo,v:+(v/w).toFixed(1)}});
-  return{out,comps}}
+  /* สัดส่วนน้ำหนักของดัชนีที่มาจากค่าจริง: เดือนล่าสุด และเฉลี่ย 12 เดือน */
+  const realW=i=>{let r=0,w=0;SECTORS.forEach(sec=>sec.datasets.forEach(id=>{const d=DATASETS.find(x=>x.id===id),a=DB[id][d.series[0].key];
+      const ww=sec.weight/sec.datasets.length;w+=ww;if(a[i]&&!a[i].sim)r+=ww}));return w?r/w:0};
+  const n=MONTHS.length, lastReal=realW(n-1);
+  let yr=0;for(let i=n-12;i<n;i++)yr+=realW(i);
+  return{out,comps,real:lastReal,real12:yr/12}}
 let MEI=buildMei();
 const R3=rnd(20690);
 const NAT={th:MEI.out.map((m,i)=>+(100+(i-24)*.16+Math.sin(i/5)*1.1+(R3()-.5)*.8).toFixed(1)),
@@ -448,6 +483,7 @@ const CARD_BG_DIR='assets/cardbg/';
 function cardBg(name){return name?`<span class="kpibg" style="background-image:url('${CARD_BG_DIR}bg-${name}.webp')"></span>`:''}
 function kpiCard(o){
   const T=o.go?'button':'div';
+  const sc=o.sim===false?(SIM_TOUCH=null,''):simChip(simTake());
   const bg=o.bg===false?'':cardBg(o.bg||icoBase(o.img));
   return`<${T} class="kpi${bg?' hasbg':''}"${o.go?` data-go="${o.go}"`:''}${o.tip?` data-tip2="${o.tip}"`:''}
     ${o.color?`style="--kpi:${o.color}"`:''}>
@@ -456,7 +492,7 @@ function kpiCard(o){
       :o.icon?`<span class="ic" style="background:${o.color}1e"><svg viewBox="0 0 24 24" style="stroke:${o.color}">${IC[o.icon]}</svg></span>`:''}<span>${o.label}</span></div>
     <div class="v n">${o.value}${o.unit?`<small>${o.unit}</small>`:''}</div>
     ${o.spark?`<div class="spark">${o.spark}</div>`:''}
-    <div class="f">${o.chip||''}${o.sub?`<span class="sub">${o.sub}</span>`:''}</div></${T}>`}
+    <div class="f">${sc}${o.chip||''}${o.sub?`<span class="sub">${o.sub}</span>`:''}</div></${T}>`}
 function gaugeSvg(p,color){
   const R=34,cx=39,cy=41,C=Math.PI*R,v=Math.min(100,p)/100;
   return`<svg viewBox="0 0 78 47"><path d="M ${cx-R} ${cy} A ${R} ${R} 0 0 1 ${cx+R} ${cy}" fill="none" stroke="${cv('--line')}" stroke-width="8" stroke-linecap="round"/>
@@ -792,15 +828,75 @@ function jsonp(url,p={}){return new Promise((res,rej)=>{
   function cl(){clearTimeout(to);delete window[cb];sc.remove()}
   window[cb]=d=>{cl();res(d)};sc.onerror=()=>{cl();rej(new Error('เชื่อมต่อไม่ได้'))};
   sc.src=url+(url.includes('?')?'&':'?')+new URLSearchParams({...p,callback:cb});document.head.appendChild(sc)})}
+const QMON={1:[1,2,3],2:[4,5,6],3:[7,8,9],4:[10,11,12]};
+/* ใส่ค่าที่อนุมัติแล้วหนึ่งแถวลงชุดรายเดือน · รายไตรมาสกระจายลง 3 เดือน (ชุดแบบผลรวมหาร 3 ชุดแบบอัตรา/สะสมใช้ค่าเดิม) */
+function applyLiveRow(row){
+  const d=DATASETS.find(x=>x.id===row.domain), se=d&&d.series.find(x=>x.key===row.key);
+  const arr=se&&DB[row.domain][row.key]; if(!arr)return false;
+  const per=String(row.period||''), val=Number(row.value); if(!isFinite(val))return false;
+  let keys=[],share=1; const q=per.match(/^(\d{4})-Q([1-4])$/);
+  if(q){keys=QMON[q[2]].map(m=>q[1]+'-'+String(m).padStart(2,'0'));
+    if((se.agg||(se.pct?'avg':'sum'))==='sum')share=1/3;}
+  else if(/^\d{4}-\d{2}$/.test(per))keys=[per];
+  else return false;
+  const area=String(row.area||'PROV');
+  if(area==='PROV'){let hit=false;
+    keys.forEach(k=>{const t=arr.find(x=>x.key===k);if(t){t.v=+(val*share).toFixed(se.dec??4);t.sim=false;hit=true}});
+    return hit;}
+  if(DBD[row.domain]&&DBD[row.domain][row.key]){
+    DBD[row.domain][row.key][area]=val;
+    (DBD_REAL[row.domain+'|'+row.key]=DBD_REAL[row.domain+'|'+row.key]||{})[area]=true;return true}
+  return false;
+}
+/* หน้าภาคส่วนที่ใช้ตารางจริง: รับค่าที่อนุมัติแล้วชุดเดียวกับที่กรอกทีละช่อง */
+function applyLiveToPages(rows){
+  let n=0;
+  /* ท่องเที่ยว: รายเดือน → ปีงบประมาณ ต.ค.–ก.ย. */
+  if(typeof DX!=='undefined'&&DX.tour){
+    const MAP={visit:'visitor',rev:'revenue',occ:'occ'};
+    rows.forEach(r=>{
+      if(r.domain!=='tour'||!MAP[r.key]||String(r.area||'PROV')!=='PROV')return;
+      const m=String(r.period).match(/^(\d{4})-(\d{2})$/); if(!m)return;
+      const y=+m[1],mo=+m[2], fy=mo>=10?y+1:y, i=mo>=10?mo-9:mo+3;
+      const list=DX.tour[MAP[r.key]]; if(!Array.isArray(list))return;
+      const t=list.find(x=>x.fy===fy&&x.i===i);
+      if(t)t.v=+r.value; else list.push({fy,i,label:TH_M[mo-1]+'-'+String(y).slice(-2),v:+r.value});
+      n++;
+    });
+    ['visitor','revenue','occ'].forEach(k=>Array.isArray(DX.tour[k])&&DX.tour[k].sort((a,b)=>a.fy-b.fy||a.i-b.i));
+  }
+  /* แรงงาน: รายไตรมาส → ตารางภาวะการทำงาน */
+  const LQ=D&&D.labor&&D.labor.quarters;
+  if(Array.isArray(LQ)){
+    const by={};
+    rows.forEach(r=>{
+      if(r.domain!=='labor'||['ue','ur','emp','force'].indexOf(r.key)<0||String(r.area||'PROV')!=='PROV')return;
+      if(!/^\d{4}-Q[1-4]$/.test(r.period))return;
+      (by[r.period]=by[r.period]||{})[r.key]=+r.value;
+    });
+    Object.keys(by).forEach(q=>{
+      const v=by[q]; let t=LQ.find(x=>x.q===q);
+      if(!t){
+        if(v.force==null||v.emp==null)return;   /* แถวใหม่ต้องมีอย่างน้อยกำลังแรงงานและผู้มีงานทำ */
+        t={q,y:+q.slice(0,4),n:+q.slice(-1),pop15:null,lfpr:null,notin:null};LQ.push(t);
+      }
+      Object.assign(t,v);
+      if(v.ur==null&&t.force&&t.ue!=null)t.ur=+(t.ue/t.force*100).toFixed(2);
+      n++;
+    });
+    LQ.sort((a,b)=>a.q<b.q?-1:1);
+  }
+  return n;
+}
 async function loadLive(){
-  if(!CFG.API)return;
+  if(!CFG.API){LIVE.err=true;return}
   try{const r=await jsonp(CFG.API,{action:'series'});
     if(!r||!r.ok)throw 0;
-    r.rows.forEach(row=>{const s=DB[row.domain]&&DB[row.domain][row.key];if(!s)return;
-      const t=s.find(x=>x.key===row.period);if(!t)return;
-      if(row.area==='PROV')t.v=+row.value;else if(DBD[row.domain][row.key])DBD[row.domain][row.key][row.area]=+row.value});
+    LIVE.ok=true;LIVE.at=r.updated||'';LIVE.rows=0;
+    r.rows.forEach(row=>{if(applyLiveRow(row))LIVE.rows++});
+    applyLiveToPages(r.rows);
     MEI=buildMei();safeRender();
-  }catch(e){}
+  }catch(e){LIVE.err=true;try{trustBar()}catch(_){}}
 }
 
 
@@ -967,9 +1063,14 @@ function initToTop(){
 /* ─────────────── 27) แบนเนอร์ภาพหัวหน้า (ใส่ไฟล์เมื่อไรก็ขึ้นเอง) ─────────────── */
 function bannerInto(target,src,title,sub,place){
   if(!target)return;
-  if(target.querySelector(':scope > .pgbanner'))return;
+  if(target.querySelector(':scope > .pgbanner')||target.dataset.bnr==='wait')return;
+  /* กันแบนเนอร์ซ้อน: safeRender ถูกเรียกหลายรอบ (โหลดข้อมูลจริง/ตาราง) ก่อนรูปโหลดเสร็จ */
+  target.dataset.bnr='wait';
   const img=new Image();
+  img.onerror=()=>{delete target.dataset.bnr};
   img.onload=()=>{
+    delete target.dataset.bnr;
+    if(target.querySelector(':scope > .pgbanner'))return;
     const d=document.createElement('div');
     d.className='pgbanner';
     d.style.backgroundImage=`url('${src}')`;
@@ -1118,6 +1219,7 @@ function aggVals(vals,mode){
   return vals.reduce((a,b)=>a+b,0);
 }
 function seriesAt(arr,st,mode){
+  simTouch(arr,st?(st.idx||[st.i]):null);
   if(!st)return arr[arr.length-1].v;
   const idx=st.idx||[st.i];
   const vals=idx.map(i=>arr[i]&&arr[i].v).filter(v=>v!=null);
@@ -1771,6 +1873,48 @@ function fillIcons(root){
   });
   document.addEventListener('DOMContentLoaded',()=>mo.observe(document.body,{childList:true,subtree:true}));
 })();
+/* แถบบอกความน่าเชื่อถือของตัวเลขรายเดือน — แสดงเฉพาะหน้าที่ใช้ชุดรายเดือน */
+const TRUST_PAGES={overview:null,gpp:null,fiscal:['spend'],industry:['factory','power'],trade:['cpi','credit'],
+  consume:['fuel','car'],area:null,report:null};
+function trustBar(){
+  if(typeof PAGE==='undefined'||!TRUST_PAGES.hasOwnProperty(PAGE.id))return;
+  const v=document.querySelector('.view.on'); if(!v)return;
+  const ids=TRUST_PAGES[PAGE.id]||DATASETS.map(d=>d.id);
+  const st=ids.map(id=>({id,d:DATASETS.find(x=>x.id===id),r:realStat(id)})).filter(x=>x.d&&x.r);
+  const full=st.filter(x=>x.r.share>=.999).length, none=st.filter(x=>x.r.real===0).length, part=st.length-full-none;
+  const showMei=['overview','gpp','report'].indexOf(PAGE.id)>=0;
+  const lv=full===st.length?'ok':none===st.length?'bad':'warn';
+  let el=v.querySelector('.trust');
+  if(!el){el=document.createElement('div');el.className='trust';
+    const sl=v.querySelector('.slicer'), ph=v.querySelector('.ph');
+    if(sl&&sl.parentNode)sl.parentNode.insertBefore(el,sl);
+    else if(ph&&ph.nextSibling)ph.parentNode.insertBefore(el,ph.nextSibling);else v.prepend(el)}
+  const open=el.classList.contains('open');
+  el.className='trust '+lv+(open?' open':'');
+  const conn=LIVE.ok?'':LIVE.err?'<b>เชื่อมฐานข้อมูลกลางไม่ได้</b> · ':'<b>กำลังโหลดข้อมูลจริง</b> · ';
+  const msg=lv==='ok'?`ตัวเลขรายเดือนในหน้านี้เป็นค่าจริงจากหน่วยงานครบ 12 เดือนล่าสุด`
+    :lv==='bad'?`ตัวเลขรายเดือนในหน้านี้ยังเป็น<b>ข้อมูลจำลอง</b>ทั้งหมด ใช้ทดสอบการแสดงผลเท่านั้น ห้ามนำไปอ้างอิง`
+    :`ข้อมูลจริง ${full} ชุด · จริงบางเดือน ${part} ชุด · ยังเป็นข้อมูลจำลอง ${none} ชุด — การ์ดที่มีป้าย <span class="simchip mini">จำลอง</span> ห้ามนำไปอ้างอิง`;
+  el.innerHTML=`<div class="tr-h"><span class="tr-dot"></span><span class="tr-t">${conn}${msg}
+      ${showMei?` · ดัชนี NBL–MEI เดือนล่าสุดคำนวณจากค่าจริง <b>${Math.round(MEI.real*100)}%</b> ของน้ำหนัก`:''}</span>
+      <button class="tb tr-btn" type="button">${open?'ซ่อน':'ดูรายชุด'}</button></div>
+    <div class="tr-list">${st.map(x=>{const pc=Math.round(x.r.share*100);
+      return `<div class="tr-row"><span class="nm">${x.d.series.map(s=>s.label).slice(0,2).join(' · ')}</span>
+        <span class="ag">${agencyName(x.id).replace('สำนักงาน','สนง.').replace('จังหวัดหนองบัวลำภู','จ.')}</span>
+        <span class="bar"><i style="width:${pc}%"></i></span>
+        <span class="pc ${pc>=100?'ok':pc>0?'warn':'bad'}">${pc>=100?'จริงครบ':pc>0?'จริง '+pc+'%':'จำลอง'}</span>
+        <span class="ls">${x.r.last?'ล่าสุด '+TH_M[+x.r.last.slice(5)-1]+' '+x.r.last.slice(2,4):'ยังไม่มีค่าจริง'}</span></div>`}).join('')}
+      <div class="tr-note">ค่าจริงมาจากข้อมูลที่ผู้ดูแลระบบอนุมัติแล้วในระบบกรอกข้อมูล · ข้อมูลที่หน่วยงานส่งแต่ยังรออนุมัติยังไม่ขึ้นแดชบอร์ด</div></div>`;
+  v.querySelectorAll('.chip.mock').forEach(c=>{c.textContent=lv==='ok'?'ข้อมูลจริง':lv==='bad'?'ข้อมูลจำลอง รอข้อมูลจริง':'ข้อมูลจริงบางส่วน';
+    c.classList.toggle('real',lv==='ok')});
+  const b=el.querySelector('.tr-btn');
+  if(b)b.onclick=()=>{el.classList.toggle('open');b.textContent=el.classList.contains('open')?'ซ่อน':'ดูรายชุด'};
+  /* ป้ายที่ชื่อดัชนี NBL–MEI */
+  if(showMei&&MEI.real<.999)document.querySelectorAll('.lb,h3').forEach(h=>{
+    if(!/NBL–MEI/.test(h.textContent)||h.querySelector('.simchip'))return;
+    h.insertAdjacentHTML('beforeend',' '+simChip({sim:1,real:MEI.real>0?1:0},true));
+  });
+}
 /* หัวหน้าเพจย่อเป็นแถบบางเมื่อเลื่อนลง ไม่บังหัวการ์ด */
 function bindPhMini(){
   const m=document.querySelector('.main'); if(!m||m.dataset.phm)return; m.dataset.phm='1';
@@ -1784,6 +1928,7 @@ function safeRender(){
   try{PAGE.render()}catch(e){console.error('render '+PAGE.id,e)}
   try{
     bindPhMini();
+    trustBar();
     document.querySelectorAll('[data-build]').forEach(e=>e.textContent=CFG.build);
     fillIcons();
     pageBanner();bindToggle();revealCards();animateNums();

@@ -233,6 +233,27 @@ body.signed .ftr a{color:var(--blue)}
 tr.rowbad td{background:#fff6f5}
 .cksum{font-size:12px}
 @media(max-width:640px){.hide-sm{display:none!important}}
+.rvcount{display:none;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#c98a1b;color:#fff;font-size:10.5px;
+  line-height:18px;text-align:center;margin-left:4px;font-weight:700}
+.rvcount.on{display:inline-block}.rvcount.bad{background:#c0392b}
+.rv-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 12px}
+.rv-tools select{height:36px;border:1px solid var(--line);border-radius:9px;padding:0 10px;background:#fff;font:inherit;font-size:13px}
+.rv-tools .tabs{margin:0}
+.rv-admin{gap:8px;flex-wrap:wrap}
+.btn.warnb{background:#fff4f2;border-color:#f0c2bd;color:#b3342a}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.rv-empty{padding:26px;text-align:center;color:var(--faint);font-size:13px;border:1px dashed var(--line);border-radius:12px}
+.rv-group{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;background:#fff}
+.rv-gh{display:flex;align-items:center;gap:9px;padding:9px 13px;background:#f4faf7;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.rv-gh b{font-size:13.5px}.rv-gh span{font-size:11.5px;color:var(--faint)}
+.rv-gh .rv-n{font-weight:600;color:#0b3c32}
+.rv-t{width:100%}.rv-t td,.rv-t th{padding:8px 10px!important;font-size:12.5px}
+.rv-t small{color:var(--faint);font-weight:400}
+tr.rvbig td{background:#fff8f6}
+.rvst{display:inline-block;padding:2px 8px;border-radius:7px;font-size:11px;font-weight:600}
+.rvst.sub{background:#fdf3e0;color:#8a6714}.rvst.rej{background:#fde8e6;color:#b3342a}.rvst.ok{background:#e4f5ec;color:#11734b}
+.rvnote{font-size:11px;color:var(--faint);margin-top:3px;line-height:1.5}.rvnote.bad{color:#b3342a}
+@media(max-width:640px){.rv-t{min-width:620px}.rv-group{overflow-x:auto}}
 .srcbadge{display:inline-block;padding:1px 7px;border-radius:7px;font-size:10px;line-height:1.7;border:1px solid}
 .srcbadge.man{background:#eef6f2;color:#0b3c32;border-color:#cfe4da}
 .srcbadge.imp{background:#fdf3e0;color:#8a6714;border-color:#ecd8a8}
@@ -307,6 +328,24 @@ tr.rowbad td{background:#fff6f5}
         <button class="on" data-mode="form">กรอกทีละช่อง</button>
         <button data-mode="excel">นำเข้าจาก Excel</button>
         <button data-mode="table">ตารางรายละเอียด</button>
+        <button data-mode="review" id="tabReview">สถานะการส่ง <span class="rvcount" id="rvCount"></span></button>
+      </div>
+
+      <div id="pane-review" style="display:none">
+        <div class="crumb"><span class="stepnum">✓</span><b id="rvTitle">สถานะข้อมูลที่ส่ง</b>
+          <span id="rvSub">ข้อมูลที่ส่งจะขึ้นแดชบอร์ดหลังผู้ดูแลระบบอนุมัติ</span></div>
+        <div class="rv-tools">
+          <div class="tabs rv-scope" id="rvScope"><button class="on" data-sc="open">รอดำเนินการ</button><button data-sc="recent">อนุมัติแล้ว 30 วัน</button></div>
+          <select id="rvDom"><option value="">ทุกชุดข้อมูล</option></select>
+          <button class="btn gh2" id="rvReload">โหลดใหม่</button>
+          <span class="sp" style="flex:1"></span>
+          <span class="rv-admin"><button class="btn" id="rvAll">เลือกที่รออนุมัติทั้งหมด</button>
+            <button class="btn warnb" id="rvReject">ส่งกลับให้แก้</button>
+            <button class="btn pri" id="rvApprove">อนุมัติที่เลือก</button></span>
+        </div>
+        <div class="msg" id="rvMsg"></div>
+        <div id="rvList"></div>
+        <p class="hint" id="rvHint"></p>
       </div>
 
       <div id="pane-table" style="display:none">
@@ -532,7 +571,9 @@ document.addEventListener('click',e=>{
   $('#pane-form').style.display=b.dataset.mode==='form'?'block':'none';
   $('#pane-excel').style.display=b.dataset.mode==='excel'?'block':'none';
   $('#pane-table').style.display=b.dataset.mode==='table'?'block':'none';
+  $('#pane-review').style.display=b.dataset.mode==='review'?'block':'none';
   if(b.dataset.mode==='table')renderTblList();
+  if(b.dataset.mode==='review')loadReview();
 });
 document.addEventListener('click',e=>{
   if(e.target.closest('#btnTplAll')){try{buildTemplate(true)}catch(err){say('#xlMsg','err','สร้างแบบฟอร์มไม่สำเร็จ: '+err.message)}return}
@@ -641,6 +682,7 @@ function enterApp(){
   $('#whoRole').textContent=S.agency.role==='admin'?'ผู้ดูแลระบบ':'หน่วยงานเจ้าของข้อมูล';
   buildPeriod();renderTopics();startTtl();flushQueue();
   loadRemoteTables(false);
+  initReview();
 }
 $('#btnOut').onclick=async()=>{
   try{await jsonp({action:'logout',token:S.token})}catch(e){}
@@ -934,7 +976,9 @@ $('#btnSave').onclick=async()=>{
   try{
     const r=await jsonp({action:'submit',token:S.token,payload:JSON.stringify(items)});
     if(!r.ok)throw new Error(r.error);
-    say('#saveMsg','ok',`บันทึกแล้ว — เพิ่มใหม่ ${r.inserted} รายการ แก้ไข ${r.updated} รายการ (งวด ${periodLabel(periodStr())} · ${area2label()})`+(r.updated?' · ค่าเดิมถูกเก็บไว้ในประวัติแล้ว':''));
+    say('#saveMsg','ok',`บันทึกแล้ว — เพิ่มใหม่ ${r.inserted} รายการ แก้ไข ${r.updated} รายการ (งวด ${periodLabel(periodStr())} · ${area2label()})`+(r.updated?' · ค่าเดิมถูกเก็บไว้ในประวัติแล้ว':'')+
+      (r.status==='approved'?' · ขึ้นแดชบอร์ดทันที (สิทธิ์ผู้ดูแลระบบ)':' · รอผู้ดูแลระบบอนุมัติก่อนขึ้นแดชบอร์ด ติดตามได้ที่แท็บ สถานะการส่ง'));
+    refreshReviewCount();
     refreshPeriods();
     $$('#forms input[type=number]').forEach(i=>i.classList.remove('dirty'));
   }catch(e){
@@ -1376,6 +1420,115 @@ function spotCheckAll(){
     :warn.length?`<b style="color:#b7791f">! เตือน ${warn.length} แถว</b>`:`<b style="color:#11734b">✓ ผ่านทุกแถว</b>`;
   return {bad,warn};
 }
+
+/* ─────────── สถานะการส่ง / อนุมัติข้อมูล ─────────── */
+let RV={rows:[],scope:'open',admin:false,sel:new Set()};
+const isAdminS=()=>!!(S.agency&&(S.agency.role==='admin'||String(S.agency.domains||'').trim()==='*'));
+function seriesMeta(dom,key){
+  const d=DOMAINS.find(x=>x.id===dom), se=d&&d.series.find(x=>x[0]===key);
+  return {ds:d?d.name:dom, label:se?se[1]:key, unit:se?se[2]:''};
+}
+function initReview(){
+  RV.admin=isAdminS();
+  $('#tabReview').firstChild.textContent=RV.admin?'รออนุมัติ ':'สถานะการส่ง ';
+  $('#rvTitle').textContent=RV.admin?'ตรวจและอนุมัติข้อมูลจากหน่วยงาน':'สถานะข้อมูลที่หน่วยงานส่ง';
+  $('#rvSub').textContent=RV.admin?'ข้อมูลขึ้นแดชบอร์ดเมื่อกดอนุมัติ · ระหว่างรออนุมัติ แดชบอร์ดยังแสดงค่าที่อนุมัติล่าสุด'
+    :'ข้อมูลขึ้นแดชบอร์ดหลังผู้ดูแลระบบอนุมัติ · รายการที่ถูกส่งกลับ ให้แก้ในแท็บกรอกทีละช่องแล้วบันทึกใหม่';
+  document.querySelector('.rv-admin').style.display=RV.admin?'inline-flex':'none';
+  $('#rvDom').innerHTML='<option value="">ทุกชุดข้อมูล</option>'+DOMAINS.filter(d=>RV.admin||myDomains().indexOf(d.id)>=0)
+    .map(d=>`<option value="${d.id}">${escA(d.name)}</option>`).join('');
+  $('#rvHint').innerHTML=RV.admin
+    ?'ตรวจช่อง <b>เปลี่ยนจากค่าเดิม</b> ก่อนอนุมัติ ถ้าต่างเกิน 30% ระบบไฮไลต์ให้ ถ้าตัวเลขผิดให้กด ส่งกลับให้แก้ พร้อมเหตุผล หน่วยงานจะเห็นเหตุผลในแท็บนี้<br>ทุกการอนุมัติและส่งกลับถูกบันทึกในชีต Log'
+    :'สถานะ <b>รออนุมัติ</b> = ส่งถึงระบบแล้ว · <b>ส่งกลับ</b> = ผู้ดูแลขอให้แก้ตามเหตุผลที่ระบุ · ถ้าค่านี้เคยอนุมัติแล้ว แดชบอร์ดยังแสดงค่าเดิมจนกว่าค่าใหม่จะผ่าน';
+  refreshReviewCount();
+}
+async function refreshReviewCount(){
+  try{const r=await jsonp({action:'pending',token:S.token,scope:'open'});
+    if(!r.ok)return;
+    const n=r.rows.filter(x=>RV.admin?x.status==='submitted':x.status==='rejected').length;
+    $('#rvCount').textContent=n?String(n):'';
+    $('#rvCount').className='rvcount'+(n?' on'+(RV.admin?'':' bad'):'');
+  }catch(e){}
+}
+async function loadReview(){
+  $('#rvList').innerHTML='<div class="rv-empty">กำลังโหลด…</div>';
+  try{
+    const r=await jsonp({action:'pending',token:S.token,scope:RV.scope});
+    if(!r.ok)throw new Error(r.error||'โหลดไม่สำเร็จ');
+    RV.rows=r.rows; RV.sel=new Set(); drawReview();
+    refreshReviewCount();
+  }catch(e){$('#rvList').innerHTML='';say('#rvMsg','err','โหลดรายการไม่สำเร็จ: '+e.message)}
+}
+function drawReview(){
+  const dom=$('#rvDom').value;
+  const list=RV.rows.filter(x=>!dom||x.domain===dom);
+  if(!list.length){
+    $('#rvList').innerHTML=`<div class="rv-empty">${RV.scope==='open'?(RV.admin?'ไม่มีข้อมูลรออนุมัติ':'ไม่มีข้อมูลรออนุมัติหรือถูกส่งกลับ'):'ยังไม่มีรายการที่อนุมัติใน 30 วัน'}</div>`;
+    return;
+  }
+  const groups={};
+  list.forEach(x=>{const k=x.agency+'|'+x.domain+'|'+x.period+'|'+x.area;(groups[k]=groups[k]||[]).push(x)});
+  const canSel=RV.admin&&RV.scope==='open';
+  $('#rvList').innerHTML=Object.keys(groups).map(k=>{
+    const g=groups[k], a=g[0], m=seriesMeta(a.domain,a.key);
+    const openIds=g.filter(x=>x.status==='submitted').map(x=>x.id);
+    return `<div class="rv-group">
+      <div class="rv-gh">${canSel&&openIds.length?`<input type="checkbox" data-grp="${openIds.join(',')}" ${openIds.every(i=>RV.sel.has(i))?'checked':''}>`:''}
+        <b>${escA(m.ds)}</b><span>${periodLabel(a.period)} · ${areaLabel(a.area)} · ส่งโดย ${escA(a.by||a.agency)}</span>
+        <span class="sp" style="flex:1"></span><span class="rv-n">${g.length} รายการ</span></div>
+      <table class="grid rv-t"><thead><tr>${canSel?'<th style="width:30px"></th>':''}<th>ตัวชี้วัด</th><th style="text-align:right">ค่าที่ส่ง</th>
+        <th style="text-align:right">ค่าที่อนุมัติล่าสุด</th><th style="text-align:right">เปลี่ยนจากค่าเดิม</th><th>สถานะ</th></tr></thead><tbody>
+      ${g.map(x=>{const mm=seriesMeta(x.domain,x.key);
+        const ch=x.prev!=null&&x.prev!==0?(x.value-x.prev)/Math.abs(x.prev)*100:null;
+        const big=ch!=null&&Math.abs(ch)>=30;
+        const stt=x.status==='submitted'?'<span class="rvst sub">รออนุมัติ</span>':x.status==='rejected'?'<span class="rvst rej">ส่งกลับ</span>':'<span class="rvst ok">อนุมัติแล้ว</span>';
+        return `<tr class="${big?'rvbig':''}">${canSel?`<td>${x.status==='submitted'?`<input type="checkbox" data-id="${x.id}" ${RV.sel.has(x.id)?'checked':''}>`:''}</td>`:''}
+          <td><b>${escA(mm.label)}</b>${x.note?`<div class="rvnote">หมายเหตุ: ${escA(x.note)}</div>`:''}</td>
+          <td style="text-align:right;font-weight:600">${Number(x.value).toLocaleString('th-TH',{maximumFractionDigits:4})} <small>${escA(x.unit||mm.unit)}</small></td>
+          <td style="text-align:right;color:var(--faint)">${x.prev==null?'— ข้อมูลใหม่':Number(x.prev).toLocaleString('th-TH',{maximumFractionDigits:4})}</td>
+          <td style="text-align:right;${big?'color:#b3342a;font-weight:700':''}">${ch==null?'—':(ch>0?'+':'')+ch.toFixed(1)+'%'}${big?' ⚠':''}</td>
+          <td>${stt}${x.review?`<div class="rvnote ${x.status==='rejected'?'bad':''}">${x.status==='rejected'?'เหตุผล':'หมายเหตุ'}: ${escA(x.review)} · ${escA(x.reviewedBy)}</div>`:''}</td></tr>`}).join('')}
+      </tbody></table></div>`}).join('');
+  updateRvButtons();
+}
+function updateRvButtons(){
+  const n=RV.sel.size;
+  $('#rvApprove').textContent=n?`อนุมัติที่เลือก (${n})`:'อนุมัติที่เลือก';
+  $('#rvApprove').disabled=!n; $('#rvReject').disabled=!n;
+}
+async function rvAction(kind){
+  const ids=[...RV.sel]; if(!ids.length)return;
+  let reason='';
+  if(kind==='reject'){reason=prompt('เหตุผลที่ส่งกลับให้หน่วยงานแก้ (หน่วยงานจะเห็นข้อความนี้)','');if(reason==null)return;
+    if(reason.trim().length<3){alert('กรุณาระบุเหตุผลอย่างน้อย 3 ตัวอักษร');return}}
+  else if(!confirm(`อนุมัติ ${ids.length} รายการ ข้อมูลจะขึ้นแดชบอร์ดทันที`))return;
+  const btn=kind==='reject'?$('#rvReject'):$('#rvApprove'); btn.disabled=true;
+  try{
+    let done=0;
+    for(let i=0;i<ids.length;i+=120){
+      const part=ids.slice(i,i+120).join(',');
+      const r=await jsonp(kind==='reject'?{action:'reject',token:S.token,ids:part,reason:reason.trim()}:{action:'approve',token:S.token,ids:part});
+      if(!r.ok)throw new Error(r.error||'ไม่สำเร็จ');
+      done+=kind==='reject'?r.rejected:r.approved;
+    }
+    say('#rvMsg','ok',kind==='reject'?`ส่งกลับ ${done} รายการแล้ว`:`อนุมัติ ${done} รายการแล้ว แดชบอร์ดจะแสดงค่าใหม่ภายใน 5 นาที`);
+    loadReview();
+  }catch(e){say('#rvMsg','err','ไม่สำเร็จ: '+e.message);btn.disabled=false}
+}
+document.addEventListener('click',e=>{
+  const sc=e.target.closest('#rvScope button');
+  if(sc){$$('#rvScope button').forEach(x=>x.classList.toggle('on',x===sc));RV.scope=sc.dataset.sc;loadReview();return}
+  if(e.target.closest('#rvReload')){loadReview();return}
+  if(e.target.closest('#rvApprove')){rvAction('approve');return}
+  if(e.target.closest('#rvReject')){rvAction('reject');return}
+  if(e.target.closest('#rvAll')){RV.rows.filter(x=>x.status==='submitted'&&(!$('#rvDom').value||x.domain===$('#rvDom').value)).forEach(x=>RV.sel.add(x.id));drawReview();return}
+});
+document.addEventListener('change',e=>{
+  const el=e.target;
+  if(el.id==='rvDom'){drawReview();return}
+  if(el.matches&&el.matches('#rvList input[data-id]')){el.checked?RV.sel.add(el.dataset.id):RV.sel.delete(el.dataset.id);drawReview();return}
+  if(el.matches&&el.matches('#rvList input[data-grp]')){el.dataset.grp.split(',').forEach(i=>el.checked?RV.sel.add(i):RV.sel.delete(i));drawReview()}
+});
 
 /* ─────────── offline queue ─────────── */
 const QK='nblEconQueue';

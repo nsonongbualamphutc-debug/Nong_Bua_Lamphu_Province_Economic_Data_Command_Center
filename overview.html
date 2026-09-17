@@ -144,14 +144,14 @@ function renderOverview(){
 
   $('#sectorTiles').innerHTML=SECTORS.map(sec=>{
     const rows=sec.datasets.map(id=>{const d=DATASETS.find(x=>x.id===id),ss=d.series[0],arr=DB[id][ss.key];
-      const vNow=seriesAt(arr,ST,ss.agg||'last'), vPrev=seriesPrevYear(arr,ST,ss.agg||'last');
+      const vNow=seriesAt(arr,ST,ss.agg||'last'), smc=simChip(simTake(),true), vPrev=seriesPrevYear(arr,ST,ss.agg||'last');
       const pc=(vNow!=null&&vPrev)?pctc(vNow,vPrev):null;
       const tp=tipOf({t:ss.label,
         d:'หน่วยวัด '+ss.unit+' · ค่าของเดือนล่าสุดที่หน่วยงานรายงาน'+(pc==null?'':' · เทียบปีก่อน '+(pc>0?'+':'')+pc.toFixed(1)+'%'),
         calc:(ST.freq==='M'?'ค่าที่หน่วยงานรายงานในเดือนนั้นโดยตรง':'รวมค่าของ '+ST.idx.length+' เดือนในงวดที่เลือก')+
           (pc==null?'':' · เทียบปีก่อน = ('+f_num(vNow)+' − '+f_num(vPrev)+') ÷ '+f_num(vPrev)+' × 100'),
         src:id,when:PLABEL+' · ข้อมูลช้าประมาณ '+d.lag+' วัน'});
-      return`<div class="rw" data-tip2="${tp}"><span>${ss.label}</span><b>${f(vNow,ss.dec??0)}</b><i>${ss.unit}</i></div>`}).join('');
+      return`<div class="rw" data-tip2="${tp}"><span>${ss.label}${smc}</span><b>${f(vNow,ss.dec??0)}</b><i>${ss.unit}</i></div>`}).join('');
     const agy=[...new Set(sec.datasets.map(id=>DATASETS.find(x=>x.id===id).agency))]
       .map(a=>a.replace('สำนักงาน','สนง.').replace('จังหวัดหนองบัวลำภู','จ.นภ.')).join(' · ');
     return`<button class="sect" data-go="${sec.id}">
