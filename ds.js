@@ -1,5 +1,5 @@
 /* ─────────────── 0) ค่าคงที่ ─────────────── */
-const CFG = { build:'2.6.1', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
+const CFG = { build:'2.7.0', API:'https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec', latest:{y:2569,m:8}, asof:'9 กันยายน 2569' };
 const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS = [
   {code:'3901',name:'เมืองหนองบัวลำภู',lat:17.204,lng:102.441,w:.32},
@@ -809,6 +809,14 @@ async function loadLive(){
 const TABLE_OWNER={fiscal:'spend',crop:'crop',fruit:'crop',water:'crop',base:'crop',price:'cpi',labor:'labor',
   otop:'otop',tour:'tour',pop:'pop',irrig:'irrig',house:'house',agri2:'crop',gpp:'*'};
 let TBL_META={};
+/* รวมตารางจากชีตทับค่าในไฟล์แบบรายหัวข้อ — หัวข้อที่ชีตยังไม่มีใช้ค่าจากไฟล์
+   ตารางท่องเที่ยวรุ่นเก่าในชีตไม่มีประเภทแหล่ง (t) → คงรายการพิกัดชุดใหม่จากไฟล์ไว้ ไม่ให้พิกัดผิดชุดเดิมกลับมา */
+function mergeRemote(k,local,remote){
+  if(!remote||typeof remote!=='object'||Array.isArray(remote)||!local||typeof local!=='object'||Array.isArray(local))return remote;
+  const out=Object.assign({},local,remote);
+  if(k==='tour'&&Array.isArray(local.spots)&&(!Array.isArray(remote.spots)||!remote.spots.some(x=>x&&x.t)))out.spots=local.spots;
+  return out;
+}
 async function loadTables(){
   if(!CFG.API)return;
   try{
@@ -817,7 +825,7 @@ async function loadTables(){
     let n=0;
     Object.keys(r.tables).forEach(k=>{
       if(D[k]!==undefined){ D[k]=r.tables[k]; n++; }
-      else if(typeof DX!=='undefined'&&DX[k]!==undefined){ DX[k]=r.tables[k]; n++; }
+      else if(typeof DX!=='undefined'&&DX[k]!==undefined){ DX[k]=mergeRemote(k,DX[k],r.tables[k]); n++; }
     });
     TBL_META=r.updated||{};
     if(n)safeRender();
@@ -1763,9 +1771,20 @@ function fillIcons(root){
   });
   document.addEventListener('DOMContentLoaded',()=>mo.observe(document.body,{childList:true,subtree:true}));
 })();
+/* หัวหน้าเพจย่อเป็นแถบบางเมื่อเลื่อนลง ไม่บังหัวการ์ด */
+function bindPhMini(){
+  const m=document.querySelector('.main'); if(!m||m.dataset.phm)return; m.dataset.phm='1';
+  let raf=0;
+  const upd=()=>{raf=0;const y=Math.max(m.scrollTop||0,window.scrollY||0);
+    document.querySelectorAll('.view.on>.ph,.ph').forEach(p=>p.classList.toggle('mini',y>60))};
+  const on=()=>{if(!raf)raf=requestAnimationFrame(upd)};
+  m.addEventListener('scroll',on,{passive:true});window.addEventListener('scroll',on,{passive:true});
+}
 function safeRender(){
   try{PAGE.render()}catch(e){console.error('render '+PAGE.id,e)}
   try{
+    bindPhMini();
+    document.querySelectorAll('[data-build]').forEach(e=>e.textContent=CFG.build);
     fillIcons();
     pageBanner();bindToggle();revealCards();animateNums();
   }catch(e){}
