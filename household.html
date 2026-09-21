@@ -44,8 +44,27 @@ function renderHouse(){
   const debtY=hv(HY,K_DEBT)!=null?HY:YS.filter(y=>hv(y,K_DEBT)!=null).pop();
   const debt2=hv(debtY,K_DEBT2);
   const left=(inc!=null&&exp!=null)?inc-exp:null;
-  const gini=H.gini.filter(x=>x.v).sort((a,b)=>a.y-b.y);
-  const gLast=gini[gini.length-1];
+  /* Gini ต้นทางรายงาน 2 แบบตามขอบเขตจำกัดชั้นรายได้ คือแบ่งครัวเรือน 5 กลุ่ม และ 10 กลุ่ม
+     ใช้ป้ายเดียวกันทั้งคู่ จึงต้องแยกด้วยช่อง g
+     ถ้าตารางจากชีตยังไม่มีช่อง g ให้แยกจากค่าเอง: ปีที่มี 2 ค่า ค่าที่ต่ำกว่าคือ 5 กลุ่มเสมอ
+     เพราะ 10 กลุ่มซ้อนอยู่ใน 5 กลุ่ม เส้นลอเรนซ์ที่มีจุดมากกว่าจะอยู่ต่ำกว่าหรือเท่าเดิม Gini จึงไม่มีทางต่ำกว่า */
+  const gini=(function(rows){
+    const by={};
+    rows.filter(x=>x.v).forEach(r=>(by[r.y]=by[r.y]||[]).push(r));
+    const out=[];
+    Object.keys(by).map(Number).sort((a,b)=>a-b).forEach(y=>{
+      const L=by[y];
+      if(L.every(r=>r.g==5||r.g==10)){L.forEach(r=>out.push({y,v:+r.v,g:+r.g}));return}
+      if(L.length===2){const q=L.slice().sort((a,b)=>a.v-b.v);out.push({y,v:+q[0].v,g:5},{y,v:+q[1].v,g:10});return}
+      L.forEach(r=>out.push({y,v:+r.v,g:(r.g==5||r.g==10)?+r.g:0}));
+    });
+    return out;
+  })(H.gini||[]);
+  const gOf=g=>gini.filter(x=>x.g===g);
+  const G10=gOf(10), G5=gOf(5), G0=gOf(0);
+  const gMain=G10.length?G10:G5;                 /* ชุดหลักคือ 10 กลุ่ม เพราะละเอียดกว่า ใกล้ค่าจริงกว่า */
+  const gMainN=G10.length?10:5;
+  const gLast=gMain[gMain.length-1], gPrev=gMain[gMain.length-2];
 
   document.getElementById('v-household').innerHTML=`
   <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start">
@@ -139,10 +158,13 @@ function renderHouse(){
     kpiCard({icon:'chart',img:'gini',color:cv('--plum'),label:'ความเหลื่อมล้ำด้านรายได้',
       value:gLast?gLast.v.toFixed(3):'—',unit:'Gini',
       chip:'<span class="chip '+(gLast&&gLast.v<0.35?'up':'fl')+'">'+(gLast&&gLast.v<0.35?'อยู่ในเกณฑ์ดี':'ต้องเฝ้าระวัง')+'</span>',
-      sub:'ปี '+(gLast?gLast.y:'—')+' · 0 = เท่าเทียมสมบูรณ์',
-      tip:tipOf({t:'สัมประสิทธิ์ความไม่เสมอภาคด้านรายได้ (Gini)',
+      sub:'ปี '+(gLast?gLast.y:'—')+' · แบ่ง '+gMainN+' กลุ่มรายได้',
+      tip:tipOf({t:'สัมประสิทธิ์ความไม่เสมอภาคด้านรายได้ (Gini) · แบ่ง '+gMainN+' กลุ่ม',
         d:'ค่าระหว่าง 0 ถึง 1 · ยิ่งใกล้ 0 ยิ่งเท่าเทียม ยิ่งใกล้ 1 ยิ่งกระจุกตัว โดยทั่วไปต่ำกว่า 0.35 ถือว่าอยู่ในเกณฑ์ดี',
-        calc:'คำนวณจากการกระจายรายได้ของครัวเรือนตัวอย่างทั้งจังหวัด',src:'house',when:'ปี '+(gLast?gLast.y:'')})})
+        calc:'คำนวณจากเส้นลอเรนซ์ของรายได้ครัวเรือน โดยแบ่งครัวเรือนตามขอบเขตจำกัดชั้นรายได้เป็น '+gMainN+' กลุ่มเท่ากัน'+
+          ' · แบบ 10 กลุ่มละเอียดกว่าจึงใกล้ค่าจริงกว่า ค่าจะสูงกว่าแบบ 5 กลุ่มเสมอ'+
+          (gPrev?' · ปี '+gPrev.y+' = '+gPrev.v.toFixed(3):''),
+        src:'house',when:'ปี '+(gLast?gLast.y:'')})})
   ].join('');
 
   const hp=document.getElementById('hPlayer');
@@ -195,17 +217,38 @@ function renderHouse(){
      ส่วนต่างนี้บอกว่าหนี้กระจุกอยู่ในบางครัวเรือน ไม่ได้เฉลี่ยกันทั่ว การช่วยเหลือจึงควรพุ่งเป้าไปที่กลุ่มที่เป็นหนี้จริง`;
 
   /* ── Gini ── */
-  mk('cGini',{type:'line',data:{labels:gini.map(x=>'ปี '+x.y),
-    datasets:[{data:gini.map(x=>x.v),borderColor:cv('--plum'),backgroundColor:cv('--plum')+'22',
-      borderWidth:2.6,pointRadius:5,pointBackgroundColor:cv('--plum'),tension:.25,fill:true}]},
-    options:{plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:c=>'Gini '+c.raw.toFixed(3),
-        footer:it=>it[0].raw<0.35?'อยู่ในเกณฑ์ดี':'เริ่มกระจุกตัว ควรเฝ้าระวัง'}}},
-      scales:{x:ax({grid:{display:false}}),y:ax({min:0.25,max:0.45,ticks:{callback:v=>v.toFixed(2)}})}}});
-  const gFirst=gini[0];
+  /* แกนปีไม่ซ้ำ · แยกเส้นตามการแบ่งกลุ่ม · ปีที่ต้นทางไม่ระบุการแบ่งกลุ่มแสดงเป็นจุดแยก ไม่ต่อเส้น */
+  const GY=[...new Set(gini.map(x=>x.y))].sort((a,b)=>a-b);
+  const at=(arr,y)=>{const r=arr.find(x=>x.y===y);return r?r.v:null};
+  const gSets=[];
+  if(G10.length)gSets.push({label:'แบ่ง 10 กลุ่มรายได้',data:GY.map(y=>at(G10,y)),borderColor:cv('--plum'),
+    backgroundColor:cv('--plum')+'1f',borderWidth:2.8,pointRadius:5,pointBackgroundColor:cv('--plum'),tension:.25,fill:true,spanGaps:true});
+  if(G5.length)gSets.push({label:'แบ่ง 5 กลุ่มรายได้',data:GY.map(y=>at(G5,y)),borderColor:cv('--gold'),
+    backgroundColor:'transparent',borderWidth:2.2,borderDash:[6,4],pointRadius:4.5,pointBackgroundColor:cv('--gold'),tension:.25,fill:false,spanGaps:true});
+  if(G0.length)gSets.push({label:'ต้นทางไม่ระบุการแบ่งกลุ่ม',data:GY.map(y=>at(G0,y)),showLine:false,
+    borderColor:cv('--faint')||'#8a9a94',backgroundColor:'#ffffff',pointStyle:'rectRot',pointRadius:7,pointBorderWidth:2});
+  mk('cGini',{type:'line',data:{labels:GY.map(y=>'ปี '+y),datasets:gSets},
+    options:{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:12,boxHeight:12,font:{size:11}}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+' · Gini '+(c.raw==null?'—':c.raw.toFixed(3)),
+        footer:it=>it[0]&&it[0].raw!=null?(it[0].raw<0.35?'อยู่ในเกณฑ์ดี':'เริ่มกระจุกตัว ควรเฝ้าระวัง'):''}}},
+      scales:{x:ax({grid:{display:false}}),y:ax({min:0.25,max:0.40,ticks:{callback:v=>v.toFixed(2)}})}}});
+
+  /* คำอธิบายเทียบเฉพาะชุดเดียวกัน ทิศทางคำนวณจากตัวเลขจริง ไม่เขียนตายตัว */
+  const trend=(arr,n)=>{
+    if(arr.length<2)return '';
+    const a0=arr[0], a1=arr[arr.length-1], p=arr[arr.length-2], d=a1.v-a0.v, dr=a1.v-p.v;
+    const w=x=>Math.abs(x)<0.005?'ทรงตัว':(x>0?'เพิ่มขึ้น':'ลดลง');
+    return `แบบ ${n} กลุ่ม ${w(d)}จาก ${a0.v.toFixed(3)} ในปี ${a0.y} เป็น ${a1.v.toFixed(3)} ในปี ${a1.y}`+
+           (p!==a0?` แต่ถ้าเทียบรอบก่อนหน้า (ปี ${p.y} = ${p.v.toFixed(3)}) ${w(dr)}`:'');
+  };
+  const t10=trend(G10,10), t5=trend(G5,5);
+  const up=gLast&&gPrev&&gLast.v-gPrev.v>=0.005;
   document.getElementById('giniNote').innerHTML=
-    `ค่า Gini เพิ่มจาก ${gFirst.v.toFixed(3)} ในปี ${gFirst.y} เป็น ${gLast.v.toFixed(3)} ในปี ${gLast.y}
-     แปลว่ารายได้เริ่มกระจุกตัวมากขึ้น ถึงแม้รายได้เฉลี่ยจะสูงขึ้น แต่คนที่ได้ประโยชน์ไม่ได้กระจายทั่วถึงเท่าเดิม`;
+    [t10,t5].filter(Boolean).join('<br>')+'<br>'+
+    (up?'ช่วงหลังความเหลื่อมล้ำกลับมาสูงขึ้น รายได้ที่เพิ่มยังกระจายไปไม่ทั่วถึงเท่าเดิม ควรเฝ้าระวัง'
+       :'ภาพรวมความเหลื่อมล้ำไม่ได้แย่ลง')+
+    (G0.length?`<br><span style="color:var(--faint)">ปี ${G0.map(x=>x.y).join(', ')} ต้นทางรายงานค่าเดียว (${G0.map(x=>x.v.toFixed(3)).join(', ')}) ไม่ระบุว่าแบ่งกี่กลุ่ม จึงแสดงเป็นจุดแยก</span>`:'')+
+    `<br><span style="color:var(--faint)">อ่านเทียบกันได้เฉพาะเส้นเดียวกัน · แบบ 10 กลุ่มสูงกว่าแบบ 5 กลุ่มเสมอเพราะแบ่งละเอียดกว่า ไม่ได้แปลว่าเหลื่อมล้ำกว่า</span>`;
 
   /* ── แหล่งรายได้ ── */
   const sy=[...new Set(H.income_src.map(x=>x.y))].sort((a,b)=>b-a)[0];
