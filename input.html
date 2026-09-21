@@ -442,7 +442,8 @@ tr.rvbig td{background:#fff8f6}
 <script>
 /* ─────────── config ─────────── */
 const API='https://script.google.com/macros/s/AKfycbwtThh7l3ZrMx1HH3O6VHv9V4xtg1Rl6jSzE0Ozwbt6PXTN2sWSS5y9vbnQ9K-DRrbk6A/exec';
-const TH_M=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+/* ชื่อ TH_MI แยกจาก TH_M ของ ds.js เพื่อไม่ให้ประกาศซ้ำ ถ้าวันหลังหน้านี้โหลด ds.js ด้วย */
+const TH_MI=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DISTRICTS=[['3901','เมืองหนองบัวลำภู'],['3902','นากลาง'],['3903','โนนสัง'],
   ['3904','ศรีบุญเรือง'],['3905','สุวรรณคูหา'],['3906','นาวัง']];
 
@@ -707,7 +708,7 @@ function buildPeriod(){
   const now=new Date(), by=now.getFullYear()+543;
   $('#year').innerHTML=[by,by-1,by-2,by-3].map(y=>`<option value="${y}">${y}</option>`).join('');
   const m=now.getMonth();  // เดือนก่อนหน้าเป็นค่าเริ่มต้น
-  $('#month').innerHTML=TH_M.map((n,i)=>`<option value="${i+1}"${i===(m===0?11:m-1)?' selected':''}>${n}</option>`).join('');
+  $('#month').innerHTML=TH_MI.map((n,i)=>`<option value="${i+1}"${i===(m===0?11:m-1)?' selected':''}>${n}</option>`).join('');
   $('#dist').innerHTML=DISTRICTS.map(d=>`<option value="${d[0]}">อ.${d[1]}</option>`).join('');
   $('#freq').onchange=()=>{
     const v=$('#freq').value;
@@ -776,7 +777,7 @@ let PERIODS=[];
 function periodLabel(p){
   if(/Q/.test(p))return 'ไตรมาส '+p.slice(-1)+'/'+p.slice(0,4);
   if(p.length===4)return 'ปี '+p;
-  return TH_M[+p.slice(-2)-1]+' '+p.slice(0,4);
+  return TH_MI[+p.slice(-2)-1]+' '+p.slice(0,4);
 }
 function areaLabel(a){return a==='PROV'?'ระดับจังหวัด':('อ.'+((DISTRICTS.find(d=>d[0]===a)||[,a])[1]))}
 
@@ -785,7 +786,7 @@ function renderPerBar(){
   const v=$('#freq').value, y=$('#year').value, area=areaStr();
   const has=p=>PERIODS.some(x=>x.period===p&&x.area===area);
   let items=[];
-  if(v==='M')items=TH_M.map((n,i)=>({p:y+'-'+String(i+1).padStart(2,'0'),n}));
+  if(v==='M')items=TH_MI.map((n,i)=>({p:y+'-'+String(i+1).padStart(2,'0'),n}));
   else if(v==='Q')items=[1,2,3,4].map(q=>({p:y+'-Q'+q,n:'ไตรมาส '+q}));
   else items=[{p:y,n:'ทั้งปี '+y}];
   const cur=periodStr();
@@ -1009,7 +1010,7 @@ let XLFILE='';
 let XLITEMS=[];
 const TH_Q=['ไตรมาส 1','ไตรมาส 2','ไตรมาส 3','ไตรมาส 4'];
 const FREQ_LABEL={M:'รายเดือน',Q:'รายไตรมาส',Y:'รายปี'};
-function colsOf(d){return (d.freq==='Q')?TH_Q:TH_M}
+function colsOf(d){return (d.freq==='Q')?TH_Q:TH_MI}
 function safeSheetName(t){return String(t).replace(/[\\\/\?\*\[\]:]/g,' ').slice(0,28)}
 
 /* ── สร้างแบบฟอร์ม Excel มาตรฐาน: 1 ประเด็น = 1 ชีต ── */
@@ -1078,7 +1079,7 @@ function parseWorkbook(wb){
     sheetsRead++;
     const head=aoa[hi].map(x=>String(x).trim());
     const isQ=TH_Q.some(q=>head.indexOf(q)>=0);
-    const cols=isQ?TH_Q:TH_M;
+    const cols=isQ?TH_Q:TH_MI;
     const cIdx=cols.map(c=>head.indexOf(c));
     const iArea=head.indexOf('รหัสพื้นที่'), iYear=head.indexOf('ปี พ.ศ.'), iUnit=head.indexOf('หน่วย');
     for(let r=hi+1;r<aoa.length;r++){
@@ -1117,7 +1118,7 @@ function showPreview(items,bad){
   const body=items.slice(0,200).map(i=>`<tr><td>${i.label}</td>
     <td style="font-size:11px;color:#5c7a70;line-height:1.6">${showsText(i.domain,i.key)}</td>
     <td>${areaName(i.area)}</td>
-    <td>${/Q/.test(i.period)?('ไตรมาส '+i.period.slice(-1)):TH_M[+i.period.slice(-2)-1]} ${i.period.slice(0,4)}</td>
+    <td>${/Q/.test(i.period)?('ไตรมาส '+i.period.slice(-1)):TH_MI[+i.period.slice(-2)-1]} ${i.period.slice(0,4)}</td>
     <td style="text-align:right;font-family:var(--fn)">${Number(i.value).toLocaleString('th-TH')}</td></tr>`).join('');
   $('#xlPreview').innerHTML=`
     <div style="display:flex;gap:9px;flex-wrap:wrap;margin-bottom:10px;font-size:12.5px">
@@ -1167,6 +1168,28 @@ const TBL_DEFS=[
   cols:[{k:'q',l:'งวด',t:'text'},{k:'pop15',l:'ประชากร 15+',t:'num'},{k:'force',l:'กำลังแรงงาน',t:'num'},
         {k:'emp',l:'ผู้มีงานทำ',t:'num'},{k:'ue',l:'ผู้ว่างงาน',t:'num'},{k:'ur',l:'อัตราว่างงาน (%)',t:'num',d:2},
         {k:'lfpr',l:'มีส่วนร่วม (%)',t:'num',d:1},{k:'notin',l:'ไม่อยู่ในกำลังแรงงาน',t:'num'}]},
+ {key:'pyr',owner:'popreg',store:'DX',path:'pyr',name:'ประชากรแยกเพศตามช่วงอายุ (ปิรามิดประชากร)',
+  desc:'หนึ่งแถว = ปี · พื้นที่ · เพศ พร้อมจำนวนคน 17 ช่วงอายุ ทุกสัญชาติ · เพิ่มปีใหม่ได้โดยวางต่อท้ายจาก Excel · ส่งมาเฉพาะรายอำเภอก็ได้ ระบบรวมเป็นทั้งจังหวัดให้เอง',
+  cols:[{k:'y',l:'ปี พ.ศ.',t:'num',w:70},
+        {k:'area',l:'พื้นที่',t:'sel',w:150,o:[['PROV','ทั้งจังหวัด'],['เมืองหนองบัวลำภู','อ.เมืองหนองบัวลำภู'],['ศรีบุญเรือง','อ.ศรีบุญเรือง'],['นากลาง','อ.นากลาง'],['โนนสัง','อ.โนนสัง'],['สุวรรณคูหา','อ.สุวรรณคูหา'],['นาวัง','อ.นาวัง']]},
+        {k:'sex',l:'เพศ',t:'sel',w:70,o:[['ชาย','ชาย'],['หญิง','หญิง']]},
+        {k:'b0',l:'0–4',t:'num'},
+        {k:'b1',l:'5–9',t:'num'},
+        {k:'b2',l:'10–14',t:'num'},
+        {k:'b3',l:'15–19',t:'num'},
+        {k:'b4',l:'20–24',t:'num'},
+        {k:'b5',l:'25–29',t:'num'},
+        {k:'b6',l:'30–34',t:'num'},
+        {k:'b7',l:'35–39',t:'num'},
+        {k:'b8',l:'40–44',t:'num'},
+        {k:'b9',l:'45–49',t:'num'},
+        {k:'b10',l:'50–54',t:'num'},
+        {k:'b11',l:'55–59',t:'num'},
+        {k:'b12',l:'60–64',t:'num'},
+        {k:'b13',l:'65–69',t:'num'},
+        {k:'b14',l:'70–74',t:'num'},
+        {k:'b15',l:'75–79',t:'num'},
+        {k:'b16',l:'80+',t:'num'}]},
  {key:'gpp',owner:'*',store:'REAL',path:'gpp.rows',name:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP)',
   desc:'มูลค่า GPP และรายได้ต่อหัวรายปี — แก้ไขได้เฉพาะผู้ดูแลระบบ',
   cols:[{k:'y',l:'ปี พ.ศ.',t:'num'},{k:'value',l:'GPP (ลบ.)',t:'num'},{k:'pc',l:'ต่อหัว (บาท/ปี)',t:'num'}]},

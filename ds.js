@@ -906,7 +906,7 @@ async function loadLive(){
 
 /* ─────────────── 20b) ตารางรายละเอียด: ซิงก์กับ Google Sheet ─────────────── */
 const TABLE_OWNER={fiscal:'spend',crop:'crop',fruit:'crop',water:'crop',base:'crop',price:'cpi',labor:'labor',
-  otop:'otop',tour:'tour',pop:'pop',irrig:'irrig',house:'house',agri2:'crop',gpp:'*'};
+  otop:'otop',tour:'tour',pop:'popreg',pyr:'popreg',irrig:'irrig',house:'house',agri2:'crop',gpp:'*'};
 let TBL_META={};
 /* รวมตารางจากชีตทับค่าในไฟล์แบบรายหัวข้อ — หัวข้อที่ชีตยังไม่มีใช้ค่าจากไฟล์
    ตารางท่องเที่ยวรุ่นเก่าในชีตไม่มีประเภทแหล่ง (t) → คงรายการพิกัดชุดใหม่จากไฟล์ไว้ ไม่ให้พิกัดผิดชุดเดิมกลับมา */
@@ -927,6 +927,8 @@ async function loadTables(){
       else if(typeof DX!=='undefined'&&DX[k]!==undefined){ DX[k]=mergeRemote(k,DX[k],r.tables[k]); n++; }
     });
     TBL_META=r.updated||{};
+    /* ตารางปิรามิดเก็บเป็นแถวแบน ต้องแปลงกลับเข้าโครงสร้างที่หน้าประชากรใช้ */
+    if(r.tables.pyr&&typeof pyrApplyRows==='function')pyrApplyRows(DX.pyr);
     if(n)safeRender();
   }catch(e){}
 }

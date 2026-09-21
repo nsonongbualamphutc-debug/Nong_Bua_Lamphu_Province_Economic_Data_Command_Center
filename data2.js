@@ -311,3 +311,48 @@ DX_PYR.natZone={
   }
  }
 };
+
+/* ══ ตารางแก้ไขได้ของปิรามิดประชากร ════════════════════════════════════
+   เดิมข้อมูลปิรามิดฝังอยู่ในไฟล์นี้อย่างเดียว ปีหน้าจะเพิ่มปี 2569 ต้องมาแก้โค้ด
+   ตอนนี้แปลงเป็นตารางแถวแบน DX.pyr ให้ที่ทำการปกครองแก้และเพิ่มปีใหม่ได้เอง
+   ผ่านแท็บ "ตารางรายละเอียด" ในระบบกรอกข้อมูล วางจาก Excel ได้ทั้งตาราง
+   แต่ละแถว = ปี · พื้นที่ · เพศ · ค่า 17 ช่วงอายุ (b0 = 0–4 ปี ไปจนถึง b16 = 80 ปีขึ้นไป)
+   ครอบคลุมเฉพาะทุกสัญชาติ (ALL) ซึ่งเป็นชุดที่ปิรามิดแสดงเป็นค่าเริ่มต้น
+   สัญชาติไทยและไม่ได้สัญชาติไทยยังใช้ค่าจากไฟล์ เพราะตารางเดียวใส่ครบทุกชุดจะเกินขนาดที่ชีตรับได้ */
+function pyrRowsFromNat(){
+  const out=[], ALL=DX_PYR.nat&&DX_PYR.nat.ALL; if(!ALL)return out;
+  const AREAS=['PROV','เมืองหนองบัวลำภู','ศรีบุญเรือง','นากลาง','โนนสัง','สุวรรณคูหา','นาวัง'];
+  Object.keys(ALL).sort().forEach(y=>AREAS.forEach(a=>{
+    const rec=ALL[y][a]; if(!rec)return;
+    ['ชาย','หญิง'].forEach(sx=>{
+      const arr=rec[sx]; if(!Array.isArray(arr))return;
+      const r={y:+y,area:a,sex:sx}; arr.forEach((v,i)=>r['b'+i]=v); out.push(r);
+    });
+  }));
+  return out;
+}
+DX.pyr=pyrRowsFromNat();
+/* รับตารางที่แก้จากชีตกลับเข้าปิรามิด — แก้ใน nat.ALL ตรงที่ ซึ่ง DX_PYR.sex ชี้ไปที่ก้อนเดียวกัน */
+function pyrApplyRows(rows){
+  if(!Array.isArray(rows)||!DX_PYR.nat)return 0;
+  const ALL=DX_PYR.nat.ALL||(DX_PYR.nat.ALL={});
+  let n=0;
+  rows.forEach(r=>{
+    const y=String(parseInt(r.y,10)); if(!/^\d{4}$/.test(y))return;
+    const a=String(r.area||'').trim(), sx=String(r.sex||'').trim();
+    if(!a||(sx!=='ชาย'&&sx!=='หญิง'))return;
+    const arr=[]; for(let i=0;i<17;i++){const v=Number(String(r['b'+i]??'').replace(/[, ]/g,''));arr.push(isFinite(v)?v:0)}
+    if(!arr.some(v=>v>0))return;
+    ((ALL[y]=ALL[y]||{})[a]=ALL[y][a]||{})[sx]=arr; n++;
+  });
+  /* พื้นที่ทั้งจังหวัดของปีที่ส่งมาเฉพาะรายอำเภอ ให้รวมขึ้นเองอัตโนมัติ */
+  Object.keys(ALL).forEach(y=>{
+    const Y=ALL[y]; if(Y.PROV&&Y.PROV['ชาย']&&Y.PROV['หญิง'])return;
+    const amps=Object.keys(Y).filter(k=>k!=='PROV'); if(!amps.length)return;
+    const sum=sx=>{const t=new Array(17).fill(0);amps.forEach(a=>(Y[a][sx]||[]).forEach((v,i)=>t[i]+=v));return t};
+    Y.PROV={'ชาย':sum('ชาย'),'หญิง':sum('หญิง')};
+  });
+  DX_PYR.sex=ALL;
+  return n;
+}
+
