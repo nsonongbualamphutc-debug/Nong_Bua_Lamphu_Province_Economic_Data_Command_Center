@@ -24,25 +24,26 @@
     <div class="r"><span class="chip mock">รอยืนยันตัวเลขจาก สศช.</span></div></div>
   <div id="gppSlc"></div>
   <div class="grid g4 mb" id="gppKpi"></div>
-  <div class="grid g21 mb">
-    <div class="c"><header><span class="hdico icow img" data-hdico="forecast"></span>
-      <h3>อัตราการขยายตัว GPP ของจังหวัดหนองบัวลำภู</h3>
-      <span class="u">เทียบกับ GDP ทั้งประเทศ · ร้อยละต่อปี</span><span class="r" id="growTog"></span></header>
-      <div class="b">
-        <div id="cGrow-chart"><div class="ch lg"><canvas id="cGrow"></canvas></div></div>
-        <div id="cGrow-table" class="hide"><div class="sc" style="max-height:380px"><table class="t" id="tGrow"></table></div></div>
-        <div class="note" id="growNote"></div></div></div>
-    <div class="c"><header><span class="hdico icow img" data-hdico="industry"></span><h3>โครงสร้างเศรษฐกิจ</h3>
-      <span class="u" id="structU">สัดส่วน GPP ตามสาขา</span><span class="r" id="structTog"></span></header>
-      <div class="b">
-        <div id="cStruct-chart">
-          <div class="ch lg"><canvas id="cStruct"></canvas></div>
-          <div id="structLegend" class="seclg"></div>
-          <div class="tmlg" id="structLg"></div>
-        </div>
-        <div id="cStruct-table" class="hide"><div class="sc" style="max-height:420px"><table class="t" id="tStruct"></table></div></div>
-        <div class="note" id="structNote"></div></div></div>
-  </div>
+  <div class="c mb"><header><span class="hdico icow img" data-hdico="forecast"></span>
+    <h3>อัตราการขยายตัว GPP ของจังหวัดหนองบัวลำภู</h3>
+    <span class="u">เทียบกับ GDP ทั้งประเทศ · ร้อยละต่อปี</span><span class="r" id="growTog"></span></header>
+    <div class="b">
+      <div id="cGrow-chart"><div class="ch lg"><canvas id="cGrow"></canvas></div></div>
+      <div id="cGrow-table" class="hide"><div class="sc" style="max-height:380px"><table class="t" id="tGrow"></table></div></div>
+      <div class="note" id="growNote"></div></div></div>
+
+  <div class="c mb"><header><span class="hdico icow img" data-hdico="structure"></span><h3>โครงสร้างเศรษฐกิจ</h3>
+    <span class="u" id="structU">สัดส่วน GPP ตามสาขา</span>
+    <span class="r"><span class="vswitch" id="structSw">
+      <button class="on" data-sv="donut">วงแหวน</button>
+      <button data-sv="tree">แผนภาพกล่อง</button>
+      <button data-sv="table">ตารางข้อมูล</button></span></span></header>
+    <div class="b">
+      <div id="svDonut"><div id="structDonut"></div></div>
+      <div id="svTree" class="hide"><div class="tmap" id="structMap"></div></div>
+      <div id="svTable" class="hide"><div class="sc" style="max-height:520px"><table class="t" id="tStruct"></table></div></div>
+      <div class="tmlg" id="structLg"></div>
+      <div class="note" id="structNote"></div></div></div>
   <div class="grid g3 mb" id="dsGrid"></div>
 
   <div class="grid g21">
@@ -160,66 +161,77 @@ function renderGpp(){
      เศรษฐกิจจังหวัดผันผวนกว่าประเทศมาก เพราะพึ่งภาคเกษตรซึ่งขึ้นกับราคาพืชผลและปริมาณน้ำฝนในปีนั้น<br>
      <span style="color:var(--faint)">คำนวณจากมูลค่าแบบปริมาณลูกโซ่ซึ่งตัดผลของราคาออกแล้ว เป็นการเติบโตที่แท้จริง</span>`:'';
 
-  /* โดนัทครบทุกสาขา · สีแยกรายสาขาชัดเจน ไล่เฉดตามหมวดใหญ่
-     เกษตรเขียวใบไม้ · อุตสาหกรรมน้ำเงิน · บริการเขียวมรกตไล่ไปทอง */
+  /* ── โครงสร้างเศรษฐกิจ · เลือกดูได้ 3 แบบ ──
+     วงแหวนพร้อมเส้นโยงและไอคอนรายสาขา · แผนภาพกล่องพร้อมพื้นหลังจางของแต่ละสาขา · ตารางข้อมูล
+     ทุกแบบใช้ข้อมูลชุดเดียวกันและมี tooltip บอกมูลค่า สัดส่วน อันดับ และการเปลี่ยนแปลงเทียบปีก่อน */
   const GRP=['เกษตร','อุตสาหกรรม','บริการ'], GCOL={'เกษตร':cv('--leaf'),'อุตสาหกรรม':cv('--blue'),'บริการ':cv('--brand')};
   const gSum=g=>STRUCT.filter(x=>x.g===g).reduce((a,b)=>a+b.p,0);
   const gVal=g=>STRUCT.filter(x=>x.g===g).reduce((a,b)=>a+(b.v||0),0);
   const cnt={}; GRP.forEach(g=>cnt[g]=STRUCT.filter(x=>x.g===g).length);
   const seen={}; GRP.forEach(g=>seen[g]=0);
-  const secColor=STRUCT.map(x=>{
-    const i=seen[x.g]++, n=Math.max(1,cnt[x.g]-1);
-    /* บริการมี 14 สาขา ถ้าไล่เฉดอย่างเดียวจะแยกไม่ออก จึงไล่จากเขียวมรกตไปทางทอง */
-    if(x.g==='บริการ')return mixHex(cv('--brand'),cv('--gold'),i/n*0.82);
-    return shade(GCOL[x.g],i/n*0.5);
-  });
-  mk('cStruct',{type:'doughnut',data:{labels:STRUCT.map(x=>x.n),
-    datasets:[{data:STRUCT.map(x=>+x.p.toFixed(2)),backgroundColor:secColor,
-      borderColor:cv('--card'),borderWidth:2,hoverOffset:10}]},
-    options:{cutout:'52%',plugins:{legend:{display:false},
-      tooltip:{callbacks:{
-        title:it=>it[0].label,
-        label:c=>{const x=STRUCT[c.dataIndex];return f(x.v,1)+' ล้านบาท · '+x.p.toFixed(2)+'% ของ GPP'},
-        footer:it=>{const x=STRUCT[it[0].dataIndex];
-          const yoy=(x.prev!=null&&x.prev)?(x.v-x.prev)/x.prev*100:null;
-          return 'หมวด'+x.g+' · อันดับ '+(it[0].dataIndex+1)+' จาก '+STRUCT.length+' สาขา'+
-            (yoy==null?'':'\nเทียบปีก่อน '+(yoy>0?'+':'')+yoy.toFixed(1)+'%')}}}}}});
-
-  /* คำอธิบายสีแบบรายสาขา เรียงตามขนาด กดแล้วเน้นสาขานั้นในโดนัท */
-  const lgd=document.getElementById('structLegend');
-  if(lgd)lgd.innerHTML=STRUCT.map((x,i)=>{
+  const SEC=FG.sec||[];
+  const metaOf=n=>SEC.find(x=>x[0]===n)||[n,'บริการ','industry',''];
+  const items=STRUCT.map((x,i)=>{
+    const k=seen[x.g]++, n=Math.max(1,cnt[x.g]-1);
+    const color=x.g==='บริการ'?mixHex(cv('--brand'),cv('--gold'),k/n*0.82):shade(GCOL[x.g],k/n*0.5);
+    const m=metaOf(x.n);
     const yoy=(x.prev!=null&&x.prev)?(x.v-x.prev)/x.prev*100:null;
-    const tp=tipOf({t:x.n,
-      d:'หมวด'+x.g+' · อันดับ '+(i+1)+' จาก '+STRUCT.length+' สาขา · มูลค่าเพิ่ม ณ ราคาประจำปี '+f(x.v,1)+' ล้านบาท'+
-        (yoy==null?'':' · เทียบปีก่อน '+(yoy>0?'+':'')+f(yoy,1)+'%'),
-      calc:'สัดส่วน = (มูลค่าเพิ่มของสาขา ÷ GPP รวม) × 100 = ('+f_num(x.v)+' ÷ '+f_num(STOT)+') × 100 = '+x.p.toFixed(2)+'%'+
-        (yoy==null?'':' · เทียบปีก่อน = ('+f_num(x.v)+' − '+f_num(x.prev)+') ÷ '+f_num(x.prev)+' × 100'),
-      src:'gpp',when:'ปี '+SYEAR});
-    return `<span class="seci" data-tip2="${tp}"><i style="background:${secColor[i]}"></i>${x.n}<b>${x.p.toFixed(2)}%</b></span>`;
-  }).join('');
+    const share=x.v/gVal(x.g)*100;
+    return {n:x.n, v:x.v, p:x.p, color,
+      icon:'assets/icons/ic-'+m[2]+'.png',
+      bg:m[3]?'assets/cardbg/bg-'+m[3]+'.webp':'',
+      tip:tipOf({t:x.n,
+        d:'หมวด'+x.g+' · อันดับ '+(i+1)+' จาก '+STRUCT.length+' สาขา · คิดเป็น '+share.toFixed(1)+'% ของหมวด'+x.g,
+        calc:'มูลค่าเพิ่ม ณ ราคาประจำปี '+f_num(x.v)+' ล้านบาท · สัดส่วนของ GPP = ('+f_num(x.v)+' ÷ '+f_num(STOT)+') × 100 = '+x.p.toFixed(2)+'%'+
+          (yoy==null?'':' · เทียบปีก่อน = ('+f_num(x.v)+' − '+f_num(x.prev)+') ÷ '+f_num(x.prev)+' × 100 = '+(yoy>0?'+':'')+yoy.toFixed(2)+'%'),
+        src:'gpp',when:'ปี '+SYEAR})};
+  });
+
+  /* สรุปใต้ภาพ อธิบายสิ่งที่เห็นเป็นภาษาคน */
+  const top3=STRUCT.slice(0,3);
+  const gTop=GRP.slice().sort((a,b)=>gSum(b)-gSum(a))[0];
+  const dn=document.getElementById('structDonut');
+  if(dn)dn.innerHTML=donutLeader(items,{centerTop:'GPP ปี '+SYEAR,
+    centerMid:f(STOT,0)+' ลบ.',centerSub:STRUCT.length+' สาขา · ณ ราคาประจำปี'});
+  const tm=document.getElementById('structMap');
+  if(tm)tm.innerHTML=treemap(items);
 
   const lg=document.getElementById('structLg');
   if(lg)lg.innerHTML=GRP.map(g=>`<span><i style="background:${GCOL[g]}"></i>${g} <b>${gSum(g).toFixed(1)}%</b>
     <span style="color:var(--faint)">${f(gVal(g),0)} ลบ. · ${cnt[g]} สาขา</span></span>`).join('')+
     `<span style="color:var(--faint);margin-left:auto">รวม ${f(STOT,1)} ล้านบาท</span>`;
 
-  const stT=document.getElementById('structTog');
-  if(stT&&!stT.innerHTML){stT.innerHTML=viewToggle('cStruct','แผนภาพ','ตารางข้อมูล');bindToggle();}
+  /* ปุ่มสลับรูปแบบ ผูกครั้งเดียว จำแบบที่เลือกไว้ระหว่างเปลี่ยนปี */
+  const sw=document.getElementById('structSw');
+  if(sw){
+    [...sw.children].forEach(b=>b.classList.toggle('on',b.dataset.sv===STRUCT_VIEW));
+    ['svDonut','svTree','svTable'].forEach((id,k)=>{
+      const el=document.getElementById(id);
+      if(el)el.classList.toggle('hide',['donut','tree','table'][k]!==STRUCT_VIEW);
+    });
+    if(!sw.dataset.b){sw.dataset.b='1';
+      sw.addEventListener('click',e=>{
+        const b=e.target.closest('[data-sv]'); if(!b)return;
+        STRUCT_VIEW=b.dataset.sv; renderGpp();
+      });
+    }
+  }
   const stU=document.getElementById('structU');
   if(stU)stU.textContent='สัดส่วน GPP ครบทั้ง '+STRUCT.length+' สาขา · ปี '+SYEAR;
 
   $('#tStruct').innerHTML='<thead><tr><th>#</th><th>สาขา</th><th>หมวด</th><th class="r">ล้านบาท</th><th class="r">สัดส่วน</th><th class="r">เทียบปีก่อน</th></tr></thead><tbody>'+
     STRUCT.map((x,i)=>{
       const yoy=(x.prev!=null&&x.prev)?(x.v-x.prev)/x.prev*100:null;
-      return `<tr><td class="r" style="color:var(--faint)">${i+1}</td><td>${rowIco(x.n)}${x.n}</td><td>${x.g}</td>
+      return `<tr><td class="r" style="color:var(--faint)">${i+1}</td><td><img class="rowico" src="assets/icons/ic-${metaOf(x.n)[2]}.png" alt="" onerror="this.remove()">${x.n}</td><td>${x.g}</td>
         <td class="r">${f(x.v,1)}</td><td class="r">${x.p.toFixed(2)}%</td>
         <td class="r" style="color:${yoy==null?'var(--faint)':yoy>=0?'var(--good)':'var(--bad)'}">${yoy==null?'—':(yoy>0?'+':'')+yoy.toFixed(1)+'%'}</td></tr>`;}).join('')+
     `</tbody><tfoot><tr><td></td><td>รวม</td><td></td><td class="r">${f(STOT,1)}</td><td class="r">100.00%</td><td></td></tr></tfoot>`;
-  const top3=STRUCT.slice(0,3);
   document.getElementById('structNote').innerHTML=
     `ปี ${SYEAR} สาขาที่ใหญ่ที่สุดคือ <b>${top3[0].n}</b> ${f(top3[0].v,1)} ล้านบาท ${top3[0].p.toFixed(2)}%
      รองลงมา ${top3[1].n} ${top3[1].p.toFixed(2)}% และ ${top3[2].n} ${top3[2].p.toFixed(2)}%<br>
-     ชี้ที่กล่องเพื่อดูมูลค่าและการเปลี่ยนแปลงเทียบปีก่อนรายสาขา`;
+     หมวดใหญ่ที่สุดคือภาค${gTop} ${gSum(gTop).toFixed(1)}% ของ GPP<br>
+     <span style="color:var(--faint)">วงแหวนติดป้ายเฉพาะ 8 สาขาใหญ่ ที่เหลือแสดงเป็นชิปใต้ภาพ ครบทั้ง ${STRUCT.length} สาขา ·
+     ชี้ที่วงแหวน ชิป กล่อง หรือแถวในตาราง จะบอกมูลค่า สัดส่วน อันดับ และการเปลี่ยนแปลงเทียบปีก่อน</span>`;
 
   mk('cGpp',{type:'bar',data:{labels:G.map(r=>'ปี '+r.y),datasets:[
     {type:'bar',label:'GPP (ล้านบาท)',data:G.map(r=>r.value),backgroundColor:cv('--brand'),borderRadius:6,barPercentage:.5,yAxisID:'y'},
@@ -302,7 +314,7 @@ function renderDS(){
       </div></div>`;
 }
 
-let GPP_YEAR=null;
+let GPP_YEAR=null, STRUCT_VIEW='donut';
 DS.init('gpp',function(){
   renderGpp();
   onYearChange('gppYear',function(v){GPP_YEAR=+v;renderGpp();renderDS()});

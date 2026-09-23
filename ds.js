@@ -253,11 +253,90 @@ function treemap(items,opt){
     const p=b.it.v/total*100;
     const area=(b.w/W*100)*(b.h/H*100);
     const cls=area<1.1?'tm tiny':area<3.2?'tm sm':'tm';
+    /* พื้นหลังจาง ๆ เฉพาะกล่องที่ใหญ่พอจะเห็น และไอคอนมุมขวาบน */
+    const art=(b.it.bg&&area>=3.2)?`<span class="tmbg" style="background-image:url('${b.it.bg}')"></span>`:'';
+    const ico=(b.it.icon&&area>=2.2)?`<img class="tmic" src="${b.it.icon}" alt="" loading="lazy" onerror="this.remove()">`:'';
     return `<div class="${cls}" style="left:${(b.x/W*100).toFixed(3)}%;top:${(b.y/H*100).toFixed(3)}%;`+
       `width:${(b.w/W*100).toFixed(3)}%;height:${(b.h/H*100).toFixed(3)}%;background:${b.it.color}"`+
-      (b.it.tip?` data-tip2="${b.it.tip}"`:'')+`><b>${b.it.n}</b><span>${p.toFixed(2)}%</span></div>`;
+      (b.it.tip?` data-tip2="${b.it.tip}"`:'')+`>${art}${ico}<b>${b.it.n}</b><span>${p.toFixed(2)}%</span></div>`;
   }).join('');
 }
+/* ─────────────── โดนัทพร้อมเส้นโยงป้ายชื่อ ───────────────
+   ใช้เมื่อมีหมวดเยอะจนใส่ป้ายรอบวงไม่ไหว · วาดเป็น SVG เองเพื่อคุมเส้นโยงและไอคอนได้
+   items = [{n,v,color,icon,tip}] · เรียงจากมากไปน้อยมาก่อนเรียกใช้ */
+function donutLeader(items,opt){
+  opt=opt||{};
+  const W=1180,H=620,CX=590,CY=310,R=152,RI=92;
+  const list=items.filter(x=>x.v>0);
+  const total=list.reduce((a,b)=>a+b.v,0)||1;
+  const pol=(cx,cy,r,a)=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];
+  let ang=-Math.PI/2;                       /* เริ่มที่ 12 นาฬิกา */
+  const seg=list.map((it,i)=>{
+    const sweep=it.v/total*Math.PI*2, a0=ang, a1=ang+sweep, mid=a0+sweep/2;
+    ang=a1;
+    const large=sweep>Math.PI?1:0;
+    const [x0,y0]=pol(CX,CY,R,a0), [x1,y1]=pol(CX,CY,R,a1);
+    const [u0,v0]=pol(CX,CY,RI,a1), [u1,v1]=pol(CX,CY,RI,a0);
+    const d=`M${x0.toFixed(2)},${y0.toFixed(2)} A${R},${R} 0 ${large} 1 ${x1.toFixed(2)},${y1.toFixed(2)}`+
+            ` L${u0.toFixed(2)},${v0.toFixed(2)} A${RI},${RI} 0 ${large} 0 ${u1.toFixed(2)},${v1.toFixed(2)} Z`;
+    return {it,i,mid,d,p:it.v/total*100};
+  });
+  /* ติดป้ายเฉพาะสาขาใหญ่ตามจำนวนที่กำหนด ที่เหลือไปแสดงเป็นชิปใต้ภาพ
+     ถ้าใส่ครบ 19 ป้าย เส้นโยงจะกระจุกด้านเดียวจนอ่านไม่ออก เพราะ 5 สาขาแรกกินพื้นที่วงเกือบ 75% */
+  const maxLab=opt.maxLabels||8;
+  const labeled=seg.slice().sort((a,b)=>b.it.v-a.it.v).slice(0,maxLab);
+  const restSeg=seg.filter(x=>labeled.indexOf(x)<0);
+  let right=labeled.filter(s=>Math.cos(s.mid)>=0), left=labeled.filter(s=>Math.cos(s.mid)<0);
+  /* เกลี่ยสองฝั่งให้จำนวนใกล้กัน ย้ายตัวที่อยู่ใกล้แนวตั้งก่อน เส้นจะไม่พาดกลางวง */
+  while(right.length-left.length>1){
+    right.sort((a,b)=>Math.abs(Math.cos(a.mid))-Math.abs(Math.cos(b.mid)));
+    left.push(right.shift());
+  }
+  while(left.length-right.length>1){
+    left.sort((a,b)=>Math.abs(Math.cos(a.mid))-Math.abs(Math.cos(b.mid)));
+    right.push(left.shift());
+  }
+  right=right.sort((a,b)=>Math.sin(a.mid)-Math.sin(b.mid));
+  left =left.sort((a,b)=>Math.sin(a.mid)-Math.sin(b.mid));
+  const rowsFor=(arr,side)=>{
+    const n=arr.length||1, top=26, gap=(H-52)/Math.max(1,n-1);
+    return arr.map((s,k)=>{
+      const y=n===1?H/2:top+k*gap;
+      const x=side>0?CX+R+64:CX-R-64;
+      const lx=side>0?CX+R+96:CX-R-96;
+      const [px,py]=pol(CX,CY,R+6,s.mid);
+      return {s,side,y,x,lx,px,py};
+    });
+  };
+  const rows=rowsFor(right,1).concat(rowsFor(left,-1));
+  const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const arcs=seg.map(s=>`<path d="${s.d}" fill="${s.it.color}" stroke="#fff" stroke-width="1.6"
+      class="dl-arc" data-seg="${s.i}"${s.it.tip?` data-tip2="${s.it.tip}"`:''}></path>`).join('');
+  const lines=rows.map(r=>`<polyline points="${r.px.toFixed(1)},${r.py.toFixed(1)} ${r.lx},${r.y} ${r.side>0?r.lx+14:r.lx-14},${r.y}"
+      fill="none" stroke="${r.s.it.color}" stroke-width="1.4" opacity=".75"></polyline>`).join('');
+  const labs=rows.map(r=>{
+    const anchor=r.side>0?'start':'end';
+    const tx=r.side>0?r.lx+22:r.lx-22;
+    const ix=r.side>0?r.lx+22:r.lx-48;
+    return `<g class="dl-lab" data-seg="${r.s.i}"${r.s.it.tip?` data-tip2="${r.s.it.tip}"`:''}>
+      <rect x="${r.side>0?r.lx+16:r.lx-330}" y="${r.y-20}" width="314" height="40" rx="10" fill="transparent"></rect>
+      ${r.s.it.icon?`<image href="${r.s.it.icon}" x="${ix}" y="${r.y-24}" width="26" height="26"></image>`:''}
+      <text x="${r.side>0?tx+32:tx}" y="${r.y-4}" text-anchor="${anchor}" class="dl-n">${esc(r.s.it.n)}</text>
+      <text x="${r.side>0?tx+32:tx}" y="${r.y+15}" text-anchor="${anchor}" class="dl-p" fill="${r.s.it.color}">${r.s.p.toFixed(2)}%</text>
+    </g>`;
+  }).join('');
+  const mid=`<text x="${CX}" y="${CY-14}" text-anchor="middle" class="dl-c1">${opt.centerTop||''}</text>
+    <text x="${CX}" y="${CY+18}" text-anchor="middle" class="dl-c2">${opt.centerMid||''}</text>
+    <text x="${CX}" y="${CY+40}" text-anchor="middle" class="dl-c3">${opt.centerSub||''}</text>`;
+  const svg=`<svg viewBox="0 0 ${W} ${H}" class="dleader" xmlns="http://www.w3.org/2000/svg">${lines}${arcs}${mid}${labs}</svg>`;
+  /* สาขาที่เหลือ แสดงเป็นชิปมีไอคอนใต้ภาพ ครบทุกสาขาเหมือนกัน */
+  const chips=restSeg.length?`<div class="seclg">`+restSeg.sort((a,b)=>b.it.v-a.it.v).map(s=>
+    `<span class="seci"${s.it.tip?` data-tip2="${s.it.tip}"`:''}>`+
+    (s.it.icon?`<img src="${s.it.icon}" alt="" loading="lazy" onerror="this.remove()">`:'')+
+    `<i style="background:${s.it.color}"></i>${esc(s.it.n)}<b>${s.p.toFixed(2)}%</b></span>`).join('')+`</div>`:'';
+  return svg+chips;
+}
+
 /* ผสมสองสีตามสัดส่วน k · ใช้ไล่สีระหว่างสาขาในหมวดเดียวกันให้แยกออกจากกัน */
 function mixHex(a,b,k){
   const p=h=>[1,3,5].map(i=>parseInt(String(h).trim().substr(i,2),16));

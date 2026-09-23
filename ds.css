@@ -1039,5 +1039,38 @@ body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
 .seclg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px}
 .seclg .seci{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--dim);line-height:1.9}
 .seclg .seci i{width:11px;height:11px;border-radius:3px;flex:none}
+.seclg .seci img{width:22px;height:22px;object-fit:contain;flex:none}
+.seclg .seci{background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:4px 12px 4px 6px}
 .seclg .seci b{font-family:var(--fn);font-size:11.5px;color:var(--ink)}
 @media(max-width:767px){.seclg{gap:4px 10px}.seclg .seci{font-size:10.5px}}
+
+/* ══ โดนัทพร้อมเส้นโยง ══ */
+.dleader{width:100%;height:auto;display:block;font-family:var(--fs)}
+.dleader .dl-n{font-size:12.5px;fill:var(--ink)}
+.dleader .dl-p{font-size:13.5px;font-weight:700;font-family:var(--fn)}
+.dleader .dl-c1{font-size:13px;fill:var(--faint)}
+.dleader .dl-c2{font-size:30px;font-weight:700;font-family:var(--fn);fill:var(--forest,#0B3C32)}
+.dleader .dl-c3{font-size:12px;fill:var(--muted,#5C7A70)}
+.dleader .dl-arc{cursor:default;transition:opacity .15s,transform .15s;transform-origin:590px 310px}
+.dleader:hover .dl-arc{opacity:.45}
+.dleader .dl-arc:hover{opacity:1;transform:scale(1.035)}
+.dleader .dl-lab{cursor:default}
+.dleader .dl-lab:hover .dl-n{font-weight:700}
+@media(max-width:767px){.dleader .dl-n{font-size:15px}.dleader .dl-p{font-size:16px}}
+
+/* ══ พื้นหลังจางและไอคอนในกล่อง treemap ══ */
+.tmap .tm{position:absolute}
+.tmap .tmbg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.22;
+  mix-blend-mode:luminosity;pointer-events:none}
+.tmap .tmic{position:absolute;right:8px;top:8px;width:34px;height:34px;object-fit:contain;opacity:.92;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));pointer-events:none}
+.tmap .tm.sm .tmic{width:24px;height:24px;right:5px;top:5px}
+.tmap .tm b,.tmap .tm span{position:relative;z-index:2}
+
+/* ══ ปุ่มสลับรูปแบบการแสดงผล 3 แบบ ══ */
+.vswitch{display:inline-flex;gap:4px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:3px}
+.vswitch button{border:0;background:transparent;border-radius:8px;padding:5px 11px;font:inherit;font-size:12px;
+  color:var(--dim);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:.15s}
+.vswitch button.on{background:var(--brand);color:#fff;box-shadow:0 2px 8px -3px var(--brand)}
+.vswitch button:not(.on):hover{background:var(--line2)}
+@media(max-width:640px){.vswitch button{padding:5px 8px;font-size:11px}}
