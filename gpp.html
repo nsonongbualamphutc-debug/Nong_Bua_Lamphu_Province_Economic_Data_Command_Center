@@ -39,7 +39,10 @@
       <button data-sv="tree">แผนภาพกล่อง</button>
       <button data-sv="table">ตารางข้อมูล</button></span></span></header>
     <div class="b">
-      <div id="svDonut"><div id="structDonut"></div></div>
+      <div id="svDonut" class="sgrid">
+        <div class="slist" id="structList"></div>
+        <div class="sring"><div id="structDonut"></div></div>
+      </div>
       <div id="svTree" class="hide"><div class="tmap" id="structMap"></div></div>
       <div id="svTable" class="hide"><div class="sc" style="max-height:520px"><table class="t" id="tStruct"></table></div></div>
       <div class="tmlg" id="structLg"></div>
@@ -177,7 +180,7 @@ function renderGpp(){
     const m=metaOf(x.n);
     const yoy=(x.prev!=null&&x.prev)?(x.v-x.prev)/x.prev*100:null;
     const share=x.v/gVal(x.g)*100;
-    return {n:x.n, v:x.v, p:x.p, color,
+    return {n:x.n, v:x.v, p:x.p, g:x.g, yoy, color, sub:f(x.v,1)+' ล้านบาท',
       icon:'assets/icons/ic-'+m[2]+'.png',
       bg:m[3]?'assets/cardbg/bg-'+m[3]+'.webp':'',
       tip:tipOf({t:x.n,
@@ -191,8 +194,35 @@ function renderGpp(){
   const top3=STRUCT.slice(0,3);
   const gTop=GRP.slice().sort((a,b)=>gSum(b)-gSum(a))[0];
   const dn=document.getElementById('structDonut');
-  if(dn)dn.innerHTML=donutLeader(items,{centerTop:'GPP ปี '+SYEAR,
-    centerMid:f(STOT,0)+' ลบ.',centerSub:STRUCT.length+' สาขา · ณ ราคาประจำปี'});
+  if(dn)dn.innerHTML=donutRing(items,{centerTop:'GPP ปี '+SYEAR,
+    centerMid:f(STOT,0),centerSub:'ล้านบาท · '+STRUCT.length+' สาขา'});
+
+  /* รายการสาขาเรียงจากมากไปน้อย อ่านได้ทันทีว่าอะไรใหญ่สุด กี่เปอร์เซ็นต์ กี่ล้านบาท
+     ชี้ที่แถวจะไฮไลต์ชิ้นเดียวกันในวงแหวนให้ด้วย */
+  const mxp=items[0]?items[0].p:1;
+  const sl=document.getElementById('structList');
+  if(sl)sl.innerHTML=items.map((x,i)=>{
+    const yo=x.yoy;
+    return `<div class="srow" data-sec="${i}" data-tip2="${x.tip}">
+      <span class="rk">${i+1}</span>
+      <img class="ic" src="${x.icon}" alt="" loading="lazy" onerror="this.remove()">
+      <span class="nm">${x.n}<em style="background:${GCOL[x.g]}22;color:${GCOL[x.g]}">${x.g}</em></span>
+      <span class="bar"><i style="width:${Math.max(3,x.p/mxp*100).toFixed(1)}%;background:${x.color}"></i></span>
+      <span class="pc">${x.p.toFixed(2)}%</span>
+      <span class="vl">${f(x.v,1)}<small> ลบ.</small></span>
+      <span class="yo" style="color:${yo==null?'var(--faint)':yo>=0?'var(--good)':'var(--bad)'}">${yo==null?'—':(yo>0?'+':'')+yo.toFixed(1)+'%'}</span>
+    </div>`;}).join('');
+  /* ชี้แถวแล้วเน้นชิ้นในวงแหวน และชี้วงแหวนแล้วเน้นแถว */
+  if(sl&&!sl.dataset.b){sl.dataset.b='1';
+    const box=document.getElementById('svDonut');
+    box.addEventListener('mouseover',e=>{
+      const t=e.target.closest('[data-sec]'); if(!t)return;
+      const k=t.dataset.sec; box.classList.add('focus');
+      box.querySelectorAll('[data-sec]').forEach(el=>el.classList.toggle('on',el.dataset.sec===k));
+    });
+    box.addEventListener('mouseleave',()=>{box.classList.remove('focus');
+      box.querySelectorAll('[data-sec]').forEach(el=>el.classList.remove('on'))});
+  }
   const tm=document.getElementById('structMap');
   if(tm)tm.innerHTML=treemap(items);
 
@@ -222,7 +252,7 @@ function renderGpp(){
   $('#tStruct').innerHTML='<thead><tr><th>#</th><th>สาขา</th><th>หมวด</th><th class="r">ล้านบาท</th><th class="r">สัดส่วน</th><th class="r">เทียบปีก่อน</th></tr></thead><tbody>'+
     STRUCT.map((x,i)=>{
       const yoy=(x.prev!=null&&x.prev)?(x.v-x.prev)/x.prev*100:null;
-      return `<tr><td class="r" style="color:var(--faint)">${i+1}</td><td><img class="rowico" src="assets/icons/ic-${metaOf(x.n)[2]}.png" alt="" onerror="this.remove()">${x.n}</td><td>${x.g}</td>
+      return `<tr><td class="r" style="color:var(--faint)">${i+1}</td><td><img class="rowico" src="assets/icons/ic-${metaOf(x.n)[2]}.png" alt="" onerror="this.remove()">${x.n}</td><td><span class="gchip" style="background:${GCOL[x.g]}1f;color:${GCOL[x.g]};border-color:${GCOL[x.g]}55">${x.g}</span></td>
         <td class="r">${f(x.v,1)}</td><td class="r">${x.p.toFixed(2)}%</td>
         <td class="r" style="color:${yoy==null?'var(--faint)':yoy>=0?'var(--good)':'var(--bad)'}">${yoy==null?'—':(yoy>0?'+':'')+yoy.toFixed(1)+'%'}</td></tr>`;}).join('')+
     `</tbody><tfoot><tr><td></td><td>รวม</td><td></td><td class="r">${f(STOT,1)}</td><td class="r">100.00%</td><td></td></tr></tfoot>`;
@@ -230,8 +260,9 @@ function renderGpp(){
     `ปี ${SYEAR} สาขาที่ใหญ่ที่สุดคือ <b>${top3[0].n}</b> ${f(top3[0].v,1)} ล้านบาท ${top3[0].p.toFixed(2)}%
      รองลงมา ${top3[1].n} ${top3[1].p.toFixed(2)}% และ ${top3[2].n} ${top3[2].p.toFixed(2)}%<br>
      หมวดใหญ่ที่สุดคือภาค${gTop} ${gSum(gTop).toFixed(1)}% ของ GPP<br>
-     <span style="color:var(--faint)">วงแหวนติดป้ายเฉพาะ 8 สาขาใหญ่ ที่เหลือแสดงเป็นชิปใต้ภาพ ครบทั้ง ${STRUCT.length} สาขา ·
-     ชี้ที่วงแหวน ชิป กล่อง หรือแถวในตาราง จะบอกมูลค่า สัดส่วน อันดับ และการเปลี่ยนแปลงเทียบปีก่อน</span>`;
+     <span style="color:var(--faint)">รายการด้านซ้ายเรียงจากสาขาใหญ่ไปเล็กครบทั้ง ${STRUCT.length} สาขา
+     ชี้ที่แถวแล้ววงแหวนจะเน้นชิ้นเดียวกันให้ · สลับดูแบบแผนภาพกล่องหรือตารางได้ที่ปุ่มมุมขวาบน ·
+     ทุกจุดชี้เพื่อดูมูลค่า สัดส่วน อันดับ และการเปลี่ยนแปลงเทียบปีก่อนได้</span>`;
 
   mk('cGpp',{type:'bar',data:{labels:G.map(r=>'ปี '+r.y),datasets:[
     {type:'bar',label:'GPP (ล้านบาท)',data:G.map(r=>r.value),backgroundColor:cv('--brand'),borderRadius:6,barPercentage:.5,yAxisID:'y'},

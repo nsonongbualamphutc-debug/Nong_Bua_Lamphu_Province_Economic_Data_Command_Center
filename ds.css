@@ -1029,7 +1029,11 @@ body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
 .tmap .tm.sm{padding:4px 5px}
 .tmap .tm.sm b{font-size:10px;-webkit-line-clamp:2}
 .tmap .tm.sm span{font-size:10.5px}
-.tmap .tm.tiny b,.tmap .tm.tiny span{display:none}
+.tmap .tm.tiny{padding:3px 4px;justify-content:center;align-items:center}
+.tmap .tm.tiny b{display:none}
+.tmap .tm.tiny span{font-size:9.5px;margin:0;text-align:center}
+.tmap .tm em{font-style:normal;font-size:11px;color:#fff;opacity:.88;margin-top:2px;
+  text-shadow:0 1px 2px rgba(0,0,0,.3);font-family:var(--fn);position:relative;z-index:2}
 .tmlg{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:12px}
 .tmlg i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
 .tmlg b{font-family:var(--fn)}
@@ -1044,19 +1048,6 @@ body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
 .seclg .seci b{font-family:var(--fn);font-size:11.5px;color:var(--ink)}
 @media(max-width:767px){.seclg{gap:4px 10px}.seclg .seci{font-size:10.5px}}
 
-/* ══ โดนัทพร้อมเส้นโยง ══ */
-.dleader{width:100%;height:auto;display:block;font-family:var(--fs)}
-.dleader .dl-n{font-size:12.5px;fill:var(--ink)}
-.dleader .dl-p{font-size:13.5px;font-weight:700;font-family:var(--fn)}
-.dleader .dl-c1{font-size:13px;fill:var(--faint)}
-.dleader .dl-c2{font-size:30px;font-weight:700;font-family:var(--fn);fill:var(--forest,#0B3C32)}
-.dleader .dl-c3{font-size:12px;fill:var(--muted,#5C7A70)}
-.dleader .dl-arc{cursor:default;transition:opacity .15s,transform .15s;transform-origin:590px 310px}
-.dleader:hover .dl-arc{opacity:.45}
-.dleader .dl-arc:hover{opacity:1;transform:scale(1.035)}
-.dleader .dl-lab{cursor:default}
-.dleader .dl-lab:hover .dl-n{font-weight:700}
-@media(max-width:767px){.dleader .dl-n{font-size:15px}.dleader .dl-p{font-size:16px}}
 
 /* ══ พื้นหลังจางและไอคอนในกล่อง treemap ══ */
 .tmap .tm{position:absolute}
@@ -1074,3 +1065,54 @@ body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
 .vswitch button.on{background:var(--brand);color:#fff;box-shadow:0 2px 8px -3px var(--brand)}
 .vswitch button:not(.on):hover{background:var(--line2)}
 @media(max-width:640px){.vswitch button{padding:5px 8px;font-size:11px}}
+
+/* ══ โครงสร้างเศรษฐกิจ · วงแหวน + รายการสาขา ══ */
+.sgrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.95fr);gap:20px;align-items:start}
+.sring{position:sticky;top:12px}
+.dring{width:100%;height:auto;display:block;max-width:420px;margin:0 auto}
+.dring .dr-arc{cursor:default;transition:opacity .16s,transform .16s;transform-origin:230px 230px}
+.dring .dr-arc.on{transform:scale(1.045)}
+.sgrid.focus .dring .dr-arc{opacity:.35}
+.sgrid.focus .dring .dr-arc.on{opacity:1}
+.dring .dr-t1{font-size:15px;fill:var(--faint)}
+.dring .dr-t2{font-size:40px;font-weight:700;font-family:var(--fn);fill:var(--brand)}
+.dring .dr-t3{font-size:14px;fill:var(--muted,#5C7A70)}
+
+.slist{display:flex;flex-direction:column;gap:2px;max-height:540px;overflow:auto;padding-right:4px}
+.slist .srow{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:10px;transition:background .14s}
+.slist .srow:hover,.slist .srow.on{background:var(--card2)}
+.sgrid.focus .slist .srow{opacity:.45}
+.sgrid.focus .slist .srow.on{opacity:1}
+.slist .rk{width:20px;text-align:right;font-family:var(--fn);font-size:11px;color:var(--faint);flex:none}
+.slist .ic{width:26px;height:26px;object-fit:contain;flex:none}
+.slist .nm{flex:1;min-width:0;font-size:12.5px;color:var(--ink);display:flex;align-items:center;gap:7px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slist .nm em{font-style:normal;font-size:10px;padding:1px 7px;border-radius:999px;flex:none}
+.slist .bar{width:96px;height:8px;border-radius:5px;background:var(--line2);flex:none;overflow:hidden}
+.slist .bar i{display:block;height:100%;border-radius:5px}
+.slist .pc{width:56px;text-align:right;font-family:var(--fn);font-weight:700;font-size:12.5px;color:var(--ink);flex:none}
+.slist .vl{width:86px;text-align:right;font-family:var(--fn);font-size:12px;color:var(--dim);flex:none}
+.slist .vl small{font-size:10px;color:var(--faint)}
+.slist .yo{width:54px;text-align:right;font-family:var(--fn);font-size:11.5px;flex:none}
+.gchip{display:inline-block;padding:1px 9px;border-radius:999px;font-size:11px;border:1px solid}
+
+@media (max-width:1150px){
+  .sgrid{grid-template-columns:1fr;gap:14px}
+  .sring{position:static;order:-1}
+  .dring{max-width:340px}
+  .slist{max-height:none;overflow:visible}
+}
+@media (max-width:767px){
+  .dring{max-width:290px}
+  .dring .dr-t2{font-size:44px}.dring .dr-t1,.dring .dr-t3{font-size:17px}
+  .slist .vl,.slist .yo{display:none}
+  .slist .bar{width:56px}
+  .slist .nm{font-size:12px}
+  .slist .nm em{display:none}
+  .slist .pc{width:50px}
+  .tmap{aspect-ratio:3/4}
+  .tmap .tm b{font-size:11.5px}.tmap .tm span{font-size:12px}
+  .tmap .tm.sm b{font-size:9.5px}.tmap .tm.sm span{font-size:10px}
+  .tmap .tmic{width:24px;height:24px}
+}
+@media (min-width:768px) and (max-width:1150px){ .tmap{aspect-ratio:4/3} }
