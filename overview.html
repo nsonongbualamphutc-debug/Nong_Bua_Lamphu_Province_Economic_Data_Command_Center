@@ -29,24 +29,32 @@
         <div class="pillars" id="heroPil"></div>
       </div>
       <div class="meibox">
-        <div class="lb">ดัชนีภาวะเศรษฐกิจรายเดือน NBL–MEI</div>
+        <div class="lb">ภาวะเศรษฐกิจรายเดือน</div>
         <div class="big n" id="meiVal">—</div>
         <div class="ribwrap"><svg id="ribbon" preserveAspectRatio="none"></svg></div>
-        <div class="foot"><span id="meiYoY">—</span><span>·</span><span id="meiMoM">—</span><span>·</span><span>ฐาน 100 = เฉลี่ยปี 2567</span></div>
+        <div class="foot"><span id="meiYoY">—</span><span>·</span><span id="meiMoM">—</span><span>·</span><span id="meiLab">ร้อยละเทียบปีก่อน</span></div>
       </div>
     </div>
   </div>
-  <div id="ovSlc"></div>
   <div class="grid g6 mb" id="homeKpi"></div>
-  <div class="ph"><div class="t"><h2>7 ภาคส่วนเศรษฐกิจของจังหวัด</h2>
-    <p>คลิกเพื่อดูรายละเอียดแต่ละภาคส่วน พร้อมข้อมูลย่อยและหน่วยงานผู้รับผิดชอบ</p></div></div>
-  <div class="grid g4 mb" id="sectorTiles"></div>
-  <div class="grid g21">
-    <div class="c"><header><span class="hdico icow img" data-hdico="forecast"></span><h3>ความเร็วของข้อมูลแต่ละชุด</h3><span class="r">ยิ่งแท่งสั้น ยิ่งทันสถานการณ์</span></header>
-      <div class="b"><div class="ch" style="height:290px"><canvas id="cLag"></canvas></div>
-      <div class="note">GPP ประกาศช้าราว 2 ปี ทำให้ตัดสินใจบนข้อมูลล้าสมัย ระบบนี้จึงนำข้อมูลเร็วที่หน่วยงานมีอยู่แล้วมาประกอบเป็นภาพเดือนต่อเดือน</div></div></div>
-    <div class="c"><header><span class="hdico icow img"><img class="ico" src="assets/icons/ic-alert.png" alt="" width="26" height="26" loading="lazy" onerror="this.remove()"></span><h3>สถานะการส่งข้อมูลรอบล่าสุด</h3></header><div class="b" id="feed"></div></div>
-  </div></section>
+
+  <div class="vswitch big mb" id="macroSw">
+    <button class="on" data-mv="all">ภาพรวม</button>
+    <button data-mv="dem">ด้านอุปสงค์</button>
+    <button data-mv="sup">ด้านอุปทาน</button>
+  </div>
+  <div class="grid g3 mb" id="macroKpi"></div>
+  <div class="c mb"><header><span class="hdico icow img" data-hdico="forecast"></span>
+    <h3 id="macroTitle">ภาวะเศรษฐกิจรายเดือน</h3><span class="u" id="macroSub"></span>
+    <span class="r" id="macroTog"></span></header>
+    <div class="b">
+      <div id="cMac-chart"><div class="ch lg"><canvas id="cMac"></canvas></div></div>
+      <div id="cMac-table" class="hide"><div class="sc" style="max-height:420px"><table class="t" id="tMac"></table></div></div>
+      <div class="note" id="macroNote"></div></div></div>
+
+  <div class="c"><header><span class="hdico icow img" data-hdico="alert"></span>
+    <h3>สถานะการส่งข้อมูลรอบล่าสุด</h3></header><div class="b" id="feed"></div></div>
+  </section>
   </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -55,147 +63,214 @@
 <script src="ds.js"></script>
 <script>
 /* ─────────────── 10) ภาพรวม ─────────────── */
+/* ══ เครื่องชี้เศรษฐกิจรายเดือนจากแฟ้มเครื่องชี้เศรษฐกิจจังหวัด ══
+   ทุกค่าที่เป็นดัชนีรายงานเป็นร้อยละเทียบเดือนเดียวกันปีก่อน (%YoY) ตามต้นทาง
+   "เทียบเดือนก่อน" จึงรายงานเป็นการเปลี่ยนแปลงของอัตรานั้นเป็นจุด ไม่ใช่การเติบโตรายเดือน
+   เพราะต้นทางไม่ได้ให้ระดับดัชนีมา จะคำนวณ MoM แบบตรง ๆ ไม่ได้ */
+const MAC=(typeof DX!=='undefined'&&DX.macro&&DX.macro.rows)||[];
+const MW=(typeof DX!=='undefined'&&DX.macro&&DX.macro.weight)||{agri:21,indus:22,serv:57};
+const mLabel=r=>TH_M[r.m-1]+' '+String(r.y).slice(-2);
+const MSERIES={
+  all:[['overall','ภาพรวมเศรษฐกิจจังหวัด','forecast','--brand']],
+  sup:[['agri','ภาคเกษตรกรรม','agri','--leaf'],['indus','ภาคอุตสาหกรรม','factorynew','--blue'],['serv','ภาคบริการ','trade','--brand']],
+  dem:[['cons','การบริโภคภาคเอกชน','cpi','--brand'],['invest','การลงทุนภาคเอกชน','invest','--gold'],['gov','การใช้จ่ายภาครัฐ','spend','--blue']]
+};
+const MDESC={
+  all:'ดัชนีรวมของจังหวัด สะท้อนทิศทางเศรษฐกิจโดยรวมในแต่ละเดือน',
+  sup:'วัดจากกำลังการผลิตในพื้นที่ · ถ่วงน้ำหนักตามโครงสร้าง เกษตร '+MW.agri+'% อุตสาหกรรม '+MW.indus+'% บริการ '+MW.serv+'%',
+  dem:'วัดจากการใช้จ่ายจริงของครัวเรือน ภาคธุรกิจ และภาครัฐ'
+};
+let MACRO_VIEW='all';
+const mLast=()=>MAC[MAC.length-1], mPrev=()=>MAC[MAC.length-2];
+const supIdx=r=>r?(r.agri*MW.agri+r.indus*MW.indus+r.serv*MW.serv)/(MW.agri+MW.indus+MW.serv):null;
+const demIdx=r=>r?(r.cons+r.invest+r.gov)/3:null;
+const arrow=v=>v==null?'—':(v>0?'▲ +':v<0?'▼ ':'● ')+f(Math.abs(v)<0.05?0:v,1)+'%';
+const ptTxt=v=>v==null?'—':(v>0?'+':'')+f(v,1)+' จุด';
+const upc=v=>v==null?'var(--faint)':v>0?'var(--good)':v<0?'var(--bad)':'var(--dim)';
+
+function macroTip(key,label,cur,prv,extra){
+  const v=cur[key], p=prv?prv[key]:null;
+  return tipOf({t:label,
+    d:(extra||'')+'เดือน '+mLabel(cur)+' อยู่ที่ '+f(v,2)+'% เทียบเดือนเดียวกันปีก่อน',
+    calc:'ต้นทางรายงานเป็นร้อยละเทียบปีก่อน (%YoY) · เดือนก่อนอยู่ที่ '+(p==null?'—':f(p,2)+'%')+
+      (p==null?'':' จึงเปลี่ยนแปลง '+ptTxt(v-p)+' · ค่าที่เป็นจุดคือผลต่างของอัตรา ไม่ใช่การเติบโตรายเดือน'),
+    src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)});
+}
+
 function renderOverview(){
-  const slc=document.getElementById('ovSlc');
-  if(slc&&!slc.innerHTML)slc.innerHTML=slicerBar('slc-ov',{freqs:['M','Q','Y'],freq:'M',label:'เลือกงวดข้อมูล',compare:true});
-  const ST=slicerState('slc-ov')||{freq:'M',i:35,idx:[35],label:MONTHS[35].label,cmp:false};
-  const NOW=ST.i, PREV=Math.max(0,NOW-12);
-  const PLABEL=ST.label;
-  const at=(arr,mode)=>seriesAt(arr,ST,mode||'last');
-  const atPrev=(arr,mode)=>seriesPrevYear(arr,ST,mode||'last');
-  const info=document.getElementById('slc-ov-info');
-  if(info)info.innerHTML='กำลังแสดง <b>'+PLABEL+'</b>'+
-    (ST.freq==='M'?'':' · ครอบคลุม '+ST.idx.length+' เดือน')+
-    (ST.cmp?' · เทียบงวดเดียวกันปีก่อน':'');
-  const s=MEI.out,last=s[s.length-1],yo=pctc(last.v,s[s.length-13].v),mo=pctc(last.v,s[s.length-2].v);
-  $('#meiVal').textContent=last.v.toFixed(1);
-  $('#meiYoY').textContent=(yo>0?'▲ +':'▼ ')+yo.toFixed(1)+'% เทียบปีก่อน';
-  $('#meiMoM').textContent=(mo>0?'+':'')+mo.toFixed(1)+'% เทียบเดือนก่อน';
+  if(!MAC.length)return;
+  const cur=mLast(), prv=mPrev();
+  const ov=cur.overall, ovP=prv?prv.overall:null;
+  const dem=demIdx(cur), demP=demIdx(prv), sup=supIdx(cur), supP=supIdx(prv);
+
+  /* ── หัวเรื่อง ── */
+  $('#meiVal').textContent=(ov>0?'+':'')+f(ov,1)+'%';
+  $('#meiYoY').textContent='เทียบเดือนเดียวกันปีก่อน';
+  $('#meiMoM').textContent=ovP==null?'':'เทียบเดือนก่อน '+ptTxt(ov-ovP);
+  const ml=document.getElementById('meiLab'); if(ml)ml.textContent=mLabel(cur);
   $('#asof').textContent='ข้อมูล ณ '+CFG.asof;
-  $('#heroSay').textContent=last.v>=103?'เศรษฐกิจจังหวัดขยายตัวชัดเจนในเดือนนี้'
-    :last.v>=100?'เศรษฐกิจจังหวัดขับเคลื่อนด้วยเงินภาครัฐและภาคเกษตร'
-    :last.v>=97?'เศรษฐกิจจังหวัดทรงตัว มีสัญญาณชะลอตัว':'เศรษฐกิจจังหวัดหดตัว ควรเร่งมาตรการกระตุ้น';
+  $('#heroSay').textContent=ov>=5?'เศรษฐกิจจังหวัดขยายตัวชัดเจนในเดือนนี้'
+    :ov>=1?'เศรษฐกิจจังหวัดขยายตัวอย่างค่อยเป็นค่อยไป'
+    :ov>-1?'เศรษฐกิจจังหวัดทรงตัว':'เศรษฐกิจจังหวัดหดตัว ควรเร่งมาตรการกระตุ้น';
+
   $('#heroPil').innerHTML=[
-    [f_num(D.fiscal.fn.dis[0].pct)+'%','เบิกจ่ายงบประมาณ<br>อันดับ 1 ของประเทศ',
-      tipOf({t:'ร้อยละการเบิกจ่ายงบประมาณภาพรวม',
-        d:'จังหวัดหนองบัวลำภูอยู่อันดับ 1 ของประเทศในรอบรายงานนี้',
-        calc:'(ยอดเบิกจ่ายสะสม ÷ งบที่ได้รับจัดสรร) × 100 = ('+f_num(D.fiscal.fn.dis[0].val)+' ÷ '+f_num(D.fiscal.fn.dis[0].alloc)+') × 100',
-        src:'spend',when:'รายงานครั้งที่ 178/2569 · ข้อมูล ณ '+CFG.asof})],
-    [f(D.fiscal.fn.dis[0].val,0),'ล้านบาท เม็ดเงินรัฐ<br>ที่ลงสู่พื้นที่แล้ว',
-      tipOf({t:'เม็ดเงินภาครัฐที่ลงสู่พื้นที่แล้ว',
-        d:'ยอดเงินงบประมาณที่ออกจากระบบคลังจริงแล้วในปีงบประมาณนี้',
-        calc:'ยอดเบิกจ่ายสะสมของทุกส่วนราชการในจังหวัด ณ รายงานงวดล่าสุด · เป็นยอดสะสม ไม่นำรายเดือนมาบวกกัน',
-        src:'spend',when:'ปีงบประมาณ 2569 · ข้อมูล ณ '+CFG.asof})],
-    [f(cropValue(),0),'ล้านบาท มูลค่าผลผลิต<br>พืชอายุสั้น',
-      tipOf({t:'มูลค่าผลผลิตพืชอายุสั้น',
-        d:'เงินที่เกษตรกรได้รับจากการขายผลผลิตพืชอายุสั้นในฤดูกาลนี้',
-        calc:'Σ (ผลผลิตรายชนิด × ราคาที่เกษตรกรขายได้) ÷ 1,000,000 · รวม '+D.crop.rows.length+' ชนิด ยังไม่รวมข้าวนาปีที่อยู่ระหว่างฤดูกาล',
-        src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})]
+    [(dem>0?'+':'')+f(dem,1)+'%','ด้านอุปสงค์<br>'+(demP==null?'':'เทียบเดือนก่อน '+ptTxt(dem-demP)),
+      tipOf({t:'ด้านอุปสงค์ (Demand)',
+        d:'วัดจากการใช้จ่ายจริงของครัวเรือน ภาคธุรกิจ และภาครัฐ เดือน '+mLabel(cur),
+        calc:'เฉลี่ยจาก 3 ตัวชี้วัด · การบริโภคเอกชน '+f(cur.cons,1)+'% · การลงทุนเอกชน '+f(cur.invest,1)+'% · การใช้จ่ายภาครัฐ '+f(cur.gov,1)+'%'+
+          (demP==null?'':' · เดือนก่อน '+f(demP,1)+'% เปลี่ยนแปลง '+ptTxt(dem-demP)),
+        src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})],
+    [(sup>0?'+':'')+f(sup,1)+'%','ด้านอุปทาน<br>'+(supP==null?'':'เทียบเดือนก่อน '+ptTxt(sup-supP)),
+      tipOf({t:'ด้านอุปทาน (Supply)',
+        d:'วัดจากกำลังการผลิตในพื้นที่ เดือน '+mLabel(cur),
+        calc:'ถ่วงน้ำหนักตามโครงสร้างเศรษฐกิจ · เกษตร '+f(cur.agri,1)+'% ('+MW.agri+'%) · อุตสาหกรรม '+f(cur.indus,1)+'% ('+MW.indus+'%) · บริการ '+f(cur.serv,1)+'% ('+MW.serv+'%)'+
+          (supP==null?'':' · เดือนก่อน '+f(supP,1)+'% เปลี่ยนแปลง '+ptTxt(sup-supP)),
+        src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})]
   ].map(x=>`<div class="pil" data-tip2="${x[2]}"><b class="n">${x[0]}</b><span>${x[1]}</span></div>`).join('');
+
   const mb=document.querySelector('.meibox');
-  if(mb)mb.dataset.tip2=tipOf({t:'ดัชนีภาวะเศรษฐกิจรายเดือน NBL–MEI',
-    d:'ดัชนีที่จังหวัดสร้างขึ้นเองจากข้อมูลเร็วของหน่วยงานในพื้นที่ ใช้ดูภาพเศรษฐกิจเดือนต่อเดือนแทน GPP ที่ประกาศช้า 2 ปี',
-    calc:'แปลงข้อมูลแต่ละชุดเป็นดัชนีเทียบฐาน 100 = ค่าเฉลี่ยปี '+(CFG.latest.y-2)+' แล้วถ่วงน้ำหนักตามสัดส่วนของ '+SECTORS.length+' ภาคส่วน · ชุดที่ยิ่งน้อยยิ่งดี เช่น อัตราการว่างงาน กลับด้านก่อนเข้าสูตร · เดือนนี้ '+last.v.toFixed(1)+' จุด · เทียบปีก่อน '+(yo>0?'+':'')+yo.toFixed(1)+'%',
-    src:'ประมวลโดยสำนักงานสถิติจังหวัดหนองบัวลำภู จากข้อมูล '+DATASETS.length+' ชุดของหน่วยงานในจังหวัด',
-    when:PLABEL});
+  if(mb)mb.dataset.tip2=macroTip('overall','ภาวะเศรษฐกิจรายเดือน',cur,prv,
+    'ดัชนีรวมของจังหวัดที่ต้นทางประมวลจากเครื่องชี้ทุกด้าน · ');
   drawRibbon();
 
-  const pw=DB.power.ind,cp=DB.cpi.yoy,ca=DB.car.moto,lb=DB.labor.emp;
+  /* ── การ์ดตัวเลขหลัก ── */
+  const lvl=(k,ky,label,unit,ico,col,dec)=>{
+    const v=cur[k], p=prv?prv[k]:null, yo=cur[ky];
+    return kpiCard({icon:'coin',img:ico,color:cv(col),label:label,value:f(v,dec||0),unit:unit,
+      chip:chip(yo),sub:p==null?'':'เทียบเดือนก่อน '+(v-p>0?'+':'')+f(v-p,dec||0)+' '+unit,
+      tip:tipOf({t:label,d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(v)+' '+unit,
+        calc:'เทียบปีก่อน '+f(yo,2)+'%'+(p==null?'':' · เดือนก่อน '+f_num(p)+' '+unit+' เปลี่ยนแปลง '+(v-p>0?'+':'')+f_num(v-p)),
+        src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})});
+  };
+  const pctCard=(k,label,ico,col,go)=>{
+    const v=cur[k], p=prv?prv[k]:null;
+    return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'% YoY',
+      chip:chip(v),sub:p==null?'':'เทียบเดือนก่อน '+ptTxt(v-p),go:go,
+      tip:macroTip(k,label,cur,prv)});
+  };
   $('#homeKpi').innerHTML=[
-    kpiCard({icon:'bank',img:'spend',color:cv('--brand'),label:'เบิกจ่ายงบประมาณ',value:'93.16',unit:'%',
-      chip:'<span class="chip up">อันดับ 1 ของประเทศ</span>',sub:'4,838 จาก 5,194 ลบ.',go:'fiscal',
-      tip:tipOf({t:'ร้อยละการเบิกจ่ายงบประมาณภาพรวม',
-        d:'เงินที่ออกจากระบบคลังจริงแล้ว เทียบกับงบที่จังหวัดได้รับจัดสรรทั้งปี ยิ่งสูงยิ่งแปลว่าเงินลงถึงพื้นที่เร็ว',
-        calc:'(ยอดเบิกจ่ายสะสม ÷ งบที่ได้รับจัดสรร) × 100 = ('+f_num(D.fiscal.fn.dis[0].val)+' ÷ '+f_num(D.fiscal.fn.dis[0].alloc)+') × 100 = '+f_num(D.fiscal.fn.dis[0].pct)+'%',
-        src:'spend',when:'รายงานครั้งที่ 178/2569 · ข้อมูล ณ '+CFG.asof})}),
-    kpiCard({icon:'coin',img:'invest',color:cv('--brand2'),label:'เม็ดเงินรัฐลงพื้นที่',value:f(D.fiscal.fn.dis[0].val,0),unit:'ลบ.',
-      chip:'<span class="chip up">สูงกว่าเป้า 6.16%</span>',sub:'ปีงบประมาณ 2569',go:'fiscal',
-      tip:tipOf({t:'เม็ดเงินภาครัฐที่ลงสู่พื้นที่แล้ว',
-        d:'ยิ่งเบิกจ่ายเร็ว เงินยิ่งหมุนในพื้นที่เร็ว กระทบผู้รับเหมา แรงงาน และร้านวัสดุในจังหวัดโดยตรง',
-        calc:'ยอดเบิกจ่ายสะสมของทุกส่วนราชการในจังหวัด ณ รายงานงวดล่าสุด · เป็นยอดสะสมจึงไม่นำรายเดือนมาบวกกัน · สูงกว่าเป้าหมายของกรมบัญชีกลาง '+f_num(D.fiscal.fn.dis[0].over)+' จุด',
-        src:'spend',when:'ปีงบประมาณ 2569 · ข้อมูล ณ '+CFG.asof})}),
-    kpiCard({icon:'leaf',img:'crop',color:cv('--leaf'),label:'มูลค่าผลผลิตเกษตร',value:f(cropValue(),0),unit:'ลบ.',
-      chip:'<span class="chip">อ้อยโรงงาน 89%</span>',sub:'จาก 949,634 ไร่',go:'agri',
-      tip:tipOf({t:'มูลค่าผลผลิตพืชอายุสั้น',
-        d:'เงินที่เกษตรกรได้รับจากการขายผลผลิตพืชอายุสั้นในฤดูกาลนี้ เป็นฐานรายได้หลักของครัวเรือนในจังหวัด',
-        calc:'Σ (ผลผลิตรายชนิด × ราคาที่เกษตรกรขายได้) ÷ 1,000,000 · รวม '+D.crop.rows.length+' ชนิด ยังไม่รวมข้าวนาปีที่อยู่ระหว่างฤดูกาล',
-        src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})}),
-    kpiCard({icon:'factory',img:'power',color:cv('--blue'),label:'ไฟฟ้าภาคอุตสาหกรรม',value:f(at(pw,'sum'),2),unit:'ล้านหน่วย',
-      chip:chip(pctc(at(pw,'sum'),atPrev(pw,'sum'))),spark:spark(pw.slice(-18).map(x=>x.v),cv('--blue')),go:'industry',
-      tip:tipOf({t:'การใช้ไฟฟ้าภาคอุตสาหกรรม',
-        d:'ตัวชี้เชิงประจักษ์ที่บอกว่าโรงงานเดินเครื่องจริงหรือไม่ ปลอมแปลงไม่ได้ และมาเร็วกว่ายอดผลิตที่ต้องรอรายงาน',
-        calc:'หน่วยจำหน่ายไฟฟ้าประเภทกิจการขนาดกลางและขนาดใหญ่ในเดือนนั้น · เทียบปีก่อน = ('+f_num(at(pw,'sum'))+' − '+f_num(atPrev(pw,'sum'))+') ÷ '+f_num(atPrev(pw,'sum'))+' × 100',
-        src:'power',when:PLABEL})}),
-    kpiCard({icon:'chart',img:'inflation',color:cv('--gold'),label:'อัตราเงินเฟ้อทั่วไป',value:f(at(cp,'avg'),2),unit:'% YoY',
-      chip:'<span class="chip fl">ดัชนี '+f(DB.cpi.idx[35].v,1)+'</span>',
-      spark:spark(cp.slice(-18).map(x=>x.v),cv('--gold')),go:'trade',
-      tip:tipOf({t:'อัตราเงินเฟ้อทั่วไป',
-        d:'บอกว่าเงินจำนวนเท่าเดิมซื้อของได้น้อยลงแค่ไหน เทียบกับเดือนเดียวกันปีก่อน',
-        calc:'((ดัชนีราคาผู้บริโภคเดือนนี้ ÷ ดัชนีเดือนเดียวกันปีก่อน) − 1) × 100 = (('+f_num(at(DB.cpi.idx,'avg'))+' ÷ '+f_num(atPrev(DB.cpi.idx,'avg'))+') − 1) × 100',
-        src:'cpi',when:PLABEL})}),
-    kpiCard({icon:'people',img:'employed',color:cv('--plum'),label:'ผู้มีงานทำ',value:f(at(lb,'avg'),0),unit:'คน',
-      chip:'<span class="chip">ว่างงาน '+f(DB.labor.ur[35].v,2)+'%</span>',
-      spark:spark(lb.slice(-18).map(x=>x.v),cv('--plum')),go:'labor',
-      tip:tipOf({t:'ผู้มีงานทำในจังหวัด',
-        d:'ฐานกำลังซื้อที่แท้จริงของจังหวัด ถ้าตัวเลขนี้ลด ยอดขายปลีกมักตามลงในอีก 1–2 เดือน',
-        calc:'ประมาณการจากการสำรวจภาวะการทำงานของประชากรรายไตรมาส ถ่วงน้ำหนักตามประชากรเป็นรายเดือน · อัตราการว่างงาน = ผู้ว่างงาน ÷ กำลังแรงงาน × 100 = '+f_num(at(DB.labor.ur,'avg'))+'%',
-        src:'labor',when:PLABEL})})
+    pctCard('agri','ภาคเกษตรกรรม','agri','--leaf','agri'),
+    pctCard('indus','ภาคอุตสาหกรรม','factorynew','--blue','industry'),
+    pctCard('serv','ภาคบริการ','trade','--brand','trade'),
+    lvl('depo','depoY','เงินฝากรวม','ลบ.','credit','--gold',0),
+    lvl('cred','credY','สินเชื่อรวม','ลบ.','invest','--brand2',0),
+    (function(){
+      const v=cur.emp,p=prv?prv.emp:null;
+      const back=MAC[MAC.length-13];
+      const yo=back&&back.emp?pctc(v,back.emp):null;
+      return kpiCard({icon:'people',img:'employed',color:cv('--plum'),label:'การจ้างงานรวม',value:f(v,0),unit:'คน',
+        chip:chip(yo),sub:p==null?'':'เทียบเดือนก่อน '+(v-p>0?'+':'')+f(v-p,0)+' คน',go:'labor',
+        tip:tipOf({t:'การจ้างงานรวมในจังหวัด',d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(v)+' คน',
+          calc:(yo==null?'':'เทียบปีก่อน = ('+f_num(v)+' − '+f_num(back.emp)+') ÷ '+f_num(back.emp)+' × 100 = '+f(yo,2)+'%')+
+            (p==null?'':' · เดือนก่อน '+f_num(p)+' คน'),
+          src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})});
+    })()
   ].join('');
 
-  $('#sectorTiles').innerHTML=SECTORS.map(sec=>{
-    const rows=sec.datasets.map(id=>{const d=DATASETS.find(x=>x.id===id),ss=d.series[0],arr=DB[id][ss.key];
-      const vNow=seriesAt(arr,ST,ss.agg||'last'), smc=simChip(simTake(),true), vPrev=seriesPrevYear(arr,ST,ss.agg||'last');
-      const pc=(vNow!=null&&vPrev)?pctc(vNow,vPrev):null;
-      const tp=tipOf({t:ss.label,
-        d:'หน่วยวัด '+ss.unit+' · ค่าของเดือนล่าสุดที่หน่วยงานรายงาน'+(pc==null?'':' · เทียบปีก่อน '+(pc>0?'+':'')+pc.toFixed(1)+'%'),
-        calc:(ST.freq==='M'?'ค่าที่หน่วยงานรายงานในเดือนนั้นโดยตรง':'รวมค่าของ '+ST.idx.length+' เดือนในงวดที่เลือก')+
-          (pc==null?'':' · เทียบปีก่อน = ('+f_num(vNow)+' − '+f_num(vPrev)+') ÷ '+f_num(vPrev)+' × 100'),
-        src:id,when:PLABEL+' · ข้อมูลช้าประมาณ '+d.lag+' วัน'});
-      return`<div class="rw" data-tip2="${tp}"><span>${ss.label}${smc}</span><b>${f(vNow,ss.dec??0)}</b><i>${ss.unit}</i></div>`}).join('');
-    const agy=[...new Set(sec.datasets.map(id=>DATASETS.find(x=>x.id===id).agency))]
-      .map(a=>a.replace('สำนักงาน','สนง.').replace('จังหวัดหนองบัวลำภู','จ.นภ.')).join(' · ');
-    return`<button class="sect" data-go="${sec.id}">
-      <div class="simg" style="background-image:url('${sec.img}')"></div>
-      <div class="sbody">
-        <div class="sh"><span class="sic" style="background:${sec.color}1e"><svg viewBox="0 0 24 24" style="stroke:${sec.color}">${IC[sec.icon]}</svg></span>
-          <div><h4>${sec.name}</h4><div class="ag">${agy}</div></div></div>
-        <div style="font-size:11.5px;color:var(--dim)">${sec.pitch}</div>${rows}</div></button>`}).join('');
+  renderMacro();
+  renderFeed();
+}
 
-  const lag=[{n:'GPP จังหวัด (สศช.)',v:730,c:cv('--coral')},{n:'รายงานคลังจังหวัด',v:60,c:cv('--gold')},
-    ...DATASETS.map(d=>({n:d.agency.split(' · ')[0].replace('สำนักงาน','สนง.').replace('จังหวัดหนองบัวลำภู','จ.นภ.'),v:d.lag,c:cv('--blue')})),
-    {n:'ดัชนี NBL–MEI',v:15,c:cv('--brand')}].sort((a,b)=>b.v-a.v);
-  mk('cLag',{type:'bar',data:{labels:lag.map(x=>x.n),
-    datasets:[{data:lag.map(x=>x.v),backgroundColor:lag.map(x=>x.c),borderRadius:4,barThickness:12}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'ช้าประมาณ '+c.raw+' วัน'}}},
-      scales:{x:ax({type:'logarithmic',ticks:{callback:v=>v+' วัน'}}),y:ax({grid:{display:false},ticks:{font:{size:9.5}}})}}});
+/* ── แท็บ ภาพรวม / อุปสงค์ / อุปทาน ── */
+function renderMacro(){
+  const cur=mLast(), prv=mPrev(), defs=MSERIES[MACRO_VIEW];
+  const sw=document.getElementById('macroSw');
+  if(sw){
+    [...sw.children].forEach(b=>b.classList.toggle('on',b.dataset.mv===MACRO_VIEW));
+    if(!sw.dataset.b){sw.dataset.b='1';
+      sw.addEventListener('click',e=>{const b=e.target.closest('[data-mv]');if(!b)return;
+        MACRO_VIEW=b.dataset.mv;renderMacro()});}
+  }
+  const title={all:'ภาวะเศรษฐกิจรายเดือน',dem:'ด้านอุปสงค์ (Demand)',sup:'ด้านอุปทาน (Supply)'}[MACRO_VIEW];
+  $('#macroTitle').textContent=title;
+  $('#macroSub').textContent='ร้อยละเทียบปีก่อน · '+mLabel(MAC[0])+' ถึง '+mLabel(cur);
 
+  /* การ์ดของแท็บนั้น */
+  const cards=(MACRO_VIEW==='all')?[
+      ['overall','ภาพรวมเศรษฐกิจจังหวัด','forecast','--brand',cur.overall,prv?prv.overall:null],
+      ['dem','ด้านอุปสงค์','cpi','--gold',demIdx(cur),demIdx(prv)],
+      ['sup','ด้านอุปทาน','factorynew','--blue',supIdx(cur),supIdx(prv)]
+    ]:defs.map(d=>[d[0],d[1],d[2],d[3],cur[d[0]],prv?prv[d[0]]:null]);
+  $('#macroKpi').innerHTML=cards.map(c=>{
+    const [k,label,ico,col,v,p]=c;
+    const tip=(k==='dem'||k==='sup')
+      ? tipOf({t:label,d:label+' เดือน '+mLabel(cur)+' อยู่ที่ '+f(v,2)+'%',
+          calc:k==='dem'?'เฉลี่ยจากการบริโภคเอกชน การลงทุนเอกชน และการใช้จ่ายภาครัฐ'
+                        :'ถ่วงน้ำหนักตามโครงสร้าง เกษตร '+MW.agri+'% อุตสาหกรรม '+MW.indus+'% บริการ '+MW.serv+'%',
+          src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})
+      : macroTip(k,label,cur,prv);
+    return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'% YoY',
+      chip:chip(v),sub:p==null?'':'เทียบเดือนก่อน '+ptTxt(v-p),tip:tip});
+  }).join('');
+
+  /* กราฟ */
+  const labels=MAC.map(mLabel);
+  const sets=defs.map((d,i)=>({label:d[1],data:MAC.map(r=>r[d[0]]),borderColor:cv(d[3]),
+    backgroundColor:cv(d[3])+'1f',borderWidth:defs.length>1?2.4:3,pointRadius:0,pointHoverRadius:5,
+    tension:.3,fill:defs.length===1}));
+  mk('cMac',{type:'line',data:{labels:labels,datasets:sets},
+    options:{plugins:{legend:{display:defs.length>1,position:'bottom',labels:{boxWidth:14,boxHeight:12,font:{size:11.5}}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+' '+(c.raw>0?'+':'')+(+c.raw).toFixed(2)+'%'}}},
+      scales:{x:ax({grid:{display:false},ticks:{maxTicksLimit:12,font:{size:10}}}),
+              y:ax({ticks:{callback:v=>v+'%'}})}}});
+
+  /* ตาราง */
+  $('#tMac').innerHTML='<thead><tr><th>เดือน</th>'+defs.map(d=>`<th class="r">${d[1]}</th>`).join('')+
+    (MACRO_VIEW==='all'?'<th class="r">อุปสงค์</th><th class="r">อุปทาน</th>':'')+'</tr></thead><tbody>'+
+    MAC.slice().reverse().map(r=>'<tr><td>'+mLabel(r)+'</td>'+
+      defs.map(d=>`<td class="r" style="color:${upc(r[d[0]])}">${(r[d[0]]>0?'+':'')+f(r[d[0]],2)}%</td>`).join('')+
+      (MACRO_VIEW==='all'?`<td class="r" style="color:${upc(demIdx(r))}">${(demIdx(r)>0?'+':'')+f(demIdx(r),2)}%</td>
+        <td class="r" style="color:${upc(supIdx(r))}">${(supIdx(r)>0?'+':'')+f(supIdx(r),2)}%</td>`:'')+
+      '</tr>').join('')+'</tbody>';
+
+  const tg=document.getElementById('macroTog');
+  if(tg&&!tg.innerHTML){tg.innerHTML=viewToggle('cMac');bindToggle();}
+
+  /* คำอธิบาย */
+  const best=defs.slice().sort((a,b)=>cur[b[0]]-cur[a[0]])[0], worst=defs.slice().sort((a,b)=>cur[a[0]]-cur[b[0]])[0];
+  const pos=MAC.slice(-12).filter(r=>(MACRO_VIEW==='sup'?supIdx(r):MACRO_VIEW==='dem'?demIdx(r):r.overall)>0).length;
+  $('#macroNote').innerHTML=MDESC[MACRO_VIEW]+'<br>'+
+    (defs.length>1
+      ? `เดือน ${mLabel(cur)} ตัวที่ขยายตัวมากสุดคือ <b>${best[1]} ${(cur[best[0]]>0?'+':'')+f(cur[best[0]],1)}%</b>
+         ต่ำสุดคือ ${worst[1]} ${(cur[worst[0]]>0?'+':'')+f(cur[worst[0]],1)}%`
+      : `เดือน ${mLabel(cur)} อยู่ที่ <b>${(cur.overall>0?'+':'')+f(cur.overall,1)}%</b> เทียบปีก่อน`)+
+    ` · ใน 12 เดือนล่าสุดเป็นบวก ${pos} เดือน<br>
+    <span style="color:var(--faint)">ตัวเลขทั้งหมดเป็นร้อยละเทียบเดือนเดียวกันปีก่อนตามที่ต้นทางรายงาน
+    ค่าที่เป็น "จุด" คือผลต่างของอัตราระหว่างเดือน ไม่ใช่การเติบโตรายเดือน</span>`;
+}
+
+function renderFeed(){
   $('#feed').innerHTML=DATASETS.slice().sort((a,b)=>a.lag-b.lag).map(d=>{
     const st=d.lag<=25?[cv('--good'),'ส่งแล้ว']:d.lag<=45?[cv('--warn'),'รอยืนยัน']:[cv('--bad'),'ค้างส่ง'];
     const tp=tipOf({t:d.series[0].label,
       d:'สถานะการส่งข้อมูล '+st[1]+' · ข้อมูลชุดนี้มาช้าประมาณ '+d.lag+' วันหลังสิ้นงวด',
       calc:'เกณฑ์สถานะ: ช้าไม่เกิน 25 วัน = ส่งแล้ว · 26–45 วัน = รอยืนยัน · เกิน 45 วัน = ค้างส่ง',
-      src:d.id,when:PLABEL});
+      src:d.id,when:'เดือน '+mLabel(mLast())});
     return`<div data-tip2="${tp}" style="display:flex;align-items:center;gap:9px;padding:6px 2px;border-bottom:1px solid var(--line2);font-size:12px">
       <span class="dot" style="background:${st[0]}"></span>
       <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dim)">${d.agency.split(' · ')[0].replace('สำนักงาน','สนง.')}</span>
       <span style="font-size:11px;color:${st[0]}">${st[1]}</span></div>`}).join('');
 }
 function drawRibbon(){
-  const sv=$('#ribbon');if(!sv)return;
-  const s=MEI.out,W=460,H=56;sv.setAttribute('viewBox',`0 0 ${W} ${H}`);
-  const mn=Math.min(...s.map(x=>x.v))-1,mx=Math.max(...s.map(x=>x.v))+1,r=mx-mn,bw=W/s.length;
-  const zy=H-6-((100-mn)/r)*(H-14);
+  const sv=$('#ribbon'); if(!sv||!MAC.length)return;
+  /* แท่งเล็กใต้ตัวเลขใหญ่ = อัตราเทียบปีก่อนของ 36 เดือนล่าสุด แท่งขึ้นคือบวก แท่งลงคือติดลบ */
+  const s=MAC.slice(-36), W=460, H=56;
+  sv.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const vals=s.map(x=>x.overall);
+  const mn=Math.min(0,...vals)-2, mx=Math.max(0,...vals)+2, r=(mx-mn)||1, bw=W/s.length;
+  const zy=H-6-((0-mn)/r)*(H-14);
   let g=`<line x1="0" y1="${zy.toFixed(1)}" x2="${W}" y2="${zy.toFixed(1)}" stroke="rgba(255,255,255,.3)" stroke-dasharray="3 4"/>`;
-  s.forEach((m,i)=>{const y=H-6-((m.v-mn)/r)*(H-14),h=Math.max(2,Math.abs(zy-y)),top=Math.min(y,zy);
-    const col=m.v>=100?'#4fd6a0':m.v>=97?'#e7c667':'#f08a76';
+  s.forEach((m,i)=>{
+    const y=H-6-((m.overall-mn)/r)*(H-14), h=Math.max(2,Math.abs(zy-y)), top=Math.min(y,zy);
+    const col=m.overall>=3?'#4fd6a0':m.overall>=0?'#a8dcc0':'#f08a76';
     g+=`<rect x="${(i*bw+bw*.17).toFixed(1)}" y="${top.toFixed(1)}" width="${(bw*.66).toFixed(1)}" height="${h.toFixed(1)}" rx="1.5"
-      fill="${col}" opacity="${i===35?1:(.42+.5*i/36).toFixed(2)}"><title>${TH_M[m.m-1]} ${m.y} · ${m.v.toFixed(1)}</title></rect>`});
+      fill="${col}" opacity="${i===s.length-1?1:(.45+.5*i/s.length).toFixed(2)}"><title>${mLabel(m)} · ${m.overall.toFixed(1)}%</title></rect>`;
+  });
   sv.innerHTML=g;
 }
 
-
 window.addEventListener('resize',drawRibbon);
-DS.init('overview',function(){renderOverview();bindSlicers(renderOverview)});
+DS.init('overview',renderOverview);
 </script>
 </body>
 </html>
