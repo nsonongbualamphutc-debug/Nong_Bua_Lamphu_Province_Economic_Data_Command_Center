@@ -28,7 +28,7 @@
     <div class="c"><header><span class="hdico icow img" data-hdico="forecast"></span><h3>ดัชนีภาวะเศรษฐกิจ 36 เดือน</h3><span class="u">จังหวัด · ภาคอีสาน · ทั้งประเทศ</span></header>
       <div class="b"><div class="ch lg"><canvas id="cMei"></canvas></div></div></div>
     <div class="c"><header><span class="hdico icow img" data-hdico="industry"></span><h3>โครงสร้างเศรษฐกิจ</h3>
-      <span class="u" id="structU">สัดส่วน GPP ตามสาขา</span>${viewToggle('cStruct')}</header>
+      <span class="u" id="structU">สัดส่วน GPP ตามสาขา</span><span class="r" id="structTog"></span></header>
       <div class="b">
         <div id="cStruct-chart">
           <div class="ch"><canvas id="cStruct"></canvas></div>
@@ -72,8 +72,22 @@ function renderGpp(){
     (ST.cmp?' · เทียบงวดเดียวกันปีก่อน':'');
   const meiAt=i=>MEI.out[i]?MEI.out[i].v:null;
   const meiAvg=idx=>{const v=idx.map(meiAt).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
-  const s=MEI.out, G=D.gpp.rows, n=G.length-1;
-  const STRUCT=(D.gpp.struct||[]).map(x=>Array.isArray(x)?{n:x[0],p:x[1],v:null,g:'บริการ'}:x);
+  const s=MEI.out;
+  /* โครงสร้างรายสาขาไม่ใช่ตารางที่หน่วยงานแก้ได้ จึงอ่านจากไฟล์ข้อมูลเสมอ
+     กัน gpp ชุดเก่าที่ค้างอยู่ในชีต Tables มาทับของจริงจนเหลือ 5 สาขา */
+  const FG=(typeof REAL!=='undefined'&&REAL.gpp)?REAL.gpp:D.gpp;
+  const STRUCT=(FG.struct||[]).filter(x=>x&&!Array.isArray(x));
+  const SYEAR=FG.structYear, STOT=FG.structTotal||STRUCT.reduce((a,b)=>a+(b.v||0),0);
+  /* ตาราง GPP รายปีแก้ได้ จึงเอาของไฟล์เป็นฐานแล้วทับด้วยค่าที่หน่วยงานแก้ทีละปี
+     ปีที่มีเฉพาะในชีตก็ยังขึ้น ปีที่ไฟล์มีใหม่กว่าก็ไม่หาย */
+  const G=(function(){
+    const by={};
+    (FG.rows||[]).forEach(r=>by[r.y]=Object.assign({},r));
+    ((D.gpp&&D.gpp.rows)||[]).forEach(r=>{if(r&&r.y)by[r.y]=Object.assign({},by[r.y]||{},r)});
+    return Object.keys(by).map(Number).sort((a,b)=>a-b).map(y=>by[y]);
+  })();
+  if(D.gpp)D.gpp.rows=G;              /* ให้ช่องแก้ไขในตารางอ้างแถวเดียวกัน */
+  const n=G.length-1;
   const agriV=(STRUCT.find(x=>/เกษตรกรรม/.test(x.n))||{}).v||0;
   const agriShare=(STRUCT.find(x=>/เกษตรกรรม/.test(x.n))||{}).p||0;
   const gReal=(G[n].cvm&&G[n-1]&&G[n-1].cvm)?pctc(G[n].cvm,G[n-1].cvm):null;
@@ -104,8 +118,8 @@ function renderGpp(){
       chip:'<span class="chip">ประเทศ 8.7%</span>',sub:'เศรษฐกิจฐานเกษตรชัดเจน',
       tip:tipOf({t:'สัดส่วนภาคเกษตรในโครงสร้าง GPP',
         d:'ภาคเกษตรของจังหวัดมีสัดส่วนสูงกว่าค่าเฉลี่ยประเทศราว 3 เท่า นโยบายเกษตรและราคาพืชผลจึงส่งผลต่อ GPP ของจังหวัดมากเป็นพิเศษ',
-        calc:'(มูลค่าเพิ่มสาขาเกษตร ป่าไม้ และประมง ÷ GPP รวม) × 100 = ('+f_num(agriV)+' ÷ '+f_num(D.gpp.structTotal)+') × 100 · เทียบค่าเฉลี่ยทั้งประเทศ 8.7%',
-        src:'gpp',when:'ปี '+D.gpp.structYear})})
+        calc:'(มูลค่าเพิ่มสาขาเกษตร ป่าไม้ และประมง ÷ GPP รวม) × 100 = ('+f_num(agriV)+' ÷ '+f_num(STOT)+') × 100 · เทียบค่าเฉลี่ยทั้งประเทศ 8.7%',
+        src:'gpp',when:'ปี '+SYEAR})})
   ].join('');
 
   mk('cMei',{type:'line',data:{labels:MONTHS.map(m=>m.label),datasets:[
@@ -125,13 +139,15 @@ function renderGpp(){
       tooltip:{callbacks:{label:c=>c.label+' '+c.raw+'%',
         footer:it=>f(gVal(it[0].label),1)+' ล้านบาท · '+STRUCT.filter(x=>x.g===it[0].label).length+' สาขา'}}}}});
 
+  const stT=document.getElementById('structTog');
+  if(stT&&!stT.innerHTML){stT.innerHTML=viewToggle('cStruct');bindToggle();}
   const stU=document.getElementById('structU');
-  if(stU)stU.textContent='สัดส่วน GPP ครบทั้ง '+STRUCT.length+' สาขา · ปี '+D.gpp.structYear;
+  if(stU)stU.textContent='สัดส่วน GPP ครบทั้ง '+STRUCT.length+' สาขา · ปี '+SYEAR;
   const mxP=Math.max(...STRUCT.map(x=>x.p))||1;
   document.getElementById('structBars').innerHTML=STRUCT.map(x=>{
-    const tp=tipOf({t:x.n,d:'หมวด'+x.g+' · มูลค่าเพิ่ม ณ ราคาประจำปี ปี '+D.gpp.structYear,
-      calc:'(มูลค่าเพิ่มของสาขา ÷ GPP รวม) × 100 = ('+f_num(x.v)+' ÷ '+f_num(D.gpp.structTotal)+') × 100',
-      src:'gpp',when:'ปี '+D.gpp.structYear});
+    const tp=tipOf({t:x.n,d:'หมวด'+x.g+' · มูลค่าเพิ่ม ณ ราคาประจำปี ปี '+SYEAR,
+      calc:'(มูลค่าเพิ่มของสาขา ÷ GPP รวม) × 100 = ('+f_num(x.v)+' ÷ '+f_num(STOT)+') × 100',
+      src:'gpp',when:'ปี '+SYEAR});
     return `<div class="barrow" data-tip2="${tp}">
       <span class="nm" style="width:190px">${x.n}</span>
       <span class="tr"><i style="width:${Math.max(2,x.p/mxP*100).toFixed(1)}%;background:${GCOL[x.g]}"></i></span>
@@ -139,13 +155,13 @@ function renderGpp(){
 
   $('#tStruct').innerHTML='<thead><tr><th>สาขา</th><th>หมวด</th><th class="r">ล้านบาท</th><th class="r">สัดส่วน</th></tr></thead><tbody>'+
     STRUCT.map(x=>`<tr><td>${rowIco(x.n)}${x.n}</td><td>${x.g}</td><td class="r">${f(x.v,1)}</td><td class="r">${x.p.toFixed(2)}%</td></tr>`).join('')+
-    `</tbody><tfoot><tr><td>รวม</td><td></td><td class="r">${f(D.gpp.structTotal,1)}</td><td class="r">100.00%</td></tr></tfoot>`;
+    `</tbody><tfoot><tr><td>รวม</td><td></td><td class="r">${f(STOT,1)}</td><td class="r">100.00%</td></tr></tfoot>`;
   const top3=STRUCT.slice(0,3);
   document.getElementById('structNote').innerHTML=
-    `ปี ${D.gpp.structYear} สาขาที่ใหญ่ที่สุดคือ <b>${top3[0].n}</b> ${top3[0].p.toFixed(2)}%
+    `ปี ${SYEAR} สาขาที่ใหญ่ที่สุดคือ <b>${top3[0].n}</b> ${top3[0].p.toFixed(2)}%
      รองลงมา ${top3[1].n} ${top3[1].p.toFixed(2)}% และ ${top3[2].n} ${top3[2].p.toFixed(2)}%<br>
      แบ่งเป็นหมวดใหญ่ เกษตร ${gSum('เกษตร').toFixed(1)}% · อุตสาหกรรม ${gSum('อุตสาหกรรม').toFixed(1)}% · บริการ ${gSum('บริการ').toFixed(1)}%
-     รวมทั้งสิ้น ${f(D.gpp.structTotal,1)} ล้านบาท`;
+     รวมทั้งสิ้น ${f(STOT,1)} ล้านบาท`;
 
   mk('cGpp',{type:'bar',data:{labels:G.map(r=>'ปี '+r.y),datasets:[
     {type:'bar',label:'GPP (ล้านบาท)',data:G.map(r=>r.value),backgroundColor:cv('--brand'),borderRadius:6,barPercentage:.5,yAxisID:'y'},
