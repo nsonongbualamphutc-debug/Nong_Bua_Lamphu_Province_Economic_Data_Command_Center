@@ -36,7 +36,9 @@
       </div>
     </div>
   </div>
+  <div id="macroPick"></div>
   <div class="grid g6 mb" id="homeKpi"></div>
+  <div class="c mb" id="hiBox"><div class="b" id="hiBody"></div></div>
 
   <div class="vswitch big mb" id="macroSw">
     <button class="on" data-mv="all">ภาพรวม</button>
@@ -71,6 +73,7 @@ function macRows(){return withEmpY(((typeof DX!=='undefined'&&DX.macro&&DX.macro
 let MAC=macRows();
 const MW=(typeof DX!=='undefined'&&DX.macro&&DX.macro.weight)||{agri:21,indus:22,serv:57};
 const mLabel=r=>TH_M[r.m-1]+' '+String(r.y).slice(-2);
+const TH_FULL=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const MSERIES={
   all:[['overall','ภาพรวมเศรษฐกิจจังหวัด','forecast','--brand']],
   sup:[['agri','ภาคเกษตรกรรม','agri','--leaf'],['indus','ภาคอุตสาหกรรม','factorynew','--blue'],['serv','ภาคบริการ','trade','--brand']],
@@ -90,7 +93,9 @@ function withEmpY(rows){
   return rows;
 }
 let MACRO_VIEW='all';
-const mLast=()=>MAC[MAC.length-1], mPrev=()=>MAC[MAC.length-2];
+let MAC_I=null;                       /* ดัชนีเดือนที่เลือก · ค่าเริ่มต้นคือเดือนล่าสุดที่มีข้อมูล */
+const mIdx=()=>{const n=MAC.length-1;return (MAC_I==null||MAC_I<0||MAC_I>n)?n:MAC_I};
+const mLast=()=>MAC[mIdx()], mPrev=()=>MAC[mIdx()-1];
 const supIdx=r=>r?(r.agri*MW.agri+r.indus*MW.indus+r.serv*MW.serv)/(MW.agri+MW.indus+MW.serv):null;
 const demIdx=r=>r?(r.cons+r.invest+r.gov)/3:null;
 const arrow=v=>v==null?'—':(v>0?'▲ +':v<0?'▼ ':'● ')+f(Math.abs(v)<0.05?0:v,1)+'%';
@@ -106,12 +111,50 @@ function macroTip(key,label,cur,prv,extra){
     src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)});
 }
 
+/* ผูกที่ document ครั้งเดียว แถบเลือกเดือนจึงยังทำงานหลังวาดหน้าใหม่ */
+document.addEventListener('click',e=>{
+  const bar=e.target.closest('[data-mp]'); if(!bar)return;
+  const st=e.target.closest('[data-mstep]'), nw=e.target.closest('[data-mnow]');
+  if(st){const n=mIdx()+(+st.dataset.mstep); if(n<0||n>=MAC.length)return; MAC_I=n;}
+  else if(nw)MAC_I=null;
+  else return;
+  renderOverview();
+});
+document.addEventListener('change',e=>{
+  if(!e.target.closest('[data-mp]'))return;
+  const y=+document.getElementById('mpY').value, m=+document.getElementById('mpM').value;
+  let i=MAC.findIndex(r=>r.y===y&&r.m===m);
+  if(i<0)i=MAC.map((r,k)=>[r,k]).filter(([r])=>r.y===y).map(([,k])=>k).pop();
+  if(i>=0)MAC_I=i;
+  renderOverview();
+});
 function renderOverview(){
   MAC=macRows();
   if(!MAC.length)return;
   const cur=mLast(), prv=mPrev();
   const ov=cur.overall, ovP=prv?prv.overall:null;
   const dem=demIdx(cur), demP=demIdx(prv), sup=supIdx(cur), supP=supIdx(prv);
+
+  /* ── แถบเลือกปี–เดือน · ล็อกที่เดือนล่าสุดที่หน่วยงานกรอกไว้ ── */
+  const pk=document.getElementById('macroPick');
+  if(pk){
+    const ys=[...new Set(MAC.map(r=>r.y))].sort((a,b)=>a-b);
+    const mo=MAC.filter(r=>r.y===cur.y).map(r=>r.m).sort((a,b)=>a-b);
+    const latest=MAC[MAC.length-1];
+    pk.innerHTML=`<div class="slicer monthpick" data-mp>
+      <span class="sl-lab"><img class="slico" src="assets/icons/ic-filter.png" alt="" onerror="this.remove()">เลือกงวดข้อมูล</span>
+      <span class="sl-nav">
+        <button data-mstep="-1" ${mIdx()<=0?'disabled':''} aria-label="เดือนก่อนหน้า"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <select class="sel" id="mpY">${ys.map(y=>`<option value="${y}"${y===cur.y?' selected':''}>ปี ${y}</option>`).join('')}</select>
+        <select class="sel" id="mpM">${mo.map(m=>`<option value="${m}"${m===cur.m?' selected':''}>${TH_M[m-1]}</option>`).join('')}</select>
+        <button data-mstep="1" ${mIdx()>=MAC.length-1?'disabled':''} aria-label="เดือนถัดไป"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+      </span>
+      <button class="sl-now${mIdx()===MAC.length-1?' on':''}" data-mnow>งวดล่าสุด</button>
+      <span class="sl-info">กำลังแสดง <b>${mLabel(cur)}</b>${mIdx()===MAC.length-1?' · เป็นงวดล่าสุดที่หน่วยงานกรอกไว้':' · งวดล่าสุดที่กรอกคือ '+mLabel(latest)}</span>
+    </div>`;
+  }
+  const eyeb=document.querySelector('.hero .eyeb');
+  if(eyeb)eyeb.textContent='ภาวะเศรษฐกิจจังหวัดหนองบัวลำภู · '+TH_FULL[cur.m-1]+' '+cur.y;
 
   /* ── หัวเรื่อง ── */
   $('#meiVal').textContent=(ov>0?'+':'')+f(ov,1)+'%';
@@ -147,15 +190,17 @@ function renderOverview(){
   const lvl=(k,ky,label,unit,ico,col,dec)=>{
     const v=cur[k], p=prv?prv[k]:null, yo=cur[ky];
     return kpiCard({icon:'coin',img:ico,color:cv(col),label:label,value:f(v,dec||0),unit:unit,
-      chip:chip(yo),sub:p==null?'':'เทียบเดือนก่อน '+(v-p>0?'+':'')+f(v-p,dec||0)+' '+unit,
+      chip:chip(yo),spark:spark(hist(k),cv(col)),sub:p==null?'':'เทียบเดือนก่อน '+(v-p>0?'+':'')+f(v-p,dec||0)+' '+unit,
       tip:tipOf({t:label,d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(v)+' '+unit,
         calc:'เทียบปีก่อน '+f(yo,2)+'%'+(p==null?'':' · เดือนก่อน '+f_num(p)+' '+unit+' เปลี่ยนแปลง '+(v-p>0?'+':'')+f_num(v-p)),
         src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})});
   };
+  /* เส้นเล็กในการ์ด = 12 เดือนล่าสุดนับถึงงวดที่เลือก ทำให้เห็นทิศทางไม่ใช่แค่ตัวเลขเดือนเดียว */
+  const hist=k=>MAC.slice(Math.max(0,mIdx()-11),mIdx()+1).map(r=>r[k]).filter(x=>x!=null);
   const pctCard=(k,label,ico,col,go)=>{
     const v=cur[k], p=prv?prv[k]:null;
     return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'% YoY',
-      chip:chip(v),sub:p==null?'':'เทียบเดือนก่อน '+ptTxt(v-p),go:go,
+      chip:chip(v),spark:spark(hist(k),cv(col)),sub:p==null?'':'เทียบเดือนก่อน '+ptTxt(v-p),go:go,
       tip:macroTip(k,label,cur,prv)});
   };
   $('#homeKpi').innerHTML=[
@@ -169,7 +214,7 @@ function renderOverview(){
       const back=MAC[MAC.length-13];
       const yo=back&&back.emp?pctc(v,back.emp):null;
       return kpiCard({icon:'people',img:'employed',color:cv('--plum'),label:'การจ้างงานรวม',value:f(v,0),unit:'คน',
-        chip:chip(yo),sub:p==null?'':'เทียบเดือนก่อน '+(v-p>0?'+':'')+f(v-p,0)+' คน',go:'labor',
+        chip:chip(yo),spark:spark(hist('emp'),cv('--plum')),sub:p==null?'':'เทียบเดือนก่อน '+(v-p>0?'+':'')+f(v-p,0)+' คน',go:'labor',
         tip:tipOf({t:'การจ้างงานรวมในจังหวัด',d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(v)+' คน',
           calc:(yo==null?'':'เทียบปีก่อน = ('+f_num(v)+' − '+f_num(back.emp)+') ÷ '+f_num(back.emp)+' × 100 = '+f(yo,2)+'%')+
             (p==null?'':' · เดือนก่อน '+f_num(p)+' คน'),
@@ -177,7 +222,46 @@ function renderOverview(){
     })()
   ].join('');
 
+  renderHighlight(cur,prv);
   renderMacro();
+}
+
+/* ── จุดเด่น จุดเฝ้าระวัง และแรงขับเคลื่อนของเดือนที่เลือก ── */
+function renderHighlight(cur,prv){
+  const box=document.getElementById('hiBody'); if(!box)return;
+  const ALL=[['overall','ภาพรวมเศรษฐกิจ'],['agri','ภาคเกษตรกรรม'],['indus','ภาคอุตสาหกรรม'],['serv','ภาคบริการ'],
+             ['cons','การบริโภคเอกชน'],['invest','การลงทุนเอกชน'],['gov','การใช้จ่ายภาครัฐ']];
+  const list=ALL.filter(x=>x[0]!=='overall').map(([k,n])=>({k,n,v:cur[k],d:prv?cur[k]-prv[k]:null}));
+  const up=list.slice().sort((a,b)=>b.v-a.v)[0], dn=list.slice().sort((a,b)=>a.v-b.v)[0];
+  const acc=list.filter(x=>x.d!=null).slice().sort((a,b)=>b.d-a.d)[0];
+  const dec=list.filter(x=>x.d!=null).slice().sort((a,b)=>a.d-b.d)[0];
+  /* แรงขับเคลื่อนด้านอุปทาน = อัตราของสาขา × น้ำหนักโครงสร้าง บอกว่าใครดันตัวเลขรวมมากที่สุด */
+  const wsum=MW.agri+MW.indus+MW.serv;
+  const contrib=[['agri','ภาคเกษตรกรรม',MW.agri,'--leaf'],['indus','ภาคอุตสาหกรรม',MW.indus,'--blue'],['serv','ภาคบริการ',MW.serv,'--brand']]
+    .map(([k,n,w,c])=>({n,c,w,v:cur[k],part:cur[k]*w/wsum}));
+  const mx=Math.max(...contrib.map(x=>Math.abs(x.part)))||1;
+  const card=(t,o,col,ic)=>`<div class="hi">
+      <span class="hi-ic icow img">${icoImg(ic,30)}</span>
+      <div><div class="hi-t">${t}</div>
+        <div class="hi-v" style="color:${col}">${o?((o.v>0?'+':'')+f(o.v,1)+'%'):'—'}</div>
+        <div class="hi-n">${o?o.n:''}</div></div></div>`;
+  box.innerHTML=`<div class="higrid">
+      ${card('ขยายตัวสูงสุดในเดือนนี้',up,'var(--good)','award')}
+      ${card('หดตัวมากสุด ควรเฝ้าระวัง',dn,'var(--bad)','alert')}
+      ${card('เร่งขึ้นจากเดือนก่อนมากสุด',acc?{n:acc.n+' '+ptTxt(acc.d),v:acc.v}:null,'var(--good)','forecast')}
+      ${card('ชะลอลงจากเดือนก่อนมากสุด',dec?{n:dec.n+' '+ptTxt(dec.d),v:dec.v}:null,'var(--warn)','gap')}
+    </div>
+    <div class="contrib">
+      <div class="ct-h">แรงขับเคลื่อนด้านอุปทาน · ${mLabel(cur)}</div>
+      ${contrib.map(x=>`<div class="barrow" data-tip2="${tipOf({t:x.n+' · ส่วนที่ดันตัวเลขรวม',
+          d:'สาขานี้มีน้ำหนัก '+x.w+'% ของโครงสร้างเศรษฐกิจจังหวัด',
+          calc:'อัตราของสาขา × น้ำหนัก ÷ น้ำหนักรวม = '+f(x.v,2)+'% × '+x.w+' ÷ '+wsum+' = '+f(x.part,2)+' จุด',
+          src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})}">
+        <span class="nm">${x.n} <em>${x.w}%</em></span>
+        <span class="tr two"><i class="${x.part<0?'neg':''}" style="width:${(Math.abs(x.part)/mx*50).toFixed(1)}%;background:${cv(x.c)}"></i></span>
+        <span class="vv">${(x.part>0?'+':'')+f(x.part,2)} จุด</span></div>`).join('')}
+      <div class="note" style="border:0;padding:6px 0 0;margin:0">รวมกันได้ ${(contrib.reduce((a,b)=>a+b.part,0)>0?'+':'')+f(contrib.reduce((a,b)=>a+b.part,0),2)}% คือตัวเลขด้านอุปทานของเดือนนี้ · สาขาที่น้ำหนักมากอย่างภาคบริการจึงมีผลต่อภาพรวมมากกว่าสาขาอื่น</div>
+    </div>`;
 }
 
 /* ── แท็บ ภาพรวม / อุปสงค์ / อุปทาน ── */

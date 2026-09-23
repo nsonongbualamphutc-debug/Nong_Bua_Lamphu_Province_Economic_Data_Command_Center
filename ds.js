@@ -1971,7 +1971,8 @@ function fillIcons(root){
   document.addEventListener('DOMContentLoaded',()=>mo.observe(document.body,{childList:true,subtree:true}));
 })();
 /* แถบบอกความน่าเชื่อถือของตัวเลขรายเดือน — แสดงเฉพาะหน้าที่ใช้ชุดรายเดือน */
-const TRUST_PAGES={overview:null,gpp:null,fiscal:['spend'],industry:['factory','power'],trade:['cpi','credit'],
+/* หน้าภาพรวมและหน้า GPP ใช้ข้อมูลจริงจากแฟ้มของหน่วยงานแล้ว ไม่ต้องมีแถบเตือนข้อมูลจำลอง */
+const TRUST_PAGES={fiscal:['spend'],industry:['factory','power'],trade:['cpi','credit'],
   consume:['fuel','car'],area:null,report:null};
 function trustBar(){
   if(typeof PAGE==='undefined'||!TRUST_PAGES.hasOwnProperty(PAGE.id))return;
@@ -1979,7 +1980,7 @@ function trustBar(){
   const ids=TRUST_PAGES[PAGE.id]||DATASETS.map(d=>d.id);
   const st=ids.map(id=>({id,d:DATASETS.find(x=>x.id===id),r:realStat(id)})).filter(x=>x.d&&x.r);
   const full=st.filter(x=>x.r.share>=.999).length, none=st.filter(x=>x.r.real===0).length, part=st.length-full-none;
-  const showMei=['overview','gpp','report'].indexOf(PAGE.id)>=0;
+  const showMei=['report'].indexOf(PAGE.id)>=0;
   const lv=full===st.length?'ok':none===st.length?'bad':'warn';
   let el=v.querySelector('.trust');
   if(!el){el=document.createElement('div');el.className='trust';

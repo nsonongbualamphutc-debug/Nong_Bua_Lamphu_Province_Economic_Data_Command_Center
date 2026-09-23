@@ -1125,3 +1125,30 @@ body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
   .vswitch.big{display:flex;width:100%}
   .vswitch.big button{flex:1;padding:9px 6px;font-size:12.5px}
 }
+
+/* ══ แถบเลือกปี–เดือนของหน้าภาพรวม ══ */
+.slicer.monthpick .sl-nav select{min-width:96px}
+.slicer.monthpick .sl-nav select+select{min-width:86px}
+@media(max-width:767px){
+  .slicer.monthpick{flex-wrap:wrap}
+  .slicer.monthpick .sl-info{width:100%;order:9}
+  .slicer.monthpick .sl-nav select{min-width:0;flex:1}
+}
+
+/* ══ กล่องจุดเด่นและแรงขับเคลื่อนของหน้าภาพรวม ══ */
+.higrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.hi{display:flex;gap:11px;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:12px 14px}
+.hi-ic{width:30px;height:30px;flex:none;display:grid;place-items:center}
+.hi-ic img{width:30px;height:30px;object-fit:contain}
+.hi-t{font-size:11px;color:var(--faint);line-height:1.5}
+.hi-v{font-family:var(--fn);font-size:22px;font-weight:700;line-height:1.2}
+.hi-n{font-size:11.5px;color:var(--dim)}
+.contrib{margin-top:14px;border-top:1px solid var(--line2);padding-top:12px}
+.ct-h{font-size:12.5px;font-weight:600;color:var(--forest,#0B3C32);margin-bottom:9px}
+.contrib .barrow .nm em{font-style:normal;font-size:10.5px;color:var(--faint);margin-left:5px}
+.contrib .tr.two{position:relative;background:var(--line2)}
+.contrib .tr.two::before{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--line)}
+.contrib .tr.two i{position:absolute;left:50%;border-radius:0 7px 7px 0}
+.contrib .tr.two i.neg{left:auto;right:50%;border-radius:7px 0 0 7px}
+@media(max-width:1150px){.higrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.higrid{grid-template-columns:1fr}.hi-v{font-size:19px}}
