@@ -27,8 +27,15 @@
   <div class="grid g21 mb">
     <div class="c"><header><span class="hdico icow img" data-hdico="forecast"></span><h3>ดัชนีภาวะเศรษฐกิจ 36 เดือน</h3><span class="u">จังหวัด · ภาคอีสาน · ทั้งประเทศ</span></header>
       <div class="b"><div class="ch lg"><canvas id="cMei"></canvas></div></div></div>
-    <div class="c"><header><span class="hdico icow img" data-hdico="industry"></span><h3>โครงสร้างเศรษฐกิจ</h3><span class="u">สัดส่วน GPP ตามสาขา</span></header>
-      <div class="b"><div class="ch lg"><canvas id="cStruct"></canvas></div></div></div>
+    <div class="c"><header><span class="hdico icow img" data-hdico="industry"></span><h3>โครงสร้างเศรษฐกิจ</h3>
+      <span class="u" id="structU">สัดส่วน GPP ตามสาขา</span>${viewToggle('cStruct')}</header>
+      <div class="b">
+        <div id="cStruct-chart">
+          <div class="ch"><canvas id="cStruct"></canvas></div>
+          <div id="structBars" style="margin-top:12px"></div>
+        </div>
+        <div id="cStruct-table" class="hide"><div class="sc" style="max-height:420px"><table class="t" id="tStruct"></table></div></div>
+        <div class="note" id="structNote"></div></div></div>
   </div>
   <div class="c mb" style="border-left:4px solid var(--brand)">
     <header><span class="hdico icow img" data-hdico="stability"></span><h3>การวิเคราะห์ด้านอุปสงค์ อุปทาน และเสถียรภาพการคลัง</h3>
@@ -54,8 +61,10 @@
 /* ─────────────── 11) GPP ─────────────── */
 function renderGpp(){
   const slc=document.getElementById('gppSlc');
-  if(slc&&!slc.innerHTML)slc.innerHTML=slicerBar('slc-gpp',{freqs:['M','Q','Y'],freq:'M',label:'เลือกงวดข้อมูล',compare:true});
-  const ST=slicerState('slc-gpp')||{freq:'M',i:35,idx:[35],label:MONTHS[35].label,cmp:false};
+  /* หน้านี้เป็นข้อมูลรายปีทั้งหมด จึงล็อกตัวกรองไว้ที่รายปีอย่างเดียว
+     ตัวกรองคุมเฉพาะดัชนีรายเดือน NBL–MEI ที่อยู่ด้านบน ส่วน GPP ใช้ปีที่ สศช. ประกาศเสมอ */
+  if(slc&&!slc.innerHTML)slc.innerHTML=slicerBar('slc-gpp',{freqs:['Y'],freq:'Y',label:'เลือกปีข้อมูล',compare:true});
+  const ST=slicerState('slc-gpp')||{freq:'Y',i:35,idx:[35],label:'ปี '+CFG.latest.y,cmp:false};
   const NOW=ST.i, PREV=Math.max(0,NOW-12), PLABEL=ST.label;
   const info=document.getElementById('slc-gpp-info');
   if(info)info.innerHTML='กำลังแสดง <b>'+PLABEL+'</b>'+
@@ -64,6 +73,10 @@ function renderGpp(){
   const meiAt=i=>MEI.out[i]?MEI.out[i].v:null;
   const meiAvg=idx=>{const v=idx.map(meiAt).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
   const s=MEI.out, G=D.gpp.rows, n=G.length-1;
+  const STRUCT=(D.gpp.struct||[]).map(x=>Array.isArray(x)?{n:x[0],p:x[1],v:null,g:'บริการ'}:x);
+  const agriV=(STRUCT.find(x=>/เกษตรกรรม/.test(x.n))||{}).v||0;
+  const agriShare=(STRUCT.find(x=>/เกษตรกรรม/.test(x.n))||{}).p||0;
+  const gReal=(G[n].cvm&&G[n-1]&&G[n-1].cvm)?pctc(G[n].cvm,G[n-1].cvm):null;
   const curV=ST.freq==='M'?meiAt(NOW):meiAvg(ST.idx);
   const prvV=ST.freq==='M'?meiAt(PREV):meiAvg(ST.idx.map(i=>i-12).filter(i=>i>=0));
   const last={v:curV};
@@ -75,23 +88,24 @@ function renderGpp(){
         calc:'แปลงข้อมูล '+DATASETS.length+' ชุดเป็นดัชนีเทียบฐาน 100 = ค่าเฉลี่ยปี '+(CFG.latest.y-2)+' แล้วถ่วงน้ำหนักตามสัดส่วนของ '+SECTORS.length+' ภาคส่วน · ชุดที่ยิ่งน้อยยิ่งดี เช่น อัตราการว่างงาน กลับด้านก่อนเข้าสูตร · เทียบปีก่อน = ('+f(last.v,1)+' − '+f(prvV,1)+') ÷ '+f(prvV,1)+' × 100',
         src:'ประมวลโดยสำนักงานสถิติจังหวัดหนองบัวลำภู',when:PLABEL})}),
     kpiCard({icon:'coin',img:'gpp',color:cv('--brand2'),label:`GPP ปี ${G[n].y}`,value:f(G[n].value,0),unit:'ลบ.',
-      chip:chip(pctc(G[n].value,G[n-1].value)),sub:'ประกาศช้า 2 ปี',
-      tip:tipOf({t:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) แบบ Chain Volume Measures',
-        d:'มูลค่าสินค้าและบริการขั้นสุดท้ายทั้งหมดที่ผลิตได้ในจังหวัดตลอดปี เป็นตัวเลขทางการที่ใช้อ้างอิงระดับประเทศ แต่ประกาศช้าราว 2 ปี',
-        calc:'สศช. ประมวลจากข้อมูลการผลิตรายสาขา 16 สาขา · เทียบปีก่อน = ('+f_num(G[n].value)+' − '+f_num(G[n-1].value)+') ÷ '+f_num(G[n-1].value)+' × 100',
-        src:'gpp',when:'ปี '+G[n].y+' (ประกาศล่าสุด)'})}),
+      chip:chip(pctc(G[n].value,G[n-1].value)),sub:(G[n].note?'ข้อมูล'+G[n].note:'')+(gReal==null?'':' · โตจริง '+(gReal>0?'+':'')+f(gReal,1)+'%'),
+      tip:tipOf({t:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) ณ ราคาประจำปี',
+        d:'มูลค่าสินค้าและบริการขั้นสุดท้ายทั้งหมดที่ผลิตได้ในจังหวัดตลอดปี เป็นตัวเลขทางการที่ใช้อ้างอิงระดับประเทศ ประกาศปีละครั้งและช้ากว่าปีข้อมูลประมาณ 2 ปี',
+        calc:'สศช. ประมวลจากข้อมูลการผลิตครบทั้ง '+STRUCT.length+' สาขา · เทียบปีก่อน ณ ราคาประจำปี = ('+f_num(G[n].value)+' − '+f_num(G[n-1].value)+') ÷ '+f_num(G[n-1].value)+' × 100'+
+          (gReal==null?'':' · การเติบโตจริงที่ตัดผลของราคาออกแล้ว (แบบปริมาณลูกโซ่) = '+f(gReal,2)+'%'),
+        src:'gpp',when:'ปี '+G[n].y+(G[n].note?' ('+G[n].note+')':'')})}),
     kpiCard({icon:'people',img:'income',color:cv('--blue'),label:'GPP ต่อหัว',value:f(G[n].pc,0),unit:'บาท/คน/ปี',
-      chip:chip(pctc(G[n].pc,G[n-1].pc)),sub:'ประชากร '+f(D.base.pop,0)+' คน',
+      chip:chip(pctc(G[n].pc,G[n-1].pc)),sub:'ประชากรกลางปี '+f(G[n].pop||D.base.pop,0)+' คน',
       tip:tipOf({t:'ผลิตภัณฑ์มวลรวมจังหวัดต่อหัว',
         d:'รายได้เฉลี่ยต่อคนต่อปีของคนในจังหวัด ใช้เทียบฐานะทางเศรษฐกิจระหว่างจังหวัด ไม่ใช่รายได้ที่ครัวเรือนได้รับจริง',
-        calc:'GPP ทั้งจังหวัด ÷ จำนวนประชากรกลางปี = ('+f_num(G[n].value)+' ล้านบาท × 1,000,000) ÷ '+f_num(D.base.pop)+' คน',
+        calc:'GPP ทั้งจังหวัด ÷ จำนวนประชากรกลางปีที่ สศช. ใช้ = ('+f_num(G[n].value)+' ล้านบาท × 1,000,000) ÷ '+f_num(G[n].pop||D.base.pop)+' คน',
         src:'gpp',when:'ปี '+G[n].y})}),
-    kpiCard({icon:'leaf',img:'agri',color:cv('--leaf'),label:'สัดส่วนภาคเกษตรใน GPP',value:'28.4',unit:'%',
+    kpiCard({icon:'leaf',img:'agri',color:cv('--leaf'),label:'สัดส่วนภาคเกษตรใน GPP',value:f(agriShare,1),unit:'%',
       chip:'<span class="chip">ประเทศ 8.7%</span>',sub:'เศรษฐกิจฐานเกษตรชัดเจน',
       tip:tipOf({t:'สัดส่วนภาคเกษตรในโครงสร้าง GPP',
-        d:'ภาคเกษตรของจังหวัดมีสัดส่วนสูงกว่าค่าเฉลี่ยประเทศกว่า 3 เท่า นโยบายเกษตรและราคาพืชผลจึงส่งผลต่อ GPP ของจังหวัดมากเป็นพิเศษ',
-        calc:'(มูลค่าเพิ่มสาขาเกษตร ป่าไม้ และประมง ÷ GPP รวม) × 100 · เทียบค่าเฉลี่ยทั้งประเทศ 8.7%',
-        src:'gpp',when:'ปี '+G[n].y})})
+        d:'ภาคเกษตรของจังหวัดมีสัดส่วนสูงกว่าค่าเฉลี่ยประเทศราว 3 เท่า นโยบายเกษตรและราคาพืชผลจึงส่งผลต่อ GPP ของจังหวัดมากเป็นพิเศษ',
+        calc:'(มูลค่าเพิ่มสาขาเกษตร ป่าไม้ และประมง ÷ GPP รวม) × 100 = ('+f_num(agriV)+' ÷ '+f_num(D.gpp.structTotal)+') × 100 · เทียบค่าเฉลี่ยทั้งประเทศ 8.7%',
+        src:'gpp',when:'ปี '+D.gpp.structYear})})
   ].join('');
 
   mk('cMei',{type:'line',data:{labels:MONTHS.map(m=>m.label),datasets:[
@@ -101,10 +115,37 @@ function renderGpp(){
     options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:12}}},
       scales:{x:ax({grid:{display:false},ticks:{maxTicksLimit:13,font:{size:9.5}}}),y:ax()}}});
 
-  mk('cStruct',{type:'doughnut',data:{labels:D.gpp.struct.map(r=>r[0]),
-    datasets:[{data:D.gpp.struct.map(r=>r[1]),backgroundColor:PAL(),borderColor:cv('--card'),borderWidth:3}]},
-    options:{cutout:'58%',plugins:{legend:{position:'bottom',labels:{padding:9,font:{size:10.5}}},
-      tooltip:{callbacks:{label:c=>c.label+' '+c.raw+'%'}}}}});
+  /* โดนัทแสดง 3 หมวดใหญ่ให้อ่านง่าย ส่วนแท่งด้านล่างแสดงครบทุกสาขา ไม่มีการยุบเป็น "อื่น ๆ" */
+  const GRP=['เกษตร','อุตสาหกรรม','บริการ'], GCOL={'เกษตร':cv('--leaf'),'อุตสาหกรรม':cv('--blue'),'บริการ':cv('--brand')};
+  const gSum=g=>STRUCT.filter(x=>x.g===g).reduce((a,b)=>a+b.p,0);
+  const gVal=g=>STRUCT.filter(x=>x.g===g).reduce((a,b)=>a+(b.v||0),0);
+  mk('cStruct',{type:'doughnut',data:{labels:GRP,
+    datasets:[{data:GRP.map(g=>+gSum(g).toFixed(2)),backgroundColor:GRP.map(g=>GCOL[g]),borderColor:cv('--card'),borderWidth:3}]},
+    options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:11,font:{size:11.5}}},
+      tooltip:{callbacks:{label:c=>c.label+' '+c.raw+'%',
+        footer:it=>f(gVal(it[0].label),1)+' ล้านบาท · '+STRUCT.filter(x=>x.g===it[0].label).length+' สาขา'}}}}});
+
+  const stU=document.getElementById('structU');
+  if(stU)stU.textContent='สัดส่วน GPP ครบทั้ง '+STRUCT.length+' สาขา · ปี '+D.gpp.structYear;
+  const mxP=Math.max(...STRUCT.map(x=>x.p))||1;
+  document.getElementById('structBars').innerHTML=STRUCT.map(x=>{
+    const tp=tipOf({t:x.n,d:'หมวด'+x.g+' · มูลค่าเพิ่ม ณ ราคาประจำปี ปี '+D.gpp.structYear,
+      calc:'(มูลค่าเพิ่มของสาขา ÷ GPP รวม) × 100 = ('+f_num(x.v)+' ÷ '+f_num(D.gpp.structTotal)+') × 100',
+      src:'gpp',when:'ปี '+D.gpp.structYear});
+    return `<div class="barrow" data-tip2="${tp}">
+      <span class="nm" style="width:190px">${x.n}</span>
+      <span class="tr"><i style="width:${Math.max(2,x.p/mxP*100).toFixed(1)}%;background:${GCOL[x.g]}"></i></span>
+      <span class="vv">${x.p.toFixed(2)}%</span></div>`;}).join('');
+
+  $('#tStruct').innerHTML='<thead><tr><th>สาขา</th><th>หมวด</th><th class="r">ล้านบาท</th><th class="r">สัดส่วน</th></tr></thead><tbody>'+
+    STRUCT.map(x=>`<tr><td>${rowIco(x.n)}${x.n}</td><td>${x.g}</td><td class="r">${f(x.v,1)}</td><td class="r">${x.p.toFixed(2)}%</td></tr>`).join('')+
+    `</tbody><tfoot><tr><td>รวม</td><td></td><td class="r">${f(D.gpp.structTotal,1)}</td><td class="r">100.00%</td></tr></tfoot>`;
+  const top3=STRUCT.slice(0,3);
+  document.getElementById('structNote').innerHTML=
+    `ปี ${D.gpp.structYear} สาขาที่ใหญ่ที่สุดคือ <b>${top3[0].n}</b> ${top3[0].p.toFixed(2)}%
+     รองลงมา ${top3[1].n} ${top3[1].p.toFixed(2)}% และ ${top3[2].n} ${top3[2].p.toFixed(2)}%<br>
+     แบ่งเป็นหมวดใหญ่ เกษตร ${gSum('เกษตร').toFixed(1)}% · อุตสาหกรรม ${gSum('อุตสาหกรรม').toFixed(1)}% · บริการ ${gSum('บริการ').toFixed(1)}%
+     รวมทั้งสิ้น ${f(D.gpp.structTotal,1)} ล้านบาท`;
 
   mk('cGpp',{type:'bar',data:{labels:G.map(r=>'ปี '+r.y),datasets:[
     {type:'bar',label:'GPP (ล้านบาท)',data:G.map(r=>r.value),backgroundColor:cv('--brand'),borderRadius:6,barPercentage:.5,yAxisID:'y'},
@@ -113,9 +154,15 @@ function renderGpp(){
       scales:{x:ax({grid:{display:false}}),y:ax({ticks:{callback:v=>f(v,0)}}),
         y2:{position:'right',grid:{display:false},border:{display:false},ticks:{callback:v=>f(v,0),font:{size:9.5}}}}}});
 
-  $('#tGpp').innerHTML=`<thead><tr><th>ปี พ.ศ.</th><th class="r">GPP (ล้านบาท)</th><th class="r">GPP ต่อหัว (บาท)</th><th class="r">%YoY</th></tr></thead><tbody>`+
-    G.map((r,i)=>`<tr><td>${r.y}</td>${ec('gpp.rows.'+i+'.value',f(r.value,0),0)}${ec('gpp.rows.'+i+'.pc',f(r.pc,0),0)}
-      <td class="r">${i?((r.value-G[i-1].value)/G[i-1].value*100).toFixed(1)+'%':'—'}</td></tr>`).join('')+'</tbody>';
+  $('#tGpp').innerHTML=`<thead><tr><th>ปี พ.ศ.</th><th class="r">GPP (ล้านบาท)</th><th class="r">ต่อหัว (บาท)</th>
+      <th class="r">%YoY</th><th class="r">โตจริง</th><th>สถานะ</th></tr></thead><tbody>`+
+    G.map((r,i)=>{
+      const yoy=i?(r.value-G[i-1].value)/G[i-1].value*100:null;
+      const real=(i&&r.cvm&&G[i-1].cvm)?(r.cvm-G[i-1].cvm)/G[i-1].cvm*100:null;
+      return `<tr><td>${r.y}</td>${ec('gpp.rows.'+i+'.value',f(r.value,1),1)}${ec('gpp.rows.'+i+'.pc',f(r.pc,0),0)}
+      <td class="r" style="color:${yoy==null?'var(--faint)':yoy>=0?'var(--good)':'var(--bad)'}">${yoy==null?'—':(yoy>0?'+':'')+yoy.toFixed(1)+'%'}</td>
+      <td class="r" style="color:${real==null?'var(--faint)':real>=0?'var(--good)':'var(--bad)'}">${real==null?'—':(real>0?'+':'')+real.toFixed(1)+'%'}</td>
+      <td style="font-size:11px;color:var(--faint)">${r.note||''}</td></tr>`;}).join('')+'</tbody>';
   applyEditMode();
 
   const drv=MEI.comps.map(c=>({n:c.sec.name,color:c.sec.color,v:+((c.idx[NOW]-c.idx[PREV])*c.sec.weight).toFixed(2)})).sort((a,b)=>b.v-a.v);
@@ -220,7 +267,7 @@ DS.init('gpp',function(){
   if(v&&!v.querySelector('.srcbar')){
     const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
     d.innerHTML='<header><span class="hdico icow img">'+icoImg('source',26)+'</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
-      srcBar(['gpp'],'GPP ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี · ดัชนี NBL–MEI คำนวณโดยสำนักงานสถิติจังหวัดหนองบัวลำภู')+'</div>';
+      srcBar(['gpp'],D.gpp.doc+' · จังหวัดหนองบัวลำภู รหัส 0118 · GPP ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี · ดัชนี NBL–MEI คำนวณโดยสำนักงานสถิติจังหวัดหนองบัวลำภู')+'</div>';
     v.appendChild(d);
   }
   renderDS();
