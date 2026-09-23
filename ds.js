@@ -258,6 +258,12 @@ function treemap(items,opt){
       (b.it.tip?` data-tip2="${b.it.tip}"`:'')+`><b>${b.it.n}</b><span>${p.toFixed(2)}%</span></div>`;
   }).join('');
 }
+/* ผสมสองสีตามสัดส่วน k · ใช้ไล่สีระหว่างสาขาในหมวดเดียวกันให้แยกออกจากกัน */
+function mixHex(a,b,k){
+  const p=h=>[1,3,5].map(i=>parseInt(String(h).trim().substr(i,2),16));
+  const A=p(a),B=p(b);
+  return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*k).toString(16).padStart(2,'0')).join('');
+}
 /* ไล่เฉดสีจากสีหลักของหมวด ยิ่งอันดับต้นยิ่งเข้ม */
 function shade(hex,k){
   const p=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16));

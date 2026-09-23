@@ -1034,3 +1034,10 @@ body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
 .tmlg i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
 .tmlg b{font-family:var(--fn)}
 @media(max-width:767px){.tmap{aspect-ratio:4/5}.tmap .tm b{font-size:11px}}
+
+/* ══ คำอธิบายสีรายสาขาของโดนัท GPP ══ */
+.seclg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px}
+.seclg .seci{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--dim);line-height:1.9}
+.seclg .seci i{width:11px;height:11px;border-radius:3px;flex:none}
+.seclg .seci b{font-family:var(--fn);font-size:11.5px;color:var(--ink)}
+@media(max-width:767px){.seclg{gap:4px 10px}.seclg .seci{font-size:10.5px}}

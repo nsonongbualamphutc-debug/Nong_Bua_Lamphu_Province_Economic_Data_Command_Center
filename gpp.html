@@ -19,29 +19,30 @@
   <nav class="side" id="sidebar"></nav>
   <main class="main">
     <section class="view on" id="v-gpp">
-  <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start"><span class="bigico icow img" data-bigico="gpp"></span><span><h2>GPP และการเติบโตทางเศรษฐกิจ</h2>
+  <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start"><span class="bigico icow img" data-bigico="gpp"></span><span><h2>ผลิตภัณฑ์มวลรวมจังหวัด Gross Provincial Product (GPP)</h2>
     <p>ขนาดเศรษฐกิจจังหวัด โครงสร้างการผลิต รายได้ต่อหัว และตำแหน่งเทียบภาคตะวันออกเฉียงเหนือกับทั้งประเทศ</p></span></div>
     <div class="r"><span class="chip mock">รอยืนยันตัวเลขจาก สศช.</span></div></div>
   <div id="gppSlc"></div>
   <div class="grid g4 mb" id="gppKpi"></div>
   <div class="grid g21 mb">
-    <div class="c"><header><span class="hdico icow img" data-hdico="forecast"></span><h3>ดัชนีภาวะเศรษฐกิจ 36 เดือน</h3><span class="u" id="meiU">จังหวัด · ภาคอีสาน · ทั้งประเทศ</span></header>
-      <div class="b"><div class="ch lg"><canvas id="cMei"></canvas></div>
-        <div class="note" id="meiNote"></div></div></div>
+    <div class="c"><header><span class="hdico icow img" data-hdico="forecast"></span>
+      <h3>อัตราการขยายตัว GPP ของจังหวัดหนองบัวลำภู</h3>
+      <span class="u">เทียบกับ GDP ทั้งประเทศ · ร้อยละต่อปี</span><span class="r" id="growTog"></span></header>
+      <div class="b">
+        <div id="cGrow-chart"><div class="ch lg"><canvas id="cGrow"></canvas></div></div>
+        <div id="cGrow-table" class="hide"><div class="sc" style="max-height:380px"><table class="t" id="tGrow"></table></div></div>
+        <div class="note" id="growNote"></div></div></div>
     <div class="c"><header><span class="hdico icow img" data-hdico="industry"></span><h3>โครงสร้างเศรษฐกิจ</h3>
       <span class="u" id="structU">สัดส่วน GPP ตามสาขา</span><span class="r" id="structTog"></span></header>
       <div class="b">
         <div id="cStruct-chart">
-          <div class="tmap" id="structMap"></div>
+          <div class="ch lg"><canvas id="cStruct"></canvas></div>
+          <div id="structLegend" class="seclg"></div>
           <div class="tmlg" id="structLg"></div>
         </div>
         <div id="cStruct-table" class="hide"><div class="sc" style="max-height:420px"><table class="t" id="tStruct"></table></div></div>
         <div class="note" id="structNote"></div></div></div>
   </div>
-  <div class="c mb" style="border-left:4px solid var(--brand)">
-    <header><span class="hdico icow img" data-hdico="stability"></span><h3>การวิเคราะห์ด้านอุปสงค์ อุปทาน และเสถียรภาพการคลัง</h3>
-      <span class="u">อ่านทิศทางเศรษฐกิจจากสามด้านพร้อมกัน</span></header>
-    <div class="b"><div class="note" id="dsNote" style="border-top:0;padding-top:0;margin-top:0"></div></div></div>
   <div class="grid g3 mb" id="dsGrid"></div>
 
   <div class="grid g21">
@@ -77,8 +78,7 @@ function renderGpp(){
   if(slc)slc.innerHTML=yearBar('yb-gpp',{years:GYEARS,value:GPP_YEAR,selId:'gppYear',
     note:'ข้อมูลจาก สศช. ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี · เลือกปีแล้วทั้งหน้าเปลี่ยนตาม'});
   const NOW=35, PREV=23;
-  const meiAt=i=>MEI.out[i]?MEI.out[i].v:null;
-  const meiAvg=idx=>{const v=idx.map(meiAt).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+  /* ดัชนีรายเดือนถูกถอดออกจากหน้านี้แล้ว เหลือเฉพาะข้อมูล GPP ของ สศช. */
   const s=MEI.out, G=GROWS;
   const n=GYEARS.indexOf(GPP_YEAR);          /* ปีที่เลือก ไม่ใช่ปีล่าสุดเสมอไป */
   const SYEAR=GPP_YEAR;
@@ -93,16 +93,17 @@ function renderGpp(){
   const GP=n>0?G[n-1]:null;            /* ปีก่อนหน้า · ปีแรกสุดไม่มีให้เทียบ */
   const gReal=(G[n].cvm&&GP&&GP.cvm)?pctc(G[n].cvm,GP.cvm):null;
   /* ดัชนีรายเดือนเป็นคนละฐานเวลากับ GPP จึงใช้เดือนล่าสุดเสมอ ไม่ผูกกับปีที่เลือก */
-  const curV=meiAt(NOW), prvV=meiAt(PREV);
   const PLABEL=MONTHS[NOW]?MONTHS[NOW].label:'';
-  const last={v:curV};
   $('#gppKpi').innerHTML=[
-    kpiCard({icon:'chart',img:'forecast',color:cv('--brand'),label:'ดัชนีเศรษฐกิจรายเดือน',value:last.v.toFixed(1),
-      chip:chip(prvV?pctc(last.v,prvV):null),sub:'ฐาน 100 = เฉลี่ยปี 2567',
-      tip:tipOf({t:'ดัชนีภาวะเศรษฐกิจรายเดือน NBL–MEI',
-        d:'ดัชนีที่จังหวัดสร้างขึ้นเองจากข้อมูลเร็วของหน่วยงานในพื้นที่ เพื่อไม่ต้องรอ GPP ที่ประกาศช้า 2 ปี',
-        calc:'แปลงข้อมูล '+DATASETS.length+' ชุดเป็นดัชนีเทียบฐาน 100 = ค่าเฉลี่ยปี '+(CFG.latest.y-2)+' แล้วถ่วงน้ำหนักตามสัดส่วนของ '+SECTORS.length+' ภาคส่วน · ชุดที่ยิ่งน้อยยิ่งดี เช่น อัตราการว่างงาน กลับด้านก่อนเข้าสูตร · เทียบปีก่อน = ('+f(last.v,1)+' − '+f(prvV,1)+') ÷ '+f(prvV,1)+' × 100',
-        src:'ประมวลโดยสำนักงานสถิติจังหวัดหนองบัวลำภู',when:PLABEL})}),
+    kpiCard({icon:'chart',img:'forecast',color:cv('--brand'),
+      label:'อัตราการขยายตัว GPP',value:(gReal==null?'—':(gReal>0?'+':'')+f(gReal,2)),unit:'%',
+      chip:(function(){const r=(FG.growth||[]).find(x=>x.y===SYEAR);
+        return r?'<span class="chip '+(r.prov>=r.nat?'up':'dn')+'">ประเทศ '+(r.nat>0?'+':'')+r.nat.toFixed(2)+'%</span>':''})(),
+      sub:'ปี '+SYEAR+' · ตัดผลของราคาออกแล้ว',
+      tip:tipOf({t:'อัตราการขยายตัวที่แท้จริงของ GPP',
+        d:'การเติบโตของเศรษฐกิจจังหวัดหลังตัดผลของราคาออกแล้ว คำนวณจากมูลค่าแบบปริมาณลูกโซ่ จึงเทียบข้ามปีได้ตรง ไม่ถูกเงินเฟ้อบิดเบือน',
+        calc:(GP&&G[n].cvm&&GP.cvm)?'(ปีนี้ − ปีก่อน) ÷ ปีก่อน × 100 = ('+f_num(G[n].cvm)+' − '+f_num(GP.cvm)+') ÷ '+f_num(GP.cvm)+' × 100':'เป็นปีแรกของชุดข้อมูล ไม่มีปีก่อนให้เทียบ',
+        src:'gpp',when:'ปี '+SYEAR})}),
     kpiCard({icon:'coin',img:'gpp',color:cv('--brand2'),label:`GPP ปี ${G[n].y}`,value:f(G[n].value,0),unit:'ลบ.',
       chip:chip(GP?pctc(G[n].value,GP.value):null),sub:(G[n].note?'ข้อมูล'+G[n].note:'')+(gReal==null?'':' · โตจริง '+(gReal>0?'+':'')+f(gReal,1)+'%'),
       tip:tipOf({t:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) ณ ราคาประจำปี',
@@ -111,7 +112,7 @@ function renderGpp(){
           (GP?' · เทียบปีก่อน ณ ราคาประจำปี = ('+f_num(G[n].value)+' − '+f_num(GP.value)+') ÷ '+f_num(GP.value)+' × 100':' · เป็นปีแรกของชุดข้อมูล ไม่มีปีก่อนให้เทียบ')+
           (gReal==null?'':' · การเติบโตจริงที่ตัดผลของราคาออกแล้ว (แบบปริมาณลูกโซ่) = '+f(gReal,2)+'%'),
         src:'gpp',when:'ปี '+G[n].y+(G[n].note?' ('+G[n].note+')':'')})}),
-    kpiCard({icon:'people',img:'income',color:cv('--blue'),label:'GPP ต่อหัว',value:f(G[n].pc,0),unit:'บาท/คน/ปี',
+    kpiCard({icon:'people',img:'income',color:cv('--blue'),label:'GPP ต่อหัว (GPP Per Capita)',value:f(G[n].pc,0),unit:'บาท/คน/ปี',
       chip:chip(GP?pctc(G[n].pc,GP.pc):null),sub:'ประชากรกลางปี '+f(G[n].pop||D.base.pop,0)+' คน',
       tip:tipOf({t:'ผลิตภัณฑ์มวลรวมจังหวัดต่อหัว',
         d:'รายได้เฉลี่ยต่อคนต่อปีของคนในจังหวัด ใช้เทียบฐานะทางเศรษฐกิจระหว่างจังหวัด ไม่ใช่รายได้ที่ครัวเรือนได้รับจริง',
@@ -125,46 +126,81 @@ function renderGpp(){
         src:'gpp',when:'ปี '+SYEAR})})
   ].join('');
 
-  /* บอกให้ชัดว่าดัชนีนี้มีส่วนที่ยังเป็นค่าจำลองอยู่เท่าไร จะได้ไม่เอาไปอ้างผิด */
-  const realPct=Math.round((MEI.real||0)*100);
-  const mu=document.getElementById('meiU');
-  if(mu)mu.innerHTML='จังหวัด · ภาคอีสาน · ทั้งประเทศ · <b style="color:'+(realPct>=80?'var(--good)':'var(--warn)')+'">'+
-    'ข้อมูลจริง '+realPct+'% ของน้ำหนักดัชนี</b>';
-  const mnote=document.getElementById('meiNote');
-  if(mnote)mnote.innerHTML=realPct>=100
-    ? 'ดัชนีคำนวณจากข้อมูลจริงทั้งหมด'
-    : 'เดือนล่าสุดมีข้อมูลจริง '+realPct+'% ของน้ำหนักดัชนี ส่วนที่เหลือเป็นค่าโครงร่างที่ระบบสร้างไว้แทนชุดข้อมูลที่หน่วยงานยังไม่ส่ง '+
-      'และเส้นเปรียบเทียบภาคอีสานกับทั้งประเทศยังเป็นเส้นโครงร่าง ยังไม่ใช่ตัวเลขจริงจาก สศช. '+
-      '<b>ยังไม่ควรนำดัชนีนี้ไปอ้างอิงในที่ประชุม</b> จนกว่าข้อมูลจริงจะครบ';
-  mk('cMei',{type:'line',data:{labels:MONTHS.map(m=>m.label),datasets:[
-    {label:'หนองบัวลำภู',data:s.map(x=>x.v),borderColor:cv('--brand'),backgroundColor:cv('--brand')+'20',borderWidth:2.6,pointRadius:0,tension:.32,fill:true},
-    {label:'ภาคตะวันออกเฉียงเหนือ',data:NAT.ne,borderColor:cv('--gold'),borderWidth:1.7,pointRadius:0,tension:.32,borderDash:[5,4]},
-    {label:'ทั้งประเทศ',data:NAT.th,borderColor:cv('--blue'),borderWidth:1.7,pointRadius:0,tension:.32}]},
-    options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:12}}},
-      scales:{x:ax({grid:{display:false},ticks:{maxTicksLimit:13,font:{size:9.5}}}),y:ax()}}});
+  /* อัตราการขยายตัวที่แท้จริงรายปี · เทียบ GPP จังหวัดกับ GDP ทั้งประเทศ */
+  const GR=(FG.growth||[]).filter(r=>r&&r.y);
+  mk('cGrow',{type:'line',data:{labels:GR.map(r=>'พ.ศ. '+r.y),
+    datasets:[
+      {label:'GPP จังหวัดหนองบัวลำภู',data:GR.map(r=>r.prov),borderColor:cv('--brand'),
+       backgroundColor:cv('--brand')+'1f',borderWidth:3,pointRadius:4.5,pointBackgroundColor:cv('--brand'),tension:.25,fill:true},
+      {label:'GDP ทั้งประเทศ',data:GR.map(r=>r.nat),borderColor:cv('--gold'),backgroundColor:'transparent',
+       borderWidth:2.4,borderDash:[7,4],pointRadius:4,pointBackgroundColor:cv('--gold'),tension:.25,fill:false}
+    ]},
+    options:{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:14,boxHeight:12,font:{size:11.5}}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+' '+(c.raw>0?'+':'')+c.raw.toFixed(2)+'%',
+        footer:it=>{const r=GR[it[0].dataIndex];const d=r.prov-r.nat;
+          return d>0?'จังหวัดโตเร็วกว่าประเทศ '+d.toFixed(2)+' จุด':'จังหวัดโตช้ากว่าประเทศ '+Math.abs(d).toFixed(2)+' จุด'}}}},
+      scales:{x:ax({grid:{display:false}}),y:ax({ticks:{callback:v=>v+'%'}})}}});
 
-  /* แผนภาพกล่อง อ่านลำดับความสำคัญได้ทันทีและใช้พื้นที่คุ้มกว่าโดนัท 19 ชิ้น
-     สีตามหมวดใหญ่ ไล่เฉดตามอันดับ · tooltip บอกทั้งมูลค่าและสัดส่วน */
+  $('#tGrow').innerHTML='<thead><tr><th>ปี พ.ศ.</th><th class="r">GPP จังหวัด</th><th class="r">GDP ประเทศ</th><th class="r">ต่าง (จุด)</th></tr></thead><tbody>'+
+    GR.slice().reverse().map(r=>{const d=r.prov-r.nat;
+      return `<tr><td>${r.y}</td>
+        <td class="r" style="color:${r.prov>=0?'var(--good)':'var(--bad)'}">${(r.prov>0?'+':'')+r.prov.toFixed(2)}%</td>
+        <td class="r" style="color:${r.nat>=0?'var(--good)':'var(--bad)'}">${(r.nat>0?'+':'')+r.nat.toFixed(2)}%</td>
+        <td class="r" style="color:${d>=0?'var(--good)':'var(--bad)'}">${(d>0?'+':'')+d.toFixed(2)}</td></tr>`;}).join('')+'</tbody>';
+
+  const gT=document.getElementById('growTog');
+  if(gT&&!gT.innerHTML){gT.innerHTML=viewToggle('cGrow');bindToggle();}
+  const gl=GR[GR.length-1], gsel=GR.find(r=>r.y===GPP_YEAR)||gl;
+  const nOver=GR.filter(r=>r.prov>r.nat).length;
+  document.getElementById('growNote').innerHTML=GR.length?
+    `ปี ${gsel.y} เศรษฐกิจจังหวัดขยายตัว <b>${(gsel.prov>0?'+':'')+gsel.prov.toFixed(2)}%</b>
+     ขณะที่ทั้งประเทศ ${(gsel.nat>0?'+':'')+gsel.nat.toFixed(2)}%
+     ${gsel.prov>gsel.nat?'เร็วกว่าประเทศ':'ช้ากว่าประเทศ'} ${Math.abs(gsel.prov-gsel.nat).toFixed(2)} จุด<br>
+     ใน ${GR.length} ปีที่ผ่านมา จังหวัดโตเร็วกว่าประเทศ ${nOver} ปี
+     เศรษฐกิจจังหวัดผันผวนกว่าประเทศมาก เพราะพึ่งภาคเกษตรซึ่งขึ้นกับราคาพืชผลและปริมาณน้ำฝนในปีนั้น<br>
+     <span style="color:var(--faint)">คำนวณจากมูลค่าแบบปริมาณลูกโซ่ซึ่งตัดผลของราคาออกแล้ว เป็นการเติบโตที่แท้จริง</span>`:'';
+
+  /* โดนัทครบทุกสาขา · สีแยกรายสาขาชัดเจน ไล่เฉดตามหมวดใหญ่
+     เกษตรเขียวใบไม้ · อุตสาหกรรมน้ำเงิน · บริการเขียวมรกตไล่ไปทอง */
   const GRP=['เกษตร','อุตสาหกรรม','บริการ'], GCOL={'เกษตร':cv('--leaf'),'อุตสาหกรรม':cv('--blue'),'บริการ':cv('--brand')};
   const gSum=g=>STRUCT.filter(x=>x.g===g).reduce((a,b)=>a+b.p,0);
   const gVal=g=>STRUCT.filter(x=>x.g===g).reduce((a,b)=>a+(b.v||0),0);
-  const rankIn={}; GRP.forEach(g=>rankIn[g]=0);
-  const items=STRUCT.map((x,i)=>{
-    const k=Math.min(.55,(rankIn[x.g]++)*0.075);
-    const yoy=(x.prev!=null&&x.prev)?(x.v-x.prev)/x.prev*100:null;
-    return {n:x.n, v:x.v, color:shade(GCOL[x.g]||cv('--brand'),k),
-      tip:tipOf({t:x.n,
-        d:'หมวด'+x.g+' · อันดับ '+(i+1)+' จาก '+STRUCT.length+' สาขา · มูลค่าเพิ่ม ณ ราคาประจำปี '+f(x.v,1)+' ล้านบาท'+
-          (yoy==null?'':' · เทียบปีก่อน '+(yoy>0?'+':'')+f(yoy,1)+'%'),
-        calc:'สัดส่วน = (มูลค่าเพิ่มของสาขา ÷ GPP รวม) × 100 = ('+f_num(x.v)+' ÷ '+f_num(STOT)+') × 100 = '+x.p.toFixed(2)+'%'+
-          (yoy==null?'':' · เทียบปีก่อน = ('+f_num(x.v)+' − '+f_num(x.prev)+') ÷ '+f_num(x.prev)+' × 100'),
-        src:'gpp',when:'ปี '+SYEAR})};
+  const cnt={}; GRP.forEach(g=>cnt[g]=STRUCT.filter(x=>x.g===g).length);
+  const seen={}; GRP.forEach(g=>seen[g]=0);
+  const secColor=STRUCT.map(x=>{
+    const i=seen[x.g]++, n=Math.max(1,cnt[x.g]-1);
+    /* บริการมี 14 สาขา ถ้าไล่เฉดอย่างเดียวจะแยกไม่ออก จึงไล่จากเขียวมรกตไปทางทอง */
+    if(x.g==='บริการ')return mixHex(cv('--brand'),cv('--gold'),i/n*0.82);
+    return shade(GCOL[x.g],i/n*0.5);
   });
-  const box=document.getElementById('structMap');
-  if(box)box.innerHTML=treemap(items);
+  mk('cStruct',{type:'doughnut',data:{labels:STRUCT.map(x=>x.n),
+    datasets:[{data:STRUCT.map(x=>+x.p.toFixed(2)),backgroundColor:secColor,
+      borderColor:cv('--card'),borderWidth:2,hoverOffset:10}]},
+    options:{cutout:'52%',plugins:{legend:{display:false},
+      tooltip:{callbacks:{
+        title:it=>it[0].label,
+        label:c=>{const x=STRUCT[c.dataIndex];return f(x.v,1)+' ล้านบาท · '+x.p.toFixed(2)+'% ของ GPP'},
+        footer:it=>{const x=STRUCT[it[0].dataIndex];
+          const yoy=(x.prev!=null&&x.prev)?(x.v-x.prev)/x.prev*100:null;
+          return 'หมวด'+x.g+' · อันดับ '+(it[0].dataIndex+1)+' จาก '+STRUCT.length+' สาขา'+
+            (yoy==null?'':'\nเทียบปีก่อน '+(yoy>0?'+':'')+yoy.toFixed(1)+'%')}}}}}});
+
+  /* คำอธิบายสีแบบรายสาขา เรียงตามขนาด กดแล้วเน้นสาขานั้นในโดนัท */
+  const lgd=document.getElementById('structLegend');
+  if(lgd)lgd.innerHTML=STRUCT.map((x,i)=>{
+    const yoy=(x.prev!=null&&x.prev)?(x.v-x.prev)/x.prev*100:null;
+    const tp=tipOf({t:x.n,
+      d:'หมวด'+x.g+' · อันดับ '+(i+1)+' จาก '+STRUCT.length+' สาขา · มูลค่าเพิ่ม ณ ราคาประจำปี '+f(x.v,1)+' ล้านบาท'+
+        (yoy==null?'':' · เทียบปีก่อน '+(yoy>0?'+':'')+f(yoy,1)+'%'),
+      calc:'สัดส่วน = (มูลค่าเพิ่มของสาขา ÷ GPP รวม) × 100 = ('+f_num(x.v)+' ÷ '+f_num(STOT)+') × 100 = '+x.p.toFixed(2)+'%'+
+        (yoy==null?'':' · เทียบปีก่อน = ('+f_num(x.v)+' − '+f_num(x.prev)+') ÷ '+f_num(x.prev)+' × 100'),
+      src:'gpp',when:'ปี '+SYEAR});
+    return `<span class="seci" data-tip2="${tp}"><i style="background:${secColor[i]}"></i>${x.n}<b>${x.p.toFixed(2)}%</b></span>`;
+  }).join('');
+
   const lg=document.getElementById('structLg');
   if(lg)lg.innerHTML=GRP.map(g=>`<span><i style="background:${GCOL[g]}"></i>${g} <b>${gSum(g).toFixed(1)}%</b>
-    <span style="color:var(--faint)">${f(gVal(g),0)} ลบ.</span></span>`).join('')+
+    <span style="color:var(--faint)">${f(gVal(g),0)} ลบ. · ${cnt[g]} สาขา</span></span>`).join('')+
     `<span style="color:var(--faint);margin-left:auto">รวม ${f(STOT,1)} ล้านบาท</span>`;
 
   const stT=document.getElementById('structTog');
@@ -214,27 +250,7 @@ function renderGpp(){
 /* ══ ด้านอุปสงค์ อุปทาน และเสถียรภาพการคลัง ══ */
 function renderDS(){
   const g=document.getElementById('dsGrid'); if(!g)return;
-  /* บล็อกอุปสงค์–อุปทานใช้ข้อมูลรายเดือน ไม่ผูกกับปี GPP ที่เลือก จึงยึดเดือนล่าสุด */
-  const st={i:35,idx:[35],freq:'M',label:MONTHS[35].label};
-  /* ใช้งวดที่เลือกจากแถบตัวกรอง ไม่ใช่เดือนสุดท้ายเสมอไป */
-  const last=(v,agg)=>seriesAt(v,st,agg||'sum'), prev=(v,agg)=>seriesPrevYear(v,st,agg||'sum');
-  /* อุปสงค์ = การใช้จ่ายของครัวเรือนและรัฐ */
-  const dem=[
-    {n:'รถจดทะเบียนใหม่',a:DB.car.moto,u:'คัน',agg:'sum',src:'car'},
-    {n:'การใช้น้ำมันเชื้อเพลิง',a:DB.fuel.total,u:'ล้านลิตร',agg:'sum',src:'fuel'},
-    {n:'สินเชื่อที่อนุมัติ',a:DB.credit.amt,u:'ล้านบาท',agg:'sum',src:'credit'}
-  ];
-  /* อุปทาน = กำลังการผลิตในพื้นที่ */
-  const sup=[
-    {n:'ไฟฟ้าภาคอุตสาหกรรม',a:DB.power.ind,u:'ล้านหน่วย',agg:'sum',src:'power'},
-    {n:'โรงงานใหม่และขยายกิจการ',a:DB.factory.newf,u:'แห่ง',agg:'sum',src:'factory'},
-    {n:'มูลค่าผลผลิตพืชอายุสั้น',a:DB.crop.value,u:'ล้านบาท',agg:'sum',src:'crop'}
-  ];
-  const score=arr=>{
-    const ps=arr.map(x=>{const n=last(x.a,x.agg),w=prev(x.a,x.agg);return (n!=null&&w)?pctc(n,w):null}).filter(x=>x!=null);
-    return ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:null;
-  };
-  const dScore=score(dem), sScore=score(sup);
+  /* เหลือเฉพาะเสถียรภาพการคลัง · บล็อกด้านอุปสงค์และด้านอุปทานถอดออกตามที่สั่ง */
   const F=D.fiscal;
   const stability=[
     ['ร้อยละการเบิกจ่ายภาพรวม',F.fn.dis[0].pct,'%',F.fn.dis[0].pct>=90,
@@ -273,13 +289,7 @@ function renderDS(){
       <span class="vv" style="color:${p>=0?cv('--good'):cv('--bad')}">${p==null?'—':(p>0?'+':'')+p.toFixed(1)+'%'}</span></div>`;
   }).join('');
   g.innerHTML=
-    block('demand','ด้านอุปสงค์',dScore,rowsOf(dem),
-      'วัดจากการใช้จ่ายจริงของครัวเรือนและภาคธุรกิจ ถ้าอุปสงค์โตเร็วกว่าอุปทานนาน ๆ จะกดดันราคาให้สูงขึ้น',
-      dScore>=0?cv('--brand'):cv('--coral'))+
-    block('supply','ด้านอุปทาน',sScore,rowsOf(sup),
-      'วัดจากกำลังการผลิตในพื้นที่ ถ้าอุปทานโตช้ากว่าอุปสงค์ แปลว่าจังหวัดผลิตไม่ทันความต้องการ ต้องนำเข้าจากนอกพื้นที่',
-      sScore>=0?cv('--brand'):cv('--coral'))+
-    `<div class="c"><header><span class="hdico icow img">${icoImg('stability',26)}</span><h3>เสถียรภาพการคลัง</h3>
+    `<div class="c" style="grid-column:1/-1"><header><span class="hdico icow img">${icoImg('stability',26)}</span><h3>เสถียรภาพการคลัง</h3>
       <span class="r">${statusBadge(F.fn.dis[0].pct-90,false,'ระดับการเบิกจ่ายเทียบเกณฑ์ 90%')}</span></header>
       <div class="b">
         ${stability.map(r=>`<div class="barrow" data-tip2="${r[4]||''}">
@@ -290,13 +300,6 @@ function renderDS(){
           จังหวัดเบิกจ่ายได้ ${F.fn.dis[0].pct}% เป็นอันดับ ${F.fn.dis[0].rank} ของประเทศ
           เหลืองบรอเบิกจ่ายอีก ${f(F.fn.dis[0].alloc-F.fn.dis[0].val,0)} ล้านบาทที่ผลักลงพื้นที่ได้ทันที</div>
       </div></div>`;
-  const gap=(dScore!=null&&sScore!=null)?dScore-sScore:null;
-  const note=document.getElementById('dsNote');
-  if(note&&gap!=null)note.innerHTML=
-    `ช่องว่างอุปสงค์กับอุปทานอยู่ที่ ${gap>0?'+':''}${gap.toFixed(1)} จุด `+
-    (gap>3?'อุปสงค์นำอุปทาน ควรเร่งขยายกำลังการผลิตในพื้นที่'
-     :gap<-3?'อุปทานนำอุปสงค์ ควรเร่งกระตุ้นกำลังซื้อ'
-     :'อุปสงค์และอุปทานค่อนข้างสมดุล');
 }
 
 let GPP_YEAR=null;
