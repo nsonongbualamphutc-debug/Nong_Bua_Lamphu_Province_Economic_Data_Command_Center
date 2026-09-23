@@ -45,7 +45,6 @@
     <button data-mv="dem">ด้านอุปสงค์</button>
     <button data-mv="sup">ด้านอุปทาน</button>
     <button data-mv="fin">การเงินและการจ้างงาน</button>
-    <button data-mv="sta">ด้านเสถียรภาพ</button>
   </div>
   <div class="grid g3 mb" id="macroKpi"></div>
   <div class="c mb"><header><span class="hdico icow img" data-hdico="forecast"></span>
@@ -81,16 +80,12 @@ const MSERIES={
   dem:[['cons','การบริโภคภาคเอกชน','cpi','--brand'],['invest','การลงทุนภาคเอกชน','invest','--gold'],['gov','การใช้จ่ายภาครัฐ','spend','--blue']],
   /* ด้านการเงินและการจ้างงาน ต้นทางให้ระดับมาด้วย จึงคิดอัตราเทียบปีก่อนเองได้ตรง ๆ */
   fin:[['depoY','เงินฝากรวม','credit','--gold'],['credY','สินเชื่อรวม','invest','--brand2'],['empY','การจ้างงานรวม','employed','--plum']],
-  /* ด้านเสถียรภาพ · แฟ้มต้นทางเปิดช่องไว้แล้วแต่ยังไม่มีตัวเลข
-     พอคลังจังหวัดกรอก cpi และ ppi ในตารางภาวะเศรษฐกิจรายเดือน แท็บนี้จะขึ้นเองทันที */
-  sta:[['cpi','ดัชนีราคาผู้บริโภค (เงินเฟ้อจังหวัด)','inflation','--coral'],['ppi','ดัชนีราคาผู้ผลิต','cpi','--gold']]
 };
 const MDESC={
   all:'ดัชนีรวมของจังหวัด สะท้อนทิศทางเศรษฐกิจโดยรวมในแต่ละเดือน',
   sup:'วัดจากกำลังการผลิตในพื้นที่ · ถ่วงน้ำหนักตามโครงสร้าง เกษตร '+MW.agri+'% อุตสาหกรรม '+MW.indus+'% บริการ '+MW.serv+'%',
   dem:'วัดจากการใช้จ่ายจริงของครัวเรือน ภาคธุรกิจ และภาครัฐ',
-  fin:'เงินฝากและสินเชื่อของสถาบันการเงินในจังหวัด กับจำนวนผู้มีงานทำ · แสดงเป็นอัตราเทียบปีก่อนเพื่อให้เทียบกับด้านอื่นได้',
-  sta:'เงินเฟ้อและราคาผู้ผลิตในจังหวัด · บอกว่าเงินเท่าเดิมซื้อของได้น้อยลงแค่ไหน และต้นทุนผู้ผลิตขยับไปทางไหน'
+  fin:'เงินฝากและสินเชื่อของสถาบันการเงินในจังหวัด กับจำนวนผู้มีงานทำ · แสดงเป็นอัตราเทียบปีก่อนเพื่อให้เทียบกับด้านอื่นได้'
 };
 /* มีตัวเลขในชุดนั้นจริงหรือยัง */
 function hasData(view){
@@ -285,7 +280,7 @@ function renderMacro(){
         MACRO_VIEW=b.dataset.mv;renderMacro()});}
   }
   const title={all:'ภาวะเศรษฐกิจรายเดือน',dem:'ด้านอุปสงค์ (Demand)',sup:'ด้านอุปทาน (Supply)',
-    fin:'ด้านการเงินและการจ้างงาน',sta:'ด้านเสถียรภาพ (Stability)'}[MACRO_VIEW];
+    fin:'ด้านการเงินและการจ้างงาน'}[MACRO_VIEW];
   $('#macroTitle').textContent=title;
 
   /* ชุดที่ยังไม่มีตัวเลข บอกให้ชัดว่าต้องรออะไร ไม่ปล่อยให้เป็นกราฟเปล่า */
@@ -293,13 +288,7 @@ function renderMacro(){
     $('#macroSub').textContent='ยังไม่มีข้อมูล';
     $('#macroKpi').innerHTML='';
     document.getElementById('cMac-chart').innerHTML=
-      `<div class="svc-empty" style="text-align:left;line-height:1.9">
-        <b>ยังไม่มีตัวเลข${title}</b><br>
-        แฟ้มเครื่องชี้เศรษฐกิจจังหวัดเปิดช่องไว้แล้วสองรายการ คือ ดัชนีราคาผู้บริโภค (เงินเฟ้อจังหวัด) และดัชนีราคาผู้ผลิต
-        แต่ยังไม่มีค่ามาในแฟ้ม<br>
-        เมื่อ<b>สำนักงานคลังจังหวัด</b>กรอกช่อง <code>cpi</code> และ <code>ppi</code>
-        ในตาราง "ภาวะเศรษฐกิจรายเดือน" ของระบบกรอกข้อมูล แท็บนี้จะแสดงผลเองทันที ไม่ต้องแก้โค้ด<br>
-        <span style="color:var(--faint)">ระบบไม่สร้างตัวเลขแทนให้ เพราะจะกลายเป็นค่าที่นำไปอ้างอิงผิด</span></div>`;
+      `<div class="svc-empty">ยังไม่มีตัวเลข${title} ในงวดที่เลือก</div>`;
     document.getElementById('cMac-table').innerHTML='';
     $('#macroNote').innerHTML=MDESC[MACRO_VIEW];
     const tg0=document.getElementById('macroTog'); if(tg0)tg0.innerHTML='';
@@ -359,7 +348,7 @@ function renderMacro(){
 
   /* คำอธิบาย */
   const best=defs.slice().sort((a,b)=>cur[b[0]]-cur[a[0]])[0], worst=defs.slice().sort((a,b)=>cur[a[0]]-cur[b[0]])[0];
-  const posKey=MACRO_VIEW==='sup'?supIdx:MACRO_VIEW==='dem'?demIdx:MACRO_VIEW==='fin'?(r=>r.depoY):MACRO_VIEW==='sta'?(r=>r.cpi):(r=>r.overall);
+  const posKey=MACRO_VIEW==='sup'?supIdx:MACRO_VIEW==='dem'?demIdx:MACRO_VIEW==='fin'?(r=>r.depoY):(r=>r.overall);
   const pos=MAC.slice(-12).filter(r=>posKey(r)>0).length;
   $('#macroNote').innerHTML=MDESC[MACRO_VIEW]+'<br>'+
     (defs.length>1
