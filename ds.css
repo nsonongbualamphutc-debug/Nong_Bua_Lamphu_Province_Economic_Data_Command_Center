@@ -1017,3 +1017,20 @@ body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
   .trust .tr-row{grid-template-columns:minmax(0,1fr) 70px;row-gap:3px}
   .trust .tr-row .ag,.trust .tr-row .ls{display:none}.trust .tr-row .bar{grid-column:1/-1;order:3}
 }
+
+/* ══ แผนภาพสัดส่วนแบบกล่อง (treemap) — ใช้กับโครงสร้าง GPP ══ */
+.tmap{position:relative;width:100%;aspect-ratio:16/9;border-radius:13px;overflow:hidden;background:var(--card2);border:1px solid var(--line)}
+.tmap .tm{position:absolute;overflow:hidden;border:2px solid var(--card);border-radius:8px;cursor:default;
+  display:flex;flex-direction:column;justify-content:flex-start;padding:7px 9px;transition:filter .18s}
+.tmap .tm:hover{filter:brightness(1.08)}
+.tmap .tm b{font-size:12.5px;font-weight:600;line-height:1.35;color:#fff;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 2px rgba(0,0,0,.28)}
+.tmap .tm span{font-family:var(--fn);font-size:13px;font-weight:700;color:#fff;margin-top:3px;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.tmap .tm.sm{padding:4px 5px}
+.tmap .tm.sm b{font-size:10px;-webkit-line-clamp:2}
+.tmap .tm.sm span{font-size:10.5px}
+.tmap .tm.tiny b,.tmap .tm.tiny span{display:none}
+.tmlg{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:12px}
+.tmlg i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
+.tmlg b{font-family:var(--fn)}
+@media(max-width:767px){.tmap{aspect-ratio:4/5}.tmap .tm b{font-size:11px}}

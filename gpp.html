@@ -25,14 +25,15 @@
   <div id="gppSlc"></div>
   <div class="grid g4 mb" id="gppKpi"></div>
   <div class="grid g21 mb">
-    <div class="c"><header><span class="hdico icow img" data-hdico="forecast"></span><h3>ดัชนีภาวะเศรษฐกิจ 36 เดือน</h3><span class="u">จังหวัด · ภาคอีสาน · ทั้งประเทศ</span></header>
-      <div class="b"><div class="ch lg"><canvas id="cMei"></canvas></div></div></div>
+    <div class="c"><header><span class="hdico icow img" data-hdico="forecast"></span><h3>ดัชนีภาวะเศรษฐกิจ 36 เดือน</h3><span class="u" id="meiU">จังหวัด · ภาคอีสาน · ทั้งประเทศ</span></header>
+      <div class="b"><div class="ch lg"><canvas id="cMei"></canvas></div>
+        <div class="note" id="meiNote"></div></div></div>
     <div class="c"><header><span class="hdico icow img" data-hdico="industry"></span><h3>โครงสร้างเศรษฐกิจ</h3>
       <span class="u" id="structU">สัดส่วน GPP ตามสาขา</span><span class="r" id="structTog"></span></header>
       <div class="b">
         <div id="cStruct-chart">
-          <div class="ch"><canvas id="cStruct"></canvas></div>
-          <div id="structBars" style="margin-top:12px"></div>
+          <div class="tmap" id="structMap"></div>
+          <div class="tmlg" id="structLg"></div>
         </div>
         <div id="cStruct-table" class="hide"><div class="sc" style="max-height:420px"><table class="t" id="tStruct"></table></div></div>
         <div class="note" id="structNote"></div></div></div>
@@ -61,38 +62,39 @@
 /* ─────────────── 11) GPP ─────────────── */
 function renderGpp(){
   const slc=document.getElementById('gppSlc');
-  /* หน้านี้เป็นข้อมูลรายปีทั้งหมด จึงล็อกตัวกรองไว้ที่รายปีอย่างเดียว
-     ตัวกรองคุมเฉพาะดัชนีรายเดือน NBL–MEI ที่อยู่ด้านบน ส่วน GPP ใช้ปีที่ สศช. ประกาศเสมอ */
-  if(slc&&!slc.innerHTML)slc.innerHTML=slicerBar('slc-gpp',{freqs:['Y'],freq:'Y',label:'เลือกปีข้อมูล',compare:true});
-  const ST=slicerState('slc-gpp')||{freq:'Y',i:35,idx:[35],label:'ปี '+CFG.latest.y,cmp:false};
-  const NOW=ST.i, PREV=Math.max(0,NOW-12), PLABEL=ST.label;
-  const info=document.getElementById('slc-gpp-info');
-  if(info)info.innerHTML='กำลังแสดง <b>'+PLABEL+'</b>'+
-    (ST.freq==='M'?'':' · ค่าดัชนีใช้ค่าเฉลี่ยของ '+ST.idx.length+' เดือน')+
-    (ST.cmp?' · เทียบงวดเดียวกันปีก่อน':'');
-  const meiAt=i=>MEI.out[i]?MEI.out[i].v:null;
-  const meiAvg=idx=>{const v=idx.map(meiAt).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
-  const s=MEI.out;
-  /* โครงสร้างรายสาขาไม่ใช่ตารางที่หน่วยงานแก้ได้ จึงอ่านจากไฟล์ข้อมูลเสมอ
-     กัน gpp ชุดเก่าที่ค้างอยู่ในชีต Tables มาทับของจริงจนเหลือ 5 สาขา */
+  /* หน้านี้เป็นข้อมูลรายปีล้วน ตัวกรองจึงเป็นแถบเลือกปีของ GPP จริง
+     เลือกปีแล้วการ์ดตัวเลข โครงสร้างรายสาขา และตารางเปลี่ยนตามทั้งหมด */
   const FG=(typeof REAL!=='undefined'&&REAL.gpp)?REAL.gpp:D.gpp;
-  const STRUCT=(FG.struct||[]).filter(x=>x&&!Array.isArray(x));
-  const SYEAR=FG.structYear, STOT=FG.structTotal||STRUCT.reduce((a,b)=>a+(b.v||0),0);
-  /* ตาราง GPP รายปีแก้ได้ จึงเอาของไฟล์เป็นฐานแล้วทับด้วยค่าที่หน่วยงานแก้ทีละปี
-     ปีที่มีเฉพาะในชีตก็ยังขึ้น ปีที่ไฟล์มีใหม่กว่าก็ไม่หาย */
-  const G=(function(){
+  const GROWS=(function(){
     const by={};
     (FG.rows||[]).forEach(r=>by[r.y]=Object.assign({},r));
     ((D.gpp&&D.gpp.rows)||[]).forEach(r=>{if(r&&r.y)by[r.y]=Object.assign({},by[r.y]||{},r)});
     return Object.keys(by).map(Number).sort((a,b)=>a-b).map(y=>by[y]);
   })();
-  if(D.gpp)D.gpp.rows=G;              /* ให้ช่องแก้ไขในตารางอ้างแถวเดียวกัน */
-  const n=G.length-1;
+  if(D.gpp)D.gpp.rows=GROWS;
+  const GYEARS=GROWS.map(r=>r.y);
+  if(GPP_YEAR==null||GYEARS.indexOf(GPP_YEAR)<0)GPP_YEAR=GYEARS[GYEARS.length-1];
+  if(slc)slc.innerHTML=yearBar('yb-gpp',{years:GYEARS,value:GPP_YEAR,selId:'gppYear',
+    note:'ข้อมูลจาก สศช. ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี · เลือกปีแล้วทั้งหน้าเปลี่ยนตาม'});
+  const NOW=35, PREV=23;
+  const meiAt=i=>MEI.out[i]?MEI.out[i].v:null;
+  const meiAvg=idx=>{const v=idx.map(meiAt).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+  const s=MEI.out, G=GROWS;
+  const n=GYEARS.indexOf(GPP_YEAR);          /* ปีที่เลือก ไม่ใช่ปีล่าสุดเสมอไป */
+  const SYEAR=GPP_YEAR;
+  /* โครงสร้างรายสาขาอ่านจากไฟล์เสมอ ไม่ให้ตารางเก่าในชีตมาทับ */
+  const SECV=(FG.secVal||{})[String(SYEAR)]||null;
+  const SECP=(FG.secVal||{})[String(GYEARS[n-1])]||null;
+  const STOT=SECV?SECV.reduce((a,b)=>a+b,0):(G[n]?G[n].value:0);
+  const STRUCT=SECV?(FG.sec||[]).map((sc,i)=>({n:sc[0],g:sc[1],v:SECV[i],p:SECV[i]/STOT*100,
+      prev:SECP?SECP[i]:null})).sort((a,b)=>b.v-a.v):[];
   const agriV=(STRUCT.find(x=>/เกษตรกรรม/.test(x.n))||{}).v||0;
   const agriShare=(STRUCT.find(x=>/เกษตรกรรม/.test(x.n))||{}).p||0;
-  const gReal=(G[n].cvm&&G[n-1]&&G[n-1].cvm)?pctc(G[n].cvm,G[n-1].cvm):null;
-  const curV=ST.freq==='M'?meiAt(NOW):meiAvg(ST.idx);
-  const prvV=ST.freq==='M'?meiAt(PREV):meiAvg(ST.idx.map(i=>i-12).filter(i=>i>=0));
+  const GP=n>0?G[n-1]:null;            /* ปีก่อนหน้า · ปีแรกสุดไม่มีให้เทียบ */
+  const gReal=(G[n].cvm&&GP&&GP.cvm)?pctc(G[n].cvm,GP.cvm):null;
+  /* ดัชนีรายเดือนเป็นคนละฐานเวลากับ GPP จึงใช้เดือนล่าสุดเสมอ ไม่ผูกกับปีที่เลือก */
+  const curV=meiAt(NOW), prvV=meiAt(PREV);
+  const PLABEL=MONTHS[NOW]?MONTHS[NOW].label:'';
   const last={v:curV};
   $('#gppKpi').innerHTML=[
     kpiCard({icon:'chart',img:'forecast',color:cv('--brand'),label:'ดัชนีเศรษฐกิจรายเดือน',value:last.v.toFixed(1),
@@ -102,14 +104,15 @@ function renderGpp(){
         calc:'แปลงข้อมูล '+DATASETS.length+' ชุดเป็นดัชนีเทียบฐาน 100 = ค่าเฉลี่ยปี '+(CFG.latest.y-2)+' แล้วถ่วงน้ำหนักตามสัดส่วนของ '+SECTORS.length+' ภาคส่วน · ชุดที่ยิ่งน้อยยิ่งดี เช่น อัตราการว่างงาน กลับด้านก่อนเข้าสูตร · เทียบปีก่อน = ('+f(last.v,1)+' − '+f(prvV,1)+') ÷ '+f(prvV,1)+' × 100',
         src:'ประมวลโดยสำนักงานสถิติจังหวัดหนองบัวลำภู',when:PLABEL})}),
     kpiCard({icon:'coin',img:'gpp',color:cv('--brand2'),label:`GPP ปี ${G[n].y}`,value:f(G[n].value,0),unit:'ลบ.',
-      chip:chip(pctc(G[n].value,G[n-1].value)),sub:(G[n].note?'ข้อมูล'+G[n].note:'')+(gReal==null?'':' · โตจริง '+(gReal>0?'+':'')+f(gReal,1)+'%'),
+      chip:chip(GP?pctc(G[n].value,GP.value):null),sub:(G[n].note?'ข้อมูล'+G[n].note:'')+(gReal==null?'':' · โตจริง '+(gReal>0?'+':'')+f(gReal,1)+'%'),
       tip:tipOf({t:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) ณ ราคาประจำปี',
         d:'มูลค่าสินค้าและบริการขั้นสุดท้ายทั้งหมดที่ผลิตได้ในจังหวัดตลอดปี เป็นตัวเลขทางการที่ใช้อ้างอิงระดับประเทศ ประกาศปีละครั้งและช้ากว่าปีข้อมูลประมาณ 2 ปี',
-        calc:'สศช. ประมวลจากข้อมูลการผลิตครบทั้ง '+STRUCT.length+' สาขา · เทียบปีก่อน ณ ราคาประจำปี = ('+f_num(G[n].value)+' − '+f_num(G[n-1].value)+') ÷ '+f_num(G[n-1].value)+' × 100'+
+        calc:'สศช. ประมวลจากข้อมูลการผลิตครบทั้ง '+STRUCT.length+' สาขา'+
+          (GP?' · เทียบปีก่อน ณ ราคาประจำปี = ('+f_num(G[n].value)+' − '+f_num(GP.value)+') ÷ '+f_num(GP.value)+' × 100':' · เป็นปีแรกของชุดข้อมูล ไม่มีปีก่อนให้เทียบ')+
           (gReal==null?'':' · การเติบโตจริงที่ตัดผลของราคาออกแล้ว (แบบปริมาณลูกโซ่) = '+f(gReal,2)+'%'),
         src:'gpp',when:'ปี '+G[n].y+(G[n].note?' ('+G[n].note+')':'')})}),
     kpiCard({icon:'people',img:'income',color:cv('--blue'),label:'GPP ต่อหัว',value:f(G[n].pc,0),unit:'บาท/คน/ปี',
-      chip:chip(pctc(G[n].pc,G[n-1].pc)),sub:'ประชากรกลางปี '+f(G[n].pop||D.base.pop,0)+' คน',
+      chip:chip(GP?pctc(G[n].pc,GP.pc):null),sub:'ประชากรกลางปี '+f(G[n].pop||D.base.pop,0)+' คน',
       tip:tipOf({t:'ผลิตภัณฑ์มวลรวมจังหวัดต่อหัว',
         d:'รายได้เฉลี่ยต่อคนต่อปีของคนในจังหวัด ใช้เทียบฐานะทางเศรษฐกิจระหว่างจังหวัด ไม่ใช่รายได้ที่ครัวเรือนได้รับจริง',
         calc:'GPP ทั้งจังหวัด ÷ จำนวนประชากรกลางปีที่ สศช. ใช้ = ('+f_num(G[n].value)+' ล้านบาท × 1,000,000) ÷ '+f_num(G[n].pop||D.base.pop)+' คน',
@@ -122,6 +125,17 @@ function renderGpp(){
         src:'gpp',when:'ปี '+SYEAR})})
   ].join('');
 
+  /* บอกให้ชัดว่าดัชนีนี้มีส่วนที่ยังเป็นค่าจำลองอยู่เท่าไร จะได้ไม่เอาไปอ้างผิด */
+  const realPct=Math.round((MEI.real||0)*100);
+  const mu=document.getElementById('meiU');
+  if(mu)mu.innerHTML='จังหวัด · ภาคอีสาน · ทั้งประเทศ · <b style="color:'+(realPct>=80?'var(--good)':'var(--warn)')+'">'+
+    'ข้อมูลจริง '+realPct+'% ของน้ำหนักดัชนี</b>';
+  const mnote=document.getElementById('meiNote');
+  if(mnote)mnote.innerHTML=realPct>=100
+    ? 'ดัชนีคำนวณจากข้อมูลจริงทั้งหมด'
+    : 'เดือนล่าสุดมีข้อมูลจริง '+realPct+'% ของน้ำหนักดัชนี ส่วนที่เหลือเป็นค่าโครงร่างที่ระบบสร้างไว้แทนชุดข้อมูลที่หน่วยงานยังไม่ส่ง '+
+      'และเส้นเปรียบเทียบภาคอีสานกับทั้งประเทศยังเป็นเส้นโครงร่าง ยังไม่ใช่ตัวเลขจริงจาก สศช. '+
+      '<b>ยังไม่ควรนำดัชนีนี้ไปอ้างอิงในที่ประชุม</b> จนกว่าข้อมูลจริงจะครบ';
   mk('cMei',{type:'line',data:{labels:MONTHS.map(m=>m.label),datasets:[
     {label:'หนองบัวลำภู',data:s.map(x=>x.v),borderColor:cv('--brand'),backgroundColor:cv('--brand')+'20',borderWidth:2.6,pointRadius:0,tension:.32,fill:true},
     {label:'ภาคตะวันออกเฉียงเหนือ',data:NAT.ne,borderColor:cv('--gold'),borderWidth:1.7,pointRadius:0,tension:.32,borderDash:[5,4]},
@@ -129,39 +143,47 @@ function renderGpp(){
     options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:12}}},
       scales:{x:ax({grid:{display:false},ticks:{maxTicksLimit:13,font:{size:9.5}}}),y:ax()}}});
 
-  /* โดนัทแสดง 3 หมวดใหญ่ให้อ่านง่าย ส่วนแท่งด้านล่างแสดงครบทุกสาขา ไม่มีการยุบเป็น "อื่น ๆ" */
+  /* แผนภาพกล่อง อ่านลำดับความสำคัญได้ทันทีและใช้พื้นที่คุ้มกว่าโดนัท 19 ชิ้น
+     สีตามหมวดใหญ่ ไล่เฉดตามอันดับ · tooltip บอกทั้งมูลค่าและสัดส่วน */
   const GRP=['เกษตร','อุตสาหกรรม','บริการ'], GCOL={'เกษตร':cv('--leaf'),'อุตสาหกรรม':cv('--blue'),'บริการ':cv('--brand')};
   const gSum=g=>STRUCT.filter(x=>x.g===g).reduce((a,b)=>a+b.p,0);
   const gVal=g=>STRUCT.filter(x=>x.g===g).reduce((a,b)=>a+(b.v||0),0);
-  mk('cStruct',{type:'doughnut',data:{labels:GRP,
-    datasets:[{data:GRP.map(g=>+gSum(g).toFixed(2)),backgroundColor:GRP.map(g=>GCOL[g]),borderColor:cv('--card'),borderWidth:3}]},
-    options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:11,font:{size:11.5}}},
-      tooltip:{callbacks:{label:c=>c.label+' '+c.raw+'%',
-        footer:it=>f(gVal(it[0].label),1)+' ล้านบาท · '+STRUCT.filter(x=>x.g===it[0].label).length+' สาขา'}}}}});
+  const rankIn={}; GRP.forEach(g=>rankIn[g]=0);
+  const items=STRUCT.map((x,i)=>{
+    const k=Math.min(.55,(rankIn[x.g]++)*0.075);
+    const yoy=(x.prev!=null&&x.prev)?(x.v-x.prev)/x.prev*100:null;
+    return {n:x.n, v:x.v, color:shade(GCOL[x.g]||cv('--brand'),k),
+      tip:tipOf({t:x.n,
+        d:'หมวด'+x.g+' · อันดับ '+(i+1)+' จาก '+STRUCT.length+' สาขา · มูลค่าเพิ่ม ณ ราคาประจำปี '+f(x.v,1)+' ล้านบาท'+
+          (yoy==null?'':' · เทียบปีก่อน '+(yoy>0?'+':'')+f(yoy,1)+'%'),
+        calc:'สัดส่วน = (มูลค่าเพิ่มของสาขา ÷ GPP รวม) × 100 = ('+f_num(x.v)+' ÷ '+f_num(STOT)+') × 100 = '+x.p.toFixed(2)+'%'+
+          (yoy==null?'':' · เทียบปีก่อน = ('+f_num(x.v)+' − '+f_num(x.prev)+') ÷ '+f_num(x.prev)+' × 100'),
+        src:'gpp',when:'ปี '+SYEAR})};
+  });
+  const box=document.getElementById('structMap');
+  if(box)box.innerHTML=treemap(items);
+  const lg=document.getElementById('structLg');
+  if(lg)lg.innerHTML=GRP.map(g=>`<span><i style="background:${GCOL[g]}"></i>${g} <b>${gSum(g).toFixed(1)}%</b>
+    <span style="color:var(--faint)">${f(gVal(g),0)} ลบ.</span></span>`).join('')+
+    `<span style="color:var(--faint);margin-left:auto">รวม ${f(STOT,1)} ล้านบาท</span>`;
 
   const stT=document.getElementById('structTog');
-  if(stT&&!stT.innerHTML){stT.innerHTML=viewToggle('cStruct');bindToggle();}
+  if(stT&&!stT.innerHTML){stT.innerHTML=viewToggle('cStruct','แผนภาพ','ตารางข้อมูล');bindToggle();}
   const stU=document.getElementById('structU');
   if(stU)stU.textContent='สัดส่วน GPP ครบทั้ง '+STRUCT.length+' สาขา · ปี '+SYEAR;
-  const mxP=Math.max(...STRUCT.map(x=>x.p))||1;
-  document.getElementById('structBars').innerHTML=STRUCT.map(x=>{
-    const tp=tipOf({t:x.n,d:'หมวด'+x.g+' · มูลค่าเพิ่ม ณ ราคาประจำปี ปี '+SYEAR,
-      calc:'(มูลค่าเพิ่มของสาขา ÷ GPP รวม) × 100 = ('+f_num(x.v)+' ÷ '+f_num(STOT)+') × 100',
-      src:'gpp',when:'ปี '+SYEAR});
-    return `<div class="barrow" data-tip2="${tp}">
-      <span class="nm" style="width:190px">${x.n}</span>
-      <span class="tr"><i style="width:${Math.max(2,x.p/mxP*100).toFixed(1)}%;background:${GCOL[x.g]}"></i></span>
-      <span class="vv">${x.p.toFixed(2)}%</span></div>`;}).join('');
 
-  $('#tStruct').innerHTML='<thead><tr><th>สาขา</th><th>หมวด</th><th class="r">ล้านบาท</th><th class="r">สัดส่วน</th></tr></thead><tbody>'+
-    STRUCT.map(x=>`<tr><td>${rowIco(x.n)}${x.n}</td><td>${x.g}</td><td class="r">${f(x.v,1)}</td><td class="r">${x.p.toFixed(2)}%</td></tr>`).join('')+
-    `</tbody><tfoot><tr><td>รวม</td><td></td><td class="r">${f(STOT,1)}</td><td class="r">100.00%</td></tr></tfoot>`;
+  $('#tStruct').innerHTML='<thead><tr><th>#</th><th>สาขา</th><th>หมวด</th><th class="r">ล้านบาท</th><th class="r">สัดส่วน</th><th class="r">เทียบปีก่อน</th></tr></thead><tbody>'+
+    STRUCT.map((x,i)=>{
+      const yoy=(x.prev!=null&&x.prev)?(x.v-x.prev)/x.prev*100:null;
+      return `<tr><td class="r" style="color:var(--faint)">${i+1}</td><td>${rowIco(x.n)}${x.n}</td><td>${x.g}</td>
+        <td class="r">${f(x.v,1)}</td><td class="r">${x.p.toFixed(2)}%</td>
+        <td class="r" style="color:${yoy==null?'var(--faint)':yoy>=0?'var(--good)':'var(--bad)'}">${yoy==null?'—':(yoy>0?'+':'')+yoy.toFixed(1)+'%'}</td></tr>`;}).join('')+
+    `</tbody><tfoot><tr><td></td><td>รวม</td><td></td><td class="r">${f(STOT,1)}</td><td class="r">100.00%</td><td></td></tr></tfoot>`;
   const top3=STRUCT.slice(0,3);
   document.getElementById('structNote').innerHTML=
-    `ปี ${SYEAR} สาขาที่ใหญ่ที่สุดคือ <b>${top3[0].n}</b> ${top3[0].p.toFixed(2)}%
+    `ปี ${SYEAR} สาขาที่ใหญ่ที่สุดคือ <b>${top3[0].n}</b> ${f(top3[0].v,1)} ล้านบาท ${top3[0].p.toFixed(2)}%
      รองลงมา ${top3[1].n} ${top3[1].p.toFixed(2)}% และ ${top3[2].n} ${top3[2].p.toFixed(2)}%<br>
-     แบ่งเป็นหมวดใหญ่ เกษตร ${gSum('เกษตร').toFixed(1)}% · อุตสาหกรรม ${gSum('อุตสาหกรรม').toFixed(1)}% · บริการ ${gSum('บริการ').toFixed(1)}%
-     รวมทั้งสิ้น ${f(STOT,1)} ล้านบาท`;
+     ชี้ที่กล่องเพื่อดูมูลค่าและการเปลี่ยนแปลงเทียบปีก่อนรายสาขา`;
 
   mk('cGpp',{type:'bar',data:{labels:G.map(r=>'ปี '+r.y),datasets:[
     {type:'bar',label:'GPP (ล้านบาท)',data:G.map(r=>r.value),backgroundColor:cv('--brand'),borderRadius:6,barPercentage:.5,yAxisID:'y'},
@@ -192,7 +214,8 @@ function renderGpp(){
 /* ══ ด้านอุปสงค์ อุปทาน และเสถียรภาพการคลัง ══ */
 function renderDS(){
   const g=document.getElementById('dsGrid'); if(!g)return;
-  const st=slicerState('slc-gpp')||{i:35,idx:[35],freq:'M',label:MONTHS[35].label};
+  /* บล็อกอุปสงค์–อุปทานใช้ข้อมูลรายเดือน ไม่ผูกกับปี GPP ที่เลือก จึงยึดเดือนล่าสุด */
+  const st={i:35,idx:[35],freq:'M',label:MONTHS[35].label};
   /* ใช้งวดที่เลือกจากแถบตัวกรอง ไม่ใช่เดือนสุดท้ายเสมอไป */
   const last=(v,agg)=>seriesAt(v,st,agg||'sum'), prev=(v,agg)=>seriesPrevYear(v,st,agg||'sum');
   /* อุปสงค์ = การใช้จ่ายของครัวเรือนและรัฐ */
@@ -276,8 +299,10 @@ function renderDS(){
      :'อุปสงค์และอุปทานค่อนข้างสมดุล');
 }
 
+let GPP_YEAR=null;
 DS.init('gpp',function(){
   renderGpp();
+  onYearChange('gppYear',function(v){GPP_YEAR=+v;renderGpp();renderDS()});
   bindSlicers(function(){renderGpp();renderDS()});
   const v=document.getElementById('v-gpp');
   if(v&&!v.querySelector('.srcbar')){

@@ -212,6 +212,60 @@ function spark(vals,color){
 /* ชื่อไอคอนใส่หลายตัวคั่นด้วย | ได้ เช่น 'product|otop'
    ถ้าตัวแรกยังไม่มีไฟล์ จะไล่ไปตัวถัดไปเอง หมดแล้วจึงถอยไปใช้ไอคอนเส้น
    ทำให้เพิ่มไอคอนใหม่ทีหลังได้โดยไม่ต้องแก้โค้ด และระหว่างที่ยังไม่มีก็ไม่มีช่องว่าง */
+/* ─────────────── แผนภาพสัดส่วนแบบกล่อง (squarified treemap) ───────────────
+   ใช้พื้นที่คุ้มกว่าโดนัทเมื่อมีหมวดเยอะ และอ่านลำดับความสำคัญได้ทันที
+   items = [{n,v,color,tip}] · คืน HTML ที่วางในกล่อง .tmap ได้เลย */
+function treemap(items,opt){
+  opt=opt||{};
+  const W=opt.w||1600, H=opt.h||900;
+  const list=items.filter(x=>x.v>0).slice().sort((a,b)=>b.v-a.v);
+  if(!list.length)return '';
+  const total=list.reduce((a,b)=>a+b.v,0);
+  const out=[];
+  let x=0,y=0,w=W,h=H,rest=list.slice(),sum=total;
+  const worst=(row,len,scale)=>{
+    const s=row.reduce((a,b)=>a+b,0)*scale, mx=Math.max(...row)*scale, mn=Math.min(...row)*scale;
+    return Math.max((len*len*mx)/(s*s),(s*s)/(len*len*mn));
+  };
+  while(rest.length){
+    const horiz=w>=h, len=horiz?h:w;
+    const row=[]; let best=Infinity;
+    while(rest.length){
+      const cand=row.concat([rest[0].v]);
+      const scale=(horiz?w*h:w*h)/sum;
+      const wv=worst(cand,len,scale);
+      if(row.length&&wv>best)break;
+      best=wv; row.push(rest.shift().v);
+    }
+    const rowSum=row.reduce((a,b)=>a+b,0);
+    const thick=(rowSum/sum)*(horiz?w:h);
+    let off=0;
+    row.forEach((v,i)=>{
+      const part=(v/rowSum)*len;
+      const it=list[list.length-rest.length-row.length+i];
+      out.push({it, x: horiz?x:x+off, y: horiz?y+off:y, w: horiz?thick:part, h: horiz?part:thick});
+      off+=part;
+    });
+    if(horiz){x+=thick;w-=thick}else{y+=thick;h-=thick}
+    sum-=rowSum;
+  }
+  return out.map(b=>{
+    const p=b.it.v/total*100;
+    const area=(b.w/W*100)*(b.h/H*100);
+    const cls=area<1.1?'tm tiny':area<3.2?'tm sm':'tm';
+    return `<div class="${cls}" style="left:${(b.x/W*100).toFixed(3)}%;top:${(b.y/H*100).toFixed(3)}%;`+
+      `width:${(b.w/W*100).toFixed(3)}%;height:${(b.h/H*100).toFixed(3)}%;background:${b.it.color}"`+
+      (b.it.tip?` data-tip2="${b.it.tip}"`:'')+`><b>${b.it.n}</b><span>${p.toFixed(2)}%</span></div>`;
+  }).join('');
+}
+/* ไล่เฉดสีจากสีหลักของหมวด ยิ่งอันดับต้นยิ่งเข้ม */
+function shade(hex,k){
+  const p=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16));
+  const c=p(hex.trim());
+  const m=c.map(v=>Math.round(v+(255-v)*k));
+  return '#'+m.map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
 /* ─────────────── ไอคอนหน้าแถวตาราง ───────────────
    จับคู่จากชื่อรายการ เรียงจากคำที่เจาะจงที่สุดไปกว้างที่สุด
    ไฟล์อยู่ที่ assets/icons/ic-row-<slug>.png ถ้ายังไม่มีจะไม่ขึ้นเฉย ๆ ไม่พัง */
