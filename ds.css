@@ -1152,3 +1152,10 @@ body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
 .contrib .tr.two i.neg{left:auto;right:50%;border-radius:7px 0 0 7px}
 @media(max-width:1150px){.higrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.higrid{grid-template-columns:1fr}.hi-v{font-size:19px}}
+
+/* แท็บมุมมองเยอะขึ้น · จอแคบให้เลื่อนแนวนอนแทนการบีบจนอ่านไม่ออก */
+@media(max-width:900px){
+  .vswitch.big{display:flex;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .vswitch.big::-webkit-scrollbar{display:none}
+  .vswitch.big button{flex:0 0 auto;white-space:nowrap;padding:9px 14px;font-size:12.5px}
+}
