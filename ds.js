@@ -997,7 +997,8 @@ async function loadLive(){
 
 /* ─────────────── 20b) ตารางรายละเอียด: ซิงก์กับ Google Sheet ─────────────── */
 const TABLE_OWNER={fiscal:'spend',crop:'crop',fruit:'crop',water:'crop',base:'crop',price:'cpi',labor:'labor',
-  otop:'otop',tour:'tour',pop:'popreg',pyr:'popreg',irrig:'irrig',house:'house',agri2:'crop',gpp:'*'};
+  otop:'otop',tour:'tour',pop:'popreg',pyr:'popreg',irrig:'irrig',house:'house',agri2:'crop',
+  gpp:'spend',gppgrow:'spend',macro:'spend'};
 let TBL_META={};
 /* รวมตารางจากชีตทับค่าในไฟล์แบบรายหัวข้อ — หัวข้อที่ชีตยังไม่มีใช้ค่าจากไฟล์
    ตารางท่องเที่ยวรุ่นเก่าในชีตไม่มีประเภทแหล่ง (t) → คงรายการพิกัดชุดใหม่จากไฟล์ไว้ ไม่ให้พิกัดผิดชุดเดิมกลับมา */
@@ -1217,7 +1218,7 @@ const AGENCY_FULL={
   popreg :{n:'ที่ทำการปกครองจังหวัดหนองบัวลำภู',dept:'กรมการปกครอง กระทรวงมหาดไทย',tel:'',doc:'ข้อมูลทะเบียนราษฎร จำนวนประชากร การเกิด การตาย และการย้ายถิ่น'},
   irrig  :{n:'โครงการชลประทานหนองบัวลำภู',dept:'สำนักงานชลประทานที่ 5 กรมชลประทาน กระทรวงเกษตรและสหกรณ์',tel:'',doc:'ข้อมูลแหล่งน้ำชลประทาน พื้นที่รับประโยชน์ และสถานีสูบน้ำด้วยไฟฟ้า'},
   house  :{n:'สำนักงานสถิติจังหวัดหนองบัวลำภู',dept:'สำนักงานสถิติแห่งชาติ กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม',tel:'0 4231 6736',doc:'โครงการสำรวจภาวะเศรษฐกิจและสังคมของครัวเรือน (Household Socio-Economic Survey)'},
-  gpp    :{n:'สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ',dept:'สำนักนายกรัฐมนตรี',tel:'',doc:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) แบบปริมาณลูกโซ่'}
+  gpp    :{n:'สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ',dept:'',tel:'',doc:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) แบบปริมาณลูกโซ่'}
 };
 function srcBar(keys,extra){
   const list=(Array.isArray(keys)?keys:[keys]).map(k=>AGENCY_FULL[k]).filter(Boolean);

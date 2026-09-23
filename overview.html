@@ -42,6 +42,7 @@
     <button class="on" data-mv="all">ภาพรวม</button>
     <button data-mv="dem">ด้านอุปสงค์</button>
     <button data-mv="sup">ด้านอุปทาน</button>
+    <button data-mv="fin">การเงินและการจ้างงาน</button>
   </div>
   <div class="grid g3 mb" id="macroKpi"></div>
   <div class="c mb"><header><span class="hdico icow img" data-hdico="forecast"></span>
@@ -52,8 +53,6 @@
       <div id="cMac-table" class="hide"><div class="sc" style="max-height:420px"><table class="t" id="tMac"></table></div></div>
       <div class="note" id="macroNote"></div></div></div>
 
-  <div class="c"><header><span class="hdico icow img" data-hdico="alert"></span>
-    <h3>สถานะการส่งข้อมูลรอบล่าสุด</h3></header><div class="b" id="feed"></div></div>
   </section>
   </main>
 </div>
@@ -67,19 +66,29 @@
    ทุกค่าที่เป็นดัชนีรายงานเป็นร้อยละเทียบเดือนเดียวกันปีก่อน (%YoY) ตามต้นทาง
    "เทียบเดือนก่อน" จึงรายงานเป็นการเปลี่ยนแปลงของอัตรานั้นเป็นจุด ไม่ใช่การเติบโตรายเดือน
    เพราะต้นทางไม่ได้ให้ระดับดัชนีมา จะคำนวณ MoM แบบตรง ๆ ไม่ได้ */
-const MAC=(typeof DX!=='undefined'&&DX.macro&&DX.macro.rows)||[];
+/* อ่านสดทุกครั้งที่วาดหน้า เพราะตารางจากชีตอาจถูกแทนที่หลังโหลดข้อมูลสด */
+function macRows(){return withEmpY(((typeof DX!=='undefined'&&DX.macro&&DX.macro.rows)||[]).slice().sort((a,b)=>(a.y-b.y)||(a.m-b.m)))}
+let MAC=macRows();
 const MW=(typeof DX!=='undefined'&&DX.macro&&DX.macro.weight)||{agri:21,indus:22,serv:57};
 const mLabel=r=>TH_M[r.m-1]+' '+String(r.y).slice(-2);
 const MSERIES={
   all:[['overall','ภาพรวมเศรษฐกิจจังหวัด','forecast','--brand']],
   sup:[['agri','ภาคเกษตรกรรม','agri','--leaf'],['indus','ภาคอุตสาหกรรม','factorynew','--blue'],['serv','ภาคบริการ','trade','--brand']],
-  dem:[['cons','การบริโภคภาคเอกชน','cpi','--brand'],['invest','การลงทุนภาคเอกชน','invest','--gold'],['gov','การใช้จ่ายภาครัฐ','spend','--blue']]
+  dem:[['cons','การบริโภคภาคเอกชน','cpi','--brand'],['invest','การลงทุนภาคเอกชน','invest','--gold'],['gov','การใช้จ่ายภาครัฐ','spend','--blue']],
+  /* ด้านการเงินและการจ้างงาน ต้นทางให้ระดับมาด้วย จึงคิดอัตราเทียบปีก่อนเองได้ตรง ๆ */
+  fin:[['depoY','เงินฝากรวม','credit','--gold'],['credY','สินเชื่อรวม','invest','--brand2'],['empY','การจ้างงานรวม','employed','--plum']]
 };
 const MDESC={
   all:'ดัชนีรวมของจังหวัด สะท้อนทิศทางเศรษฐกิจโดยรวมในแต่ละเดือน',
   sup:'วัดจากกำลังการผลิตในพื้นที่ · ถ่วงน้ำหนักตามโครงสร้าง เกษตร '+MW.agri+'% อุตสาหกรรม '+MW.indus+'% บริการ '+MW.serv+'%',
-  dem:'วัดจากการใช้จ่ายจริงของครัวเรือน ภาคธุรกิจ และภาครัฐ'
+  dem:'วัดจากการใช้จ่ายจริงของครัวเรือน ภาคธุรกิจ และภาครัฐ',
+  fin:'เงินฝากและสินเชื่อของสถาบันการเงินในจังหวัด กับจำนวนผู้มีงานทำ · แสดงเป็นอัตราเทียบปีก่อนเพื่อให้เทียบกับด้านอื่นได้'
 };
+/* อัตราเทียบปีก่อนของการจ้างงาน ต้นทางให้เป็นจำนวนคน จึงคำนวณจากเดือนเดียวกันปีก่อน */
+function withEmpY(rows){
+  rows.forEach((r,i)=>{const b=rows[i-12];r.empY=(b&&b.emp)?+((r.emp-b.emp)/b.emp*100).toFixed(2):null});
+  return rows;
+}
 let MACRO_VIEW='all';
 const mLast=()=>MAC[MAC.length-1], mPrev=()=>MAC[MAC.length-2];
 const supIdx=r=>r?(r.agri*MW.agri+r.indus*MW.indus+r.serv*MW.serv)/(MW.agri+MW.indus+MW.serv):null;
@@ -98,6 +107,7 @@ function macroTip(key,label,cur,prv,extra){
 }
 
 function renderOverview(){
+  MAC=macRows();
   if(!MAC.length)return;
   const cur=mLast(), prv=mPrev();
   const ov=cur.overall, ovP=prv?prv.overall:null;
@@ -168,7 +178,6 @@ function renderOverview(){
   ].join('');
 
   renderMacro();
-  renderFeed();
 }
 
 /* ── แท็บ ภาพรวม / อุปสงค์ / อุปทาน ── */
@@ -181,7 +190,8 @@ function renderMacro(){
       sw.addEventListener('click',e=>{const b=e.target.closest('[data-mv]');if(!b)return;
         MACRO_VIEW=b.dataset.mv;renderMacro()});}
   }
-  const title={all:'ภาวะเศรษฐกิจรายเดือน',dem:'ด้านอุปสงค์ (Demand)',sup:'ด้านอุปทาน (Supply)'}[MACRO_VIEW];
+  const title={all:'ภาวะเศรษฐกิจรายเดือน',dem:'ด้านอุปสงค์ (Demand)',sup:'ด้านอุปทาน (Supply)',
+    fin:'ด้านการเงินและการจ้างงาน'}[MACRO_VIEW];
   $('#macroTitle').textContent=title;
   $('#macroSub').textContent='ร้อยละเทียบปีก่อน · '+mLabel(MAC[0])+' ถึง '+mLabel(cur);
 
@@ -191,6 +201,7 @@ function renderMacro(){
       ['dem','ด้านอุปสงค์','cpi','--gold',demIdx(cur),demIdx(prv)],
       ['sup','ด้านอุปทาน','factorynew','--blue',supIdx(cur),supIdx(prv)]
     ]:defs.map(d=>[d[0],d[1],d[2],d[3],cur[d[0]],prv?prv[d[0]]:null]);
+  const LVL={depoY:['depo','ล้านบาท',0],credY:['cred','ล้านบาท',0],empY:['emp','คน',0]};
   $('#macroKpi').innerHTML=cards.map(c=>{
     const [k,label,ico,col,v,p]=c;
     const tip=(k==='dem'||k==='sup')
@@ -199,8 +210,13 @@ function renderMacro(){
                         :'ถ่วงน้ำหนักตามโครงสร้าง เกษตร '+MW.agri+'% อุตสาหกรรม '+MW.indus+'% บริการ '+MW.serv+'%',
           src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})
       : macroTip(k,label,cur,prv);
+    const L=LVL[k];
     return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'% YoY',
-      chip:chip(v),sub:p==null?'':'เทียบเดือนก่อน '+ptTxt(v-p),tip:tip});
+      chip:chip(v),
+      sub:L?('ล่าสุด '+f(cur[L[0]],L[2])+' '+L[1]):(p==null?'':'เทียบเดือนก่อน '+ptTxt(v-p)),
+      tip:L?tipOf({t:label,d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(cur[L[0]])+' '+L[1],
+        calc:'อัตราเทียบปีก่อน '+f(v,2)+'%'+(prv?' · เดือนก่อน '+f_num(prv[L[0]])+' '+L[1]+' เปลี่ยนแปลง '+(cur[L[0]]-prv[L[0]]>0?'+':'')+f_num(cur[L[0]]-prv[L[0]]):''),
+        src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)}):tip});
   }).join('');
 
   /* กราฟ */
@@ -228,7 +244,7 @@ function renderMacro(){
 
   /* คำอธิบาย */
   const best=defs.slice().sort((a,b)=>cur[b[0]]-cur[a[0]])[0], worst=defs.slice().sort((a,b)=>cur[a[0]]-cur[b[0]])[0];
-  const pos=MAC.slice(-12).filter(r=>(MACRO_VIEW==='sup'?supIdx(r):MACRO_VIEW==='dem'?demIdx(r):r.overall)>0).length;
+  const pos=MAC.slice(-12).filter(r=>(MACRO_VIEW==='sup'?supIdx(r):MACRO_VIEW==='dem'?demIdx(r):MACRO_VIEW==='fin'?r.depoY:r.overall)>0).length;
   $('#macroNote').innerHTML=MDESC[MACRO_VIEW]+'<br>'+
     (defs.length>1
       ? `เดือน ${mLabel(cur)} ตัวที่ขยายตัวมากสุดคือ <b>${best[1]} ${(cur[best[0]]>0?'+':'')+f(cur[best[0]],1)}%</b>
@@ -239,18 +255,6 @@ function renderMacro(){
     ค่าที่เป็น "จุด" คือผลต่างของอัตราระหว่างเดือน ไม่ใช่การเติบโตรายเดือน</span>`;
 }
 
-function renderFeed(){
-  $('#feed').innerHTML=DATASETS.slice().sort((a,b)=>a.lag-b.lag).map(d=>{
-    const st=d.lag<=25?[cv('--good'),'ส่งแล้ว']:d.lag<=45?[cv('--warn'),'รอยืนยัน']:[cv('--bad'),'ค้างส่ง'];
-    const tp=tipOf({t:d.series[0].label,
-      d:'สถานะการส่งข้อมูล '+st[1]+' · ข้อมูลชุดนี้มาช้าประมาณ '+d.lag+' วันหลังสิ้นงวด',
-      calc:'เกณฑ์สถานะ: ช้าไม่เกิน 25 วัน = ส่งแล้ว · 26–45 วัน = รอยืนยัน · เกิน 45 วัน = ค้างส่ง',
-      src:d.id,when:'เดือน '+mLabel(mLast())});
-    return`<div data-tip2="${tp}" style="display:flex;align-items:center;gap:9px;padding:6px 2px;border-bottom:1px solid var(--line2);font-size:12px">
-      <span class="dot" style="background:${st[0]}"></span>
-      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dim)">${d.agency.split(' · ')[0].replace('สำนักงาน','สนง.')}</span>
-      <span style="font-size:11px;color:${st[0]}">${st[1]}</span></div>`}).join('');
-}
 function drawRibbon(){
   const sv=$('#ribbon'); if(!sv||!MAC.length)return;
   /* แท่งเล็กใต้ตัวเลขใหญ่ = อัตราเทียบปีก่อนของ 36 เดือนล่าสุด แท่งขึ้นคือบวก แท่งลงคือติดลบ */

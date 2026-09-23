@@ -131,7 +131,7 @@ function renderGpp(){
   ].join('');
 
   /* อัตราการขยายตัวที่แท้จริงรายปี · เทียบ GPP จังหวัดกับ GDP ทั้งประเทศ */
-  const GR=(FG.growth||[]).filter(r=>r&&r.y);
+  const GR=(((D.gpp&&D.gpp.growth)||FG.growth)||[]).filter(r=>r&&r.y);
   mk('cGrow',{type:'line',data:{labels:GR.map(r=>'พ.ศ. '+r.y),
     datasets:[
       {label:'GPP จังหวัดหนองบัวลำภู',data:GR.map(r=>r.prov),borderColor:cv('--brand'),
@@ -354,7 +354,7 @@ DS.init('gpp',function(){
   if(v&&!v.querySelector('.srcbar')){
     const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
     d.innerHTML='<header><span class="hdico icow img">'+icoImg('source',26)+'</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
-      srcBar(['gpp'],D.gpp.doc+' · จังหวัดหนองบัวลำภู รหัส 0118 · GPP ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี · ดัชนี NBL–MEI คำนวณโดยสำนักงานสถิติจังหวัดหนองบัวลำภู')+'</div>';
+      srcBar(['gpp'],D.gpp.doc+' · จังหวัดหนองบัวลำภู รหัส 0118 · GPP ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี')+'</div>';
     v.appendChild(d);
   }
   renderDS();
