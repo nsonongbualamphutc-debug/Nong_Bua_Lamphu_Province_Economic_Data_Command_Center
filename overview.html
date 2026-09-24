@@ -172,13 +172,13 @@ function renderOverview(){
     :ov>-1?'เศรษฐกิจจังหวัดทรงตัว':'เศรษฐกิจจังหวัดหดตัว ควรเร่งมาตรการกระตุ้น';
 
   $('#heroPil').innerHTML=[
-    [(dem>0?'+':'')+f(dem,1)+'%','ด้านอุปสงค์<br>'+(demP==null?'':'เทียบเดือนก่อน '+ptTxt(dem-demP)),
+    [(dem>0?'+':'')+f(dem,1)+'%','ด้านอุปสงค์ · เทียบปีก่อน<br>'+(demP==null?'':'เทียบเดือนก่อน '+ptTxt(dem-demP)),
       tipOf({t:'ด้านอุปสงค์ (Demand)',
         d:'วัดจากการใช้จ่ายจริงของครัวเรือน ภาคธุรกิจ และภาครัฐ เดือน '+mLabel(cur),
         calc:'เฉลี่ยจาก 3 ตัวชี้วัด · การบริโภคเอกชน '+f(cur.cons,1)+'% · การลงทุนเอกชน '+f(cur.invest,1)+'% · การใช้จ่ายภาครัฐ '+f(cur.gov,1)+'%'+
           (demP==null?'':' · เดือนก่อน '+f(demP,1)+'% เปลี่ยนแปลง '+ptTxt(dem-demP)),
         src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})],
-    [(sup>0?'+':'')+f(sup,1)+'%','ด้านอุปทาน<br>'+(supP==null?'':'เทียบเดือนก่อน '+ptTxt(sup-supP)),
+    [(sup>0?'+':'')+f(sup,1)+'%','ด้านอุปทาน · เทียบปีก่อน<br>'+(supP==null?'':'เทียบเดือนก่อน '+ptTxt(sup-supP)),
       tipOf({t:'ด้านอุปทาน (Supply)',
         d:'วัดจากกำลังการผลิตในพื้นที่ เดือน '+mLabel(cur),
         calc:'ถ่วงน้ำหนักตามโครงสร้างเศรษฐกิจ · เกษตร '+f(cur.agri,1)+'% ('+MW.agri+'%) · อุตสาหกรรม '+f(cur.indus,1)+'% ('+MW.indus+'%) · บริการ '+f(cur.serv,1)+'% ('+MW.serv+'%)'+
@@ -194,8 +194,10 @@ function renderOverview(){
   /* ── การ์ดตัวเลขหลัก ── */
   const lvl=(k,ky,label,unit,ico,col,dec)=>{
     const v=cur[k], p=prv?prv[k]:null, yo=cur[ky];
+    const mom=(p!=null&&p)?pctc(v,p):null;
     return kpiCard({icon:'coin',img:ico,color:cv(col),label:label,value:f(v,dec||0),unit:unit,
-      chip:chip(yo),spark:spark(hist(k),cv(col)),sub:p==null?'':'เทียบเดือนก่อน '+(v-p>0?'+':'')+f(v-p,dec||0)+' '+unit,
+      chip:chip2(yo,mom),spark:spark(hist(k),cv(col)),
+      sub:p==null?'':'เดือนก่อน '+f(p,dec||0)+' '+unit+' ('+(v-p>0?'+':'')+f(v-p,dec||0)+')',
       tip:tipOf({t:label,d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(v)+' '+unit,
         calc:'เทียบปีก่อน '+f(yo,2)+'%'+(p==null?'':' · เดือนก่อน '+f_num(p)+' '+unit+' เปลี่ยนแปลง '+(v-p>0?'+':'')+f_num(v-p)),
         src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})});
@@ -204,8 +206,9 @@ function renderOverview(){
   const hist=k=>MAC.slice(Math.max(0,mIdx()-11),mIdx()+1).map(r=>r[k]).filter(x=>x!=null);
   const pctCard=(k,label,ico,col,go)=>{
     const v=cur[k], p=prv?prv[k]:null;
-    return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'% YoY',
-      chip:chip(v),spark:spark(hist(k),cv(col)),sub:p==null?'':'เทียบเดือนก่อน '+ptTxt(v-p),go:go,
+    return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'%',
+      chip:chip2(v,p==null?null:v-p,'pt'),spark:spark(hist(k),cv(col)),
+      sub:'เดือนก่อนอยู่ที่ '+(p==null?'—':f(p,1)+'%')+' · ตัวเลขเป็นอัตราเทียบปีก่อน ผลต่างจึงเป็นจุด',go:go,
       tip:macroTip(k,label,cur,prv)});
   };
   $('#homeKpi').innerHTML=[
@@ -218,8 +221,10 @@ function renderOverview(){
       const v=cur.emp,p=prv?prv.emp:null;
       const back=MAC[MAC.length-13];
       const yo=back&&back.emp?pctc(v,back.emp):null;
+      const mom=(p!=null&&p)?pctc(v,p):null;
       return kpiCard({icon:'people',img:'employed',color:cv('--plum'),label:'การจ้างงานรวม',value:f(v,0),unit:'คน',
-        chip:chip(yo),spark:spark(hist('emp'),cv('--plum')),sub:p==null?'':'เทียบเดือนก่อน '+(v-p>0?'+':'')+f(v-p,0)+' คน',go:'labor',
+        chip:chip2(yo,mom),spark:spark(hist('emp'),cv('--plum')),
+        sub:p==null?'':'เดือนก่อน '+f(p,0)+' คน ('+(v-p>0?'+':'')+f(v-p,0)+')',go:'labor',
         tip:tipOf({t:'การจ้างงานรวมในจังหวัด',d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(v)+' คน',
           calc:(yo==null?'':'เทียบปีก่อน = ('+f_num(v)+' − '+f_num(back.emp)+') ÷ '+f_num(back.emp)+' × 100 = '+f(yo,2)+'%')+
             (p==null?'':' · เดือนก่อน '+f_num(p)+' คน'),
@@ -315,9 +320,10 @@ function renderMacro(){
           src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})
       : macroTip(k,label,cur,prv);
     const L=LVL[k];
-    return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'% YoY',
-      chip:chip(v),
-      sub:L?('ล่าสุด '+f(cur[L[0]],L[2])+' '+L[1]):(p==null?'':'เทียบเดือนก่อน '+ptTxt(v-p)),
+    const momL=(L&&prv&&prv[L[0]])?pctc(cur[L[0]],prv[L[0]]):null;
+    return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'%',
+      chip:L?chip2(v,momL):chip2(v,p==null?null:v-p,'pt'),
+      sub:L?('ล่าสุด '+f(cur[L[0]],L[2])+' '+L[1]):('เดือนก่อน '+(p==null?'—':f(p,1)+'%')+' · ผลต่างของอัตราจึงเป็นจุด'),
       tip:L?tipOf({t:label,d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(cur[L[0]])+' '+L[1],
         calc:'อัตราเทียบปีก่อน '+f(v,2)+'%'+(prv?' · เดือนก่อน '+f_num(prv[L[0]])+' '+L[1]+' เปลี่ยนแปลง '+(cur[L[0]]-prv[L[0]]>0?'+':'')+f_num(cur[L[0]]-prv[L[0]]):''),
         src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)}):tip});

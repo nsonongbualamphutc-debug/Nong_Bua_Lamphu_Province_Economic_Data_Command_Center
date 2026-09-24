@@ -61,18 +61,28 @@ const GAPS=[
  ['ภาพรวม','GPP รายสาขาย้อนหลัง 5 ปี','สศช. (NESDC)','สูง'],
  ['ภาพรวม','ข้อมูลความยากจนและเส้นความยากจนระดับอำเภอ','สนง.พัฒนาชุมชนจังหวัด (TPMAP)','สูง']
 ];
+/* สรุปภาวะเศรษฐกิจใช้เครื่องชี้รายเดือนชุดเดียวกับหน้าภาพรวม เป็นข้อมูลจริงจากแฟ้มของคลังจังหวัด
+   ไม่ใช้ดัชนีที่ระบบคำนวณเองอีกแล้ว รายงานที่พิมพ์ออกไปจึงอ้างอิงได้ */
+const RMAC=((typeof DX!=='undefined'&&DX.macro&&DX.macro.rows)||[]).slice().sort((a,b)=>(a.y-b.y)||(a.m-b.m));
+const rmLab=r=>TH_M[r.m-1]+' '+r.y;
 function renderReport(){
-  const s=MEI.out,last=s[35],yo=pctc(last.v,s[23].v);
+  const cur=RMAC[RMAC.length-1]||{}, prv=RMAC[RMAC.length-2]||null;
   const F=D.fiscal,val=cropValue();
-  const drv=MEI.comps.map(c=>({n:c.sec.name,v:(c.idx[35]-c.idx[23])*c.sec.weight})).sort((a,b)=>b.v-a.v);
+  const MWr=(typeof DX!=='undefined'&&DX.macro&&DX.macro.weight)||{agri:21,indus:22,serv:57};
+  const wsum=MWr.agri+MWr.indus+MWr.serv;
+  const sup=cur.agri!=null?(cur.agri*MWr.agri+cur.indus*MWr.indus+cur.serv*MWr.serv)/wsum:null;
+  const dem=cur.cons!=null?(cur.cons+cur.invest+cur.gov)/3:null;
+  const parts=[['ภาคเกษตรกรรม',cur.agri],['ภาคอุตสาหกรรม',cur.indus],['ภาคบริการ',cur.serv],
+               ['การบริโภคเอกชน',cur.cons],['การลงทุนเอกชน',cur.invest],['การใช้จ่ายภาครัฐ',cur.gov]]
+              .filter(x=>x[1]!=null).sort((a,b)=>b[1]-a[1]);
   $('#briefAsof').textContent='ข้อมูล ณ '+CFG.asof;
-  const simWarn=MEI.real<.999?`<div class="trust bad" style="margin:0 0 10px"><div class="tr-h"><span class="tr-dot"></span><span class="tr-t">
-      <b>ข้อควรระวัง:</b> ดัชนี NBL–MEI เดือนล่าสุดคำนวณจากค่าจริงเพียง ${Math.round(MEI.real*100)}% ของน้ำหนัก ส่วนที่เหลือเป็นข้อมูลจำลอง
-      ข้อความในส่วนภาพรวมจึงยังใช้อ้างอิงไม่ได้ ตัวชี้วัดที่ยังไม่มีค่าจริงระบุไว้ในตารางด้านล่าง</span></div></div>`:'';
-  $('#brief').innerHTML=simWarn+`
-    <p><b>ภาพรวม</b> — ดัชนีภาวะเศรษฐกิจจังหวัดหนองบัวลำภู (NBL–MEI) เดือน${TH_M[last.m-1]} ${last.y} อยู่ที่ <b>${last.v.toFixed(1)}</b>
-    ${yo>0?'ขยายตัว':'ลดลง'} <b>${Math.abs(yo).toFixed(1)}%</b> เมื่อเทียบกับเดือนเดียวกันปีก่อน
-    โดยมี <b>${drv[0].n}</b> เป็นแรงหนุนหลัก และ <b>${drv[drv.length-1].n}</b> เป็นตัวฉุด</p>
+  $('#brief').innerHTML=`
+    <p><b>ภาพรวม</b> — ภาวะเศรษฐกิจจังหวัดหนองบัวลำภู เดือน${rmLab(cur)}
+    ${cur.overall>0?'ขยายตัว':'หดตัว'} <b>${Math.abs(cur.overall).toFixed(1)}%</b> เมื่อเทียบกับเดือนเดียวกันปีก่อน
+    ${prv?`(เดือนก่อน ${prv.overall.toFixed(1)}% เปลี่ยนแปลง ${(cur.overall-prv.overall>0?'+':'')+(cur.overall-prv.overall).toFixed(1)} จุด)`:''}
+    ด้านอุปทานอยู่ที่ <b>${sup==null?'—':(sup>0?'+':'')+sup.toFixed(1)+'%'}</b>
+    ด้านอุปสงค์อยู่ที่ <b>${dem==null?'—':(dem>0?'+':'')+dem.toFixed(1)+'%'}</b>
+    โดยมี <b>${parts[0]?parts[0][0]:'—'}</b> เป็นแรงหนุนหลัก และ <b>${parts.length?parts[parts.length-1][0]:'—'}</b> เป็นตัวฉุด</p>
 
     <h4>1. การคลังภาครัฐ — เครื่องยนต์หลักที่ยังทำงานเต็มกำลัง</h4>
     <p>จังหวัดเบิกจ่ายงบประมาณแล้ว <b>${F.fn.dis[0].pct}%</b> (${f(F.fn.dis[0].val,2)} จาก ${f(F.fn.dis[0].alloc,2)} ล้านบาท)

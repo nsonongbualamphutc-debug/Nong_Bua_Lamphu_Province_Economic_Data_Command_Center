@@ -200,6 +200,16 @@ function pctc(a,b){return b?((a-b)/Math.abs(b))*100:null}
 function chip(p){if(p==null)return'<span class="chip">—</span>';
   const c=p>.15?'up':p<-.15?'dn':'fl',a=p>.15?'▲':p<-.15?'▼':'▬';
   return`<span class="chip ${c}">${a} ${p>0?'+':''}${p.toFixed(1)}%</span>`}
+/* ป้ายคู่ · เทียบปีก่อน และ เทียบเดือนก่อน ในการ์ดเดียวกัน
+   unit 'pct' = ตัวเลขเป็นร้อยละ · unit 'pt' = เป็นจุด (ใช้เมื่อต้นทางให้มาเป็นอัตราอยู่แล้ว) */
+function chip2(yoy,mom,unit){
+  const one=(v,lab,u)=>{
+    if(v==null)return `<span class="chip">— ${lab}</span>`;
+    const c=v>.15?'up':v<-.15?'dn':'fl', a=v>.15?'▲':v<-.15?'▼':'▬';
+    return `<span class="chip ${c}">${a} ${v>0?'+':''}${v.toFixed(u==='pt'?1:1)}${u==='pt'?' จุด':'%'} <em>${lab}</em></span>`;
+  };
+  return `<span class="chip2">${one(yoy,'ปีก่อน','pct')}${one(mom,'เดือนก่อน',unit||'pct')}</span>`;
+}
 function spark(vals,color){
   const w=100,h=26,mn=Math.min(...vals),mx=Math.max(...vals),r=(mx-mn)||1;
   const p=vals.map((v,i)=>[i/(vals.length-1)*w,h-2-((v-mn)/r)*(h-6)]);
@@ -1973,14 +1983,14 @@ function fillIcons(root){
 /* แถบบอกความน่าเชื่อถือของตัวเลขรายเดือน — แสดงเฉพาะหน้าที่ใช้ชุดรายเดือน */
 /* หน้าภาพรวมและหน้า GPP ใช้ข้อมูลจริงจากแฟ้มของหน่วยงานแล้ว ไม่ต้องมีแถบเตือนข้อมูลจำลอง */
 const TRUST_PAGES={fiscal:['spend'],industry:['factory','power'],trade:['cpi','credit'],
-  consume:['fuel','car'],area:null,report:null};
+  consume:['fuel','car'],area:null};
 function trustBar(){
   if(typeof PAGE==='undefined'||!TRUST_PAGES.hasOwnProperty(PAGE.id))return;
   const v=document.querySelector('.view.on'); if(!v)return;
   const ids=TRUST_PAGES[PAGE.id]||DATASETS.map(d=>d.id);
   const st=ids.map(id=>({id,d:DATASETS.find(x=>x.id===id),r:realStat(id)})).filter(x=>x.d&&x.r);
   const full=st.filter(x=>x.r.share>=.999).length, none=st.filter(x=>x.r.real===0).length, part=st.length-full-none;
-  const showMei=['report'].indexOf(PAGE.id)>=0;
+  const showMei=false;
   const lv=full===st.length?'ok':none===st.length?'bad':'warn';
   let el=v.querySelector('.trust');
   if(!el){el=document.createElement('div');el.className='trust';

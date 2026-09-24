@@ -25,15 +25,16 @@
   <div class="c mb"><header><span class="hdico icow img" data-hdico="source"></span><h3>ทะเบียนชุดข้อมูล</h3></header>
     <div class="b"><div class="sc" style="max-height:470px"><table class="t" id="tSrc"></table></div></div></div>
   <div class="grid g2">
-    <div class="c"><header><span class="hdico icow img"><img class="ico" src="assets/icons/ic-forecast.png" alt="" width="26" height="26" loading="lazy" onerror="this.remove()"></span><h3>วิธีคำนวณดัชนี NBL–MEI</h3></header>
+    <div class="c"><header><span class="hdico icow img"><img class="ico" src="assets/icons/ic-forecast.png" alt="" width="26" height="26" loading="lazy" onerror="this.remove()"></span><h3>วิธีอ่านภาวะเศรษฐกิจรายเดือน</h3></header>
       <div class="b" style="font-size:12.5px;line-height:1.85;color:var(--dim)">
-        <p style="margin-top:0">ดัชนีนี้ไม่ได้แทน GPP แต่เป็นตัวชี้วัดแทน (proxy) ที่นำข้อมูลเร็วมาประกอบเป็นภาพรายเดือน</p>
+        <p style="margin-top:0">หน้าภาพรวมเศรษฐกิจใช้แฟ้มเครื่องชี้เศรษฐกิจจังหวัดของ<b style="color:var(--ink)">สำนักงานคลังจังหวัดหนองบัวลำภู</b>
+        เป็นข้อมูลจริงทั้งหมด ไม่ใช่ดัชนีที่ระบบคำนวณเอง</p>
         <ol style="padding-left:19px;margin:8px 0">
-          <li>ปรับข้อมูลดิบแต่ละชุดเป็นดัชนี ฐาน 100 = ค่าเฉลี่ยรายเดือนปี 2567</li>
-          <li>เทียบเดือนเดียวกันปีก่อนเพื่อขจัดผลฤดูกาล</li>
-          <li>ถ่วงน้ำหนักตามสัดส่วนสาขาการผลิตใน GPP ล่าสุด</li>
-          <li>รวมเป็นดัชนีเดียวและแปลงกลับสู่สเกลฐาน 100</li></ol>
-        <p><b style="color:var(--ink)">เกณฑ์อ่านค่า</b> — เกิน 103 ขยายตัวชัดเจน · 100–103 ขยายตัวเล็กน้อย · 97–100 ทรงตัว · ต่ำกว่า 97 หดตัว</p>
+          <li>ทุกตัวเลขรายงานเป็น<b style="color:var(--ink)">ร้อยละเทียบเดือนเดียวกันปีก่อน</b> จึงขจัดผลฤดูกาลไปแล้วในตัว</li>
+          <li><b style="color:var(--ink)">ด้านอุปทาน</b> ถ่วงน้ำหนักตามโครงสร้างเศรษฐกิจจังหวัด เกษตร 21% อุตสาหกรรม 22% บริการ 57%</li>
+          <li><b style="color:var(--ink)">ด้านอุปสงค์</b> เฉลี่ยจากการบริโภคเอกชน การลงทุนเอกชน และการใช้จ่ายภาครัฐ</li>
+          <li>ค่าที่รายงานเป็น "จุด" คือผลต่างของอัตราระหว่างเดือน ไม่ใช่การเติบโตรายเดือน</li></ol>
+        <p><b style="color:var(--ink)">เกณฑ์อ่านค่า</b> — เกิน +5% ขยายตัวชัดเจน · +1% ถึง +5% ขยายตัวค่อยเป็นค่อยไป · −1% ถึง +1% ทรงตัว · ต่ำกว่า −1% หดตัว</p>
         <div class="ch sm" style="margin-top:6px"><canvas id="cWeight"></canvas></div></div></div>
     <div class="c"><header><span class="hdico icow img" data-hdico="network"></span><h3>ลิงก์อ้างอิงและช่องทางติดต่อ</h3></header>
       <div class="b" style="display:flex;flex-direction:column;gap:9px;font-size:12.5px">
@@ -65,15 +66,25 @@ function renderSources(){
           <td style="color:var(--dim)">${i===0?d.agency:'”'}</td><td>รายเดือน</td>
           <td class="r">${d.lag} วัน</td><td>${st}</td></tr>`;first=false})})});
   h+=`<tr><td><span class="dot" style="background:var(--plum);margin-right:7px"></span>ภาพรวม</td>
-    <td>ดัชนี NBL–MEI และการดูแลแดชบอร์ด</td><td style="color:var(--dim)">สนง.สถิติจังหวัด · สนง.จังหวัด</td>
+    <td>ประมวลผลและดูแลแดชบอร์ด</td><td style="color:var(--dim)">สนง.สถิติจังหวัด · สนง.จังหวัด</td>
     <td>รายเดือน</td><td class="r">15 วัน</td><td><span class="chip up">ทันรอบ</span></td></tr>
     <tr><td></td><td>ผลิตภัณฑ์มวลรวมจังหวัด (GPP)</td><td style="color:var(--dim)">สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ</td>
-    <td>รายปี</td><td class="r">730 วัน</td><td><span class="chip dn">ล่าช้า 2 ปี</span></td></tr></tbody>`;
+    <td>รายปี</td><td class="r">730 วัน</td><td><span class="chip dn">ล่าช้า 2 ปี</span></td></tr>
+    <tr><td></td><td>เครื่องชี้ภาวะเศรษฐกิจรายเดือน · ภาพรวม อุปสงค์ อุปทาน การเงิน การจ้างงาน</td>
+    <td style="color:var(--dim)">สำนักงานคลังจังหวัดหนองบัวลำภู</td>
+    <td>รายเดือน</td><td class="r">45 วัน</td><td><span class="chip real">ข้อมูลจริง</span></td></tr>
+    <tr><td></td><td>อัตราการขยายตัว GPP จังหวัดและ GDP ประเทศ</td>
+    <td style="color:var(--dim)">สำนักงานคลังจังหวัดหนองบัวลำภู · อ้างอิง สศช.</td>
+    <td>รายปี</td><td class="r">730 วัน</td><td><span class="chip real">ข้อมูลจริง</span></td></tr></tbody>`;
   $('#tSrc').innerHTML=h;
-  mk('cWeight',{type:'bar',data:{labels:SECTORS.map(s=>s.name),
-    datasets:[{data:SECTORS.map(s=>+(s.weight*100).toFixed(0)),backgroundColor:SECTORS.map(s=>s.color),borderRadius:4,barThickness:12}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'น้ำหนัก '+c.raw+'%'}}},
-      scales:{x:ax({ticks:{callback:v=>v+'%'}}),y:ax({grid:{display:false},ticks:{font:{size:10}}})}}});
+  /* น้ำหนักด้านอุปทานตามแฟ้มของคลังจังหวัด ไม่ใช่น้ำหนักที่ระบบตั้งเอง */
+  const MWs=(typeof DX!=='undefined'&&DX.macro&&DX.macro.weight)||{agri:21,indus:22,serv:57};
+  const WL=[['ภาคเกษตรกรรม',MWs.agri,cv('--leaf')],['ภาคอุตสาหกรรม',MWs.indus,cv('--blue')],['ภาคบริการ',MWs.serv,cv('--brand')]];
+  mk('cWeight',{type:'bar',data:{labels:WL.map(x=>x[0]),
+    datasets:[{data:WL.map(x=>x[1]),backgroundColor:WL.map(x=>x[2]),borderRadius:4,barThickness:16}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>'น้ำหนักในด้านอุปทาน '+c.raw+'%'}}},
+      scales:{x:ax({ticks:{callback:v=>v+'%'}}),y:ax({grid:{display:false},ticks:{font:{size:11}}})}}});
 }
 
 
