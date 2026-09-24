@@ -184,20 +184,26 @@ function renderOverview(){
     :ov>=1?'เศรษฐกิจจังหวัดขยายตัวอย่างค่อยเป็นค่อยไป'
     :ov>-1?'เศรษฐกิจจังหวัดทรงตัว':'เศรษฐกิจจังหวัดหดตัว ควรเร่งมาตรการกระตุ้น';
 
-  $('#heroPil').innerHTML=[
-    [(dem>0?'+':'')+f(dem,1)+'%','ด้านอุปสงค์ · เทียบปีก่อน<br>'+(demP==null?'':'เทียบเดือนก่อน '+ptTxt(dem-demP)),
-      tipOf({t:'ด้านอุปสงค์ (Demand)',
-        d:'วัดจากการใช้จ่ายจริงของครัวเรือน ภาคธุรกิจ และภาครัฐ เดือน '+mLabel(cur),
-        calc:'เฉลี่ยจาก 3 ตัวชี้วัด · การบริโภคเอกชน '+f(cur.cons,1)+'% · การลงทุนเอกชน '+f(cur.invest,1)+'% · การใช้จ่ายภาครัฐ '+f(cur.gov,1)+'%'+
-          (demP==null?'':' · เดือนก่อน '+f(demP,1)+'% เปลี่ยนแปลง '+ptTxt(dem-demP)),
-        src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})],
-    [(sup>0?'+':'')+f(sup,1)+'%','ด้านอุปทาน · เทียบปีก่อน<br>'+(supP==null?'':'เทียบเดือนก่อน '+ptTxt(sup-supP)),
-      tipOf({t:'ด้านอุปทาน (Supply)',
-        d:'วัดจากกำลังการผลิตในพื้นที่ เดือน '+mLabel(cur),
-        calc:'ถ่วงน้ำหนักตามโครงสร้างเศรษฐกิจ · เกษตร '+f(cur.agri,1)+'% ('+MW.agri+'%) · อุตสาหกรรม '+f(cur.indus,1)+'% ('+MW.indus+'%) · บริการ '+f(cur.serv,1)+'% ('+MW.serv+'%)'+
-          (supP==null?'':' · เดือนก่อน '+f(supP,1)+'% เปลี่ยนแปลง '+ptTxt(sup-supP)),
-        src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})]
-  ].map(x=>`<div class="pil" data-tip2="${x[2]}"><b class="n">${x[0]}</b><span>${x[1]}</span></div>`).join('');
+  /* เสาสองต้นบนหน้าปก · ทำเป็นการ์ดแก้วมีขอบและป้ายคู่ ไม่ให้จมไปกับภาพพื้นหลัง */
+  const pill=(key,label,ico,v,p)=>{
+    const mom=p==null?null:v-p;
+    const badge=(x,lab,u)=>{
+      if(x==null)return '';
+      const c=x>.15?'up':x<-.15?'dn':'fl', a=x>.15?'▲':x<-.15?'▼':'▬';
+      return `<span class="pb ${c}">${a} ${x>0?'+':''}${x.toFixed(1)}${u} <em>${lab}</em></span>`;
+    };
+    return `<div class="pil" data-tip2="${
+      tipOf({t:label,d:label+' เดือน '+mLabel(cur)+' อยู่ที่ '+f(v,2)+'% เทียบเดือนเดียวกันปีก่อน',
+        calc:key==='dem'
+          ? 'เฉลี่ยจาก 3 ตัวชี้วัด · การบริโภคเอกชน '+f(cur.cons,1)+'% · การลงทุนเอกชน '+f(cur.invest,1)+'% · การใช้จ่ายภาครัฐ '+f(cur.gov,1)+'%'
+          : 'ถ่วงน้ำหนักตามโครงสร้างเศรษฐกิจ · เกษตร '+f(cur.agri,1)+'% ('+MW.agri+'%) · อุตสาหกรรม '+f(cur.indus,1)+'% ('+MW.indus+'%) · บริการ '+f(cur.serv,1)+'% ('+MW.serv+'%)',
+        src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})}">
+      <div class="pil-h"><span class="pil-ic icow img">${icoImg(ico,26)}</span><span class="pil-l">${label}</span></div>
+      <b class="n">${(v>0?'+':'')+f(v,1)}<small>%</small></b>
+      <div class="pil-b">${badge(v,'ปีก่อน','%')}${badge(mom,'เดือนก่อน',' จุด')}</div>
+    </div>`;
+  };
+  $('#heroPil').innerHTML=pill('dem','ด้านอุปสงค์','cpi',dem,demP)+pill('sup','ด้านอุปทาน','factorynew',sup,supP);
 
   const mb=document.querySelector('.meibox');
   if(mb)mb.dataset.tip2=macroTip('overall','ภาวะเศรษฐกิจรายเดือน',cur,prv,

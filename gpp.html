@@ -47,9 +47,9 @@
       <div id="svTable" class="hide"><div class="sc" style="max-height:520px"><table class="t" id="tStruct"></table></div></div>
       <div class="tmlg" id="structLg"></div>
       <div class="note" id="structNote"></div></div></div>
-  <div class="grid g3 mb" id="dsGrid"></div>
+  <div class="mb" id="dsGrid"></div>
 
-  <div class="grid g21">
+  <div class="mb">
     <div class="c"><header><span class="hdico icow img" data-hdico="gpp"></span><h3>GPP รายปีและรายได้ต่อหัว</h3><span class="u">ล้านบาท · บาท/คน/ปี</span>
       <span class="r"><button class="tb" id="btnGppEdit" style="height:27px;font-size:11px">แก้ไขตาราง</button></span></header>
       <div class="b"><div class="ch"><canvas id="cGpp"></canvas></div>
@@ -319,7 +319,7 @@ function renderDS(){
       <span class="vv" style="color:${p>=0?cv('--good'):cv('--bad')}">${p==null?'—':(p>0?'+':'')+p.toFixed(1)+'%'}</span></div>`;
   }).join('');
   g.innerHTML=
-    `<div class="c" style="grid-column:1/-1"><header><span class="hdico icow img">${icoImg('stability',26)}</span><h3>เสถียรภาพการคลัง</h3>
+    `<div class="c"><header><span class="hdico icow img">${icoImg('stability',26)}</span><h3>เสถียรภาพการคลัง</h3>
       <span class="r">${statusBadge(F.fn.dis[0].pct-90,false,'ระดับการเบิกจ่ายเทียบเกณฑ์ 90%')}</span></header>
       <div class="b">
         ${stability.map(r=>`<div class="barrow" data-tip2="${r[4]||''}">

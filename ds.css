@@ -1177,3 +1177,29 @@ body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
   #homeKpi.grid.g3{grid-template-columns:1fr}
   .chip2{gap:5px}
 }
+
+/* ══ เสาตัวเลขบนหน้าปก · การ์ดแก้วอ่านง่ายบนภาพพื้นหลัง ══ */
+.hero .pil{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);border-radius:16px;
+  padding:13px 16px 12px;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+  box-shadow:0 10px 26px -16px rgba(0,0,0,.55);min-width:0}
+.hero .pil-h{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.hero .pil-ic{width:26px;height:26px;flex:none;display:grid;place-items:center}
+.hero .pil-ic img{width:26px;height:26px;object-fit:contain}
+.hero .pil-l{font-size:12.5px;color:rgba(255,255,255,.9);letter-spacing:.2px}
+.hero .pil .n{font-family:var(--fn);font-size:36px;font-weight:700;color:#fff;line-height:1.15;display:block}
+.hero .pil .n small{font-size:17px;font-weight:600;opacity:.8;margin-left:2px}
+.hero .pil-b{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.hero .pil-b .pb{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-family:var(--fn);
+  padding:2px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.12)}
+.hero .pil-b .pb em{font-style:normal;font-size:9.5px;opacity:.78;font-family:var(--fs)}
+.hero .pil-b .pb.up{background:rgba(79,214,160,.22);border-color:rgba(79,214,160,.5)}
+.hero .pil-b .pb.dn{background:rgba(240,138,118,.22);border-color:rgba(240,138,118,.5)}
+@media(max-width:767px){
+  .hero .pil{padding:11px 13px}
+  .hero .pil .n{font-size:30px}
+  .hero .pil-b .pb{font-size:10.5px;padding:2px 8px}
+}
+
+/* เสาเหลือ 2 ต้น จัดให้เต็มความกว้างพอดี ไม่เหลือช่องว่างเหมือนตอนมี 3 ต้น */
+.hero .pillars{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:560px}
+@media(max-width:560px){.hero .pillars{grid-template-columns:1fr;max-width:none}}
