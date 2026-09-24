@@ -1203,3 +1203,58 @@ body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
 /* เสาเหลือ 2 ต้น จัดให้เต็มความกว้างพอดี ไม่เหลือช่องว่างเหมือนตอนมี 3 ต้น */
 .hero .pillars{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:560px}
 @media(max-width:560px){.hero .pillars{grid-template-columns:1fr;max-width:none}}
+
+/* ══ ขนาดตัวหนังสือในการ์ด · ปรับให้อ่านออกเวลาฉายขึ้นจอในห้องประชุม ══
+   ชื่อตัวชี้วัดเดิม 12px เล็กไปเมื่อฉายโปรเจกเตอร์ ขยับขึ้นและเพิ่มน้ำหนักตัวอักษร */
+.kpi .h{font-size:14px;font-weight:600;color:var(--ink);letter-spacing:.1px;gap:9px}
+.kpi .h span:last-child{line-height:1.35}
+.kpi .v{font-size:31px;letter-spacing:-1px;margin-top:7px}
+.kpi .v small{font-size:13.5px;font-weight:500;color:var(--muted,#5C7A70)}
+.kpi .s,.kpi .sub{font-size:11.5px;line-height:1.65;color:var(--muted,#5C7A70)}
+.kpi .ic,.kpi .icow.img{width:34px;height:34px}
+.kpi .icow.img img.ico{width:34px;height:34px}
+
+/* หัวการ์ดและหน่วยกำกับ ให้ลำดับสายตาชัดขึ้น */
+.c>header h3,header h3{font-size:16.5px;letter-spacing:.1px}
+.c header .u{font-size:12px}
+.hdico,.hdico img{width:28px;height:28px}
+
+/* แถวข้อมูลในบล็อกต่าง ๆ ของหน้า GPP */
+.barrow .nm{font-size:13px}
+.barrow .vv{font-size:13.5px}
+.slist .nm{font-size:13.5px}
+.slist .pc{font-size:13.5px}
+.slist .vl{font-size:12.5px}
+.seclg .seci{font-size:12.5px}
+.seclg .seci b{font-size:12.5px}
+.tmlg{font-size:12.5px}
+.hi-t{font-size:12px}
+.hi-v{font-size:24px}
+.hi-n{font-size:12.5px}
+
+@media (min-width:768px) and (max-width:1150px){
+  .kpi .h{font-size:13.5px}
+  .kpi .v{font-size:28px}
+}
+@media (max-width:767px){
+  .kpi .h{font-size:14px}
+  .kpi .v{font-size:29px;letter-spacing:-.8px}
+  .kpi .v small{font-size:13px}
+  .kpi .ic,.kpi .icow.img{width:32px;height:32px}
+  .kpi .icow.img img.ico{width:32px;height:32px}
+  .c>header h3,header h3{font-size:15.5px}
+}
+
+/* ══ ป้ายคู่ · ให้เด่นขึ้นและอ่านออกจากระยะไกล ══ */
+.chip2 .chip{font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;font-family:var(--fn)}
+.chip2 .chip em{font-size:10.5px;font-weight:400;opacity:.8;font-family:var(--fs)}
+@media(max-width:767px){.chip2 .chip{font-size:11.5px;padding:3px 9px}.chip2 .chip em{font-size:10px}}
+
+/* ══ การ์ด KPI ให้ดูทันสมัยขึ้น · ขอบมนขึ้น ยกตัวตอนชี้ และแถบสีบาง ๆ ด้านบน ══ */
+.kpi{border-radius:18px}
+.kpi.hasbg{border-top:0}
+.kpi.hasbg::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;z-index:3;
+  border-radius:18px 18px 0 0;background:linear-gradient(90deg,var(--kpi,var(--brand)),transparent 78%)}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 16px 30px -18px rgba(6,35,29,.45)}
+button.kpi:hover{cursor:pointer}
+.kpi .h span:last-child{font-family:var(--fd)}
