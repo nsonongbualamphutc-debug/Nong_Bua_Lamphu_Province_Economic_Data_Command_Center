@@ -73,6 +73,9 @@ function macRows(){return withEmpY(((typeof DX!=='undefined'&&DX.macro&&DX.macro
 let MAC=macRows();
 const MW=(typeof DX!=='undefined'&&DX.macro&&DX.macro.weight)||{agri:21,indus:22,serv:57};
 const mLabel=r=>TH_M[r.m-1]+' '+String(r.y).slice(-2);
+/* ปีงบประมาณไทยเริ่ม 1 ตุลาคม · เดือน ต.ค.–ธ.ค. นับเป็นปีงบประมาณถัดไป */
+const fyOf=r=>r.m>=10?r.y+1:r.y;
+const fyOrder=m=>(m+2)%12;            /* ต.ค.=0 พ.ย.=1 … ก.ย.=11 */
 const TH_FULL=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const MSERIES={
   all:[['overall','ภาพรวมเศรษฐกิจจังหวัด','forecast','--brand']],
@@ -127,9 +130,14 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{
   if(!e.target.closest('[data-mp]'))return;
-  const y=+document.getElementById('mpY').value, m=+document.getElementById('mpM').value;
-  let i=MAC.findIndex(r=>r.y===y&&r.m===m);
-  if(i<0)i=MAC.map((r,k)=>[r,k]).filter(([r])=>r.y===y).map(([,k])=>k).pop();
+  const fy=+document.getElementById('mpY').value, m=+document.getElementById('mpM').value;
+  let i=MAC.findIndex(r=>fyOf(r)===fy&&r.m===m);
+  /* เปลี่ยนปีงบประมาณแล้วเดือนเดิมอาจไม่มีในปีนั้น ให้ไปเดือนสุดท้ายที่มีของปีงบประมาณนั้นแทน */
+  if(i<0){
+    const list=MAC.map((r,k)=>({r,k})).filter(x=>fyOf(x.r)===fy)
+      .sort((a,b)=>fyOrder(a.r.m)-fyOrder(b.r.m));
+    if(list.length)i=list[list.length-1].k;
+  }
   if(i>=0)MAC_I=i;
   renderOverview();
 });
@@ -143,19 +151,22 @@ function renderOverview(){
   /* ── แถบเลือกปี–เดือน · ล็อกที่เดือนล่าสุดที่หน่วยงานกรอกไว้ ── */
   const pk=document.getElementById('macroPick');
   if(pk){
-    const ys=[...new Set(MAC.map(r=>r.y))].sort((a,b)=>a-b);
-    const mo=MAC.filter(r=>r.y===cur.y).map(r=>r.m).sort((a,b)=>a-b);
+    /* จัดเดือนตามปีงบประมาณ · ปีงบประมาณ 2569 = ต.ค. 2568 ถึง ก.ย. 2569
+       เดือนในรายการจึงเริ่มที่ ต.ค. แล้ววนไปจบที่ ก.ย. และกำกับปีปฏิทินไว้กันสับสน */
+    const ys=[...new Set(MAC.map(fyOf))].sort((a,b)=>a-b);
+    const curFY=fyOf(cur);
+    const mo=MAC.filter(r=>fyOf(r)===curFY).sort((a,b)=>fyOrder(a.m)-fyOrder(b.m));
     const latest=MAC[MAC.length-1];
     pk.innerHTML=`<div class="slicer monthpick" data-mp>
       <span class="sl-lab"><img class="slico" src="assets/icons/ic-filter.png" alt="" onerror="this.remove()">เลือกงวดข้อมูล</span>
       <span class="sl-nav">
         <button data-mstep="-1" ${mIdx()<=0?'disabled':''} aria-label="เดือนก่อนหน้า"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
-        <select class="sel" id="mpY">${ys.map(y=>`<option value="${y}"${y===cur.y?' selected':''}>ปี ${y}</option>`).join('')}</select>
-        <select class="sel" id="mpM">${mo.map(m=>`<option value="${m}"${m===cur.m?' selected':''}>${TH_M[m-1]}</option>`).join('')}</select>
+        <select class="sel" id="mpY">${ys.map(y=>`<option value="${y}"${y===curFY?' selected':''}>ปีงบประมาณ ${y}</option>`).join('')}</select>
+        <select class="sel" id="mpM">${mo.map(r=>`<option value="${r.m}"${r.m===cur.m?' selected':''}>${TH_M[r.m-1]} ${String(r.y).slice(-2)}</option>`).join('')}</select>
         <button data-mstep="1" ${mIdx()>=MAC.length-1?'disabled':''} aria-label="เดือนถัดไป"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
       </span>
       <button class="sl-now${mIdx()===MAC.length-1?' on':''}" data-mnow>งวดล่าสุด</button>
-      <span class="sl-info">กำลังแสดง <b>${mLabel(cur)}</b>${mIdx()===MAC.length-1?' · เป็นงวดล่าสุดที่หน่วยงานกรอกไว้':' · งวดล่าสุดที่กรอกคือ '+mLabel(latest)}</span>
+      <span class="sl-info">กำลังแสดง <b>${mLabel(cur)}</b> · ปีงบประมาณ ${curFY} (เดือนที่ ${fyOrder(cur.m)+1} ของปีงบประมาณ)${mIdx()===MAC.length-1?' · เป็นงวดล่าสุดที่หน่วยงานกรอกไว้':' · งวดล่าสุดที่กรอกคือ '+mLabel(latest)}</span>
     </div>`;
   }
   const eyeb=document.querySelector('.hero .eyeb');
