@@ -53,9 +53,7 @@
     <div class="c"><header><span class="hdico icow img" data-hdico="gpp"></span><h3>GPP รายปีและรายได้ต่อหัว</h3><span class="u">ล้านบาท · บาท/คน/ปี</span>
       <span class="r"><button class="tb" id="btnGppEdit" style="height:27px;font-size:11px">แก้ไขตาราง</button></span></header>
       <div class="b"><div class="ch"><canvas id="cGpp"></canvas></div>
-        <div class="sc" style="max-height:170px;margin-top:10px"><table class="t" data-owner="*" id="tGpp"></table></div></div></div>
-    <div class="c"><header><span class="hdico icow img" data-hdico="stability"></span><h3>ตัวขับเคลื่อนดัชนี</h3><span class="u">จุดดัชนี เทียบปีก่อน</span></header>
-      <div class="b"><div class="ch lg"><canvas id="cContrib"></canvas></div></div></div>
+        <div class="sc" style="max-height:320px;margin-top:10px"><table class="t" data-owner="*" id="tGpp"></table></div></div></div>
   </div></section>
   </main>
 </div>
@@ -83,7 +81,7 @@ function renderGpp(){
     note:'ข้อมูลจาก สศช. ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี · เลือกปีแล้วทั้งหน้าเปลี่ยนตาม'});
   const NOW=35, PREV=23;
   /* ดัชนีรายเดือนถูกถอดออกจากหน้านี้แล้ว เหลือเฉพาะข้อมูล GPP ของ สศช. */
-  const s=MEI.out, G=GROWS;
+  const G=GROWS;
   const n=GYEARS.indexOf(GPP_YEAR);          /* ปีที่เลือก ไม่ใช่ปีล่าสุดเสมอไป */
   const SYEAR=GPP_YEAR;
   /* โครงสร้างรายสาขาอ่านจากไฟล์เสมอ ไม่ให้ตารางเก่าในชีตมาทับ */
@@ -195,7 +193,7 @@ function renderGpp(){
   const gTop=GRP.slice().sort((a,b)=>gSum(b)-gSum(a))[0];
   const dn=document.getElementById('structDonut');
   if(dn)dn.innerHTML=donutRing(items,{centerTop:'GPP ปี '+SYEAR,
-    centerMid:f(STOT,0),centerSub:'ล้านบาท · '+STRUCT.length+' สาขา'});
+    centerMid:f(STOT,1),centerSub:'ล้านบาท · '+STRUCT.length+' สาขา'});
 
   /* รายการสาขาเรียงจากมากไปน้อย อ่านได้ทันทีว่าอะไรใหญ่สุด กี่เปอร์เซ็นต์ กี่ล้านบาท
      ชี้ที่แถวจะไฮไลต์ชิ้นเดียวกันในวงแหวนให้ด้วย */
@@ -281,16 +279,9 @@ function renderGpp(){
       <td class="r" style="color:${real==null?'var(--faint)':real>=0?'var(--good)':'var(--bad)'}">${real==null?'—':(real>0?'+':'')+real.toFixed(1)+'%'}</td>
       <td style="font-size:11px;color:var(--faint)">${r.note||''}</td></tr>`;}).join('')+'</tbody>';
   applyEditMode();
-
-  const drv=MEI.comps.map(c=>({n:c.sec.name,color:c.sec.color,v:+((c.idx[NOW]-c.idx[PREV])*c.sec.weight).toFixed(2)})).sort((a,b)=>b.v-a.v);
-  mk('cContrib',{type:'bar',data:{labels:drv.map(d=>d.n),
-    datasets:[{data:drv.map(d=>d.v),backgroundColor:drv.map(d=>d.v>=0?d.color:cv('--coral')),borderRadius:5,barThickness:15}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(c.raw>0?'+':'')+c.raw+' จุดดัชนี'}}},
-      scales:{x:ax(),y:ax({grid:{display:false},ticks:{font:{size:10.5}}})}}});
 }
 
-
-/* ══ ด้านอุปสงค์ อุปทาน และเสถียรภาพการคลัง ══ */
+/* ══ เสถียรภาพการคลัง ══ */
 function renderDS(){
   const g=document.getElementById('dsGrid'); if(!g)return;
   /* เหลือเฉพาะเสถียรภาพการคลัง · บล็อกด้านอุปสงค์และด้านอุปทานถอดออกตามที่สั่ง */

@@ -1165,3 +1165,15 @@ body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
 .chip2 .chip{display:inline-flex;align-items:center;gap:4px}
 .chip2 .chip em{font-style:normal;font-size:9.5px;opacity:.72;font-weight:400}
 @media(max-width:767px){.chip2 .chip{font-size:10.5px;padding:2px 7px}.chip2 .chip em{font-size:9px}}
+
+/* ══ การ์ดหน้าภาพรวม · ให้ป้ายคู่กับเส้นแนวโน้มอยู่ในบรรทัดเดียวไม่ล้น ══ */
+#homeKpi .kpi .s{font-size:11px;color:var(--faint);line-height:1.6}
+#homeKpi .kpi .chip2{margin-top:2px}
+#macroKpi .kpi .chip2 .chip{font-size:10.5px}
+@media (min-width:768px) and (max-width:1150px){
+  #homeKpi.grid.g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:767px){
+  #homeKpi.grid.g3{grid-template-columns:1fr}
+  .chip2{gap:5px}
+}

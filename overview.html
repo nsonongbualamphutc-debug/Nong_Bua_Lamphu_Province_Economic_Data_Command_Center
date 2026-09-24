@@ -37,8 +37,10 @@
     </div>
   </div>
   <div id="macroPick"></div>
-  <div class="grid g6 mb" id="homeKpi"></div>
-  <div class="c mb" id="hiBox"><div class="b" id="hiBody"></div></div>
+  <div class="grid g3 mb" id="homeKpi"></div>
+  <div class="c mb" id="hiBox"><header><span class="hdico icow img" data-hdico="forecast"></span>
+    <h3>สรุปเดือนนี้</h3><span class="u" id="hiSub"></span></header>
+    <div class="b" id="hiBody"></div></div>
 
   <div class="vswitch big mb" id="macroSw">
     <button class="on" data-mv="all">ภาพรวม</button>
@@ -208,7 +210,7 @@ function renderOverview(){
     const mom=(p!=null&&p)?pctc(v,p):null;
     return kpiCard({icon:'coin',img:ico,color:cv(col),label:label,value:f(v,dec||0),unit:unit,
       chip:chip2(yo,mom),spark:spark(hist(k),cv(col)),
-      sub:p==null?'':'เดือนก่อน '+f(p,dec||0)+' '+unit+' ('+(v-p>0?'+':'')+f(v-p,dec||0)+')',
+      sub:p==null?'':'เดือนก่อน '+f(p,dec||0)+' '+unit,
       tip:tipOf({t:label,d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(v)+' '+unit,
         calc:'เทียบปีก่อน '+f(yo,2)+'%'+(p==null?'':' · เดือนก่อน '+f_num(p)+' '+unit+' เปลี่ยนแปลง '+(v-p>0?'+':'')+f_num(v-p)),
         src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})});
@@ -219,7 +221,7 @@ function renderOverview(){
     const v=cur[k], p=prv?prv[k]:null;
     return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'%',
       chip:chip2(v,p==null?null:v-p,'pt'),spark:spark(hist(k),cv(col)),
-      sub:'เดือนก่อนอยู่ที่ '+(p==null?'—':f(p,1)+'%')+' · ตัวเลขเป็นอัตราเทียบปีก่อน ผลต่างจึงเป็นจุด',go:go,
+      sub:'เดือนก่อน '+(p==null?'—':f(p,1)+'%'),go:go,
       tip:macroTip(k,label,cur,prv)});
   };
   $('#homeKpi').innerHTML=[
@@ -235,7 +237,7 @@ function renderOverview(){
       const mom=(p!=null&&p)?pctc(v,p):null;
       return kpiCard({icon:'people',img:'employed',color:cv('--plum'),label:'การจ้างงานรวม',value:f(v,0),unit:'คน',
         chip:chip2(yo,mom),spark:spark(hist('emp'),cv('--plum')),
-        sub:p==null?'':'เดือนก่อน '+f(p,0)+' คน ('+(v-p>0?'+':'')+f(v-p,0)+')',go:'labor',
+        sub:p==null?'':'เดือนก่อน '+f(p,0)+' คน',go:'labor',
         tip:tipOf({t:'การจ้างงานรวมในจังหวัด',d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(v)+' คน',
           calc:(yo==null?'':'เทียบปีก่อน = ('+f_num(v)+' − '+f_num(back.emp)+') ÷ '+f_num(back.emp)+' × 100 = '+f(yo,2)+'%')+
             (p==null?'':' · เดือนก่อน '+f_num(p)+' คน'),
@@ -250,6 +252,7 @@ function renderOverview(){
 /* ── จุดเด่น จุดเฝ้าระวัง และแรงขับเคลื่อนของเดือนที่เลือก ── */
 function renderHighlight(cur,prv){
   const box=document.getElementById('hiBody'); if(!box)return;
+  const hs=document.getElementById('hiSub'); if(hs)hs.textContent=mLabel(cur)+' · เทียบปีก่อนและเทียบเดือนก่อน';
   const ALL=[['overall','ภาพรวมเศรษฐกิจ'],['agri','ภาคเกษตรกรรม'],['indus','ภาคอุตสาหกรรม'],['serv','ภาคบริการ'],
              ['cons','การบริโภคเอกชน'],['invest','การลงทุนเอกชน'],['gov','การใช้จ่ายภาครัฐ']];
   const list=ALL.filter(x=>x[0]!=='overall').map(([k,n])=>({k,n,v:cur[k],d:prv?cur[k]-prv[k]:null}));
@@ -303,6 +306,7 @@ function renderMacro(){
   if(!hasData(MACRO_VIEW)){
     $('#macroSub').textContent='ยังไม่มีข้อมูล';
     $('#macroKpi').innerHTML='';
+    killChart('cMac');
     document.getElementById('cMac-chart').innerHTML=
       `<div class="svc-empty">ยังไม่มีตัวเลข${title} ในงวดที่เลือก</div>`;
     document.getElementById('cMac-table').innerHTML='';
@@ -310,17 +314,17 @@ function renderMacro(){
     const tg0=document.getElementById('macroTog'); if(tg0)tg0.innerHTML='';
     return;
   }
+  /* ต้องทำลายกราฟเดิมก่อนถอด canvas ออก ไม่งั้น Chart.js จะถือ canvas ที่หลุดจากหน้าไว้
+     แล้วโยน error ตอนปรับขนาด ซึ่งโผล่เป็น "Script error." จากสคริปต์ภายนอก */
+  killChart('cMac');
   document.getElementById('cMac-chart').innerHTML='<div class="ch lg"><canvas id="cMac"></canvas></div>';
   document.getElementById('cMac-table').innerHTML='<div class="sc" style="max-height:420px"><table class="t" id="tMac"></table></div>';
   const tg1=document.getElementById('macroTog'); if(tg1)tg1.innerHTML='';
   $('#macroSub').textContent='ร้อยละเทียบปีก่อน · '+mLabel(MAC[0])+' ถึง '+mLabel(cur);
 
   /* การ์ดของแท็บนั้น */
-  const cards=(MACRO_VIEW==='all')?[
-      ['overall','ภาพรวมเศรษฐกิจจังหวัด','forecast','--brand',cur.overall,prv?prv.overall:null],
-      ['dem','ด้านอุปสงค์','cpi','--gold',demIdx(cur),demIdx(prv)],
-      ['sup','ด้านอุปทาน','factorynew','--blue',supIdx(cur),supIdx(prv)]
-    ]:defs.map(d=>[d[0],d[1],d[2],d[3],cur[d[0]],prv?prv[d[0]]:null]);
+  /* แท็บภาพรวมไม่ต้องมีการ์ดย่อย เพราะซ้ำกับปุ่มแท็บและเสาบนหน้าปกอยู่แล้ว */
+  const cards=(MACRO_VIEW==='all')?[]:defs.map(d=>[d[0],d[1],d[2],d[3],cur[d[0]],prv?prv[d[0]]:null]);
   const LVL={depoY:['depo','ล้านบาท',0],credY:['cred','ล้านบาท',0],empY:['emp','คน',0]};
   $('#macroKpi').innerHTML=cards.map(c=>{
     const [k,label,ico,col,v,p]=c;
@@ -334,7 +338,7 @@ function renderMacro(){
     const momL=(L&&prv&&prv[L[0]])?pctc(cur[L[0]],prv[L[0]]):null;
     return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'%',
       chip:L?chip2(v,momL):chip2(v,p==null?null:v-p,'pt'),
-      sub:L?('ล่าสุด '+f(cur[L[0]],L[2])+' '+L[1]):('เดือนก่อน '+(p==null?'—':f(p,1)+'%')+' · ผลต่างของอัตราจึงเป็นจุด'),
+      sub:L?('ล่าสุด '+f(cur[L[0]],L[2])+' '+L[1]):('เดือนก่อน '+(p==null?'—':f(p,1)+'%')),
       tip:L?tipOf({t:label,d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(cur[L[0]])+' '+L[1],
         calc:'อัตราเทียบปีก่อน '+f(v,2)+'%'+(prv?' · เดือนก่อน '+f_num(prv[L[0]])+' '+L[1]+' เปลี่ยนแปลง '+(cur[L[0]]-prv[L[0]]>0?'+':'')+f_num(cur[L[0]]-prv[L[0]]):''),
         src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)}):tip});

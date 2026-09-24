@@ -664,6 +664,11 @@ function chDefaults(){
   Chart.defaults.maintainAspectRatio=false;
 }
 const CH={};
+/* ทำลายกราฟของ canvas นั้นก่อนจะถอดหรือสร้าง canvas ใหม่
+   ถ้าไม่ทำ Chart.js จะยังถือ canvas เก่าไว้แล้วโยน error ตอนปรับขนาดหน้าจอ */
+function killChart(id){
+  try{ if(typeof Chart!=='undefined'){const c=Chart.getChart(id); if(c)c.destroy();} }catch(e){}
+}
 function mk(id,cfg){
   const el=document.getElementById(id);if(!el||typeof Chart==='undefined')return;
   const small=innerWidth<768;
