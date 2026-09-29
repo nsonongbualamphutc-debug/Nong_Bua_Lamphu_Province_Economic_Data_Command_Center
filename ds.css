@@ -1258,3 +1258,30 @@ body.cover .ph.mini{background:transparent;box-shadow:none;border:0}
 .kpi:hover{transform:translateY(-2px);box-shadow:0 16px 30px -18px rgba(6,35,29,.45)}
 button.kpi:hover{cursor:pointer}
 .kpi .h span:last-child{font-family:var(--fd)}
+
+/* ══ การ์ดแนวโน้มประมาณการ 6 ด้าน ══ */
+.fcgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fcc{display:grid;grid-template-columns:34px 1fr auto;grid-template-rows:auto auto;gap:2px 10px;align-items:center;
+  background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.fcc .fc-ic{grid-row:1/3;width:34px;height:34px;display:grid;place-items:center}
+.fcc .fc-ic img{width:34px;height:34px;object-fit:contain}
+.fcc .fc-l{font-size:13px;font-weight:600;font-family:var(--fd);color:var(--ink)}
+.fcc .fc-v{grid-row:1/3;font-family:var(--fn);font-size:24px;font-weight:700;text-align:right}
+.fcc .fc-d{font-size:11px;color:var(--faint)}
+@media (max-width:1150px){.fcgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.fcgrid{grid-template-columns:1fr}.fcc .fc-v{font-size:22px}}
+
+/* ══ การ์ดลิงก์ไปหน้าอื่น ══ */
+.linkcard{display:flex;align-items:center;gap:14px;padding:16px 18px;text-decoration:none;color:inherit;
+  transition:.16s;border-left:4px solid var(--brand)}
+.linkcard:hover{transform:translateY(-2px);box-shadow:0 16px 30px -18px rgba(6,35,29,.45)}
+.linkcard .lk-ic{width:38px;height:38px;flex:none;display:grid;place-items:center}
+.linkcard .lk-ic img{width:38px;height:38px;object-fit:contain}
+.linkcard .lk-t{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.linkcard .lk-t b{font-family:var(--fd);font-size:15.5px;color:var(--forest,#0B3C32)}
+.linkcard .lk-t span{font-size:12.5px;color:var(--muted,#5C7A70);line-height:1.6}
+.linkcard .lk-go{font-size:12.5px;font-weight:600;color:var(--brand);flex:none;white-space:nowrap}
+@media(max-width:640px){
+  .linkcard{flex-wrap:wrap;gap:10px}
+  .linkcard .lk-go{width:100%;text-align:right}
+}

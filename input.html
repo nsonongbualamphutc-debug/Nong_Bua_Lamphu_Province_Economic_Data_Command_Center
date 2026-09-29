@@ -257,6 +257,49 @@ tr.rvbig td{background:#fff8f6}
 .srcbadge{display:inline-block;padding:1px 7px;border-radius:7px;font-size:10px;line-height:1.7;border:1px solid}
 .srcbadge.man{background:#eef6f2;color:#0b3c32;border-color:#cfe4da}
 .srcbadge.imp{background:#fdf3e0;color:#8a6714;border-color:#ecd8a8}
+
+/* ══════════════════ แท็บเล็ตและมือถือ ══════════════════
+   ระบบกรอกข้อมูลถูกใช้จากหน้างานจริง เจ้าหน้าที่หลายคนกรอกจากมือถือ
+   จึงต้องแตะง่าย ไม่ล้นจอ และตารางกว้าง ๆ ต้องเลื่อนได้โดยไม่ดันทั้งหน้า */
+@media (max-width:1024px){
+  .wrap{max-width:100%;padding:0 14px 40px}
+  .toolbar{position:sticky;top:0;z-index:30;backdrop-filter:blur(8px)}
+  .tpgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sc,.tblwrap,.rv-group{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.grid{min-width:560px}
+}
+@media (max-width:767px){
+  /* ตารางกรอกเปลี่ยนเป็นการ์ดต่อหนึ่งตัวชี้วัด อ่านและกรอกด้วยนิ้วได้จริง */
+  table.grid{min-width:0;display:block}
+  table.grid thead{display:none}
+  table.grid tbody,table.grid tr,table.grid td{display:block;width:100%}
+  table.grid tr{border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:10px;background:var(--card)}
+  table.grid tr:hover td{background:transparent}
+  table.grid td{border:0;padding:3px 0}
+  table.grid td.lb{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.5}
+  table.grid td.un{display:block;color:var(--faint);font-size:11px;margin-top:-2px}
+  table.grid input{height:46px;font-size:16px}          /* 16px กัน iOS ซูมอัตโนมัติตอนแตะช่อง */
+  table.grid input[type=number]{min-width:0;text-align:left}
+  .lb .shows{font-size:11px}
+
+  .tpgrid{grid-template-columns:1fr}
+  .toolbar{gap:8px;padding:10px}
+  .toolbar .fld{flex:1 1 100%}
+  .tabs{width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{flex:0 0 auto;white-space:nowrap}
+  .perbar{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;padding-bottom:3px}
+  .perbar::-webkit-scrollbar{display:none}
+  .perbar>*{flex:0 0 auto}
+  .dom{padding:13px 12px 8px;border-radius:14px}
+  .card{padding:15px;border-radius:15px}
+  .btn,button.pri,button.sec{min-height:44px}          /* พื้นที่แตะตามมาตรฐาน */
+  .rv-t{font-size:12px}
+}
+@media (max-width:480px){
+  .wrap{padding:0 10px 32px}
+  .loginbox{padding:22px 16px 18px}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data1.js"></script>
@@ -1193,7 +1236,8 @@ const TBL_DEFS=[
  {key:'macro',owner:'spend',store:'DX',path:'macro.rows',name:'ภาวะเศรษฐกิจรายเดือน (เครื่องชี้เศรษฐกิจจังหวัด)',
   desc:'หนึ่งแถว = หนึ่งเดือน · ค่าดัชนีทั้งหมดเป็นร้อยละเทียบเดือนเดียวกันปีก่อน (%YoY) ตามแฟ้มต้นทาง '+
        'ส่วนเงินฝาก สินเชื่อ และการจ้างงาน ให้กรอกเป็นระดับจริง ระบบคิดอัตราเทียบปีก่อนให้เอง · '+
-       'เพิ่มเดือนใหม่ได้โดยวางต่อท้ายจาก Excel · หน้าภาพรวมเศรษฐกิจใช้ตารางนี้ทั้งหน้า',
+       'เพิ่มเดือนใหม่ได้โดยวางต่อท้ายจาก Excel · หน้าภาพรวมเศรษฐกิจใช้ตารางนี้ทั้งหน้า · '+
+       'ช่องกลุ่มคลังใช้กับแท็บภาคการคลัง · ช่องกลุ่มประมาณการใส่ในแถวของเดือนล่าสุด เป็นค่าคาดการณ์ของเดือนถัดไป',
   cols:[{k:'y',l:'ปี พ.ศ.',t:'num',w:75},{k:'m',l:'เดือน',t:'num',w:65},
         {k:'overall',l:'ภาพรวมเศรษฐกิจ %YoY',t:'num'},
         {k:'agri',l:'อุปทาน · ภาคเกษตรกรรม %YoY',t:'num'},
@@ -1204,7 +1248,16 @@ const TBL_DEFS=[
         {k:'gov',l:'อุปสงค์ · การใช้จ่ายภาครัฐ %YoY',t:'num'},
         {k:'depo',l:'เงินฝากรวม (ลบ.)',t:'num'},{k:'depoY',l:'เงินฝาก %YoY',t:'num'},
         {k:'cred',l:'สินเชื่อรวม (ลบ.)',t:'num'},{k:'credY',l:'สินเชื่อ %YoY',t:'num'},
-        {k:'emp',l:'การจ้างงานรวม (คน)',t:'num'}]},
+        {k:'emp',l:'การจ้างงานรวม (คน)',t:'num'},
+        {k:'rev',l:'คลัง · รายได้จัดเก็บ (ลบ.)',t:'num'},{k:'revY',l:'คลัง · รายได้จัดเก็บ %YoY',t:'num'},
+        {k:'exp',l:'คลัง · เบิกจ่ายงบรวม (ลบ.)',t:'num'},{k:'expY',l:'คลัง · เบิกจ่ายงบรวม %YoY',t:'num'},
+        {k:'bal',l:'คลัง · ดุลเงินงบประมาณ (ลบ.)',t:'num'},{k:'balY',l:'คลัง · ดุลเงิน %YoY',t:'num'},
+        {k:'fc_agri',l:'ประมาณการ · ภาคเกษตรกรรม %YoY',t:'num'},
+        {k:'fc_indus',l:'ประมาณการ · ภาคอุตสาหกรรม %YoY',t:'num'},
+        {k:'fc_serv',l:'ประมาณการ · ภาคบริการ %YoY',t:'num'},
+        {k:'fc_cons',l:'ประมาณการ · การบริโภคเอกชน %YoY',t:'num'},
+        {k:'fc_invest',l:'ประมาณการ · การลงทุนเอกชน %YoY',t:'num'},
+        {k:'fc_gov',l:'ประมาณการ · การใช้จ่ายภาครัฐ %YoY',t:'num'}]},
  {key:'gppgrow',owner:'spend',store:'REAL',path:'gpp.growth',name:'อัตราการขยายตัว GPP และ GDP',
   desc:'อัตราการขยายตัวที่แท้จริงรายปี คำนวณจากมูลค่าแบบปริมาณลูกโซ่ · prov = จังหวัดหนองบัวลำภู · nat = ทั้งประเทศ '+
        'ใช้วาดกราฟอัตราการขยายตัวในหน้า GPP',

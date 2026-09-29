@@ -23,7 +23,7 @@
     <p>ขนาดเศรษฐกิจจังหวัด โครงสร้างการผลิต รายได้ต่อหัว และตำแหน่งเทียบภาคตะวันออกเฉียงเหนือกับทั้งประเทศ</p></span></div>
     <div class="r"><span class="chip mock">รอยืนยันตัวเลขจาก สศช.</span></div></div>
   <div id="gppSlc"></div>
-  <div class="grid g4 mb" id="gppKpi"></div>
+  <div class="grid g3 mb" id="gppKpi"></div>
   <div class="c mb"><header><span class="hdico icow img" data-hdico="forecast"></span>
     <h3>อัตราการขยายตัว GPP ของจังหวัดหนองบัวลำภู</h3>
     <span class="u">เทียบกับ GDP ทั้งประเทศ · ร้อยละต่อปี</span><span class="r" id="growTog"></span></header>
@@ -120,12 +120,6 @@ function renderGpp(){
         d:'รายได้เฉลี่ยต่อคนต่อปีของคนในจังหวัด ใช้เทียบฐานะทางเศรษฐกิจระหว่างจังหวัด ไม่ใช่รายได้ที่ครัวเรือนได้รับจริง',
         calc:'GPP ทั้งจังหวัด ÷ จำนวนประชากรกลางปีที่ สศช. ใช้ = ('+f_num(G[n].value)+' ล้านบาท × 1,000,000) ÷ '+f_num(G[n].pop||D.base.pop)+' คน',
         src:'gpp',when:'ปี '+G[n].y})}),
-    kpiCard({icon:'leaf',img:'agri',color:cv('--leaf'),label:'สัดส่วนภาคเกษตรใน GPP',value:f(agriShare,1),unit:'%',
-      chip:'<span class="chip">ประเทศ 8.7%</span>',sub:'เศรษฐกิจฐานเกษตรชัดเจน',
-      tip:tipOf({t:'สัดส่วนภาคเกษตรในโครงสร้าง GPP',
-        d:'ภาคเกษตรของจังหวัดมีสัดส่วนสูงกว่าค่าเฉลี่ยประเทศราว 3 เท่า นโยบายเกษตรและราคาพืชผลจึงส่งผลต่อ GPP ของจังหวัดมากเป็นพิเศษ',
-        calc:'(มูลค่าเพิ่มสาขาเกษตร ป่าไม้ และประมง ÷ GPP รวม) × 100 = ('+f_num(agriV)+' ÷ '+f_num(STOT)+') × 100 · เทียบค่าเฉลี่ยทั้งประเทศ 8.7%',
-        src:'gpp',when:'ปี '+SYEAR})})
   ].join('');
 
   /* อัตราการขยายตัวที่แท้จริงรายปี · เทียบ GPP จังหวัดกับ GDP ทั้งประเทศ */

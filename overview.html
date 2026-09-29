@@ -44,9 +44,10 @@
 
   <div class="vswitch big mb" id="macroSw">
     <button class="on" data-mv="all">ภาพรวม</button>
-    <button data-mv="dem">ด้านอุปสงค์</button>
     <button data-mv="sup">ด้านอุปทาน</button>
+    <button data-mv="dem">ด้านอุปสงค์</button>
     <button data-mv="fin">การเงินและการจ้างงาน</button>
+    <button data-mv="fis">ภาคการคลัง</button>
   </div>
   <div class="grid g3 mb" id="macroKpi"></div>
   <div class="c mb"><header><span class="hdico icow img" data-hdico="forecast"></span>
@@ -56,6 +57,15 @@
       <div id="cMac-chart"><div class="ch lg"><canvas id="cMac"></canvas></div></div>
       <div id="cMac-table" class="hide"><div class="sc" style="max-height:420px"><table class="t" id="tMac"></table></div></div>
       <div class="note" id="macroNote"></div></div></div>
+
+  <div class="c mb"><header><span class="hdico icow img" data-hdico="analysis"></span>
+    <h3>แนวโน้มประมาณการเศรษฐกิจจังหวัด</h3><span class="u" id="fcSub"></span></header>
+    <div class="b"><div class="fcgrid" id="fcGrid"></div><div class="note" id="fcNote"></div></div></div>
+
+  <a class="c mb linkcard" href="fiscal.html">
+    <span class="lk-ic icow img" data-hdico="spend"></span>
+    <span class="lk-t"><b>ภาคการคลัง</b><span>ดูรายละเอียดการเบิกจ่ายงบประมาณ งบส่วนราชการ และเงินกันเหลื่อมปีที่หน้าการคลังภาครัฐ</span></span>
+    <span class="lk-go">เปิดหน้าการคลังภาครัฐ ›</span></a>
 
   </section>
   </main>
@@ -85,12 +95,16 @@ const MSERIES={
   dem:[['cons','การบริโภคภาคเอกชน','cpi','--brand'],['invest','การลงทุนภาคเอกชน','invest','--gold'],['gov','การใช้จ่ายภาครัฐ','spend','--blue']],
   /* ด้านการเงินและการจ้างงาน ต้นทางให้ระดับมาด้วย จึงคิดอัตราเทียบปีก่อนเองได้ตรง ๆ */
   fin:[['depoY','เงินฝากรวม','credit','--gold'],['credY','สินเชื่อรวม','invest','--brand2'],['empY','การจ้างงานรวม','employed','--plum']],
+  /* ภาคการคลังรายเดือน · คนละชุดกับเงินฝาก–สินเชื่อ จึงมีช่องของตัวเองในตารางกรอกข้อมูล */
+  fis:[['revY','รายได้จัดเก็บ','spend','--gold'],['expY','เบิกจ่ายงบรวมรายเดือน','invest','--brand'],
+       ['balY','ดุลเงินงบประมาณ','fiscal','--blue']]
 };
 const MDESC={
   all:'ดัชนีรวมของจังหวัด สะท้อนทิศทางเศรษฐกิจโดยรวมในแต่ละเดือน',
   sup:'วัดจากกำลังการผลิตในพื้นที่ · ถ่วงน้ำหนักตามโครงสร้าง เกษตร '+MW.agri+'% อุตสาหกรรม '+MW.indus+'% บริการ '+MW.serv+'%',
   dem:'วัดจากการใช้จ่ายจริงของครัวเรือน ภาคธุรกิจ และภาครัฐ',
-  fin:'เงินฝากและสินเชื่อของสถาบันการเงินในจังหวัด กับจำนวนผู้มีงานทำ · แสดงเป็นอัตราเทียบปีก่อนเพื่อให้เทียบกับด้านอื่นได้'
+  fin:'เงินฝากและสินเชื่อของสถาบันการเงินในจังหวัด กับจำนวนผู้มีงานทำ · แสดงเป็นอัตราเทียบปีก่อนเพื่อให้เทียบกับด้านอื่นได้',
+  fis:'รายได้จัดเก็บ การเบิกจ่าย และดุลเงินงบประมาณรายเดือนของจังหวัด'
 };
 /* มีตัวเลขในชุดนั้นจริงหรือยัง */
 function hasData(view){
@@ -234,6 +248,9 @@ function renderOverview(){
     pctCard('agri','ภาคเกษตรกรรม','agri','--leaf','agri'),
     pctCard('indus','ภาคอุตสาหกรรม','factorynew','--blue','industry'),
     pctCard('serv','ภาคบริการ','trade','--brand','trade'),
+    pctCard('cons','การบริโภคภาคเอกชน','cpi','--brand2','consume'),
+    pctCard('invest','การลงทุนภาคเอกชน','invest','--gold','industry'),
+    pctCard('gov','การใช้จ่ายภาครัฐ','spend','--blue','fiscal'),
     lvl('depo','depoY','เงินฝากรวม','ลบ.','credit','--gold',0),
     lvl('cred','credY','สินเชื่อรวม','ลบ.','invest','--brand2',0),
     (function(){
@@ -253,6 +270,44 @@ function renderOverview(){
 
   renderHighlight(cur,prv);
   renderMacro();
+  renderForecast(cur);
+}
+
+/* ── แนวโน้มประมาณการเดือนถัดไป ──
+   ต้นทางเป็นตัวเลขประมาณการที่สำนักงานคลังจังหวัดจัดทำ ระบบไม่คำนวณแทนให้
+   กรอกในตารางภาวะเศรษฐกิจรายเดือน ช่อง fc_ ของเดือนที่ประมาณการถึง */
+const FC=[['agri','ภาคเกษตรกรรม','agri','--leaf'],['indus','ภาคอุตสาหกรรม','factorynew','--blue'],
+          ['serv','ภาคบริการ','trade','--brand'],['cons','การบริโภคภาคเอกชน','cpi','--brand2'],
+          ['invest','การลงทุนภาคเอกชน','invest','--gold'],['gov','การใช้จ่ายภาครัฐ','spend','--blue']];
+function nextMonth(r){return r.m===12?{y:r.y+1,m:1}:{y:r.y,m:r.m+1}}
+function renderForecast(cur){
+  const box=document.getElementById('fcGrid'); if(!box)return;
+  const nx=nextMonth(cur), nxLab=TH_M[nx.m-1]+' '+String(nx.y).slice(-2);
+  const has=FC.some(d=>cur['fc_'+d[0]]!=null);
+  const sub=document.getElementById('fcSub');
+  if(sub)sub.textContent='ประมาณการเดือน '+nxLab;
+  if(!has){
+    box.innerHTML='';
+    document.getElementById('fcNote').innerHTML=
+      `ยังไม่มีตัวเลขประมาณการของเดือน ${nxLab}<br>
+       <span style="color:var(--faint)">เมื่อสำนักงานคลังจังหวัดกรอกช่องประมาณการ 6 ด้านในตารางภาวะเศรษฐกิจรายเดือน
+       การ์ดนี้จะแสดงผลเองทันที ระบบไม่คำนวณประมาณการแทนให้ เพราะจะกลายเป็นตัวเลขที่นำไปอ้างอิงผิด</span>`;
+    return;
+  }
+  box.innerHTML=FC.map(([k,label,ico,col])=>{
+    const v=cur['fc_'+k], now=cur[k], d=(v!=null&&now!=null)?v-now:null;
+    return `<div class="fcc" data-tip2="${tipOf({t:'ประมาณการ '+label,
+      d:'ประมาณการเดือน '+nxLab+' อยู่ที่ '+(v==null?'—':f(v,2)+'%')+' เทียบเดือนเดียวกันปีก่อน',
+      calc:'เดือนล่าสุด ('+mLabel(cur)+') อยู่ที่ '+f(now,2)+'%'+(d==null?'':' · ประมาณการเปลี่ยนแปลง '+(d>0?'+':'')+f(d,1)+' จุด'),
+      src:'ประมาณการโดยสำนักงานคลังจังหวัดหนองบัวลำภู',when:'ประมาณการเดือน '+nxLab})}">
+      <span class="fc-ic icow img">${icoImg(ico,28)}</span>
+      <span class="fc-l">${label}</span>
+      <b class="fc-v" style="color:${v>0?'var(--good)':v<0?'var(--bad)':'var(--dim)'}">${v==null?'—':(v>0?'+':'')+f(v,1)+'%'}</b>
+      <span class="fc-d">${d==null?'':'จากเดือนล่าสุด '+(d>0?'+':'')+f(d,1)+' จุด'}</span></div>`;
+  }).join('');
+  document.getElementById('fcNote').innerHTML=
+    `ตัวเลขประมาณการเดือน ${nxLab} จัดทำโดยสำนักงานคลังจังหวัด เทียบกับเดือนเดียวกันปีก่อนเช่นเดียวกับข้อมูลจริง
+     <span style="color:var(--faint)">· เป็นการคาดการณ์ ไม่ใช่ตัวเลขที่เกิดขึ้นจริง</span>`;
 }
 
 /* ── จุดเด่น จุดเฝ้าระวัง และแรงขับเคลื่อนของเดือนที่เลือก ── */
@@ -305,7 +360,7 @@ function renderMacro(){
         MACRO_VIEW=b.dataset.mv;renderMacro()});}
   }
   const title={all:'ภาวะเศรษฐกิจรายเดือน',dem:'ด้านอุปสงค์ (Demand)',sup:'ด้านอุปทาน (Supply)',
-    fin:'ด้านการเงินและการจ้างงาน'}[MACRO_VIEW];
+    fin:'ด้านการเงินและการจ้างงาน',fis:'ภาคการคลังรายเดือน'}[MACRO_VIEW];
   $('#macroTitle').textContent=title;
 
   /* ชุดที่ยังไม่มีตัวเลข บอกให้ชัดว่าต้องรออะไร ไม่ปล่อยให้เป็นกราฟเปล่า */
@@ -331,7 +386,8 @@ function renderMacro(){
   /* การ์ดของแท็บนั้น */
   /* แท็บภาพรวมไม่ต้องมีการ์ดย่อย เพราะซ้ำกับปุ่มแท็บและเสาบนหน้าปกอยู่แล้ว */
   const cards=(MACRO_VIEW==='all')?[]:defs.map(d=>[d[0],d[1],d[2],d[3],cur[d[0]],prv?prv[d[0]]:null]);
-  const LVL={depoY:['depo','ล้านบาท',0],credY:['cred','ล้านบาท',0],empY:['emp','คน',0]};
+  const LVL={depoY:['depo','ล้านบาท',0],credY:['cred','ล้านบาท',0],empY:['emp','คน',0],
+    revY:['rev','ล้านบาท',1],expY:['exp','ล้านบาท',1],balY:['bal','ล้านบาท',1]};
   $('#macroKpi').innerHTML=cards.map(c=>{
     const [k,label,ico,col,v,p]=c;
     const tip=(k==='dem'||k==='sup')
@@ -375,7 +431,7 @@ function renderMacro(){
 
   /* คำอธิบาย */
   const best=defs.slice().sort((a,b)=>cur[b[0]]-cur[a[0]])[0], worst=defs.slice().sort((a,b)=>cur[a[0]]-cur[b[0]])[0];
-  const posKey=MACRO_VIEW==='sup'?supIdx:MACRO_VIEW==='dem'?demIdx:MACRO_VIEW==='fin'?(r=>r.depoY):(r=>r.overall);
+  const posKey=MACRO_VIEW==='sup'?supIdx:MACRO_VIEW==='dem'?demIdx:MACRO_VIEW==='fin'?(r=>r.depoY):MACRO_VIEW==='fis'?(r=>r.revY):(r=>r.overall);
   const pos=MAC.slice(-12).filter(r=>posKey(r)>0).length;
   $('#macroNote').innerHTML=MDESC[MACRO_VIEW]+'<br>'+
     (defs.length>1
