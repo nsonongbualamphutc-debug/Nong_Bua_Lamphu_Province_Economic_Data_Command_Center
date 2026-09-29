@@ -58,11 +58,11 @@
       <div id="cMac-table" class="hide"><div class="sc" style="max-height:420px"><table class="t" id="tMac"></table></div></div>
       <div class="note" id="macroNote"></div></div></div>
 
-  <div class="c mb"><header><span class="hdico icow img" data-hdico="analysis"></span>
+  <div class="c mb" id="fcBox"><header><span class="hdico icow img" data-hdico="analysis"></span>
     <h3>แนวโน้มประมาณการเศรษฐกิจจังหวัด</h3><span class="u" id="fcSub"></span></header>
     <div class="b"><div class="fcgrid" id="fcGrid"></div><div class="note" id="fcNote"></div></div></div>
 
-  <a class="c mb linkcard" href="fiscal.html">
+  <a class="c mb linkcard" id="fisLink" href="fiscal.html">
     <span class="lk-ic icow img" data-hdico="spend"></span>
     <span class="lk-t"><b>ภาคการคลัง</b><span>ดูรายละเอียดการเบิกจ่ายงบประมาณ งบส่วนราชการ และเงินกันเหลื่อมปีที่หน้าการคลังภาครัฐ</span></span>
     <span class="lk-go">เปิดหน้าการคลังภาครัฐ ›</span></a>
@@ -344,6 +344,11 @@ const FC=[['agri','ภาคเกษตรกรรม','agri','--leaf'],['indu
           ['invest','การลงทุนภาคเอกชน','invest','--gold'],['gov','การใช้จ่ายภาครัฐ','spend','--blue']];
 function nextMonth(r){return r.m===12?{y:r.y+1,m:1}:{y:r.y,m:r.m+1}}
 function renderForecast(cur){
+  /* การ์ดประมาณการอยู่ที่แท็บภาพรวมเท่านั้น · การ์ดลิงก์การคลังอยู่ที่แท็บภาคการคลังเท่านั้น */
+  const fb=document.getElementById('fcBox');
+  if(fb)fb.classList.toggle('hide',MACRO_VIEW!=='all');
+  const fl=document.getElementById('fisLink');
+  if(fl)fl.classList.toggle('hide',MACRO_VIEW!=='fis');
   const box=document.getElementById('fcGrid'); if(!box)return;
   const nx=nextMonth(cur), nxLab=TH_M[nx.m-1]+' '+String(nx.y).slice(-2);
   const has=FC.some(d=>cur['fc_'+d[0]]!=null);
@@ -423,7 +428,7 @@ function renderMacro(){
     [...sw.children].forEach(b=>b.classList.toggle('on',b.dataset.mv===MACRO_VIEW));
     if(!sw.dataset.b){sw.dataset.b='1';
       sw.addEventListener('click',e=>{const b=e.target.closest('[data-mv]');if(!b)return;
-        MACRO_VIEW=b.dataset.mv;renderMacro()});}
+        MACRO_VIEW=b.dataset.mv;renderMacro();renderForecast(mLast())});}
   }
   const title={all:'ภาวะเศรษฐกิจรายเดือน',dem:'ด้านอุปสงค์ (Demand)',sup:'ด้านอุปทาน (Supply)',
     fin:'ด้านการเงินและการจ้างงาน',fis:'ภาคการคลัง'}[MACRO_VIEW];
