@@ -1876,7 +1876,7 @@ const DS={
 };
 /* ─────────────── ตรวจสภาพการติดตั้ง — บอกให้ชัดว่าอะไรขาด ─────────────── */
 const DS_VERSION='3.2.0';
-const BOOT={miss:[],hard:[]};
+const BOOT={miss:[],hard:[],api:false};
 function bootBox(){
   let box=document.getElementById('bootErr');
   if(!box){
@@ -1902,11 +1902,19 @@ function bootPaint(){
   box.style.background='#fff';
   box.style.border='1px solid '+(hard?'#f0c4bb':'#ecd8a8');
   box.style.color=hard?'#8a2f20':'#7a5c12';
-  head.textContent=hard?'โหลดหน้าไม่สมบูรณ์':'หน้าทำงานได้ แต่มีไฟล์ประกอบขาดอยู่';
+  head.textContent=hard?'โหลดหน้าไม่สมบูรณ์'
+    :(BOOT.api&&!BOOT.miss.length)?'หน้าทำงานได้ · ใช้ข้อมูลจากไฟล์ล่าสุด'
+    :'หน้าทำงานได้ แต่มีไฟล์ประกอบขาดอยู่';
   list.innerHTML='';
   BOOT.hard.slice(0,6).forEach(m=>{
     const d=document.createElement('div'); d.textContent='• '+m; list.appendChild(d);
   });
+  if(BOOT.api){
+    const d=document.createElement('div');
+    d.textContent='• เชื่อมต่อฐานข้อมูลออนไลน์ไม่สำเร็จในรอบนี้ · หน้าเว็บแสดงข้อมูลจากไฟล์ล่าสุดที่เผยแพร่ไว้ '+
+      'ค่าที่หน่วยงานเพิ่งแก้ผ่านระบบกรอกข้อมูลอาจยังไม่ปรากฏ · ระบบจะลองใหม่อัตโนมัติเมื่อเปิดหน้าอีกครั้ง';
+    list.appendChild(d);
+  }
   if(BOOT.miss.length){
     const names=[...new Set(BOOT.miss)];
     const d=document.createElement('div');
@@ -1925,6 +1933,10 @@ function showBootErr(ev,extra){
     if((t.classList&&t.classList.contains('leaflet-tile'))||/arcgisonline|cartocdn|tile\.openstreetmap/.test(u))return;
     /* ไอคอนที่มีไฟล์สำรองจะสลับไปใช้ไฟล์สำรองเอง ไม่นับว่าหาย */
     if(t.dataset&&(t.dataset.fb||t.dataset.chain))return;
+    /* เรียก API ของ Apps Script ไม่สำเร็จ ไม่ใช่หน้าเว็บพัง — แดชบอร์ดอ่านจากไฟล์ข้อมูลได้ครบอยู่แล้ว
+       API ใช้เฉพาะดึงค่าที่หน่วยงานแก้ผ่านระบบกรอกข้อมูล และมักหลุดเพราะ Apps Script ตื่นช้าหรือโควตาเต็ม
+       จึงแจ้งเป็นหมายเหตุเบา ๆ ไม่ขึ้นกล่องแดงว่าโหลดหน้าไม่สมบูรณ์ */
+    if(/script\.google\.com/.test(u)){BOOT.api=true;bootPaint();return}
     const name=u.split('/').pop().split('?')[0];
     if(/\.(png|jpg|jpeg|webp|gif|svg)$/i.test(name)){BOOT.miss.push(name);bootPaint();return}
     BOOT.hard.push('โหลดไฟล์ไม่สำเร็จ: '+u.replace(location.origin,''));bootPaint();return;

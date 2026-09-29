@@ -95,16 +95,16 @@ const MSERIES={
   dem:[['cons','การบริโภคภาคเอกชน','cpi','--brand'],['invest','การลงทุนภาคเอกชน','invest','--gold'],['gov','การใช้จ่ายภาครัฐ','spend','--blue']],
   /* ด้านการเงินและการจ้างงาน ต้นทางให้ระดับมาด้วย จึงคิดอัตราเทียบปีก่อนเองได้ตรง ๆ */
   fin:[['depoY','เงินฝากรวม','credit','--gold'],['credY','สินเชื่อรวม','invest','--brand2'],['empY','การจ้างงานรวม','employed','--plum']],
-  /* ภาคการคลังรายเดือน · คนละชุดกับเงินฝาก–สินเชื่อ จึงมีช่องของตัวเองในตารางกรอกข้อมูล */
-  fis:[['revY','รายได้จัดเก็บ','spend','--gold'],['expY','เบิกจ่ายงบรวมรายเดือน','invest','--brand'],
-       ['balY','ดุลเงินงบประมาณ','fiscal','--blue']]
+  /* ภาคการคลังใช้ชุดข้อมูลเดียวกับหน้าการคลังภาครัฐ ซึ่งเป็นยอดสะสมของปีงบประมาณ
+     ไม่ใช่อัตรารายเดือนเหมือนแท็บอื่น จึงวาดแยกด้วย renderFiscalTab() */
+  fis:[]
 };
 const MDESC={
   all:'ดัชนีรวมของจังหวัด สะท้อนทิศทางเศรษฐกิจโดยรวมในแต่ละเดือน',
   sup:'วัดจากกำลังการผลิตในพื้นที่ · ถ่วงน้ำหนักตามโครงสร้าง เกษตร '+MW.agri+'% อุตสาหกรรม '+MW.indus+'% บริการ '+MW.serv+'%',
   dem:'วัดจากการใช้จ่ายจริงของครัวเรือน ภาคธุรกิจ และภาครัฐ',
   fin:'เงินฝากและสินเชื่อของสถาบันการเงินในจังหวัด กับจำนวนผู้มีงานทำ · แสดงเป็นอัตราเทียบปีก่อนเพื่อให้เทียบกับด้านอื่นได้',
-  fis:'รายได้จัดเก็บ การเบิกจ่าย และดุลเงินงบประมาณรายเดือนของจังหวัด'
+  fis:'การเบิกจ่ายงบประมาณของจังหวัด · ชุดข้อมูลเดียวกับหน้าการคลังภาครัฐ'
 };
 /* มีตัวเลขในชุดนั้นจริงหรือยัง */
 function hasData(view){
@@ -273,6 +273,69 @@ function renderOverview(){
   renderForecast(cur);
 }
 
+/* ── แท็บภาคการคลัง · ใช้ข้อมูลชุดเดียวกับหน้าการคลังภาครัฐ ── */
+function renderFiscalTab(){
+  const F=D.fiscal, dis=F.fn.dis, C=F.carry;
+  $('#macroSub').textContent='ปีงบประมาณ 2569 · ยอดสะสม ข้อมูล ณ '+CFG.asof;
+  const ico={'ภาพรวม':'spend','รายจ่ายประจำ':'fiscal','รายจ่ายลงทุน':'invest'};
+  const col={'ภาพรวม':'--brand','รายจ่ายประจำ':'--gold','รายจ่ายลงทุน':'--blue'};
+  $('#macroKpi').innerHTML=dis.map(r=>kpiCard({icon:'coin',img:ico[r.k],color:cv(col[r.k]),
+    label:'เบิกจ่าย'+r.k,value:f(r.pct,2),unit:'%',
+    chip:`<span class="chip2"><span class="chip ${r.rank<=5?'up':'fl'}">อันดับ ${r.rank} <em>ของประเทศ</em></span>`+
+         `<span class="chip ${r.over>=0?'up':'dn'}">${r.over>0?'+':''}${f(r.over,2)}% <em>เทียบเป้าหมาย</em></span></span>`,
+    sub:f(r.val,2)+' จาก '+f(r.alloc,2)+' ลบ. · คงเหลือ '+f(r.alloc-r.val,2)+' ลบ.',
+    tip:tipOf({t:'การเบิกจ่าย'+r.k,
+      d:'ยอดสะสมตั้งแต่ต้นปีงบประมาณ ไม่ใช่ยอดรายเดือน · อันดับ '+r.rank+' ของประเทศ',
+      calc:'(เบิกจ่ายสะสม ÷ งบที่ได้รับจัดสรร) × 100 = ('+f_num(r.val)+' ÷ '+f_num(r.alloc)+') × 100 = '+f(r.pct,2)+'%'+
+        ' · เกณฑ์ของกรมบัญชีกลางอยู่ที่ 90% จึงสูงกว่าเป้า '+f(r.over,2)+'%',
+      src:'spend',when:'ปีงบประมาณ 2569'})})).join('');
+
+  killChart('cMac');
+  document.getElementById('cMac-chart').innerHTML=
+    '<div class="fisbar" id="fisBar"></div><div class="ch"><canvas id="cMac"></canvas></div>';
+  document.getElementById('cMac-table').innerHTML='<div class="sc"><table class="t" id="tMac"></table></div>';
+  const tg=document.getElementById('macroTog'); if(tg){tg.innerHTML=viewToggle('cMac');bindToggle();}
+
+  /* แถบความคืบหน้าอ่านง่ายกว่ากราฟเมื่อเป็นยอดสะสม */
+  document.getElementById('fisBar').innerHTML=dis.map(r=>`
+    <div class="fsrow" data-tip2="${tipOf({t:'เบิกจ่าย'+r.k,d:'สะสม '+f(r.val,2)+' ลบ. จากงบ '+f(r.alloc,2)+' ลบ.',
+      calc:'คงเหลือรอเบิก '+f_num(r.alloc-r.val)+' ล้านบาท',src:'spend',when:'ปีงบประมาณ 2569'})}">
+      <span class="fs-n">${r.k}</span>
+      <span class="fs-tr"><i style="width:${Math.min(100,r.pct).toFixed(1)}%;background:${cv(col[r.k])}"></i>
+        <b style="left:90%"></b></span>
+      <span class="fs-v">${f(r.pct,2)}%</span></div>`).join('')+
+    `<div class="fsrow" data-tip2="${tipOf({t:'เงินกันไว้เบิกเหลื่อมปี 2568',d:'งบปีก่อนที่ยกมาเบิกในปีนี้',
+      calc:'เบิกแล้ว '+f_num(C.dis)+' จาก '+f_num(C.alloc)+' ล้านบาท คงเหลือ '+f_num(C.left),
+      src:'spend',when:'ปีงบประมาณ 2569'})}">
+      <span class="fs-n">เงินกันเหลื่อมปี 2568</span>
+      <span class="fs-tr"><i style="width:${Math.min(100,C.pct).toFixed(1)}%;background:${cv('--plum')}"></i></span>
+      <span class="fs-v">${f(C.pct,2)}%</span></div>
+    <div class="fs-note">เส้นประคือเกณฑ์ของกรมบัญชีกลางที่ 90%</div>`;
+
+  mk('cMac',{type:'bar',data:{labels:dis.map(r=>r.k),
+    datasets:[{label:'เบิกจ่ายแล้ว',data:dis.map(r=>r.val),backgroundColor:cv('--brand'),borderRadius:6,stack:'s'},
+              {label:'คงเหลือรอเบิก',data:dis.map(r=>+(r.alloc-r.val).toFixed(2)),backgroundColor:cv('--line'),borderRadius:6,stack:'s'}]},
+    options:{plugins:{legend:{position:'bottom',labels:{boxWidth:13,boxHeight:12,font:{size:11.5}}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+' '+f(c.raw,2)+' ลบ.'}}},
+      scales:{x:ax({stacked:true,grid:{display:false}}),y:ax({stacked:true,ticks:{callback:v=>f(v,0)}})}}});
+
+  $('#tMac').innerHTML='<thead><tr><th>รายการ</th><th class="r">งบจัดสรร</th><th class="r">เบิกจ่าย</th>'+
+    '<th class="r">คงเหลือ</th><th class="r">ร้อยละ</th><th class="r">อันดับ</th></tr></thead><tbody>'+
+    dis.map(r=>`<tr><td>${r.k}</td><td class="r">${f(r.alloc,2)}</td><td class="r">${f(r.val,2)}</td>
+      <td class="r">${f(r.alloc-r.val,2)}</td>
+      <td class="r" style="color:${r.pct>=90?'var(--good)':'var(--bad)'}">${f(r.pct,2)}%</td>
+      <td class="r">${r.rank}</td></tr>`).join('')+
+    `<tr><td>เงินกันเหลื่อมปี 2568</td><td class="r">${f(C.alloc,2)}</td><td class="r">${f(C.dis,2)}</td>
+      <td class="r">${f(C.left,2)}</td><td class="r">${f(C.pct,2)}%</td><td class="r">—</td></tr></tbody>`;
+
+  $('#macroNote').innerHTML=
+    `จังหวัดเบิกจ่ายภาพรวมได้ <b>${f(dis[0].pct,2)}%</b> เป็นอันดับ ${dis[0].rank} ของประเทศ
+     สูงกว่าเกณฑ์กรมบัญชีกลาง ${f(dis[0].over,2)}% · เหลือรอเบิก ${f(dis[0].alloc-dis[0].val,2)} ล้านบาท
+     บวกเงินกันเหลื่อมปีอีก ${f(C.left,2)} ล้านบาท<br>
+     <span style="color:var(--faint)">ตัวเลขชุดนี้เป็นยอดสะสมของปีงบประมาณ ไม่ใช่รายเดือน จึงไม่เปลี่ยนตามงวดที่เลือกด้านบน ·
+     ดูรายละเอียดงบส่วนราชการและรายอำเภอได้ที่หน้าการคลังภาครัฐ</span>`;
+}
+
 /* ── แนวโน้มประมาณการเดือนถัดไป ──
    ต้นทางเป็นตัวเลขประมาณการที่สำนักงานคลังจังหวัดจัดทำ ระบบไม่คำนวณแทนให้
    กรอกในตารางภาวะเศรษฐกิจรายเดือน ช่อง fc_ ของเดือนที่ประมาณการถึง */
@@ -285,29 +348,32 @@ function renderForecast(cur){
   const nx=nextMonth(cur), nxLab=TH_M[nx.m-1]+' '+String(nx.y).slice(-2);
   const has=FC.some(d=>cur['fc_'+d[0]]!=null);
   const sub=document.getElementById('fcSub');
-  if(sub)sub.textContent='ประมาณการเดือน '+nxLab;
-  if(!has){
-    box.innerHTML='';
-    document.getElementById('fcNote').innerHTML=
-      `ยังไม่มีตัวเลขประมาณการของเดือน ${nxLab}<br>
-       <span style="color:var(--faint)">เมื่อสำนักงานคลังจังหวัดกรอกช่องประมาณการ 6 ด้านในตารางภาวะเศรษฐกิจรายเดือน
-       การ์ดนี้จะแสดงผลเองทันที ระบบไม่คำนวณประมาณการแทนให้ เพราะจะกลายเป็นตัวเลขที่นำไปอ้างอิงผิด</span>`;
-    return;
-  }
+  if(sub)sub.innerHTML='ประมาณการเดือน '+nxLab+(has?'':' · <span class="chip sim">ข้อมูลจำลอง</span>');
+  /* ยังไม่มีตัวเลขจริงจากคลังจังหวัด จึงแสดงค่าตัวอย่างไว้ให้เห็นรูปแบบการ์ดก่อน
+     ค่าตัวอย่างใช้ค่าเฉลี่ย 3 เดือนล่าสุดของแต่ละด้าน และติดป้ายข้อมูลจำลองไว้ทุกจุด
+     พอกรอกช่อง fc_ ในตารางภาวะเศรษฐกิจรายเดือน ระบบจะใช้ค่าจริงแทนทันที */
+  const demoOf=k=>{
+    const v=MAC.slice(Math.max(0,mIdx()-2),mIdx()+1).map(r=>r[k]).filter(x=>x!=null);
+    return v.length?+(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):null;
+  };
   box.innerHTML=FC.map(([k,label,ico,col])=>{
-    const v=cur['fc_'+k], now=cur[k], d=(v!=null&&now!=null)?v-now:null;
-    return `<div class="fcc" data-tip2="${tipOf({t:'ประมาณการ '+label,
+    const v=has?cur['fc_'+k]:demoOf(k), now=cur[k], d=(v!=null&&now!=null)?v-now:null;
+    return `<div class="fcc${has?'':' demo'}" data-tip2="${tipOf({t:'ประมาณการ '+label+(has?'':' (ข้อมูลจำลอง)'),
       d:'ประมาณการเดือน '+nxLab+' อยู่ที่ '+(v==null?'—':f(v,2)+'%')+' เทียบเดือนเดียวกันปีก่อน',
-      calc:'เดือนล่าสุด ('+mLabel(cur)+') อยู่ที่ '+f(now,2)+'%'+(d==null?'':' · ประมาณการเปลี่ยนแปลง '+(d>0?'+':'')+f(d,1)+' จุด'),
-      src:'ประมาณการโดยสำนักงานคลังจังหวัดหนองบัวลำภู',when:'ประมาณการเดือน '+nxLab})}">
+      calc:'เดือนล่าสุด ('+mLabel(cur)+') อยู่ที่ '+f(now,2)+'%'+(d==null?'':' · ประมาณการเปลี่ยนแปลง '+(d>0?'+':'')+f(d,1)+' จุด')+
+        (has?'':' · ค่านี้เป็นตัวอย่างที่ระบบสร้างจากค่าเฉลี่ย 3 เดือนล่าสุด ใช้ดูรูปแบบการ์ดเท่านั้น ห้ามนำไปอ้างอิง'),
+      src:has?'ประมาณการโดยสำนักงานคลังจังหวัดหนองบัวลำภู':'ข้อมูลจำลองเพื่อทดสอบการแสดงผล',when:'ประมาณการเดือน '+nxLab})}">
       <span class="fc-ic icow img">${icoImg(ico,28)}</span>
       <span class="fc-l">${label}</span>
       <b class="fc-v" style="color:${v>0?'var(--good)':v<0?'var(--bad)':'var(--dim)'}">${v==null?'—':(v>0?'+':'')+f(v,1)+'%'}</b>
       <span class="fc-d">${d==null?'':'จากเดือนล่าสุด '+(d>0?'+':'')+f(d,1)+' จุด'}</span></div>`;
   }).join('');
-  document.getElementById('fcNote').innerHTML=
-    `ตัวเลขประมาณการเดือน ${nxLab} จัดทำโดยสำนักงานคลังจังหวัด เทียบกับเดือนเดียวกันปีก่อนเช่นเดียวกับข้อมูลจริง
-     <span style="color:var(--faint)">· เป็นการคาดการณ์ ไม่ใช่ตัวเลขที่เกิดขึ้นจริง</span>`;
+  document.getElementById('fcNote').innerHTML=has
+    ? `ตัวเลขประมาณการเดือน ${nxLab} จัดทำโดยสำนักงานคลังจังหวัด เทียบกับเดือนเดียวกันปีก่อนเช่นเดียวกับข้อมูลจริง
+       <span style="color:var(--faint)">· เป็นการคาดการณ์ ไม่ใช่ตัวเลขที่เกิดขึ้นจริง</span>`
+    : `<b style="color:var(--warn)">ตัวเลขทั้ง 6 ด้านนี้เป็นข้อมูลจำลอง</b> ใช้ดูรูปแบบการแสดงผลเท่านั้น ห้ามนำไปอ้างอิง<br>
+       <span style="color:var(--faint)">เมื่อสำนักงานคลังจังหวัดกรอกช่องประมาณการในตารางภาวะเศรษฐกิจรายเดือน
+       ระบบจะเปลี่ยนไปใช้ค่าจริงและป้ายข้อมูลจำลองจะหายไปเอง</span>`;
 }
 
 /* ── จุดเด่น จุดเฝ้าระวัง และแรงขับเคลื่อนของเดือนที่เลือก ── */
@@ -360,8 +426,10 @@ function renderMacro(){
         MACRO_VIEW=b.dataset.mv;renderMacro()});}
   }
   const title={all:'ภาวะเศรษฐกิจรายเดือน',dem:'ด้านอุปสงค์ (Demand)',sup:'ด้านอุปทาน (Supply)',
-    fin:'ด้านการเงินและการจ้างงาน',fis:'ภาคการคลังรายเดือน'}[MACRO_VIEW];
+    fin:'ด้านการเงินและการจ้างงาน',fis:'ภาคการคลัง'}[MACRO_VIEW];
   $('#macroTitle').textContent=title;
+
+  if(MACRO_VIEW==='fis'){ renderFiscalTab(); return; }
 
   /* ชุดที่ยังไม่มีตัวเลข บอกให้ชัดว่าต้องรออะไร ไม่ปล่อยให้เป็นกราฟเปล่า */
   if(!hasData(MACRO_VIEW)){

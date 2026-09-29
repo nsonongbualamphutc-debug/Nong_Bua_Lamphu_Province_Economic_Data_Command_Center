@@ -1285,3 +1285,18 @@ button.kpi:hover{cursor:pointer}
   .linkcard{flex-wrap:wrap;gap:10px}
   .linkcard .lk-go{width:100%;text-align:right}
 }
+
+/* ══ แท็บภาคการคลัง · แถบความคืบหน้าเบิกจ่าย ══ */
+.fisbar{display:flex;flex-direction:column;gap:11px;margin-bottom:16px}
+.fsrow{display:grid;grid-template-columns:150px 1fr 66px;gap:12px;align-items:center}
+.fs-n{font-size:13px;color:var(--ink);font-weight:500}
+.fs-tr{position:relative;height:14px;border-radius:8px;background:var(--line2);overflow:visible}
+.fs-tr i{display:block;height:100%;border-radius:8px}
+.fs-tr b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--faint);opacity:.6}
+.fs-v{text-align:right;font-family:var(--fn);font-weight:700;font-size:14px;color:var(--ink)}
+.fs-note{font-size:11px;color:var(--faint);margin-top:2px}
+@media(max-width:640px){.fsrow{grid-template-columns:118px 1fr 56px;gap:8px}.fs-n{font-size:12px}}
+
+/* การ์ดประมาณการที่ยังเป็นค่าตัวอย่าง */
+.fcc.demo{border-style:dashed;background:repeating-linear-gradient(135deg,var(--card2),var(--card2) 9px,rgba(181,133,26,.06) 9px,rgba(181,133,26,.06) 18px)}
+.chip.sim{background:var(--gold-l,#fdf3e0);color:#8a6714;border:1px solid #ecd8a8}
