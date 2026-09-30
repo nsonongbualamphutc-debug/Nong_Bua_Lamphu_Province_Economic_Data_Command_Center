@@ -664,6 +664,34 @@ function chDefaults(){
   Chart.defaults.maintainAspectRatio=false;
 }
 const CH={};
+/* เก็บกวาดกราฟกำพร้า · ถ้า canvas ของกราฟถูกถอดออกจากหน้า (เช่นวาดการ์ดใหม่ด้วย innerHTML)
+   Chart.js จะยังถือกราฟนั้นไว้และโยน error ตอนปรับขนาดจอ ซึ่งโผล่มาเป็น "Script error."
+   ตรวจทุกครั้งที่หน้าเปลี่ยนโครงสร้าง แล้วทำลายกราฟที่ไม่มี canvas อยู่ในหน้าแล้ว */
+(function(){
+  if(typeof MutationObserver==='undefined')return;
+  let tm=null;
+  const sweep=()=>{
+    tm=null;
+    try{
+      if(typeof Chart==='undefined'||!Chart.instances)return;
+      Object.values(Chart.instances).forEach(c=>{
+        if(c&&c.canvas&&!document.body.contains(c.canvas)){try{c.destroy()}catch(e){}}
+      });
+    }catch(e){}
+  };
+  const watch=()=>{
+    if(watch.on||!document.body)return; watch.on=true;
+    new MutationObserver(ms=>{
+      if(tm)return;
+      if(ms.some(m=>[...m.removedNodes].some(n=>n.nodeType===1&&(n.tagName==='CANVAS'||(n.querySelector&&n.querySelector('canvas'))))))
+        tm=setTimeout(sweep,0);
+    }).observe(document.body,{childList:true,subtree:true});
+  };
+  if(document.body)watch(); else document.addEventListener('DOMContentLoaded',watch);
+  /* กันอีกชั้น · ปรับขนาดจอเมื่อไรก็กวาดก่อน เพราะจังหวะนั้นคือตอนที่ Chart.js โยน error */
+  window.addEventListener('resize',sweep,true);
+})();
+
 /* ทำลายกราฟของ canvas นั้นก่อนจะถอดหรือสร้าง canvas ใหม่
    ถ้าไม่ทำ Chart.js จะยังถือ canvas เก่าไว้แล้วโยน error ตอนปรับขนาดหน้าจอ */
 function killChart(id){
@@ -1943,6 +1971,15 @@ function showBootErr(ev,extra){
   }
   const where=ev&&ev.filename?(String(ev.filename).replace(location.origin,'')+' บรรทัด '+ev.lineno):'ไม่ทราบไฟล์';
   const msg=(ev&&ev.message)||'ไม่ทราบสาเหตุ';
+  /* "Script error." ที่ไม่มีชื่อไฟล์คือข้อความที่เบราว์เซอร์ปิดรายละเอียดของสคริปต์ข้ามโดเมนไว้
+     ไม่มีข้อมูลให้แก้ และหน้าเว็บยังทำงานต่อได้ตามปกติ จึงเก็บลง console แทนการขึ้นกล่องแดง
+     สาเหตุหลักที่เคยเจอคือกราฟที่ถูกถอด canvas ออกแล้วยังค้างอยู่ ซึ่งตอนนี้ระบบเก็บกวาดให้เองแล้ว */
+  if(/^Script error\.?$/i.test(msg)&&!(ev&&ev.filename)){
+    try{console.warn('ข้อผิดพลาดจากสคริปต์ภายนอก (เบราว์เซอร์ซ่อนรายละเอียด) · หน้าเว็บยังทำงานปกติ')}catch(e){}
+    return;
+  }
+  /* ResizeObserver loop เป็นคำเตือนของเบราว์เซอร์ ไม่ใช่ความผิดพลาดของหน้า */
+  if(/ResizeObserver loop/i.test(msg))return;
   BOOT.hard.push(msg+(msg==='Script error.'?' (มาจากสคริปต์ภายนอก เช่น Chart.js หรือ Leaflet ที่โหลดไม่สำเร็จ)':'')+' — '+where);
   bootPaint();
 }

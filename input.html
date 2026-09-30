@@ -332,7 +332,7 @@ tr.rvbig td{background:#fff8f6}
 .hb-t .r{text-align:right}
 @media(max-width:640px){.hb-t{font-size:11.5px}.hb-t th:nth-child(2),.hb-t td:nth-child(2){display:none}}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data1.js"></script>
 <script src="data2.js"></script>
 </head>
@@ -1338,11 +1338,18 @@ const TBL_DEFS=[
 let TBL_CUR=null, TBL_DATA=null;
 const storeOf=d=>d.store==='DX'?(typeof DX!=='undefined'?DX:null):(typeof REAL!=='undefined'?REAL:null);
 function pathGetIn(root,p){return p.split('.').reduce((o,k)=>o&&o[k],root)}
+/* รหัสเจ้าของตารางที่ถือว่าเป็นหน่วยงานเดียวกัน · ตรงกับ TABLE_OWNER ใน Code.gs
+   ที่ทำการปกครองเดิมใช้รหัส pop ส่วนตารางปิรามิดใช้ popreg จึงให้เห็นทั้งคู่ */
+const OWNER_ALIAS={popreg:['popreg','pop']};
 function myTables(){
   const dom=String((S.agency&&S.agency.domains)||'');
-  const all=dom.trim()==='*';
+  const all=dom.trim()==='*'||(S.agency&&S.agency.role==='admin');
   const list=dom.split(',').map(x=>x.trim()).filter(Boolean);
-  return TBL_DEFS.filter(d=>all||(d.owner!=='*'&&list.indexOf(d.owner)>=0));
+  return TBL_DEFS.filter(d=>{
+    if(all)return true;
+    if(d.owner==='*')return false;
+    return (OWNER_ALIAS[d.owner]||[d.owner]).some(o=>list.indexOf(o)>=0);
+  });
 }
 function renderTblList(){
   const list=myTables();
