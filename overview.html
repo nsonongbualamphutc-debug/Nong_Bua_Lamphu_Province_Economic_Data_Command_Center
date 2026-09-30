@@ -459,8 +459,7 @@ function renderMacro(){
   /* การ์ดของแท็บนั้น */
   /* แท็บภาพรวมไม่ต้องมีการ์ดย่อย เพราะซ้ำกับปุ่มแท็บและเสาบนหน้าปกอยู่แล้ว */
   const cards=(MACRO_VIEW==='all')?[]:defs.map(d=>[d[0],d[1],d[2],d[3],cur[d[0]],prv?prv[d[0]]:null]);
-  const LVL={depoY:['depo','ล้านบาท',0],credY:['cred','ล้านบาท',0],empY:['emp','คน',0],
-    revY:['rev','ล้านบาท',1],expY:['exp','ล้านบาท',1],balY:['bal','ล้านบาท',1]};
+  const LVL={depoY:['depo','ล้านบาท',0],credY:['cred','ล้านบาท',0],empY:['emp','คน',0]};
   $('#macroKpi').innerHTML=cards.map(c=>{
     const [k,label,ico,col,v,p]=c;
     const tip=(k==='dem'||k==='sup')
@@ -504,7 +503,7 @@ function renderMacro(){
 
   /* คำอธิบาย */
   const best=defs.slice().sort((a,b)=>cur[b[0]]-cur[a[0]])[0], worst=defs.slice().sort((a,b)=>cur[a[0]]-cur[b[0]])[0];
-  const posKey=MACRO_VIEW==='sup'?supIdx:MACRO_VIEW==='dem'?demIdx:MACRO_VIEW==='fin'?(r=>r.depoY):MACRO_VIEW==='fis'?(r=>r.revY):(r=>r.overall);
+  const posKey=MACRO_VIEW==='sup'?supIdx:MACRO_VIEW==='dem'?demIdx:MACRO_VIEW==='fin'?(r=>r.depoY):(r=>r.overall);
   const pos=MAC.slice(-12).filter(r=>posKey(r)>0).length;
   $('#macroNote').innerHTML=MDESC[MACRO_VIEW]+'<br>'+
     (defs.length>1
