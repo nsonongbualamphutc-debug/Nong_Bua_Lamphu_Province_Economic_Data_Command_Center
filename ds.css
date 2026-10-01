@@ -1420,3 +1420,71 @@ button.kpi:hover{cursor:pointer}
   .mini-d .md-svg .dring{max-width:170px}
   .mini-d .md-p{font-size:24px}
 }
+
+/* ข้อความกลางวงของวงแหวนเล็ก · ขนาดพอดีกับรูกลางวง ไม่ชนขอบ */
+.mini-d .md-svg .dr-t1{font-size:23px;fill:var(--dim)}
+.mini-d .md-svg .dr-t2{font-size:50px;letter-spacing:-1px}
+.mini-d .md-svg .dr-t3{font-size:21px;fill:var(--faint)}
+.mini-d .md-svg .dring{max-width:200px}
+@media(max-width:767px){.mini-d .md-svg .dring{max-width:180px}}
+
+/* ══ โครงสร้างเศรษฐกิจ · วางวงแหวน 2 การ์ดคู่กันด้านบนเต็มความกว้าง รายการ 19 สาขาอยู่ด้านล่าง ══
+   เดิมการ์ดวงแหวนอยู่คอลัมน์ขวาที่แคบ ข้อความในรายการเลยตัดบรรทัดถี่จนอึดอัด */
+.sgrid{grid-template-columns:1fr;gap:16px}
+.sgrid .sring{order:-1;position:static;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.sgrid .slist{max-height:none;overflow:visible}
+.mini-d .md-row{grid-template-columns:200px minmax(0,1fr);gap:22px}
+.mini-d .md-n{white-space:nowrap}
+@media(max-width:1150px){
+  .sgrid .sring{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .mini-d .md-row{grid-template-columns:1fr;justify-items:center}
+  .mini-d .md-lg{width:100%}
+}
+
+/* การ์ดวงแหวนอยู่ใน #structDonut จึงต้องจัดกริดที่ชั้นนี้ ไม่ใช่ที่ .sring */
+.sgrid .sring{display:block}
+#structDonut{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media(max-width:1150px){#structDonut{grid-template-columns:1fr}}
+
+/* รายละเอียดแยก 2 บรรทัดสั้น ๆ ไม่ตัดคำกลางประโยค · วงแหวนเล็กลงเพื่อเผื่อที่ให้ข้อความ */
+.mini-d .md-row{grid-template-columns:170px minmax(0,1fr);gap:20px}
+.mini-d .md-svg .dring{max-width:170px}
+.mini-d .md-m{display:flex;flex-direction:column}
+.mini-d .md-m span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-d .md-m span+span{font-size:11px;opacity:.85}
+.mini-d .md-p{font-size:28px}
+@media(max-width:560px){.mini-d .md-svg .dring{max-width:180px}}
+
+/* มือถือ · ต้องอยู่ท้ายไฟล์เพื่อทับกฎเดสก์ท็อปด้านบน: วงแหวนอยู่บน รายการเรียงลงล่างเต็มความกว้าง */
+@media(max-width:600px){
+  .mini-d{padding:14px 13px}
+  .mini-d .md-row{grid-template-columns:1fr;justify-items:center;gap:12px}
+  .mini-d .md-svg .dring{max-width:190px}
+  .mini-d .md-lg{width:100%}
+  .mini-d .md-it{padding:10px 12px 9px}
+  .mini-d .md-p{font-size:25px}
+  .mini-d .md-m span{white-space:normal}
+}
+
+/* คอลัมน์เดียวต้องเป็น minmax(0,1fr) ไม่งั้นรายการ 19 สาขาดันกริดให้กว้างเกินจอมือถือ ทุกการ์ดในบล็อกเลยล้นตาม */
+.sgrid{grid-template-columns:minmax(0,1fr)}
+.slist,.slist .srow{min-width:0}
+@media(max-width:600px){.slist .bar{width:44px}.slist .rk{width:16px}.slist .srow{gap:7px;padding:6px 4px}}
+
+/* แถบเลือกงวดในการ์ดแคบ (แท็บเล็ต) ให้ขึ้นบรรทัดใหม่ ไม่ให้ปุ่มเดินหน้าตกขอบการ์ด */
+@media(max-width:1150px){
+  .slicer.monthpick{flex-wrap:wrap;row-gap:8px}
+  .slicer.monthpick .sl-info{width:100%;order:9}
+}
+.c .slicer.monthpick{flex-wrap:wrap;row-gap:8px}
+.c .slicer.monthpick .sl-info{flex-basis:100%}
+
+/* แถบเลือกงวดที่อยู่ในการ์ด · ช่องเลือกยืดหดตามความกว้างการ์ด ไม่ดันปุ่มตกขอบ */
+.c .slicer.monthpick .sl-nav{display:flex;flex:1 1 100%;min-width:0;gap:6px}
+.c .slicer.monthpick .sl-nav select{flex:1 1 0;min-width:0}
+.c .slicer.monthpick .sl-nav button{flex:none}
+
+/* หน้าการคลัง · แท็บเล็ตให้การ์ดเงินกันเหลื่อมปีกับเม็ดเงินตามงวดเรียงลงมาเต็มความกว้าง การ์ดตัวเลขจะไม่บีบ */
+@media(max-width:1150px){#fisRow{grid-template-columns:1fr}}

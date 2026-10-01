@@ -300,7 +300,9 @@ function treemap(items,opt){
    items = [{n,v,color,tip}] · รายชื่อสาขาแสดงเป็นรายการข้างนอก ไม่ยัดป้ายรอบวงให้รก */
 function donutRing(items,opt){
   opt=opt||{};
-  const W=460,H=460,CX=230,CY=230,R=196,RI=126;
+  const W=460,H=460,CX=230,CY=230,R=opt.r||196,RI=opt.ri||126;
+  /* ตำแหน่งข้อความกลางวง · วงเล็กใช้ช่องไฟกว้างขึ้นให้ตัวเลขไม่ชนขอบวง */
+  const Y=opt.mini?[CY-46,CY+18,CY+56]:[CY-26,CY+14,CY+42];
   const list=items.filter(x=>x.v>0);
   const total=list.reduce((a,b)=>a+b.v,0)||1;
   const pol=(r,a)=>[CX+r*Math.cos(a),CY+r*Math.sin(a)];
@@ -315,9 +317,9 @@ function donutRing(items,opt){
             ` L${u0.toFixed(2)},${v0.toFixed(2)} A${RI},${RI} 0 ${big} 0 ${u1.toFixed(2)},${v1.toFixed(2)} Z`;
     return `<path d="${d}" fill="${it.color}" class="dr-arc" data-sec="${i}"${it.grp?` data-grp="${it.grp}"`:''}${it.tip?` data-tip2="${it.tip}"`:''}></path>`;
   }).join('');
-  const c=`<text x="${CX}" y="${CY-26}" text-anchor="middle" class="dr-t1">${opt.centerTop||''}</text>
-    <text x="${CX}" y="${CY+14}" text-anchor="middle" class="dr-t2">${opt.centerMid||''}</text>
-    <text x="${CX}" y="${CY+42}" text-anchor="middle" class="dr-t3">${opt.centerSub||''}</text>`;
+  const c=`<text x="${CX}" y="${Y[0]}" text-anchor="middle" class="dr-t1">${opt.centerTop||''}</text>
+    <text x="${CX}" y="${Y[1]}" text-anchor="middle" class="dr-t2">${opt.centerMid||''}</text>
+    <text x="${CX}" y="${Y[2]}" text-anchor="middle" class="dr-t3">${opt.centerSub||''}</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" class="dring" xmlns="http://www.w3.org/2000/svg">${arcs}${c}</svg>`;
 }
 
