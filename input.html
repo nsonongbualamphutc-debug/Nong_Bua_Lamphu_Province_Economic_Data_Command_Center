@@ -1604,7 +1604,7 @@ async function saveTbl(){
     const r=await res.json();
     if(!r.ok)throw new Error(r.error||'บันทึกไม่สำเร็จ');
     store[root]=obj;
-    say('#tblMsg','ok','บันทึก "'+d.name+'" ขึ้นฐานข้อมูลกลางแล้ว แดชบอร์ดจะแสดงตัวเลขใหม่ทันที');
+    say('#tblMsg','ok','บันทึก "'+d.name+'" ขึ้นฐานข้อมูลกลางแล้ว · แดชบอร์ดจะแสดงตัวเลขใหม่เมื่อเปิดหรือรีเฟรชหน้า · ฉบับก่อนหน้าเก็บไว้ในประวัติการแก้ไขแล้ว');
   }catch(err){
     say('#tblMsg','err','บันทึกไม่สำเร็จ: '+err.message);
   }finally{btn.disabled=false;btn.textContent='บันทึกขึ้นฐานข้อมูลกลาง'}
