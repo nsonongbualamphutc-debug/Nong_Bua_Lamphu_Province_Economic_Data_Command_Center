@@ -313,7 +313,7 @@ function donutRing(items,opt){
     const [x0,y0]=pol(R,a0),[x1,y1]=pol(R,a1),[u0,v0]=pol(RI,a1),[u1,v1]=pol(RI,a0);
     const d=`M${x0.toFixed(2)},${y0.toFixed(2)} A${R},${R} 0 ${big} 1 ${x1.toFixed(2)},${y1.toFixed(2)}`+
             ` L${u0.toFixed(2)},${v0.toFixed(2)} A${RI},${RI} 0 ${big} 0 ${u1.toFixed(2)},${v1.toFixed(2)} Z`;
-    return `<path d="${d}" fill="${it.color}" class="dr-arc" data-sec="${i}"${it.tip?` data-tip2="${it.tip}"`:''}></path>`;
+    return `<path d="${d}" fill="${it.color}" class="dr-arc" data-sec="${i}"${it.grp?` data-grp="${it.grp}"`:''}${it.tip?` data-tip2="${it.tip}"`:''}></path>`;
   }).join('');
   const c=`<text x="${CX}" y="${CY-26}" text-anchor="middle" class="dr-t1">${opt.centerTop||''}</text>
     <text x="${CX}" y="${CY+14}" text-anchor="middle" class="dr-t2">${opt.centerMid||''}</text>

@@ -228,13 +228,34 @@ function renderGpp(){
   const order={'เกษตร':0,'อุตสาหกรรม':1,'บริการ':2};
   const ring2=items.map((x,i)=>Object.assign({},x,{sec:i})).sort((a,b)=>(order[a.g]-order[b.g])||(b.v-a.v))
     .map(x=>({key:x.n,n:x.n,v:x.v,color:x.color,tip:x.tip,sec:x.sec}));
+  /* แยกเป็นวงแหวน 2 วง อ่านได้ทันทีโดยไม่ต้องชี้
+     วงที่ 1 : ภาคการเกษตร กับ นอกภาคการเกษตร
+     วงที่ 2 : นอกภาคการเกษตรแยกเป็นอุตสาหกรรมกับบริการ
+     ตัวเลขทุกชิ้นเขียนไว้ข้างวงเลย ส่วนรายละเอียด 19 สาขาอยู่ในรายการด้านซ้าย */
+  const miniD=(title,sub,center,slices)=>{
+    const tot=slices.reduce((a,x)=>a+x.v,0);
+    return `<div class="mini-d">
+      <div class="md-h"><b>${title}</b><span>${sub}</span></div>
+      <div class="md-row">
+        <div class="md-svg">${donutRing(slices.map(x=>({n:x.n,v:x.v,color:x.color,tip:x.tip,grp:x.grp})),
+          {centerTop:center[0],centerMid:center[1],centerSub:center[2]})}</div>
+        <div class="md-lg">${slices.map(x=>`<div class="md-it" data-grp="${x.grp}" data-tip2="${x.tip}">
+            <i style="background:${x.color}"></i>
+            <span class="md-n">${x.n}<small>${x.note||''}</small></span>
+            <b class="md-p">${(x.v/tot*100).toFixed(1)}%</b>
+            <span class="md-v">${f(x.v,1)} ล้านบาท${x.of?' · '+x.of:''}</span></div>`).join('')}</div>
+      </div></div>`;
+  };
   const dn=document.getElementById('structDonut');
-  if(dn)dn.innerHTML=donutNested([ring0,ring1,ring2],{centerTop:'GPP ปี '+SYEAR,
-    centerMid:f(STOT,1),centerSub:'ล้านบาท',labelRings:[0,1]})+
-    `<div class="ringlg">
-      <span><i class="r0"></i>วงใน · ภาคการเกษตร / นอกภาคการเกษตร</span>
-      <span><i class="r1"></i>วงกลาง · เกษตร / อุตสาหกรรม / บริการ</span>
-      <span><i class="r2"></i>วงนอก · ${STRUCT.length} สาขา</span></div>`;
+  if(dn)dn.innerHTML=
+    miniD('ภาคการเกษตร กับ นอกภาคการเกษตร','สัดส่วนของ GPP ทั้งจังหวัด ปี '+SYEAR,['GPP ปี '+SYEAR,f(STOT,1),'ล้านบาท'],[
+      {n:'ภาคการเกษตร',note:'1 สาขา',v:agV,color:GCOL['เกษตร'],grp:'เกษตร',tip:ring0[0].tip},
+      {n:'นอกภาคการเกษตร',note:'อุตสาหกรรม + บริการ · '+(cnt['อุตสาหกรรม']+cnt['บริการ'])+' สาขา',v:naV,color:NONAG,grp:'อุตสาหกรรม บริการ',tip:ring0[1].tip}])+
+    miniD('นอกภาคการเกษตร แยกเป็น','อุตสาหกรรมกับบริการ รวมกันเท่ากับนอกภาคการเกษตร',['นอกภาคการเกษตร',f(naV,1),'ล้านบาท · '+pc(naV).toFixed(1)+'% ของ GPP'],[
+      {n:'ภาคอุตสาหกรรม',note:cnt['อุตสาหกรรม']+' สาขา',v:inV,color:GCOL['อุตสาหกรรม'],grp:'อุตสาหกรรม',
+       of:pc(inV).toFixed(1)+'% ของ GPP',tip:ring1[1].tip},
+      {n:'ภาคบริการ',note:cnt['บริการ']+' สาขา',v:svV,color:GCOL['บริการ'],grp:'บริการ',
+       of:pc(svV).toFixed(1)+'% ของ GPP',tip:ring1[2].tip}]);
 
   /* รายการสาขาเรียงจากมากไปน้อย อ่านได้ทันทีว่าอะไรใหญ่สุด กี่เปอร์เซ็นต์ กี่ล้านบาท
      ชี้ที่แถวจะไฮไลต์ชิ้นเดียวกันในวงแหวนให้ด้วย */
@@ -242,7 +263,7 @@ function renderGpp(){
   const sl=document.getElementById('structList');
   if(sl)sl.innerHTML=items.map((x,i)=>{
     const yo=x.yoy;
-    return `<div class="srow" data-sec="${i}" data-tip2="${x.tip}">
+    return `<div class="srow" data-sec="${i}" data-grp="${x.g}" data-tip2="${x.tip}">
       <span class="rk">${i+1}</span>
       <img class="ic" src="${x.icon}" alt="" loading="lazy" onerror="this.remove()">
       <span class="nm">${x.n}<em style="background:${GCOL[x.g]}22;color:${GCOL[x.g]}">${x.g}</em></span>
@@ -255,12 +276,17 @@ function renderGpp(){
   if(sl&&!sl.dataset.b){sl.dataset.b='1';
     const box=document.getElementById('svDonut');
     box.addEventListener('mouseover',e=>{
-      const t=e.target.closest('[data-sec]'); if(!t)return;
-      const k=t.dataset.sec; box.classList.add('focus');
-      box.querySelectorAll('[data-sec]').forEach(el=>el.classList.toggle('on',el.dataset.sec===k));
+      const t=e.target.closest('[data-grp]'); if(!t)return;
+      const gs=t.dataset.grp.split(' '); box.classList.add('focus');
+      /* ชี้แถวสาขา → เน้นแถวนั้นกับชิ้นของหมวดในวงแหวน · ชี้ชิ้นในวงแหวน → เน้นทุกสาขาในหมวดนั้น */
+      const isRow=t.classList.contains('srow');
+      box.querySelectorAll('[data-grp]').forEach(el=>{
+        const hit=el.dataset.grp.split(' ').some(g=>gs.indexOf(g)>=0);
+        el.classList.toggle('on', el.classList.contains('srow') ? (isRow?el===t:hit) : hit);
+      });
     });
     box.addEventListener('mouseleave',()=>{box.classList.remove('focus');
-      box.querySelectorAll('[data-sec]').forEach(el=>el.classList.remove('on'))});
+      box.querySelectorAll('[data-grp]').forEach(el=>el.classList.remove('on'))});
   }
   const tm=document.getElementById('structMap');
   if(tm)tm.innerHTML=treemap(items);
