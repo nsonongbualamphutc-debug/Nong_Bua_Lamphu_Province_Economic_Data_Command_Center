@@ -1390,3 +1390,33 @@ button.kpi:hover{cursor:pointer}
   .mini-d .md-row{grid-template-columns:130px 1fr;gap:12px}
   .mini-d .md-p{font-size:21px}
 }
+
+/* ══ จัดระเบียบการ์ดวงแหวน 2 วง ══
+   แต่ละรายการ: จุดสี | ชื่อ (บน) รายละเอียด (ล่าง) | ร้อยละตัวใหญ่ชิดขวา · แถบสัดส่วนบาง ๆ ด้านล่าง */
+.mini-d{padding:16px 18px}
+.mini-d .md-h{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line2)}
+.mini-d .md-row{grid-template-columns:190px 1fr;gap:22px;align-items:center}
+.mini-d .md-svg{display:flex;justify-content:center}
+.mini-d .md-svg .dring{width:100%;max-width:190px}
+.mini-d .md-svg .dr-t1{font-size:24px;fill:var(--dim)}
+.mini-d .md-svg .dr-t2{font-size:58px}
+.mini-d .md-svg .dr-t3{font-size:22px;fill:var(--faint)}
+.mini-d .md-lg{gap:10px}
+.mini-d .md-it{display:grid;grid-template-columns:12px minmax(0,1fr) auto;
+  grid-template-areas:"dot name pct" "dot meta pct" "bar bar bar";gap:2px 12px;align-items:center;
+  padding:11px 14px 10px;border-radius:13px;background:var(--card);border:1px solid var(--line2);border-left:4px solid var(--c)}
+.mini-d .md-it i{grid-area:dot;width:12px;height:12px;border-radius:50%;background:var(--c);align-self:start;margin-top:5px}
+.mini-d .md-n{grid-area:name;font-size:14.5px;font-weight:600;font-family:var(--fd);color:var(--ink);display:block}
+.mini-d .md-m{grid-area:meta;font-size:11.5px;color:var(--faint);line-height:1.5}
+.mini-d .md-p{grid-area:pct;font-family:var(--fn);font-size:27px;font-weight:700;color:var(--ink);text-align:right;line-height:1}
+.mini-d .md-p small{font-size:14px;font-weight:600;color:var(--dim);margin-left:1px}
+.mini-d .md-bar{grid-area:bar;display:block;height:5px;border-radius:3px;background:var(--line2);margin-top:7px;overflow:hidden}
+.mini-d .md-bar span{display:block;height:100%;border-radius:3px;background:var(--c)}
+.mini-d .md-v{display:none}
+@media(max-width:1150px){.mini-d .md-row{grid-template-columns:160px 1fr;gap:16px}}
+@media(max-width:767px){
+  .mini-d{padding:14px}
+  .mini-d .md-row{grid-template-columns:1fr;gap:12px}
+  .mini-d .md-svg .dring{max-width:170px}
+  .mini-d .md-p{font-size:24px}
+}

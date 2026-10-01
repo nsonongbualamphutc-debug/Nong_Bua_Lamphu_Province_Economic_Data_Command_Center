@@ -239,19 +239,20 @@ function renderGpp(){
       <div class="md-row">
         <div class="md-svg">${donutRing(slices.map(x=>({n:x.n,v:x.v,color:x.color,tip:x.tip,grp:x.grp})),
           {centerTop:center[0],centerMid:center[1],centerSub:center[2]})}</div>
-        <div class="md-lg">${slices.map(x=>`<div class="md-it" data-grp="${x.grp}" data-tip2="${x.tip}">
-            <i style="background:${x.color}"></i>
-            <span class="md-n">${x.n}<small>${x.note||''}</small></span>
-            <b class="md-p">${(x.v/tot*100).toFixed(1)}%</b>
-            <span class="md-v">${f(x.v,1)} ล้านบาท${x.of?' · '+x.of:''}</span></div>`).join('')}</div>
+        <div class="md-lg">${slices.map(x=>`<div class="md-it" data-grp="${x.grp}" data-tip2="${x.tip}" style="--c:${x.color}">
+            <i></i>
+            <span class="md-n">${x.n}</span>
+            <b class="md-p">${(x.v/tot*100).toFixed(1)}<small>%</small></b>
+            <span class="md-m">${x.note?x.note+' · ':''}${f(x.v,1)} ล้านบาท${x.of?' · '+x.of:''}</span>
+            <span class="md-bar"><span style="width:${(x.v/tot*100).toFixed(1)}%"></span></span></div>`).join('')}</div>
       </div></div>`;
   };
   const dn=document.getElementById('structDonut');
   if(dn)dn.innerHTML=
     miniD('ภาคการเกษตร กับ นอกภาคการเกษตร','สัดส่วนของ GPP ทั้งจังหวัด ปี '+SYEAR,['GPP ปี '+SYEAR,f(STOT,1),'ล้านบาท'],[
       {n:'ภาคการเกษตร',note:'1 สาขา',v:agV,color:GCOL['เกษตร'],grp:'เกษตร',tip:ring0[0].tip},
-      {n:'นอกภาคการเกษตร',note:'อุตสาหกรรม + บริการ · '+(cnt['อุตสาหกรรม']+cnt['บริการ'])+' สาขา',v:naV,color:NONAG,grp:'อุตสาหกรรม บริการ',tip:ring0[1].tip}])+
-    miniD('นอกภาคการเกษตร แยกเป็น','อุตสาหกรรมกับบริการ รวมกันเท่ากับนอกภาคการเกษตร',['นอกภาคการเกษตร',f(naV,1),'ล้านบาท · '+pc(naV).toFixed(1)+'% ของ GPP'],[
+      {n:'นอกภาคการเกษตร',note:'อุตสาหกรรม + บริการ '+(cnt['อุตสาหกรรม']+cnt['บริการ'])+' สาขา',v:naV,color:NONAG,grp:'อุตสาหกรรม บริการ',tip:ring0[1].tip}])+
+    miniD('นอกภาคการเกษตร แยกเป็น','อุตสาหกรรมกับบริการ รวมกันเท่ากับนอกภาคการเกษตร',['นอกภาคการเกษตร',f(naV,1),'ล้านบาท'],[
       {n:'ภาคอุตสาหกรรม',note:cnt['อุตสาหกรรม']+' สาขา',v:inV,color:GCOL['อุตสาหกรรม'],grp:'อุตสาหกรรม',
        of:pc(inV).toFixed(1)+'% ของ GPP',tip:ring1[1].tip},
       {n:'ภาคบริการ',note:cnt['บริการ']+' สาขา',v:svV,color:GCOL['บริการ'],grp:'บริการ',
@@ -311,6 +312,8 @@ function renderGpp(){
       const el=document.getElementById(id);
       if(el)el.classList.toggle('hide',['donut','tree','table'][k]!==STRUCT_VIEW);
     });
+    /* มุมมองวงแหวนมีตัวเลขหมวดในการ์ดอยู่แล้ว ไม่ต้องซ้ำแถบสรุปด้านล่าง */
+    const lgx=document.getElementById('structLg'); if(lgx)lgx.classList.toggle('hide',STRUCT_VIEW==='donut');
     if(!sw.dataset.b){sw.dataset.b='1';
       sw.addEventListener('click',e=>{
         const b=e.target.closest('[data-sv]'); if(!b)return;
