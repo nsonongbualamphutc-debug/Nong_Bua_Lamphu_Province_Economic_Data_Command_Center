@@ -32,7 +32,8 @@
         <div class="lb">ภาวะเศรษฐกิจรายเดือน</div>
         <div class="big n" id="meiVal">—</div>
         <div class="ribwrap"><svg id="ribbon" preserveAspectRatio="none"></svg></div>
-        <div class="foot"><span id="meiYoY">—</span><span>·</span><span id="meiMoM">—</span><span>·</span><span id="meiLab">ร้อยละเทียบปีก่อน</span></div>
+        <div class="pil-b mei-b" id="meiBadges"></div>
+        <div class="foot"><span id="meiLab">ร้อยละเทียบปีก่อน</span></div>
       </div>
     </div>
   </div>
@@ -157,6 +158,11 @@ document.addEventListener('change',e=>{
   if(i>=0)MAC_I=i;
   renderOverview();
 });
+/* บริบทของป้ายปีก่อน/เดือนก่อน ใช้ร่วมทุกการ์ดในหน้า */
+function cxOf(cur,prv,x){
+  return Object.assign({now:mLabel(cur),py:TH_M[cur.m-1]+' '+String(cur.y-1).slice(-2),
+    pm:prv?mLabel(prv):'',src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู'},x||{});
+}
 function renderOverview(){
   MAC=macRows();
   if(!MAC.length)return;
@@ -190,8 +196,23 @@ function renderOverview(){
 
   /* ── หัวเรื่อง ── */
   $('#meiVal').textContent=(ov>0?'+':'')+f(ov,1)+'%';
-  $('#meiYoY').textContent='เทียบเดือนเดียวกันปีก่อน';
-  $('#meiMoM').textContent=ovP==null?'':'เทียบเดือนก่อน '+ptTxt(ov-ovP);
+  /* ป้ายปีก่อน/เดือนก่อนแบบเดียวกับการ์ดอื่น ผู้ดูจะได้อ่านความหมายตรงกันทั้งหน้า */
+  (function(){
+    const box=document.getElementById('meiBadges'); if(!box)return;
+    const mom=ovP==null?null:ov-ovP;
+    const pyLab=TH_M[cur.m-1]+' '+String(cur.y-1).slice(-2);
+    const b=(x,lab,u,tip)=>{const c=x>.15?'up':x<-.15?'dn':'fl', a=x>.15?'▲':x<-.15?'▼':'▬';
+      return `<span class="pb ${c}" data-tip2="${tip}">${a} ${x>0?'+':''}${x.toFixed(1)}${u} <em>${lab}</em></span>`};
+    box.innerHTML=b(ov,'ปีก่อน','%',tipOf({t:'เทียบเดือนเดียวกันปีก่อน (YoY) · ภาวะเศรษฐกิจรายเดือน',
+        d:mLabel(cur)+' เทียบกับ '+pyLab,
+        calc:'ต้นทางรายงานเป็นร้อยละเทียบปีก่อนโดยตรง = '+(ov>0?'+':'')+f(ov,2)+'% · ค่าบวกคือเศรษฐกิจขยายตัว ค่าลบคือหดตัว',
+        src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)}))+
+      (mom==null?'':b(mom,'เดือนก่อน',' จุด',tipOf({t:'เทียบเดือนก่อน (MoM) · ภาวะเศรษฐกิจรายเดือน',
+        d:mLabel(cur)+' เทียบกับ '+mLabel(prv),
+        calc:'ผลต่างของอัตราเทียบปีก่อน = '+f(ov,2)+'% − '+f(ovP,2)+'% = '+(mom>0?'+':'')+f(mom,2)+' จุด'+
+          ' · หน่วยเป็น "จุด" ไม่ใช่การเติบโตรายเดือน ใช้ดูว่าเศรษฐกิจแรงขึ้นหรืออ่อนลงจากเดือนก่อน',
+        src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})));
+  })();
   const ml=document.getElementById('meiLab'); if(ml)ml.textContent=mLabel(cur);
   $('#asof').textContent='ข้อมูล ณ '+CFG.asof;
   $('#heroSay').textContent=ov>=5?'เศรษฐกิจจังหวัดขยายตัวชัดเจนในเดือนนี้'
@@ -201,11 +222,20 @@ function renderOverview(){
   /* เสาสองต้นบนหน้าปก · ทำเป็นการ์ดแก้วมีขอบและป้ายคู่ ไม่ให้จมไปกับภาพพื้นหลัง */
   const pill=(key,label,ico,v,p)=>{
     const mom=p==null?null:v-p;
-    const badge=(x,lab,u)=>{
+    const badge=(x,lab,u,tip)=>{
       if(x==null)return '';
       const c=x>.15?'up':x<-.15?'dn':'fl', a=x>.15?'▲':x<-.15?'▼':'▬';
-      return `<span class="pb ${c}">${a} ${x>0?'+':''}${x.toFixed(1)}${u} <em>${lab}</em></span>`;
+      return `<span class="pb ${c}" data-tip2="${tip}">${a} ${x>0?'+':''}${x.toFixed(1)}${u} <em>${lab}</em></span>`;
     };
+    const pyLab=TH_M[cur.m-1]+' '+String(cur.y-1).slice(-2);
+    const tY=tipOf({t:'เทียบเดือนเดียวกันปีก่อน (YoY) · '+label,d:mLabel(cur)+' เทียบกับ '+pyLab,
+      calc:(key==='dem'?'ค่าเฉลี่ยของอัตราเทียบปีก่อน 3 ตัวชี้วัดด้านอุปสงค์':'ค่าถ่วงน้ำหนักของอัตราเทียบปีก่อน 3 ภาคการผลิต')+
+        ' = '+(v>0?'+':'')+f(v,2)+'% · ค่าบวกคือขยายตัว ค่าลบคือหดตัว',
+      src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)});
+    const tM=mom==null?'':tipOf({t:'เทียบเดือนก่อน (MoM) · '+label,d:mLabel(cur)+' เทียบกับ '+(prv?mLabel(prv):'เดือนก่อน'),
+      calc:'ผลต่างของอัตราเทียบปีก่อน = '+f(v,2)+'% − '+f(p,2)+'% = '+(mom>0?'+':'')+f(mom,2)+' จุด'+
+        ' · หน่วยเป็น "จุด" ไม่ใช่การเติบโตรายเดือน ใช้ดูว่าแรงขึ้นหรืออ่อนลงจากเดือนก่อน',
+      src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)});
     return `<div class="pil" data-tip2="${
       tipOf({t:label,d:label+' เดือน '+mLabel(cur)+' อยู่ที่ '+f(v,2)+'% เทียบเดือนเดียวกันปีก่อน',
         calc:key==='dem'
@@ -214,7 +244,7 @@ function renderOverview(){
         src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})}">
       <div class="pil-h"><span class="pil-ic icow img">${icoImg(ico,26)}</span><span class="pil-l">${label}</span></div>
       <b class="n">${(v>0?'+':'')+f(v,1)}<small>%</small></b>
-      <div class="pil-b">${badge(v,'ปีก่อน','%')}${badge(mom,'เดือนก่อน',' จุด')}</div>
+      <div class="pil-b">${badge(v,'ปีก่อน','%',tY)}${badge(mom,'เดือนก่อน',' จุด',tM)}</div>
     </div>`;
   };
   $('#heroPil').innerHTML=pill('dem','ด้านอุปสงค์','cpi',dem,demP)+pill('sup','ด้านอุปทาน','factorynew',sup,supP);
@@ -225,11 +255,13 @@ function renderOverview(){
   drawRibbon();
 
   /* ── การ์ดตัวเลขหลัก ── */
+  /* บริบทของป้ายปีก่อน/เดือนก่อน · ให้ tooltip บอกได้ว่าเทียบเดือนไหนกับเดือนไหน */
+  const CX=x=>cxOf(cur,prv,x);
   const lvl=(k,ky,label,unit,ico,col,dec)=>{
     const v=cur[k], p=prv?prv[k]:null, yo=cur[ky];
     const mom=(p!=null&&p)?pctc(v,p):null;
     return kpiCard({icon:'coin',img:ico,color:cv(col),label:label,value:f(v,dec||0),unit:unit,
-      chip:chip2(yo,mom),spark:spark(hist(k),cv(col)),
+      chip:chip2(yo,mom,'pct',CX({label,yoyDirect:true,v,vm:p,u:unit})),spark:spark(hist(k),cv(col)),
       sub:p==null?'':'เดือนก่อน '+f(p,dec||0)+' '+unit,
       tip:tipOf({t:label,d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(v)+' '+unit,
         calc:'เทียบปีก่อน '+f(yo,2)+'%'+(p==null?'':' · เดือนก่อน '+f_num(p)+' '+unit+' เปลี่ยนแปลง '+(v-p>0?'+':'')+f_num(v-p)),
@@ -240,7 +272,7 @@ function renderOverview(){
   const pctCard=(k,label,ico,col,go)=>{
     const v=cur[k], p=prv?prv[k]:null;
     return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'%',
-      chip:chip2(v,p==null?null:v-p,'pt'),spark:spark(hist(k),cv(col)),
+      chip:chip2(v,p==null?null:v-p,'pt',CX({label,yoyDirect:true,v,vm:p})),spark:spark(hist(k),cv(col)),
       sub:'เดือนก่อน '+(p==null?'—':f(p,1)+'%'),go:go,
       tip:macroTip(k,label,cur,prv)});
   };
@@ -255,11 +287,11 @@ function renderOverview(){
     lvl('cred','credY','สินเชื่อรวม','ลบ.','invest','--brand2',0),
     (function(){
       const v=cur.emp,p=prv?prv.emp:null;
-      const back=MAC[MAC.length-13];
+      const back=MAC[mIdx()-12];          /* เดือนเดียวกันปีก่อน นับจากงวดที่เลือก */
       const yo=back&&back.emp?pctc(v,back.emp):null;
       const mom=(p!=null&&p)?pctc(v,p):null;
       return kpiCard({icon:'people',img:'employed',color:cv('--plum'),label:'การจ้างงานรวม',value:f(v,0),unit:'คน',
-        chip:chip2(yo,mom),spark:spark(hist('emp'),cv('--plum')),
+        chip:chip2(yo,mom,'pct',CX({label:'การจ้างงานรวม',v,vy:back?back.emp:null,vm:p,u:'คน'})),spark:spark(hist('emp'),cv('--plum')),
         sub:p==null?'':'เดือนก่อน '+f(p,0)+' คน',go:'labor',
         tip:tipOf({t:'การจ้างงานรวมในจังหวัด',d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(v)+' คน',
           calc:(yo==null?'':'เทียบปีก่อน = ('+f_num(v)+' − '+f_num(back.emp)+') ÷ '+f_num(back.emp)+' × 100 = '+f(yo,2)+'%')+
@@ -281,8 +313,15 @@ function renderFiscalTab(){
   const col={'ภาพรวม':'--brand','รายจ่ายประจำ':'--gold','รายจ่ายลงทุน':'--blue'};
   $('#macroKpi').innerHTML=dis.map(r=>kpiCard({icon:'coin',img:ico[r.k],color:cv(col[r.k]),
     label:'เบิกจ่าย'+r.k,value:f(r.pct,2),unit:'%',
-    chip:`<span class="chip2"><span class="chip ${r.rank<=5?'up':'fl'}">อันดับ ${r.rank} <em>ของประเทศ</em></span>`+
-         `<span class="chip ${r.over>=0?'up':'dn'}">${r.over>0?'+':''}${f(r.over,2)}% <em>เทียบเป้าหมาย</em></span></span>`,
+    chip:`<span class="chip2"><span class="chip ${r.rank<=5?'up':'fl'}" data-tip2="${tipOf({t:'อันดับการเบิกจ่าย'+r.k+'ของประเทศ',
+            d:'เทียบกับทุกจังหวัดทั่วประเทศ จากร้อยละการเบิกจ่ายสะสมของปีงบประมาณ',
+            calc:'จังหวัดหนองบัวลำภูอยู่อันดับ '+r.rank+' ด้วยร้อยละ '+f(r.pct,2)+'% · อันดับ 1 คือเบิกจ่ายได้สัดส่วนสูงที่สุดในประเทศ',
+            src:'spend',when:'ปีงบประมาณ 2569 · ข้อมูล ณ '+CFG.asof})}">อันดับ ${r.rank} <em>ของประเทศ</em></span>`+
+         `<span class="chip ${r.over>=0?'up':'dn'}" data-tip2="${tipOf({t:'เทียบเป้าหมายการเบิกจ่าย'+r.k,
+            d:'เป้าหมายตามมาตรการเร่งรัดการเบิกจ่ายของกรมบัญชีกลาง ณ งวดเดียวกัน',
+            calc:'ร้อยละที่เบิกได้จริง − ร้อยละเป้าหมาย = '+f(r.pct,2)+'% − '+f(r.pct-r.over,2)+'% = '+(r.over>0?'+':'')+f(r.over,2)+' จุด'+
+              (r.over>=0?' · ค่าบวกคือเบิกได้เร็วกว่าเป้า':' · ค่าลบคือยังเบิกได้ช้ากว่าเป้า'),
+            src:'spend',when:'ปีงบประมาณ 2569 · ข้อมูล ณ '+CFG.asof})}">${r.over>0?'+':''}${f(r.over,2)}% <em>เทียบเป้าหมาย</em></span></span>`,
     sub:f(r.val,2)+' จาก '+f(r.alloc,2)+' ลบ. · คงเหลือ '+f(r.alloc-r.val,2)+' ลบ.',
     tip:tipOf({t:'การเบิกจ่าย'+r.k,
       d:'ยอดสะสมตั้งแต่ต้นปีงบประมาณ ไม่ใช่ยอดรายเดือน · อันดับ '+r.rank+' ของประเทศ',
@@ -396,7 +435,11 @@ function renderHighlight(cur,prv){
   const contrib=[['agri','ภาคเกษตรกรรม',MW.agri,'--leaf'],['indus','ภาคอุตสาหกรรม',MW.indus,'--blue'],['serv','ภาคบริการ',MW.serv,'--brand']]
     .map(([k,n,w,c])=>({n,c,w,v:cur[k],part:cur[k]*w/wsum}));
   const mx=Math.max(...contrib.map(x=>Math.abs(x.part)))||1;
-  const card=(t,o,col,ic)=>`<div class="hi">
+  const card=(t,o,col,ic)=>`<div class="hi" data-tip2="${tipOf({t:t,
+      d:o?(o.n+' · '+(o.v>0?'+':'')+f(o.v,2)+'% เทียบเดือนเดียวกันปีก่อน'):'ไม่มีข้อมูล',
+      calc:'คัดจาก 6 ตัวชี้วัด คือ ภาคเกษตรกรรม อุตสาหกรรม บริการ การบริโภคเอกชน การลงทุนเอกชน และการใช้จ่ายภาครัฐ'+
+        (/เดือนก่อน/.test(t)?' · เรียงตามผลต่างของอัตราเทียบปีก่อนระหว่างเดือนนี้กับเดือนก่อน (หน่วยเป็นจุด)':' · เรียงตามอัตราเทียบปีก่อนของเดือนนี้'),
+      src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})}">
       <span class="hi-ic icow img">${icoImg(ic,30)}</span>
       <div><div class="hi-t">${t}</div>
         <div class="hi-v" style="color:${col}">${o?((o.v>0?'+':'')+f(o.v,1)+'%'):'—'}</div>
@@ -471,7 +514,9 @@ function renderMacro(){
     const L=LVL[k];
     const momL=(L&&prv&&prv[L[0]])?pctc(cur[L[0]],prv[L[0]]):null;
     return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'%',
-      chip:L?chip2(v,momL):chip2(v,p==null?null:v-p,'pt'),
+      chip:L?chip2(v,momL,'pct',cxOf(cur,prv,{label,yoyDirect:k!=='empY',v:cur[L[0]],vm:prv?prv[L[0]]:null,u:L[1],
+                 vy:k==='empY'&&MAC[mIdx()-12]?MAC[mIdx()-12].emp:null}))
+            :chip2(v,p==null?null:v-p,'pt',cxOf(cur,prv,{label,yoyDirect:true,v,vm:p})),
       sub:L?('ล่าสุด '+f(cur[L[0]],L[2])+' '+L[1]):('เดือนก่อน '+(p==null?'—':f(p,1)+'%')),
       tip:L?tipOf({t:label,d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(cur[L[0]])+' '+L[1],
         calc:'อัตราเทียบปีก่อน '+f(v,2)+'%'+(prv?' · เดือนก่อน '+f_num(prv[L[0]])+' '+L[1]+' เปลี่ยนแปลง '+(cur[L[0]]-prv[L[0]]>0?'+':'')+f_num(cur[L[0]]-prv[L[0]]):''),

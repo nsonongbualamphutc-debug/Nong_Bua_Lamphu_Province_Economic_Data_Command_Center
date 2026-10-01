@@ -47,6 +47,21 @@
       <div id="svTable" class="hide"><div class="sc" style="max-height:520px"><table class="t" id="tStruct"></table></div></div>
       <div class="tmlg" id="structLg"></div>
       <div class="note" id="structNote"></div></div></div>
+
+  <div class="c mb"><header><span class="hdico icow img" data-hdico="district"></span>
+    <h3>เทียบจังหวัดในภาคตะวันออกเฉียงเหนือ</h3><span class="u" id="neSub"></span>
+    <span class="r"><span class="vswitch" id="neScope">
+      <button class="on" data-ns="ne">ทั้งภาค 20 จังหวัด</button>
+      <button data-ns="up1">ตอนบน 1 · 5 จังหวัด</button></span></span></header>
+    <div class="b">
+      <div class="nerank" id="neRank"></div>
+      <div class="vswitch" id="neMetric" style="margin:4px 0 10px">
+        <button class="on" data-nm="gpp">มูลค่า GPP</button>
+        <button data-nm="pc">GPP ต่อหัว</button>
+        <button data-nm="grow">อัตราขยายตัวแท้จริง</button>
+        <button data-nm="agri">สัดส่วนภาคเกษตร</button></div>
+      <div class="ch" id="neChWrap" style="height:520px"><canvas id="cNe"></canvas></div>
+      <div class="note" id="neNote"></div></div></div>
   <div class="mb" id="dsGrid"></div>
 
   <div class="mb">
@@ -176,7 +191,10 @@ function renderGpp(){
       icon:'assets/icons/ic-'+m[2]+'.png',
       bg:m[3]?'assets/cardbg/bg-'+m[3]+'.webp':'',
       tip:tipOf({t:x.n,
-        d:'หมวด'+x.g+' · อันดับ '+(i+1)+' จาก '+STRUCT.length+' สาขา · คิดเป็น '+share.toFixed(1)+'% ของหมวด'+x.g,
+        d:(x.g==='เกษตร'
+            ? 'ภาคการเกษตรมีสาขาเดียวคือสาขานี้ · อันดับ '+(i+1)+' จาก '+STRUCT.length+' สาขา'
+            : 'นอกภาคการเกษตร · หมวด'+(x.g==='อุตสาหกรรม'?'อุตสาหกรรม':'บริการ')+' ('+cnt[x.g]+' สาขา) · อันดับ '+(i+1)+' จาก '+STRUCT.length+
+              ' สาขา · คิดเป็น '+share.toFixed(1)+'% ของหมวด'+(x.g==='อุตสาหกรรม'?'อุตสาหกรรม':'บริการ')),
         calc:'มูลค่าเพิ่ม ณ ราคาประจำปี '+f_num(x.v)+' ล้านบาท · สัดส่วนของ GPP = ('+f_num(x.v)+' ÷ '+f_num(STOT)+') × 100 = '+x.p.toFixed(2)+'%'+
           (yoy==null?'':' · เทียบปีก่อน = ('+f_num(x.v)+' − '+f_num(x.prev)+') ÷ '+f_num(x.prev)+' × 100 = '+(yoy>0?'+':'')+yoy.toFixed(2)+'%'),
         src:'gpp',when:'ปี '+SYEAR})};
@@ -185,9 +203,38 @@ function renderGpp(){
   /* สรุปใต้ภาพ อธิบายสิ่งที่เห็นเป็นภาษาคน */
   const top3=STRUCT.slice(0,3);
   const gTop=GRP.slice().sort((a,b)=>gSum(b)-gSum(a))[0];
+  /* วงแหวนซ้อน 3 ชั้น ตามโครงที่ สศช. ใช้ในแฟ้มต้นทาง
+     ชั้นใน  : ภาคการเกษตร | นอกภาคการเกษตร
+     ชั้นกลาง: ภาคการเกษตร | อุตสาหกรรม | บริการ   (อุตสาหกรรม + บริการ = นอกภาคการเกษตร)
+     ชั้นนอก : 19 สาขา เรียงตามหมวด ชิ้นของแต่ละสาขาจึงอยู่ใต้หมวดของตัวเองพอดี */
+  const NONAG='#5f6f8a';
+  const agV=gVal('เกษตร'), inV=gVal('อุตสาหกรรม'), svV=gVal('บริการ'), naV=inV+svV;
+  const pc=v=>(v/STOT*100);
+  const tipG=(t,v,d,calc)=>tipOf({t,d,calc:calc+' · มูลค่า '+f_num(v)+' ล้านบาท · สัดส่วน ('+f_num(v)+' ÷ '+f_num(STOT)+') × 100 = '+pc(v).toFixed(2)+'%',src:'gpp',when:'ปี '+SYEAR});
+  const ring0=[
+    {key:'g-agri',n:'ภาคการเกษตร',v:agV,color:GCOL['เกษตร'],
+     tip:tipG('ภาคการเกษตร',agV,'ภาคการเกษตรมีสาขาเดียว คือ เกษตรกรรม การป่าไม้ และการประมง','ตามการจัดหมวดของ สศช.')},
+    {key:'g-non',n:'นอกภาคการเกษตร',v:naV,color:NONAG,
+     tip:tipG('นอกภาคการเกษตร',naV,'ประกอบด้วยภาคอุตสาหกรรม '+cnt['อุตสาหกรรม']+' สาขา และภาคบริการ '+cnt['บริการ']+' สาขา',
+       'อุตสาหกรรม '+f_num(inV)+' + บริการ '+f_num(svV)+' = '+f_num(naV)+' ล้านบาท')}];
+  const ring1=[
+    {key:'g-agri',n:'ภาคการเกษตร',v:agV,color:GCOL['เกษตร'],tip:ring0[0].tip},
+    {key:'g-ind',n:'ภาคอุตสาหกรรม',v:inV,color:GCOL['อุตสาหกรรม'],
+     tip:tipG('ภาคอุตสาหกรรม (นอกภาคการเกษตร)',inV,cnt['อุตสาหกรรม']+' สาขา · เหมืองแร่ การผลิต ไฟฟ้าและก๊าซ ประปาและการจัดการของเสีย',
+       'คิดเป็น '+(inV/naV*100).toFixed(1)+'% ของนอกภาคการเกษตร')},
+    {key:'g-srv',n:'ภาคบริการ',v:svV,color:GCOL['บริการ'],
+     tip:tipG('ภาคบริการ (นอกภาคการเกษตร)',svV,cnt['บริการ']+' สาขา · ตั้งแต่การก่อสร้าง การค้า ขนส่ง ไปจนถึงการศึกษาและสาธารณสุข',
+       'คิดเป็น '+(svV/naV*100).toFixed(1)+'% ของนอกภาคการเกษตร')}];
+  const order={'เกษตร':0,'อุตสาหกรรม':1,'บริการ':2};
+  const ring2=items.map((x,i)=>Object.assign({},x,{sec:i})).sort((a,b)=>(order[a.g]-order[b.g])||(b.v-a.v))
+    .map(x=>({key:x.n,n:x.n,v:x.v,color:x.color,tip:x.tip,sec:x.sec}));
   const dn=document.getElementById('structDonut');
-  if(dn)dn.innerHTML=donutRing(items,{centerTop:'GPP ปี '+SYEAR,
-    centerMid:f(STOT,1),centerSub:'ล้านบาท · '+STRUCT.length+' สาขา'});
+  if(dn)dn.innerHTML=donutNested([ring0,ring1,ring2],{centerTop:'GPP ปี '+SYEAR,
+    centerMid:f(STOT,1),centerSub:'ล้านบาท',labelRings:[0,1]})+
+    `<div class="ringlg">
+      <span><i class="r0"></i>วงใน · ภาคการเกษตร / นอกภาคการเกษตร</span>
+      <span><i class="r1"></i>วงกลาง · เกษตร / อุตสาหกรรม / บริการ</span>
+      <span><i class="r2"></i>วงนอก · ${STRUCT.length} สาขา</span></div>`;
 
   /* รายการสาขาเรียงจากมากไปน้อย อ่านได้ทันทีว่าอะไรใหญ่สุด กี่เปอร์เซ็นต์ กี่ล้านบาท
      ชี้ที่แถวจะไฮไลต์ชิ้นเดียวกันในวงแหวนให้ด้วย */
@@ -219,9 +266,16 @@ function renderGpp(){
   if(tm)tm.innerHTML=treemap(items);
 
   const lg=document.getElementById('structLg');
-  if(lg)lg.innerHTML=GRP.map(g=>`<span><i style="background:${GCOL[g]}"></i>${g} <b>${gSum(g).toFixed(1)}%</b>
-    <span style="color:var(--faint)">${f(gVal(g),0)} ลบ. · ${cnt[g]} สาขา</span></span>`).join('')+
-    `<span style="color:var(--faint);margin-left:auto">รวม ${f(STOT,1)} ล้านบาท</span>`;
+  if(lg)lg.innerHTML=
+    `<span><i style="background:${GCOL['เกษตร']}"></i>ภาคการเกษตร <b>${pc(agV).toFixed(1)}%</b>
+       <span style="color:var(--faint)">${f(agV,0)} ลบ. · 1 สาขา</span></span>
+     <span><i style="background:${NONAG}"></i>นอกภาคการเกษตร <b>${pc(naV).toFixed(1)}%</b>
+       <span style="color:var(--faint)">${f(naV,0)} ลบ.</span></span>
+     <span style="padding-left:18px"><i style="background:${GCOL['อุตสาหกรรม']}"></i>อุตสาหกรรม <b>${pc(inV).toFixed(1)}%</b>
+       <span style="color:var(--faint)">${cnt['อุตสาหกรรม']} สาขา</span></span>
+     <span><i style="background:${GCOL['บริการ']}"></i>บริการ <b>${pc(svV).toFixed(1)}%</b>
+       <span style="color:var(--faint)">${cnt['บริการ']} สาขา</span></span>
+     <span style="color:var(--faint);margin-left:auto">รวม ${f(STOT,1)} ล้านบาท</span>`;
 
   /* ปุ่มสลับรูปแบบ ผูกครั้งเดียว จำแบบที่เลือกไว้ระหว่างเปลี่ยนปี */
   const sw=document.getElementById('structSw');
@@ -273,6 +327,7 @@ function renderGpp(){
       <td class="r" style="color:${real==null?'var(--faint)':real>=0?'var(--good)':'var(--bad)'}">${real==null?'—':(real>0?'+':'')+real.toFixed(1)+'%'}</td>
       <td style="font-size:11px;color:var(--faint)">${r.note||''}</td></tr>`;}).join('')+'</tbody>';
   applyEditMode();
+  renderNE();
 }
 
 /* ══ เสถียรภาพการคลัง ══ */
@@ -326,7 +381,64 @@ function renderDS(){
       </div></div>`;
 }
 
-let GPP_YEAR=null, STRUCT_VIEW='donut';
+let GPP_YEAR=null, STRUCT_VIEW='donut', NE_SCOPE='ne', NE_MET='gpp';
+
+/* ── เทียบจังหวัดในภาคตะวันออกเฉียงเหนือ และกลุ่มจังหวัดตอนบน 1 ── */
+const NE_DEF={
+  gpp :{l:'มูลค่า GPP',u:'ล้านบาท',d:1,why:'ขนาดเศรษฐกิจของจังหวัด ณ ราคาประจำปี'},
+  pc  :{l:'GPP ต่อหัว',u:'บาท/คน/ปี',d:0,why:'มูลค่าการผลิตเฉลี่ยต่อประชากร 1 คน ใช้เทียบความเป็นอยู่ระหว่างจังหวัดที่ขนาดต่างกัน'},
+  grow:{l:'อัตราขยายตัวแท้จริง',u:'%',d:2,why:'การเติบโตเทียบปีก่อนจากมูลค่าแบบปริมาณลูกโซ่ ตัดผลของราคาออกแล้ว'},
+  agri:{l:'สัดส่วนภาคเกษตร',u:'%',d:2,why:'มูลค่าเพิ่มสาขาเกษตรกรรม การป่าไม้ และการประมง ÷ GPP × 100'}
+};
+function renderNE(){
+  const NE=(typeof REAL!=='undefined'&&REAL.gpp&&REAL.gpp.ne)||null;
+  const box=document.getElementById('neRank'); if(!NE||!box)return;
+  const all=NE.rows, scope=NE_SCOPE==='up1'?all.filter(r=>r.up1):all;
+  const me=all.find(r=>r.n==='หนองบัวลำภู');
+  const sc=NE_SCOPE==='up1'?'กลุ่มจังหวัดภาคตะวันออกเฉียงเหนือตอนบน 1':'ภาคตะวันออกเฉียงเหนือ';
+  document.getElementById('neSub').textContent='ปี '+NE.year+' · '+sc+' '+scope.length+' จังหวัด';
+  /* สรุปอันดับทั้ง 4 ตัวชี้วัด */
+  const rk=k=>NE_SCOPE==='up1'?me['u_'+k]:me['r_'+k];
+  const rkAgri=scope.slice().sort((a,b)=>b.agri-a.agri).findIndex(r=>r.n==='หนองบัวลำภู')+1;
+  const avg=k=>scope.reduce((a,r)=>a+r[k],0)/scope.length;
+  box.innerHTML=Object.keys(NE_DEF).map(k=>{
+    const D=NE_DEF[k], r=k==='agri'?rkAgri:rk(k), a=avg(k);
+    const good=r<=Math.ceil(scope.length/3), bad=r>scope.length-Math.ceil(scope.length/3);
+    return `<button class="nr ${NE_MET===k?'on':''}" data-nm="${k}" data-tip2="${tipOf({t:D.l+' · อันดับในกลุ่ม',
+      d:'หนองบัวลำภูอยู่อันดับ '+r+' จาก '+scope.length+' จังหวัดใน'+sc+' · '+D.why,
+      calc:'เรียงจากมากไปน้อย · หนองบัวลำภู '+f(me[k],D.d)+' '+D.u+' · ค่าเฉลี่ยของกลุ่ม '+f(a,D.d)+' '+D.u+
+        (k==='agri'?' · สัดส่วนสูงแปลว่าพึ่งภาคเกษตรมาก ไม่ได้แปลว่าดีหรือแย่':''),
+      src:'gpp',when:'ปี '+NE.year})}">
+      <span class="nr-l">${D.l}</span>
+      <b class="nr-r ${k==='agri'?'':good?'g':bad?'b':''}">${r}<small>/${scope.length}</small></b>
+      <span class="nr-v">${f(me[k],D.d)} ${D.u}</span></button>`;}).join('');
+
+  /* กราฟแท่งเรียงอันดับ · หนองบัวลำภูเน้นสีหลัก จังหวัดอื่นสีจาง */
+  const D=NE_DEF[NE_MET];
+  const list=scope.slice().sort((a,b)=>b[NE_MET]-a[NE_MET]);
+  const a=avg(NE_MET);
+  document.getElementById('neChWrap').style.height=Math.max(220,list.length*26+60)+'px';
+  mk('cNe',{type:'bar',data:{labels:list.map((r,i)=>(i+1)+'. '+r.n),
+    datasets:[{label:D.l,data:list.map(r=>r[NE_MET]),borderRadius:5,barThickness:list.length>8?16:26,
+      backgroundColor:list.map(r=>r.n==='หนองบัวลำภู'?cv('--brand'):r.up1&&NE_SCOPE==='ne'?cv('--gold')+'99':'#c9d6d0')}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>D.l+' '+f(c.raw,D.d)+' '+D.u,
+        afterLabel:c=>{const r=list[c.dataIndex];return 'เทียบค่าเฉลี่ยกลุ่ม '+(r[NE_MET]-a>0?'+':'')+f(r[NE_MET]-a,D.d)+' '+D.u+(r.up1?' · กลุ่มตอนบน 1':'')}}}},
+      scales:{x:ax({ticks:{callback:v=>f(v,NE_MET==='gpp'||NE_MET==='pc'?0:1)}}),y:ax({grid:{display:false},ticks:{font:{size:11.5}}})}}});
+
+  const pos=list.findIndex(r=>r.n==='หนองบัวลำภู')+1;
+  const top=list[0];
+  document.getElementById('neNote').innerHTML=
+    `${D.l} ของหนองบัวลำภู <b>${f(me[NE_MET],D.d)} ${D.u}</b> อยู่อันดับ <b>${pos} จาก ${list.length}</b> ใน${sc}
+     · สูงสุดคือ${top.n} ${f(top[NE_MET],D.d)} ${D.u} · ค่าเฉลี่ยของกลุ่ม ${f(a,D.d)} ${D.u}<br>
+     <span style="color:var(--faint)">${D.why}${NE_SCOPE==='ne'?' · แท่งสีทองคือจังหวัดในกลุ่มตอนบน 1':''} ·
+     ข้อมูลปี ${NE.year} จากแฟ้มเดียวกับหน้านี้ จึงไม่เปลี่ยนตามปีที่เลือกด้านบน</span>`;
+}
+document.addEventListener('click',e=>{
+  const s=e.target.closest('[data-ns]'), m=e.target.closest('[data-nm]');
+  if(s){NE_SCOPE=s.dataset.ns;document.querySelectorAll('#neScope [data-ns]').forEach(b=>b.classList.toggle('on',b===s));renderNE();}
+  else if(m){NE_MET=m.dataset.nm;document.querySelectorAll('#neMetric [data-nm]').forEach(b=>b.classList.toggle('on',b.dataset.nm===NE_MET));renderNE();}
+});
 DS.init('gpp',function(){
   renderGpp();
   onYearChange('gppYear',function(v){GPP_YEAR=+v;renderGpp();renderDS()});
@@ -335,7 +447,10 @@ DS.init('gpp',function(){
   if(v&&!v.querySelector('.srcbar')){
     const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
     d.innerHTML='<header><span class="hdico icow img">'+icoImg('source',26)+'</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
-      srcBar(['gpp'],D.gpp.doc+' · จังหวัดหนองบัวลำภู รหัส 0118 · GPP ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี')+'</div>';
+      srcBar(['gpp'],'แฟ้มผลิตภัณฑ์ภาคและจังหวัด ฉบับ พ.ศ. 2567 ของ สศช. · จังหวัดหนองบัวลำภู รหัส 0118 · ใช้ข้อมูล 2 แบบจากแฟ้มเดียวกัน '+
+        '<b>(1) ณ ราคาประจำปี</b> ใช้กับมูลค่า GPP รายได้ต่อหัว โครงสร้างเศรษฐกิจ และการเทียบจังหวัด · '+
+        '<b>(2) แบบปริมาณลูกโซ่ (ปีอ้างอิง 2545)</b> ใช้กับอัตราการขยายตัวที่แท้จริง เพราะตัดผลของราคาออกแล้ว · '+
+        'GPP ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี')+'</div>';
     v.appendChild(d);
   }
   renderDS();

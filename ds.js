@@ -202,13 +202,35 @@ function chip(p){if(p==null)return'<span class="chip">—</span>';
   return`<span class="chip ${c}">${a} ${p>0?'+':''}${p.toFixed(1)}%</span>`}
 /* ป้ายคู่ · เทียบปีก่อน และ เทียบเดือนก่อน ในการ์ดเดียวกัน
    unit 'pct' = ตัวเลขเป็นร้อยละ · unit 'pt' = เป็นจุด (ใช้เมื่อต้นทางให้มาเป็นอัตราอยู่แล้ว) */
-function chip2(yoy,mom,unit){
-  const one=(v,lab,u)=>{
+function chip2(yoy,mom,unit,ctx){
+  /* ป้ายคู่ เทียบปีก่อน + เทียบเดือนก่อน · ทุกป้ายมี tooltip บอกว่าเทียบกับอะไร และคำนวณอย่างไร
+     ctx = {now:'ส.ค. 69', py:'ส.ค. 68', pm:'ก.ค. 69', v:ค่าเดือนนี้, vy:ค่าเดือนเดียวกันปีก่อน, vm:ค่าเดือนก่อน,
+            u:'ล้านบาท', yoyDirect:true ถ้าต้นทางรายงานเป็นอัตราเทียบปีก่อนอยู่แล้ว, src, label} */
+  ctx=ctx||{};
+  const n=x=>x==null?'—':(typeof f_num==='function'?f_num(x):String(x));
+  const sgn=x=>(x>0?'+':'')+x.toFixed(2);
+  const tipY=yoy==null?'':tipOf({t:'เทียบเดือนเดียวกันปีก่อน (YoY)'+(ctx.label?' · '+ctx.label:''),
+    d:ctx.now?(ctx.now+' เทียบกับ '+(ctx.py||'เดือนเดียวกันของปีก่อน')):'เทียบกับงวดเดียวกันของปีก่อน ตัดผลของฤดูกาลออกแล้ว',
+    calc:ctx.yoyDirect
+      ? 'ต้นทางรายงานเป็นร้อยละเทียบปีก่อนโดยตรง = '+sgn(yoy)+'% · ค่าบวกคือขยายตัว ค่าลบคือหดตัว'
+      : (ctx.vy!=null?'(ค่าเดือนนี้ − ค่าปีก่อน) ÷ ค่าปีก่อน × 100 = ('+n(ctx.v)+' − '+n(ctx.vy)+') ÷ '+n(ctx.vy)+' × 100 = '+sgn(yoy)+'%'
+                     :'(ค่างวดนี้ − ค่างวดเดียวกันปีก่อน) ÷ ค่างวดเดียวกันปีก่อน × 100 = '+sgn(yoy)+'%'),
+    src:ctx.src||'',when:ctx.now?'เดือน '+ctx.now:''});
+  const tipM=mom==null?'':tipOf({t:'เทียบเดือนก่อน (MoM)'+(ctx.label?' · '+ctx.label:''),
+    d:ctx.now?(ctx.now+' เทียบกับ '+(ctx.pm||'เดือนก่อนหน้า')):'เทียบกับเดือนก่อนหน้า',
+    calc:unit==='pt'
+      ? 'ผลต่างของอัตราเทียบปีก่อนระหว่างสองเดือน = '+(ctx.v!=null&&ctx.vm!=null?n(ctx.v)+'% − '+n(ctx.vm)+'% = ':'')+sgn(mom)+' จุด'+
+        ' · หน่วยเป็น "จุด" ไม่ใช่การเติบโตรายเดือน เพราะต้นทางรายงานเป็นอัตราเทียบปีก่อน ใช้ดูว่าแรงขึ้นหรืออ่อนลงจากเดือนก่อน'
+      : (ctx.vm!=null?'(ค่าเดือนนี้ − ค่าเดือนก่อน) ÷ ค่าเดือนก่อน × 100 = ('+n(ctx.v)+' − '+n(ctx.vm)+') ÷ '+n(ctx.vm)+' × 100 = '+sgn(mom)+'%'
+                     :'(ค่าเดือนนี้ − ค่าเดือนก่อน) ÷ ค่าเดือนก่อน × 100 = '+sgn(mom)+'%')+
+        (ctx.u&&ctx.v!=null&&ctx.vm!=null?' · เปลี่ยนแปลง '+(ctx.v-ctx.vm>0?'+':'')+n(ctx.v-ctx.vm)+' '+ctx.u:''),
+    src:ctx.src||'',when:ctx.now?'เดือน '+ctx.now:''});
+  const one=(v,lab,u,tip)=>{
     if(v==null)return `<span class="chip">— ${lab}</span>`;
     const c=v>.15?'up':v<-.15?'dn':'fl', a=v>.15?'▲':v<-.15?'▼':'▬';
-    return `<span class="chip ${c}">${a} ${v>0?'+':''}${v.toFixed(u==='pt'?1:1)}${u==='pt'?' จุด':'%'} <em>${lab}</em></span>`;
+    return `<span class="chip ${c}"${tip?` data-tip2="${tip}"`:''}>${a} ${v>0?'+':''}${v.toFixed(1)}${u==='pt'?' จุด':'%'} <em>${lab}</em></span>`;
   };
-  return `<span class="chip2">${one(yoy,'ปีก่อน','pct')}${one(mom,'เดือนก่อน',unit||'pct')}</span>`;
+  return `<span class="chip2">${one(yoy,'ปีก่อน','pct',tipY)}${one(mom,'เดือนก่อน',unit||'pct',tipM)}</span>`;
 }
 function spark(vals,color){
   const w=100,h=26,mn=Math.min(...vals),mx=Math.max(...vals),r=(mx-mn)||1;
@@ -297,6 +319,43 @@ function donutRing(items,opt){
     <text x="${CX}" y="${CY+14}" text-anchor="middle" class="dr-t2">${opt.centerMid||''}</text>
     <text x="${CX}" y="${CY+42}" text-anchor="middle" class="dr-t3">${opt.centerSub||''}</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" class="dring" xmlns="http://www.w3.org/2000/svg">${arcs}${c}</svg>`;
+}
+
+/* ─────────────── วงแหวนซ้อนหลายชั้น ───────────────
+   rings = [ [ {n,v,color,tip,key}, ... ], ... ] จากชั้นในสุดไปชั้นนอกสุด
+   แต่ละชั้นต้องรวมได้เท่ากันและเรียงลำดับสอดคล้องกัน ชิ้นของชั้นนอกจะอยู่ใต้ชิ้นแม่ในชั้นใน */
+function donutNested(rings,opt){
+  opt=opt||{};
+  const W=460,H=460,CX=230,CY=230;
+  const hole=opt.hole||88, gap=opt.gap||3, outer=opt.outer||214;
+  const band=(outer-hole-gap*(rings.length-1))/rings.length;
+  const pol=(r,a)=>[CX+r*Math.cos(a),CY+r*Math.sin(a)];
+  let svg='';
+  rings.forEach((ring,ri)=>{
+    const r0=hole+ri*(band+gap), r1=r0+band;
+    const tot=ring.reduce((s,x)=>s+(x.v>0?x.v:0),0)||1;
+    let ang=-Math.PI/2;
+    ring.forEach((it,i)=>{
+      if(!(it.v>0))return;
+      const sw=it.v/tot*Math.PI*2, pad=Math.min(.006,sw*.2);
+      const a0=ang+pad/2, a1=ang+sw-pad/2; ang+=sw;
+      const big=(a1-a0)>Math.PI?1:0;
+      const [x0,y0]=pol(r1,a0),[x1,y1]=pol(r1,a1),[u0,v0]=pol(r0,a1),[u1,v1]=pol(r0,a0);
+      const d=`M${x0.toFixed(2)},${y0.toFixed(2)} A${r1},${r1} 0 ${big} 1 ${x1.toFixed(2)},${y1.toFixed(2)}`+
+              ` L${u0.toFixed(2)},${v0.toFixed(2)} A${r0},${r0} 0 ${big} 0 ${u1.toFixed(2)},${v1.toFixed(2)} Z`;
+      svg+=`<path d="${d}" fill="${it.color}" class="dr-arc" data-ring="${ri}" data-key="${it.key||''}"`+
+        `${it.sec!=null?` data-sec="${it.sec}"`:''}${it.tip?` data-tip2="${it.tip}"`:''}></path>`;
+      /* ป้ายร้อยละบนชิ้นของชั้นใน ถ้าชิ้นใหญ่พอ */
+      if(opt.labelRings&&opt.labelRings.indexOf(ri)>=0&&sw>.35){
+        const mid=(a0+a1)/2, [lx,ly]=pol((r0+r1)/2,mid);
+        svg+=`<text x="${lx.toFixed(1)}" y="${(ly+5).toFixed(1)}" text-anchor="middle" class="dr-pc">${(it.v/tot*100).toFixed(1)}%</text>`;
+      }
+    });
+  });
+  const c=`<text x="${CX}" y="${CY-18}" text-anchor="middle" class="dr-t1">${opt.centerTop||''}</text>
+    <text x="${CX}" y="${CY+12}" text-anchor="middle" class="dr-t2s">${opt.centerMid||''}</text>
+    <text x="${CX}" y="${CY+34}" text-anchor="middle" class="dr-t3">${opt.centerSub||''}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="dring nested" xmlns="http://www.w3.org/2000/svg">${svg}${c}</svg>`;
 }
 
 /* ผสมสองสีตามสัดส่วน k · ใช้ไล่สีระหว่างสาขาในหมวดเดียวกันให้แยกออกจากกัน */
@@ -699,6 +758,14 @@ function killChart(id){
 }
 function mk(id,cfg){
   const el=document.getElementById(id);if(!el||typeof Chart==='undefined')return;
+  /* กราฟผสมแท่งกับเส้น · ให้เส้นวาดทับแท่งเสมอ ไม่โดนแท่งบัง
+     ใน Chart.js ชุดที่ order น้อยกว่าวาดทีหลังจึงอยู่บนสุด (ถ้าหน้าไหนกำหนด order เองจะไม่ไปยุ่ง) */
+  try{
+    const ds=(cfg.data&&cfg.data.datasets)||[];
+    const ty=ds.map(d=>d.type||cfg.type);
+    if(ty.indexOf('line')>=0&&ty.indexOf('bar')>=0)
+      ds.forEach((d,i)=>{ if(d.order==null)d.order=ty[i]==='line'?0:1; });
+  }catch(e){}
   const small=innerWidth<768;
   try{
     const o=cfg.options=cfg.options||{};
@@ -1261,7 +1328,7 @@ const AGENCY_FULL={
   popreg :{n:'ที่ทำการปกครองจังหวัดหนองบัวลำภู',dept:'กรมการปกครอง กระทรวงมหาดไทย',tel:'',doc:'ข้อมูลทะเบียนราษฎร จำนวนประชากร การเกิด การตาย และการย้ายถิ่น'},
   irrig  :{n:'โครงการชลประทานหนองบัวลำภู',dept:'สำนักงานชลประทานที่ 5 กรมชลประทาน กระทรวงเกษตรและสหกรณ์',tel:'',doc:'ข้อมูลแหล่งน้ำชลประทาน พื้นที่รับประโยชน์ และสถานีสูบน้ำด้วยไฟฟ้า'},
   house  :{n:'สำนักงานสถิติจังหวัดหนองบัวลำภู',dept:'สำนักงานสถิติแห่งชาติ กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม',tel:'0 4231 6736',doc:'โครงการสำรวจภาวะเศรษฐกิจและสังคมของครัวเรือน (Household Socio-Economic Survey)'},
-  gpp    :{n:'สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ',dept:'',tel:'',doc:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) แบบปริมาณลูกโซ่'}
+  gpp    :{n:'สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ',dept:'',tel:'',doc:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) ณ ราคาประจำปี และแบบปริมาณลูกโซ่'}
 };
 function srcBar(keys,extra){
   const list=(Array.isArray(keys)?keys:[keys]).map(k=>AGENCY_FULL[k]).filter(Boolean);
@@ -2036,7 +2103,8 @@ function fillIcons(root){
 })();
 /* แถบบอกความน่าเชื่อถือของตัวเลขรายเดือน — แสดงเฉพาะหน้าที่ใช้ชุดรายเดือน */
 /* หน้าภาพรวมและหน้า GPP ใช้ข้อมูลจริงจากแฟ้มของหน่วยงานแล้ว ไม่ต้องมีแถบเตือนข้อมูลจำลอง */
-const TRUST_PAGES={fiscal:['spend'],industry:['factory','power'],trade:['cpi','credit'],
+/* หน้าการคลังใช้เฉพาะข้อมูลจริงแล้ว (รายงานผลการเบิกจ่าย + ยอดที่คลังจังหวัดกรอก) จึงไม่อยู่ในรายการนี้ */
+const TRUST_PAGES={industry:['factory','power'],trade:['cpi','credit'],
   consume:['fuel','car'],area:null};
 function trustBar(){
   if(typeof PAGE==='undefined'||!TRUST_PAGES.hasOwnProperty(PAGE.id))return;
