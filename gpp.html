@@ -410,6 +410,28 @@ function renderDS(){
       </div></div>`;
 }
 
+/* กล่องที่มาของข้อมูล · เขียนให้คนทั่วไปอ่านเข้าใจ ไม่ใช้ศัพท์เทคนิคนำ */
+function gppSource(){
+  const NE=(typeof REAL!=='undefined'&&REAL.gpp&&REAL.gpp.ne)||{};
+  const last=(REAL.gpp&&REAL.gpp.rows||[]).slice(-1)[0]||{};
+  return `<div class="srcbar srcx">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5.5A2 2 0 0 1 6 3.5h9l5 5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14.5 3.6V9h5.2"/></svg>
+    <div>
+      <div class="sx-h"><b>ที่มา</b> สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ (สศช.)</div>
+      <div class="sx-t">ข้อมูลล่าสุดคือปี ${last.y||NE.year||''} · สศช. ประกาศปีละครั้ง ตัวเลขจึงช้ากว่าปีจริงประมาณ 2 ปี</div>
+      <div class="sx-g">
+        <div class="sx-c"><span class="sx-k">ตัวเลขมูลค่า</span>
+          <b>คิดตามราคาในปีนั้น</b>
+          <em>ใช้ดู ขนาดเศรษฐกิจ · รายได้ต่อหัว · โครงสร้างเศรษฐกิจ · อันดับเทียบจังหวัด</em>
+          <small>ชื่อทางการ: ณ ราคาประจำปี</small></div>
+        <div class="sx-c"><span class="sx-k">ตัวเลขการเติบโต</span>
+          <b>ตัดผลของราคาที่ขึ้นลงออกแล้ว</b>
+          <em>ใช้ดู เศรษฐกิจโตจริงเท่าไร ไม่ใช่โตเพราะของแพงขึ้น</em>
+          <small>ชื่อทางการ: แบบปริมาณลูกโซ่ ปีอ้างอิง 2545</small></div>
+      </div>
+      <div class="sx-f">แฟ้มผลิตภัณฑ์ภาคและจังหวัด ฉบับ พ.ศ. 2567 · จังหวัดหนองบัวลำภู รหัส 0118 · ทั้งสองแบบมาจากแฟ้มเดียวกัน</div>
+    </div></div>`;
+}
 let GPP_YEAR=null, STRUCT_VIEW='donut', NE_SCOPE='ne', NE_MET='gpp';
 
 /* ── เทียบจังหวัดในภาคตะวันออกเฉียงเหนือ และกลุ่มจังหวัดตอนบน 1 ── */
@@ -476,10 +498,7 @@ DS.init('gpp',function(){
   if(v&&!v.querySelector('.srcbar')){
     const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
     d.innerHTML='<header><span class="hdico icow img">'+icoImg('source',26)+'</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
-      srcBar(['gpp'],'แฟ้มผลิตภัณฑ์ภาคและจังหวัด ฉบับ พ.ศ. 2567 ของ สศช. · จังหวัดหนองบัวลำภู รหัส 0118 · ใช้ข้อมูล 2 แบบจากแฟ้มเดียวกัน '+
-        '<b>(1) ณ ราคาประจำปี</b> ใช้กับมูลค่า GPP รายได้ต่อหัว โครงสร้างเศรษฐกิจ และการเทียบจังหวัด · '+
-        '<b>(2) แบบปริมาณลูกโซ่ (ปีอ้างอิง 2545)</b> ใช้กับอัตราการขยายตัวที่แท้จริง เพราะตัดผลของราคาออกแล้ว · '+
-        'GPP ประกาศปีละครั้ง ล่าช้าจากปีข้อมูลประมาณ 2 ปี')+'</div>';
+      gppSource()+'</div>';
     v.appendChild(d);
   }
   renderDS();
