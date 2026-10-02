@@ -40,7 +40,9 @@
   <div id="macroPick"></div>
   <div class="grid g3 mb" id="homeKpi"></div>
   <div class="c mb" id="hiBox"><header><span class="hdico icow img" data-hdico="forecast"></span>
-    <h3>สรุปเดือนนี้</h3><span class="u" id="hiSub"></span></header>
+    <h3>สรุปเดือนนี้</h3><span class="u" id="hiSub"></span>
+    <span class="r"><a class="briefbtn" id="briefLink" href="brief.html" data-tip2="สรุปผู้บริหาร 1 หน้า A4|รวมตัวเลขสำคัญของเดือนที่เลือก จุดเด่น จุดเฝ้าระวัง ประเด็นที่ควรเตรียมคำตอบ และ QR ไว้ในแผ่นเดียว พิมพ์แจกในที่ประชุมหรือบันทึกเป็น PDF ได้">
+      <svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z"/></svg>สรุปผู้บริหาร 1 หน้า</a></span></header>
     <div class="b" id="hiBody"></div></div>
 
   <div class="vswitch big mb" id="macroSw">
@@ -163,9 +165,18 @@ function cxOf(cur,prv,x){
   return Object.assign({now:mLabel(cur),py:TH_M[cur.m-1]+' '+String(cur.y-1).slice(-2),
     pm:prv?mLabel(prv):'',src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู'},x||{});
 }
+/* อ่านสถานะจากลิงก์ครั้งแรกที่เปิดหน้า · ?m=2569-08&tab=sup */
+let URL_READ=false;
+function readUrlOnce(){
+  if(URL_READ)return; URL_READ=true;
+  const m=URLST.get('m'), tb=URLST.get('tab');
+  if(m){const [y,mm]=m.split('-').map(Number);const i=MAC.findIndex(r=>r.y===y&&r.m===mm);if(i>=0)MAC_I=i}
+  if(tb&&['all','sup','dem','fin','fis'].indexOf(tb)>=0)MACRO_VIEW=tb;
+}
 function renderOverview(){
   MAC=macRows();
   if(!MAC.length)return;
+  readUrlOnce();
   const cur=mLast(), prv=mPrev();
   const ov=cur.overall, ovP=prv?prv.overall:null;
   const dem=demIdx(cur), demP=demIdx(prv), sup=supIdx(cur), supP=supIdx(prv);
@@ -302,6 +313,7 @@ function renderOverview(){
 
   renderHighlight(cur,prv);
   renderMacro();
+  URLST.set({m:MAC_I==null?null:cur.y+'-'+String(cur.m).padStart(2,'0'),tab:MACRO_VIEW==='all'?null:MACRO_VIEW});
   renderForecast(cur);
 }
 
@@ -424,6 +436,7 @@ function renderForecast(cur){
 function renderHighlight(cur,prv){
   const box=document.getElementById('hiBody'); if(!box)return;
   const hs=document.getElementById('hiSub'); if(hs)hs.textContent=mLabel(cur)+' · เทียบปีก่อนและเทียบเดือนก่อน';
+  const bl=document.getElementById('briefLink'); if(bl)bl.href='brief.html?m='+cur.y+'-'+String(cur.m).padStart(2,'0');
   const ALL=[['overall','ภาพรวมเศรษฐกิจ'],['agri','ภาคเกษตรกรรม'],['indus','ภาคอุตสาหกรรม'],['serv','ภาคบริการ'],
              ['cons','การบริโภคเอกชน'],['invest','การลงทุนเอกชน'],['gov','การใช้จ่ายภาครัฐ']];
   const list=ALL.filter(x=>x[0]!=='overall').map(([k,n])=>({k,n,v:cur[k],d:prv?cur[k]-prv[k]:null}));
@@ -471,7 +484,8 @@ function renderMacro(){
     [...sw.children].forEach(b=>b.classList.toggle('on',b.dataset.mv===MACRO_VIEW));
     if(!sw.dataset.b){sw.dataset.b='1';
       sw.addEventListener('click',e=>{const b=e.target.closest('[data-mv]');if(!b)return;
-        MACRO_VIEW=b.dataset.mv;renderMacro();renderForecast(mLast())});}
+        MACRO_VIEW=b.dataset.mv;renderMacro();renderForecast(mLast());
+        URLST.set({tab:MACRO_VIEW==='all'?null:MACRO_VIEW})});}
   }
   const title={all:'ภาวะเศรษฐกิจรายเดือน',dem:'ด้านอุปสงค์ (Demand)',sup:'ด้านอุปทาน (Supply)',
     fin:'ด้านการเงินและการจ้างงาน',fis:'ภาคการคลัง'}[MACRO_VIEW];

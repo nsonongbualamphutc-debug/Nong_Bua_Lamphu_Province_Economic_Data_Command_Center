@@ -357,6 +357,10 @@ function renderGpp(){
       <td style="font-size:11px;color:var(--faint)">${r.note||''}</td></tr>`;}).join('')+'</tbody>';
   applyEditMode();
   renderNE();
+  /* ปุ่มของการ์ดเทียบจังหวัดให้ตรงกับสถานะที่เปิดมาจากลิงก์ */
+  document.querySelectorAll('#neScope [data-ns]').forEach(b=>b.classList.toggle('on',b.dataset.ns===NE_SCOPE));
+  document.querySelectorAll('#neMetric [data-nm]').forEach(b=>b.classList.toggle('on',b.dataset.nm===NE_MET));
+  saveGppUrl();
 }
 
 /* ══ เสถียรภาพการคลัง ══ */
@@ -433,6 +437,18 @@ function gppSource(){
     </div></div>`;
 }
 let GPP_YEAR=null, STRUCT_VIEW='donut', NE_SCOPE='ne', NE_MET='gpp';
+/* ลิงก์เปิดตรงจุด · ?year=2566&view=tree&ne=up1&met=pc */
+(function(){
+  const y=+URLST.get('year'); if(y)GPP_YEAR=y;
+  const v=URLST.get('view'); if(['donut','tree','table'].indexOf(v)>=0)STRUCT_VIEW=v;
+  const n=URLST.get('ne'); if(n==='up1')NE_SCOPE='up1';
+  const m=URLST.get('met'); if(['gpp','pc','grow','agri'].indexOf(m)>=0)NE_MET=m;
+})();
+function saveGppUrl(){
+  const L=(REAL.gpp&&REAL.gpp.rows||[]).slice(-1)[0];
+  URLST.set({year:L&&GPP_YEAR===L.y?null:GPP_YEAR,view:STRUCT_VIEW==='donut'?null:STRUCT_VIEW,
+    ne:NE_SCOPE==='ne'?null:NE_SCOPE,met:NE_MET==='gpp'?null:NE_MET});
+}
 
 /* ── เทียบจังหวัดในภาคตะวันออกเฉียงเหนือ และกลุ่มจังหวัดตอนบน 1 ── */
 const NE_DEF={
@@ -487,8 +503,8 @@ function renderNE(){
 }
 document.addEventListener('click',e=>{
   const s=e.target.closest('[data-ns]'), m=e.target.closest('[data-nm]');
-  if(s){NE_SCOPE=s.dataset.ns;document.querySelectorAll('#neScope [data-ns]').forEach(b=>b.classList.toggle('on',b===s));renderNE();}
-  else if(m){NE_MET=m.dataset.nm;document.querySelectorAll('#neMetric [data-nm]').forEach(b=>b.classList.toggle('on',b.dataset.nm===NE_MET));renderNE();}
+  if(s){NE_SCOPE=s.dataset.ns;document.querySelectorAll('#neScope [data-ns]').forEach(b=>b.classList.toggle('on',b===s));renderNE();saveGppUrl();}
+  else if(m){NE_MET=m.dataset.nm;document.querySelectorAll('#neMetric [data-nm]').forEach(b=>b.classList.toggle('on',b.dataset.nm===NE_MET));renderNE();saveGppUrl();}
 });
 DS.init('gpp',function(){
   renderGpp();

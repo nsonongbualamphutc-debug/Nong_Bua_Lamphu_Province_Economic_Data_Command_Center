@@ -1555,3 +1555,77 @@ button.kpi:hover{cursor:pointer}
 .srcx .sx-f{margin-top:10px;font-size:10.5px;color:var(--faint)}
 .srcx span{display:inline-block}
 @media(max-width:640px){.srcx .sx-g{grid-template-columns:1fr}}
+
+/* ══════════════ เครื่องมือการนำเสนอ ══════════════ */
+/* ปุ่มบันทึกเป็นภาพ · มุมขวาของหัวการ์ด แสดงชัดเมื่อชี้ที่การ์ด */
+.c>header{position:relative}
+.snapbtn{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;border:1px solid var(--line);
+  background:var(--card);color:var(--dim);cursor:pointer;opacity:.45;transition:.15s;flex:none;margin-left:6px}
+.snapbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7}
+.c:hover>header .snapbtn,.snapbtn:focus{opacity:1}
+.snapbtn:hover{color:var(--brand);border-color:var(--brand)}
+.kpi{position:relative}
+.snapbtn.mini{position:absolute;top:8px;right:8px;width:26px;height:26px;opacity:0;z-index:4;margin:0}
+.snapbtn.mini svg{width:14px;height:14px}
+.kpi:hover>.snapbtn.mini{opacity:.9}
+@media (hover:none){.snapbtn{opacity:.7}.snapbtn.mini{display:none}}
+.snapping .snapbtn{display:none}
+.snapfoot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;padding-top:9px;
+  border-top:1px solid var(--line);font-size:11px;color:var(--faint)}
+.snapfoot b{color:var(--brand);font-weight:600}
+@media print{.snapbtn{display:none!important}}
+
+/* แจ้งเตือนเล็กมุมล่าง */
+.dstoast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:9999;
+  background:#0b3c32;color:#fff;font-size:13px;padding:10px 18px;border-radius:12px;box-shadow:0 12px 30px -12px rgba(0,0,0,.5);
+  transition:.25s;max-width:90vw;text-align:center}
+.dstoast.on{opacity:1;transform:translate(-50%,0)}
+.dstoast.err{background:#8a2f20}.dstoast.wait{background:#5c7a70}
+
+/* โหมดนำเสนอทีละการ์ด · หรี่ทุกอย่าง เน้นการ์ดปัจจุบัน */
+body.tour .main,body.tour main{position:relative}
+body.tour::after{content:'';position:fixed;inset:0;background:rgba(5,25,20,.62);z-index:900;pointer-events:none;
+  animation:tourIn .25s ease}
+@keyframes tourIn{from{opacity:0}to{opacity:1}}
+body.tour .tour-cur{position:relative;z-index:950;box-shadow:0 0 0 3px var(--gold),0 30px 60px -25px rgba(0,0,0,.6)!important;
+  border-radius:var(--r);transition:box-shadow .2s}
+body.tour .hero.tour-cur{z-index:950}
+#tourHud{position:fixed;left:50%;bottom:18px;transform:translate(-50%,30px);opacity:0;pointer-events:none;z-index:1000;
+  display:flex;align-items:center;gap:8px;background:rgba(11,60,50,.94);color:#fff;border-radius:16px;padding:8px 10px;
+  box-shadow:0 18px 40px -16px rgba(0,0,0,.6);min-width:min(620px,94vw);backdrop-filter:blur(8px);transition:.25s}
+#tourHud.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#tourHud .th-b{width:40px;height:40px;border-radius:11px;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:24px;cursor:pointer}
+#tourHud .th-b:hover{background:rgba(255,255,255,.24)}
+#tourHud .th-m{flex:1;min-width:0}
+#tourHud .th-row{display:flex;gap:10px;align-items:baseline;white-space:nowrap;overflow:hidden}
+#tourHud .th-n{font-family:var(--fn);font-weight:700;color:#f0d79a;font-size:13px}
+#tourHud .th-t{font-size:13.5px;overflow:hidden;text-overflow:ellipsis}
+#tourHud .th-bar{height:3px;background:rgba(255,255,255,.18);border-radius:2px;margin-top:6px;overflow:hidden}
+#tourHud .th-bar i{display:block;height:100%;background:#f0d79a;transition:width .25s}
+#tourHud .th-x{border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;border-radius:10px;padding:8px 11px;
+  font:inherit;font-size:12px;cursor:pointer}
+#tourHud .th-x:hover{background:rgba(255,255,255,.15)}
+@media(max-width:640px){#tourHud .th-x[data-tour="fs"]{display:none}#tourHud{bottom:10px}}
+
+/* QR ให้ผู้ฟังสแกน */
+#qrBox{position:fixed;right:22px;bottom:90px;z-index:1001;background:#fff;border-radius:18px;padding:16px 16px 12px;
+  box-shadow:0 24px 50px -18px rgba(0,0,0,.55);display:none;flex-direction:column;align-items:center;gap:4px;width:230px;text-align:center}
+#qrBox.on{display:flex;animation:tourIn .2s ease}
+#qrBox .qr-i svg{width:190px;height:190px;display:block}
+#qrBox b{font-size:13px;color:#0b3c32;margin-top:4px}
+#qrBox span{font-size:11px;color:#5c7a70}
+@media print{#tourHud,#qrBox,.dstoast{display:none!important}}
+
+.briefbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;font-size:12px;font-weight:600;
+  background:var(--brand);color:#fff;text-decoration:none;white-space:nowrap;box-shadow:0 4px 12px -6px var(--brand)}
+.briefbtn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8}
+.briefbtn:hover{filter:brightness(1.08)}
+@media print{.briefbtn{display:none}}
+
+.c>.snapfoot{margin:6px 0 0;padding:9px 18px 12px}
+.kpi>.snapfoot{margin-top:8px;padding-top:7px;font-size:10px}
+
+/* ระหว่างนำเสนอ ซ่อนกล่องแจ้งสถานะและ tooltip ไม่ให้บังการ์ดหรือแถบควบคุม */
+body.tour #bootErr,body.tour .bootErr,body.tour #bootBox{display:none!important}
+body.tour::after{background:rgba(4,22,18,.74)}
+body.tour .topbar,body.tour header.top{position:relative;z-index:800}

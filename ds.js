@@ -1833,6 +1833,8 @@ function buildShell(active){
     <button class="tb" id="btnEdit" data-tip2="โหมดแก้ไขตาราง|คลิกที่ตัวเลขในตารางเพื่อแก้ไขได้ทันที บันทึกลงเครื่องนี้"><svg viewBox="0 0 24 24"><path d="M4 20h4.5L19 9.5a2.1 2.1 0 0 0-3-3L5.5 17z"/><path d="M14.5 6.5l3 3"/></svg></button>
     <button class="tb" id="btnTheme"><svg viewBox="0 0 24 24"><path d="M12 3v2M12 19v2M5 12H3M21 12h-2M6.3 6.3 4.9 4.9M19.1 19.1l-1.4-1.4M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/><circle cx="12" cy="12" r="3.6"/></svg></button>
     <button class="tb kioskbtn" id="btnKiosk"><svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>จอนำเสนอ</span></button>
+    <button class="tb" id="btnTour" data-tip2="นำเสนอทีละการ์ด|เดินทีละการ์ดแบบสไลด์ เต็มจอ · ใช้ลูกศรซ้ายขวาหรือรีโมตพรีเซนต์ · กด Q เปิด QR ให้ผู้ฟังสแกน · Esc ออก"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg><span>นำเสนอ</span></button>
+    <button class="tb" id="btnShare" data-tip2="คัดลอกลิงก์หน้านี้|ลิงก์จำหน้า ปี เดือน และแท็บที่กำลังดูอยู่ ส่งใน LINE แล้วผู้รับจะเปิดมาตรงจุดเดียวกัน"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
     <button class="tb" id="btnPrint"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z"/></svg></button>
     <a class="tb" href="input.html"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></svg><span>กรอกข้อมูล</span></a>`;
   const side=document.getElementById('sidebar');
@@ -2173,3 +2175,218 @@ document.addEventListener('click',function(e){
   const n=NAVI.find(x=>x.id===g.dataset.go);
   if(n)location.href=n.file;
 });
+
+
+/* ════════════════════════════════════════════════════════════════════
+   เครื่องมือการนำเสนอ
+   1) ลิงก์เปิดตรงจุด   2) บันทึกการ์ดเป็นภาพ   3) นำเสนอทีละการ์ด   4) QR
+   ════════════════════════════════════════════════════════════════════ */
+const LIB={
+  h2c:'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+  qr :'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js'
+};
+function loadLib(url,glob){
+  if(window[glob])return Promise.resolve(window[glob]);
+  return new Promise((res,rej)=>{
+    const s=document.createElement('script'); s.src=url; s.crossOrigin='anonymous';
+    s.onload=()=>window[glob]?res(window[glob]):rej(new Error('โหลดไลบรารีไม่สำเร็จ'));
+    s.onerror=()=>rej(new Error('โหลดไลบรารีไม่สำเร็จ ตรวจการเชื่อมต่ออินเทอร์เน็ต'));
+    document.head.appendChild(s);
+  });
+}
+function toast(msg,kind){
+  let t=document.getElementById('dsToast');
+  if(!t){t=document.createElement('div');t.id='dsToast';document.body.appendChild(t)}
+  t.className='dstoast '+(kind||'ok'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('on'),2600);
+}
+
+/* ── 1) ลิงก์เปิดตรงจุด ── หน้าแต่ละหน้าเก็บสถานะ (ปี เดือน แท็บ) ลงในลิงก์ และอ่านกลับตอนเปิด */
+const URLST={
+  get(k){try{return new URLSearchParams(location.search).get(k)}catch(e){return null}},
+  set(o){
+    try{
+      const u=new URL(location.href);
+      Object.keys(o).forEach(k=>{const v=o[k]; if(v==null||v==='')u.searchParams.delete(k); else u.searchParams.set(k,String(v))});
+      history.replaceState(null,'',u.toString());
+    }catch(e){}
+  }
+};
+async function copyLink(){
+  const url=location.href;
+  try{ await navigator.clipboard.writeText(url); toast('คัดลอกลิงก์แล้ว · เปิดแล้วจะมาตรงหน้าและงวดที่กำลังดู'); }
+  catch(e){ window.prompt('คัดลอกลิงก์นี้',url); }
+}
+
+/* ── 2) บันทึกการ์ดเป็นภาพ ── ภาพมีหัวเรื่อง ที่มา และวันที่ข้อมูลติดมาด้วย เอาไปใส่สไลด์หรือส่งต่อได้ทันที */
+function cardTitle(el){
+  if(el.classList&&el.classList.contains('grid')){
+    const n=[...el.querySelectorAll(':scope > .kpi .h span:last-child')].map(x=>x.textContent.trim());
+    return 'ตัวเลขสำคัญ · '+n.slice(0,3).join(' · ')+(n.length>3?' และอีก '+(n.length-3)+' รายการ':'');
+  }
+  const h=el.querySelector('header h3, .h span:last-child, .lb, h2');
+  return h?h.textContent.replace(/\s+/g,' ').trim():'การ์ดข้อมูล';
+}
+async function snapCard(el){
+  if(!el)return;
+  try{
+    toast('กำลังสร้างภาพ…','wait');
+    const h2c=await loadLib(LIB.h2c,'html2canvas');
+    const foot=document.createElement('div');
+    foot.className='snapfoot';
+    foot.innerHTML=`<b>ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</b>
+      <span>ข้อมูล ณ ${CFG.asof} · ${document.title.split('·')[0].trim()} · พิมพ์ ${new Date().toLocaleDateString('th-TH',{dateStyle:'medium'})}</span>`;
+    el.classList.add('snapping'); el.appendChild(foot);
+    const bg=getComputedStyle(el).backgroundColor;
+    const cv=await h2c(el,{scale:2,backgroundColor:(bg&&bg!=='rgba(0, 0, 0, 0)')?bg:'#ffffff',useCORS:true,logging:false,
+      /* สำเนาที่ใช้วาดภาพจะเล่นแอนิเมชันเปิดการ์ดใหม่ตั้งแต่ต้น (โปร่งใส) ภาพเลยออกมาขาวทั้งแผ่น จึงปิดแอนิเมชันในสำเนา */
+      onclone:d=>{const st=d.createElement('style');
+        st.textContent='*,*::before,*::after{animation:none!important;transition:none!important}'+
+          '.c,.kpi,.grid,.hero,.reveal,.in,[data-reveal]{opacity:1!important;transform:none!important;filter:none!important}';
+        d.head.appendChild(st);},
+      ignoreElements:n=>n.classList&&(n.classList.contains('snapbtn')||n.classList.contains('segs')||n.classList.contains('vswitch')||n.classList.contains('briefbtn'))});
+    foot.remove(); el.classList.remove('snapping');
+    let url;
+    try{ url=cv.toDataURL('image/png'); }
+    catch(te){
+      /* ภาพพื้นหลังจากโดเมนอื่นทำให้บันทึกไม่ได้ · ลองใหม่โดยตัดภาพพื้นหลังตกแต่งออก ตัวเลขและกราฟยังครบ */
+      el.classList.add('snapping'); el.appendChild(foot);
+      const cv2=await h2c(el,{scale:2,backgroundColor:'#ffffff',logging:false,
+        ignoreElements:n=>n.classList&&(n.classList.contains('snapbtn')||n.classList.contains('segs')||n.classList.contains('vswitch')||n.classList.contains('briefbtn')||n.classList.contains('kpibg')||n.tagName==='IMG'),
+        onclone:d=>{const st=d.createElement('style');st.textContent='*{animation:none!important;transition:none!important;background-image:none!important}.c,.kpi,.grid,.hero{opacity:1!important;transform:none!important}';d.head.appendChild(st)}});
+      foot.remove(); el.classList.remove('snapping');
+      url=cv2.toDataURL('image/png');
+    }
+    const name=(cardTitle(el)+' '+new Date().toISOString().slice(0,10)).replace(/[\\/:*?"<>|]+/g,' ').slice(0,80)+'.png';
+    const a=document.createElement('a'); a.download=name; a.href=url; a.click();
+    toast('บันทึกภาพแล้ว · '+name);
+  }catch(e){
+    document.querySelectorAll('.snapfoot').forEach(x=>x.remove());
+    document.querySelectorAll('.snapping').forEach(x=>x.classList.remove('snapping'));
+    toast('บันทึกภาพไม่สำเร็จ: '+e.message,'err');
+  }
+}
+const SNAP_ICO='<svg viewBox="0 0 24 24"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.6"/></svg>';
+function decorateSnap(){
+  document.querySelectorAll('.view.on .c>header, main .c>header').forEach(h=>{
+    if(h.querySelector('.snapbtn'))return;
+    const b=document.createElement('button'); b.className='snapbtn'; b.type='button';
+    b.setAttribute('aria-label','บันทึกการ์ดนี้เป็นภาพ');
+    b.dataset.tip2='บันทึกเป็นภาพ|ได้ไฟล์ PNG คมชัด มีหัวเรื่อง ที่มา และวันที่ข้อมูลติดมา เอาไปใส่สไลด์หรือส่ง LINE ได้ทันที';
+    b.innerHTML=SNAP_ICO; h.appendChild(b);
+  });
+  document.querySelectorAll('.kpi').forEach(k=>{
+    if(k.querySelector(':scope > .snapbtn'))return;
+    const b=document.createElement('button'); b.className='snapbtn mini'; b.type='button';
+    b.setAttribute('aria-label','บันทึกการ์ดนี้เป็นภาพ'); b.dataset.tip2='บันทึกการ์ดนี้เป็นภาพ';
+    b.innerHTML=SNAP_ICO; k.appendChild(b);
+  });
+}
+(function(){
+  let t=null;
+  const run=()=>{t=null;try{decorateSnap()}catch(e){}};
+  const start=()=>{
+    run();
+    new MutationObserver(()=>{if(!t)t=setTimeout(run,250)}).observe(document.body,{childList:true,subtree:true});
+  };
+  if(document.body)start(); else document.addEventListener('DOMContentLoaded',start);
+})();
+
+/* ── 3) นำเสนอทีละการ์ด ── หรี่ส่วนอื่น เน้นการ์ดปัจจุบัน เลื่อนมากลางจอ ใช้ลูกศรหรือรีโมตพรีเซนต์ */
+const TOUR={on:false,i:0,list:[]};
+function tourItems(){
+  const root=document.querySelector('.view.on')||document.querySelector('main')||document.body;
+  const pick=[...root.querySelectorAll('.hero, .grid, .c, .pgbanner + .ph, .slicer')].filter(el=>{
+    if(!el.offsetParent&&getComputedStyle(el).position!=='fixed')return false;
+    if(el.classList.contains('grid')&&!el.querySelector(':scope > .kpi'))return false;   /* เอาเฉพาะแถวการ์ดตัวเลข */
+    if(el.classList.contains('slicer'))return false;
+    const r=el.getBoundingClientRect(); if(r.height<40)return false;
+    return true;
+  });
+  /* ไม่เอาการ์ดที่ซ้อนอยู่ในตัวที่เลือกแล้ว */
+  return pick.filter(el=>!pick.some(p=>p!==el&&p.contains(el)));
+}
+function tourShow(){
+  document.querySelectorAll('.tour-cur').forEach(x=>x.classList.remove('tour-cur'));
+  const el=TOUR.list[TOUR.i]; if(!el)return;
+  el.classList.add('tour-cur');
+  el.scrollIntoView({behavior:'smooth',block:el.getBoundingClientRect().height>innerHeight*.8?'start':'center'});
+  const hud=document.getElementById('tourHud');
+  if(hud){
+    hud.querySelector('.th-n').textContent=(TOUR.i+1)+' / '+TOUR.list.length;
+    hud.querySelector('.th-t').textContent=cardTitle(el);
+    hud.querySelector('.th-bar i').style.width=((TOUR.i+1)/TOUR.list.length*100)+'%';
+  }
+  URLST.set({card:TOUR.i+1});
+}
+function tourStart(){
+  TOUR.list=tourItems(); if(!TOUR.list.length){toast('หน้านี้ไม่มีการ์ดให้นำเสนอ','err');return}
+  TOUR.on=true; const c=+URLST.get('card'); TOUR.i=(c>0&&c<=TOUR.list.length)?c-1:0;
+  document.body.classList.add('tour');
+  let hud=document.getElementById('tourHud');
+  if(!hud){
+    hud=document.createElement('div'); hud.id='tourHud';
+    hud.innerHTML=`<button class="th-b" data-tour="-1" aria-label="ก่อนหน้า">‹</button>
+      <div class="th-m"><div class="th-row"><span class="th-n"></span><span class="th-t"></span></div>
+        <div class="th-bar"><i></i></div></div>
+      <button class="th-b" data-tour="1" aria-label="ถัดไป">›</button>
+      <button class="th-x" data-tour="qr">QR</button>
+      <button class="th-x" data-tour="fs">เต็มจอ</button>
+      <button class="th-x" data-tour="end">ออก</button>`;
+    document.body.appendChild(hud);
+  }
+  hud.classList.add('on');
+  tourShow();
+}
+function tourEnd(){
+  TOUR.on=false; document.body.classList.remove('tour');
+  document.querySelectorAll('.tour-cur').forEach(x=>x.classList.remove('tour-cur'));
+  const hud=document.getElementById('tourHud'); if(hud)hud.classList.remove('on');
+  qrHide(); URLST.set({card:null});
+  if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+}
+function tourGo(d){ if(!TOUR.on)return; TOUR.i=Math.max(0,Math.min(TOUR.list.length-1,TOUR.i+d)); tourShow(); }
+
+/* ── 4) QR ให้ผู้ฟังสแกนเปิดหน้าเดียวกันบนมือถือ ── */
+async function qrSvg(text,cell){
+  const q=await loadLib(LIB.qr,'qrcode');
+  const qr=q(0,'M'); qr.addData(text); qr.make();
+  return qr.createSvgTag({cellSize:cell||5,margin:2,scalable:true});
+}
+async function qrShow(){
+  let box=document.getElementById('qrBox');
+  if(box&&box.classList.contains('on')){qrHide();return}
+  if(!box){box=document.createElement('div');box.id='qrBox';document.body.appendChild(box)}
+  const u=new URL(location.href); u.searchParams.delete('card');
+  try{
+    box.innerHTML=`<div class="qr-i">${await qrSvg(u.toString(),6)}</div>
+      <b>สแกนเพื่อเปิดหน้านี้บนมือถือ</b><span>${document.title.split('·')[0].trim()}</span>`;
+    box.classList.add('on');
+  }catch(e){toast('สร้าง QR ไม่สำเร็จ: '+e.message,'err')}
+}
+function qrHide(){const b=document.getElementById('qrBox'); if(b)b.classList.remove('on')}
+
+document.addEventListener('click',e=>{
+  const sb=e.target.closest('.snapbtn');
+  if(sb){e.preventDefault();e.stopPropagation();snapCard(sb.classList.contains('mini')?sb.closest('.kpi'):sb.closest('.c'));return}
+  if(e.target.closest('#btnShare')){copyLink();return}
+  if(e.target.closest('#btnTour')){TOUR.on?tourEnd():tourStart();return}
+  const t=e.target.closest('[data-tour]');
+  if(t){const v=t.dataset.tour;
+    if(v==='end')tourEnd(); else if(v==='qr')qrShow();
+    else if(v==='fs'){document.fullscreenElement?document.exitFullscreen().catch(()=>{}):document.documentElement.requestFullscreen().catch(()=>{})}
+    else tourGo(+v);
+  }
+},true);
+document.addEventListener('keydown',e=>{
+  if(!TOUR.on)return;
+  if(/INPUT|SELECT|TEXTAREA/.test((e.target.tagName||'')))return;
+  const k=e.key;
+  if(k==='ArrowRight'||k==='PageDown'||k===' '||k==='ArrowDown'){e.preventDefault();tourGo(1)}
+  else if(k==='ArrowLeft'||k==='PageUp'||k==='ArrowUp'){e.preventDefault();tourGo(-1)}
+  else if(k==='Escape'){tourEnd()}
+  else if(k==='q'||k==='Q'||k==='ๆ'){qrShow()}
+  else if(k==='f'||k==='F'||k==='ด'){document.fullscreenElement?document.exitFullscreen().catch(()=>{}):document.documentElement.requestFullscreen().catch(()=>{})}
+});
+/* เปิดลิงก์ที่มี ?card= จะเข้าโหมดนำเสนอที่การ์ดนั้นทันที */
+window.addEventListener('load',()=>{ if(URLST.get('card'))setTimeout(tourStart,900); });

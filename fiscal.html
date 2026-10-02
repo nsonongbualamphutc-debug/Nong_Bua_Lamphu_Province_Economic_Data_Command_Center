@@ -191,12 +191,17 @@ function fiscalPoints(){
   return Object.values(P).filter(p=>p.inv!=null||p.ope!=null)
     .map(p=>Object.assign(p,{fy:fyOfM(p),o:fyOrd(p.m)})).sort((a,b)=>(a.y-b.y)||(a.m-b.m));
 }
+let FP_READ=false;
 function drawFiscalTrend(){
   const PTS=fiscalPoints();
+  /* ลิงก์เปิดตรงงวด · ?fp=2569-09 */
+  if(!FP_READ){FP_READ=true;const v=URLST.get('fp');
+    if(v){const [y,m]=v.split('-').map(Number);const k=PTS.findIndex(p=>p.y===y&&p.m===m);if(k>=0)FY_I=k}}
   const box=document.getElementById('fiscalSlc'), pick=document.getElementById('fiscalPick');
   if(!PTS.length){ if(pick)pick.innerHTML='<div class="svc-empty">ยังไม่มีข้อมูลการเบิกจ่าย</div>'; return; }
   if(FY_I==null||FY_I<0||FY_I>=PTS.length)FY_I=PTS.length-1;
   const i=FY_I, M=PTS[i], FY=M.fy, nth=M.o+1;
+  URLST.set({fp:i===PTS.length-1?null:M.y+'-'+String(M.m).padStart(2,'0')});
   const prevFY=PTS.find(p=>p.fy===FY-1&&p.m===M.m)||null;      /* จุดเดียวกันของปีงบก่อน */
   const prevM=PTS.find(p=>p.fy===FY&&p.o===M.o-1)||null;       /* เดือนก่อนหน้าในปีงบเดียวกัน */
 
