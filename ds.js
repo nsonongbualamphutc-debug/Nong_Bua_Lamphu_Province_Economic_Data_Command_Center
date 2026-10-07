@@ -2391,3 +2391,82 @@ document.addEventListener('keydown',e=>{
 });
 /* เปิดลิงก์ที่มี ?card= จะเข้าโหมดนำเสนอที่การ์ดนั้นทันที */
 window.addEventListener('load',()=>{ if(URLST.get('card'))setTimeout(tourStart,900); });
+
+
+/* ════════════════════════════════════════════════════════════════════
+   ระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู (gdcatalog · CKAN Datastore API)
+   หน่วยงานปรับปรุงข้อมูลที่ระบบบัญชีข้อมูลจังหวัดที่เดียว แดชบอร์ดดึงไปใช้เอง
+   ════════════════════════════════════════════════════════════════════ */
+const GDC={
+  base:'https://nongbualamphu.gdcatalog.go.th',
+  api :'https://nongbualamphu.gdcatalog.go.th/api/3/action/datastore_search',
+  ttl :30*60*1000,                      /* เก็บผลไว้ในเครื่อง 30 นาที ลดการเรียกซ้ำ */
+  /* ทะเบียนชุดข้อมูลที่ย้ายมาใช้ API
+     state: 'api' = ต่อเข้าแดชบอร์ดแล้ว · 'map' = ลงทะเบียนแล้ว รอจับคู่คอลัมน์ · 'file' = ยังใช้ไฟล์ข้อมูลเดิม */
+  RES:[
+    {id:'b58050df-6cd7-461e-be9b-f1108d6a152c',page:'fiscal',agency:'spend',n:'เงินกันไว้เบิกเหลื่อมปีงบประมาณ',state:'map'},
+    {id:'2fb4cd9f-efcf-4719-b35b-34a20c89ab67',page:'fiscal',agency:'spend',n:'คงเหลือเงินกันไว้เบิกเหลื่อมปี',state:'map'},
+    {id:'b0e1424c-409d-4200-be75-a6a026851bbd',page:'fiscal',agency:'spend',n:'การเบิกจ่ายงบประมาณ',state:'map'},
+    {id:'3bafb802-ddb5-4534-a391-d399c91b3588',page:'fiscal',agency:'spend',n:'การเบิกจ่ายเงินกันไว้เบิกเหลื่อมปี',state:'map'},
+    {id:'e180a38e-e31f-4338-967e-91ebb42424c9',page:'fiscal',agency:'spend',n:'ความต้องการ (เพิ่ม) การเบิกจ่ายงบประมาณ',state:'map'},
+    {id:'e68752b1-8f4b-4b28-92a6-0a78e849575a',page:'fiscal',agency:'spend',n:'การก่อหนี้ผูกพันของการเบิกจ่ายงบประมาณ',state:'map'},
+    {id:'07053215-af15-4271-9539-88d142a63dc8',page:'fiscal',agency:'spend',n:'ผลการเบิกจ่ายงบประมาณ',state:'map'},
+    {id:'21962d43-ccb4-48e6-a760-c815212f271e',page:'fiscal',agency:'spend',n:'ผลการใช้จ่ายงบประมาณ',state:'map'},
+    {id:'8206aee0-36e0-45de-b5cf-6bb850a6ae3c',page:'fiscal',agency:'spend',n:'ลำดับผลการเบิกจ่ายงบประมาณ',state:'map'}
+  ],
+  _mem:{},
+  /* เรียก API แบบ JSONP (CKAN รองรับพารามิเตอร์ callback) จึงข้ามโดเมนได้โดยไม่ติด CORS */
+  _jsonp(params){
+    return new Promise((res,rej)=>{
+      const cb='gdc_'+Math.random().toString(36).slice(2);
+      const q=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
+      const s=document.createElement('script'); let done=false;
+      const end=()=>{done=true;try{delete window[cb]}catch(e){window[cb]=undefined}s.remove();clearTimeout(t)};
+      const t=setTimeout(()=>{if(!done){end();rej(new Error('หมดเวลารอระบบบัญชีข้อมูลจังหวัด'))}},15000);
+      window[cb]=d=>{end(); (d&&d.success)?res(d.result):rej(new Error((d&&d.error&&(d.error.message||d.error.__type))||'ระบบตอบกลับไม่สำเร็จ'))};
+      s.onerror=()=>{end();rej(new Error('เชื่อมต่อระบบบัญชีข้อมูลจังหวัดไม่ได้'))};
+      s.src=GDC.api+'?'+q+'&callback='+cb;
+      document.head.appendChild(s);
+    });
+  },
+  /* ดึงทุกแถวของชุดข้อมูล · แบ่งหน้าครั้งละ 1,000 แถว */
+  async all(id,opt){
+    opt=opt||{};
+    const key='gdc:'+id;
+    if(!opt.fresh){
+      const m=GDC._mem[id]; if(m&&Date.now()-m.t<GDC.ttl)return m.v;
+      try{const c=JSON.parse(sessionStorage.getItem(key)||'null'); if(c&&Date.now()-c.t<GDC.ttl){GDC._mem[id]=c;return c.v}}catch(e){}
+    }
+    let off=0, rec=[], fields=null, total=0;
+    do{
+      const r=await GDC._jsonp({resource_id:id,limit:1000,offset:off});
+      fields=fields||r.fields; total=r.total||0; rec=rec.concat(r.records||[]); off+=1000;
+    }while(rec.length<total&&off<20000);
+    const v={id,fields:(fields||[]).filter(f=>f.id!=='_id'),records:rec,total,at:new Date().toISOString()};
+    const c={t:Date.now(),v}; GDC._mem[id]=c;
+    try{sessionStorage.setItem(key,JSON.stringify(c))}catch(e){}
+    return v;
+  },
+  url(id){return GDC.base+'/dataset/?res_id='+id},
+  byPage(p){return GDC.RES.filter(r=>r.page===p)},
+  /* สถานะของหน้า · ใช้ติดป้ายบอกผู้ดูว่าตัวเลขมาจาก API หรือไฟล์เดิม */
+  pageState(p){
+    const L=GDC.byPage(p); if(!L.length)return 'file';
+    if(L.every(r=>r.state==='api'))return 'api';
+    if(L.some(r=>r.state==='api'))return 'part';
+    return 'map';
+  }
+};
+/* ป้ายแหล่งข้อมูลของหน้า · กดแล้วไปหน้าสถานะ API */
+function gdcBadge(page){
+  const st=GDC.pageState(page);
+  const T={api:['api','ดึงจากระบบบัญชีข้อมูลจังหวัด (API)'],part:['part','ดึงจาก API บางส่วน'],
+           map:['map','กำลังย้ายไปใช้ API'],file:['file','ใช้ไฟล์ข้อมูล']}[st];
+  const n=GDC.byPage(page);
+  return `<a class="gdcb ${T[0]}" href="apistatus.html${page?'#'+page:''}" data-tip2="${tipOf({t:'แหล่งข้อมูลของหน้านี้',
+    d:st==='api'?'ตัวเลขดึงตรงจากระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู หน่วยงานปรับปรุงที่นั่นแล้วแดชบอร์ดเปลี่ยนตาม'
+      :st==='part'?'บางชุดดึงจาก API แล้ว บางชุดยังใช้ไฟล์ข้อมูลเดิม'
+      :st==='map'?'ลงทะเบียนชุดข้อมูล '+n.length+' ชุดกับระบบบัญชีข้อมูลจังหวัดแล้ว กำลังจับคู่คอลัมน์ ระหว่างนี้ยังแสดงตัวเลขจากไฟล์เดิม'
+      :'ยังไม่ได้ย้ายไปใช้ระบบบัญชีข้อมูลจังหวัด',
+    calc:'กดเพื่อดูสถานะการเชื่อมต่อรายชุดข้อมูล',src:'',when:''})}"><i></i>${T[1]}</a>`;
+}

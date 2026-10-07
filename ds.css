@@ -1649,3 +1649,13 @@ body.tour .topbar,body.tour header.top{position:relative;z-index:800}
 .kpi .kv2 .kr b{grid-area:val;text-align:left;font-size:20px;overflow:visible;text-overflow:clip}
 .kpi .kv2 .kr small{grid-area:unit;align-self:end;padding-bottom:3px}
 @media (max-width:1400px){.kpi .kv2 .kr b{font-size:18px}}
+
+/* ป้ายแหล่งข้อมูลของหน้า · API / กำลังย้าย / ไฟล์ */
+.gdcb{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;border-radius:999px;padding:3px 11px;
+  text-decoration:none;border:1px solid;margin-left:6px;white-space:nowrap}
+.gdcb i{width:8px;height:8px;border-radius:50%;background:currentColor}
+.gdcb.api{color:#0b6b4c;background:#e2f3ea;border-color:#bfe3d0}
+.gdcb.part,.gdcb.map{color:#8a6714;background:#fdf3e0;border-color:#ecd8a8}
+.gdcb.map i{animation:gdcp 1.4s infinite}
+.gdcb.file{color:#6b7c76;background:#eef1f0;border-color:#dde5e1}
+@keyframes gdcp{50%{opacity:.3}}
