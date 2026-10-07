@@ -1629,3 +1629,23 @@ body.tour .hero.tour-cur{z-index:950}
 body.tour #bootErr,body.tour .bootErr,body.tour #bootBox{display:none!important}
 body.tour::after{background:rgba(4,22,18,.74)}
 body.tour .topbar,body.tour header.top{position:relative;z-index:800}
+
+/* ══ กรอบรวมการ์ดตัวเลขแถวบนของหน้าเกษตร ══ */
+.kpibox{background:linear-gradient(180deg,var(--card2),transparent);border:1px solid var(--line);border-radius:20px;padding:12px}
+/* การ์ดตัวเลขแบบ 2 รายการ (พื้นที่ปลูก / ผลผลิตรวม) */
+.kpi .kv2{display:flex;flex-direction:column;gap:5px;margin-top:8px;position:relative;z-index:2}
+.kpi .kv2 .kr{display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:8px;
+  padding:5px 10px;border-radius:10px;background:color-mix(in srgb,var(--card) 82%,transparent);backdrop-filter:blur(2px)}
+.kpi .kv2 .kr span{font-size:12px;font-weight:600;color:var(--dim);white-space:nowrap}
+.kpi .kv2 .kr b{font-family:var(--fn);font-size:19px;font-weight:700;color:var(--ink);text-align:right;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.4px}
+.kpi .kv2 .kr small{font-size:11px;color:var(--faint);white-space:nowrap}
+@media (min-width:768px) and (max-width:1150px){.kpibox .grid.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:767px){.kpibox{padding:8px}.kpi .kv2 .kr b{font-size:17px}}
+
+/* ป้ายอยู่บรรทัดบน ตัวเลขเต็มความกว้างบรรทัดล่าง ตัวเลขยาวอย่าง 2,579,433,666.27 จะไม่ถูกตัด */
+.kpi .kv2 .kr{grid-template-columns:1fr auto;grid-template-areas:"lab lab" "val unit";gap:0 6px;padding:5px 11px 6px}
+.kpi .kv2 .kr span{grid-area:lab;font-size:11.5px}
+.kpi .kv2 .kr b{grid-area:val;text-align:left;font-size:20px;overflow:visible;text-overflow:clip}
+.kpi .kv2 .kr small{grid-area:unit;align-self:end;padding-bottom:3px}
+@media (max-width:1400px){.kpi .kv2 .kr b{font-size:18px}}

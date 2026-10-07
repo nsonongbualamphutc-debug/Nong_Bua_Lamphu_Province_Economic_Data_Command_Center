@@ -655,7 +655,8 @@ function kpiCard(o){
     ${bg}
     <div class="h">${o.img?`<span class="ic icow img" style="background:${o.color}14">${icoImg(o.img,26)}<svg viewBox="0 0 24 24" style="stroke:${o.color}">${IC[o.icon]||''}</svg></span>`
       :o.icon?`<span class="ic" style="background:${o.color}1e"><svg viewBox="0 0 24 24" style="stroke:${o.color}">${IC[o.icon]}</svg></span>`:''}<span>${o.label}</span></div>
-    <div class="v n">${o.value}${o.unit?`<small>${o.unit}</small>`:''}</div>
+    ${o.rows?`<div class="kv2">${o.rows.map(r=>`<div class="kr"><span>${r[0]}</span><b class="n">${r[1]}</b><small>${r[2]||''}</small></div>`).join('')}</div>`
+      :`<div class="v n">${o.value}${o.unit?`<small>${o.unit}</small>`:''}</div>`}
     ${o.spark?`<div class="spark">${o.spark}</div>`:''}
     <div class="f">${sc}${o.chip||''}${o.sub?`<span class="sub">${o.sub}</span>`:''}</div></${T}>`}
 function gaugeSvg(p,color){

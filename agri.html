@@ -23,7 +23,8 @@
     <span class="bigico icow img" id="agriBigIco"></span><span><h2>ภาคเกษตรและฐานรากเศรษฐกิจ</h2>
     <p>ครัวเรือนเกษตรกรกว่า 1 แสนครัวเรือน คือฐานรายได้ของคนส่วนใหญ่ ภาคนี้จึงเป็นตัวชี้กำลังซื้อระดับหมู่บ้าน</p></span></div>
     <div class="r"><span class="chip real">ข้อมูลจริง</span><span class="chip">สนง.เกษตรจังหวัด</span></div></div>
-  <div class="grid g5 mb" id="agriKpi"></div>
+  <div class="kpibox mb"><div class="grid g4" id="agriKpi"></div></div>
+  <div class="grid g2 mb" id="agriKpi2"></div>
   <div class="segs mb" id="agriSeg">
     <button class="on" data-t="crop"><img class="segico" src="assets/icons/ic-crop.png" alt="" onerror="this.remove()">พืชอายุสั้น</button>
     <button data-t="fruit"><img class="segico" src="assets/icons/ic-fruit.png" alt="" onerror="this.remove()">ไม้ผลเศรษฐกิจ</button>
@@ -43,22 +44,27 @@
         <div class="note">ข้าวนาปีครองเนื้อที่มากที่สุดแต่ยังไม่มีตัวเลขผลผลิตเพราะอยู่ระหว่างฤดูกาล ขณะที่อ้อยโรงงานเป็นตัวสร้างมูลค่าสูงสุด</div></div></div>
     </div>
     <div class="grid g2">
-      <div class="c"><header><span class="hdico icow img" data-hdico="income"></span><h3>มูลค่าผลผลิตรายพืช</h3><span class="u">ล้านบาท · สเกลลอการิทึม</span></header>
-        <div class="b"><div class="ch"><canvas id="cCropValue"></canvas></div></div></div>
-      <div class="c"><header><span class="hdico icow img" data-hdico="rice"></span><h3>ผลผลิตเฉลี่ยต่อไร่</h3><span class="u">กก./ไร่ · สเกลลอการิทึม</span></header>
-        <div class="b"><div class="ch"><canvas id="cCropYield"></canvas></div></div></div>
+      <div class="c"><header><span class="hdico icow img" data-hdico="income"></span><h3>เนื้อที่ปลูก (ไร่) และมูลค่าผลผลิต (ล้านบาท)</h3><span class="u">สเกลลอการิทึม</span></header>
+        <div class="b"><div class="ch lg"><canvas id="cCropValue"></canvas></div>
+        <div class="note" id="nCropValue"></div></div></div>
+      <div class="c"><header><span class="hdico icow img" data-hdico="rice"></span><h3>ผลผลิตเฉลี่ยต่อไร่ (กก./ไร่) และราคาขายเฉลี่ย (บาท/กก.)</h3><span class="u">แกนซ้ายสเกลลอการิทึม</span></header>
+        <div class="b"><div class="ch lg"><canvas id="cCropYield"></canvas></div>
+        <div class="note" id="nCropYield"></div></div></div>
     </div>
   </div>
 
   <div id="agri-fruit" class="hide">
     <div class="grid g3 mb" id="fruitCards"></div>
-    <div class="grid g2">
-      <div class="c"><header><span class="hdico icow img" data-hdico="fruit"></span><h3>พื้นที่ปลูกและพื้นที่ให้ผล</h3><span class="u">ไร่</span></header>
-        <div class="b"><div class="ch"><canvas id="cFruit"></canvas></div>
-        <div class="note">ช่องว่างระหว่างพื้นที่ปลูกกับพื้นที่ให้ผล คือผลผลิตที่กำลังจะเข้ามาในอีก 2–4 ปี ทุเรียนมีช่องว่างมากที่สุด (327 ไร่ ปลูก แต่ให้ผลเพียง 95 ไร่)</div></div></div>
-      <div class="c"><header><span class="hdico icow img" data-hdico="history"></span><h3>ปฏิทินการเก็บเกี่ยวและราคา</h3></header>
-        <div class="b"><div class="sc"><table class="t" data-owner="crop" id="tFruit"></table></div></div></div>
+    <div class="grid g2 mb">
+      <div class="c"><header><span class="hdico icow img" data-hdico="fruit"></span><h3>พื้นที่เพาะปลูก (ไร่) และพื้นที่ให้ผลผลิต (ไร่)</h3></header>
+        <div class="b"><div class="ch lg"><canvas id="cFruit"></canvas></div>
+        <div class="note" id="nFruit"></div></div></div>
+      <div class="c"><header><span class="hdico icow img" data-hdico="rice"></span><h3>ผลผลิตเฉลี่ยต่อไร่ (กก./ไร่) และราคาขายเฉลี่ย (บาท/กก.)</h3></header>
+        <div class="b"><div class="ch lg"><canvas id="cFruitYield"></canvas></div>
+        <div class="note" id="nFruitYield"></div></div></div>
     </div>
+    <div class="c"><header><span class="hdico icow img" data-hdico="history"></span><h3>ปฏิทินการเก็บเกี่ยวและราคา</h3></header>
+      <div class="b"><div class="sc"><table class="t" data-owner="crop" id="tFruit"></table></div></div></div>
   </div>
 
   <div id="agri-main" class="hide">
@@ -68,9 +74,9 @@
       <div class="c"><header><span class="hdico icow img" data-hdico="landuse"></span><h3>สัดส่วนพื้นที่ปลูก</h3></header>
         <div class="b"><div class="ch"><canvas id="cMainCrop"></canvas></div></div></div>
     </div>
-    <div class="c"><header><span class="hdico icow img" data-hdico="compare"></span><h3>ผลผลิตเฉลี่ยต่อไร่เทียบระหว่างพืช</h3><span class="u">กิโลกรัม/ไร่</span></header>
-      <div class="b"><div class="ch"><canvas id="cMainYield"></canvas></div>
-      <div class="note">อ้อยโรงงานให้ผลผลิตต่อไร่สูงที่สุด แต่ราคาต่อกิโลกรัมต่ำที่สุด การเปรียบเทียบจึงต้องดูมูลค่าต่อไร่ควบคู่ไปด้วย</div></div></div>
+    <div class="c"><header><span class="hdico icow img" data-hdico="compare"></span><h3>พื้นที่เพาะปลูก (ไร่) และผลผลิตเฉลี่ยต่อไร่ (กก./ไร่)</h3></header>
+      <div class="b"><div class="ch lg"><canvas id="cMainYield"></canvas></div>
+      <div class="note" id="nMainYield"></div></div></div>
   </div>
 
   <div id="agri-water" class="hide">
@@ -127,26 +133,75 @@
 <script src="ds.js"></script>
 <script>
 /* ─────────────── 13) เกษตร ─────────────── */
+/* กราฟแท่ง + เส้น คนละแกน · แกนซ้ายเป็นของแท่ง แกนขวาเป็นของเส้น
+   o = {labels, bar:{label,data,unit,color,log}, line:{label,data,unit,color,log,same}} */
+/* ชื่อสั้นสำหรับแกน x · ชื่อเต็มยังอยู่ใน tooltip */
+const SHORT={'มันสำปะหลังโรงงาน':'มันสำปะหลัง','ข้าวโพดเลี้ยงสัตว์':'ข้าวโพด','ถั่วเขียวผิวมัน':'ถั่วเขียว'};
+/* วาดหน่วยไว้เหนือแกนซ้ายและแกนขวา อ่านง่ายกว่าหน่วยแนวตั้งข้างแกน */
+const AXIS_UNITS={id:'axisUnits',afterDraw(ch,a,o){
+  if(!o||!o.left)return; const c=ch.ctx, A=ch.chartArea;
+  c.save(); c.font='600 12px '+(getComputedStyle(document.body).fontFamily||'sans-serif'); c.fillStyle=cv('--dim')||'#4d635b';
+  c.textBaseline='bottom'; c.textAlign='left'; c.fillText(o.left,Math.max(2,ch.scales.y.left),A.top-8);
+  if(o.right&&ch.scales.y1){c.textAlign='right'; c.fillText(o.right,ch.scales.y1.right,A.top-8)}
+  c.restore();
+}};
+/* กราฟแท่ง + เส้น คนละแกน · แกนซ้ายเป็นของแท่ง แกนขวาเป็นของเส้น
+   o = {labels, bar:{label,data,unit,color,log}, line:{label,data,unit,color,log,same}} */
+function comboChart(id,o){
+  const same=o.line.same;
+  /* สเกลลอการิทึมแสดงเฉพาะหลัก 1 10 100 1,000 … ไม่ให้ตัวเลขแน่นจนอ่านไม่ออก */
+  const tick=(v,log)=>{if(log){const l=Math.log10(v);return Math.abs(l-Math.round(l))<1e-6?f(v,v<1?1:0):''}return f(v,v<10&&v%1?1:0)};
+  const full=o.labels, lab=full.map(n=>SHORT[n]||n);
+  /* แกนลอการิทึมเริ่มที่หลักสิบต่ำกว่าค่าน้อยสุด แท่งที่ค่าน้อยจะไม่จมหายไปกับขอบล่าง */
+  const lmin=d=>{const v=d.filter(x=>x>0);return v.length?Math.pow(10,Math.floor(Math.log10(Math.min(...v)))):undefined};
+  mk(id,{type:'bar',data:{labels:lab,datasets:[
+      {type:'bar',label:o.bar.label+' ('+o.bar.unit+')',data:o.bar.data,backgroundColor:o.bar.color,borderRadius:5,maxBarThickness:46,yAxisID:'y'},
+      {type:'line',label:o.line.label+' ('+o.line.unit+')',data:o.line.data,borderColor:o.line.color,backgroundColor:o.line.color,borderWidth:2.6,
+       pointRadius:5,pointHoverRadius:7,pointBackgroundColor:o.line.color,tension:.25,spanGaps:false,yAxisID:same?'y':'y1'}]},
+    plugins:[AXIS_UNITS],
+    options:{layout:{padding:{top:22}},interaction:{mode:'index',intersect:false},
+      plugins:{axisUnits:{left:o.bar.unit,right:same?'':o.line.unit},
+        legend:{position:'bottom',labels:{boxWidth:14,boxHeight:10,padding:12}},
+        tooltip:{callbacks:{title:it=>full[it[0].dataIndex],
+          label:c=>{const u=c.dataset.yAxisID==='y1'||c.dataset.type==='line'?o.line.unit:o.bar.unit;
+          return c.dataset.label.replace(/ \(.*\)$/,'')+' '+(c.raw==null?'ยังไม่มีข้อมูล':f(c.raw,c.raw<100&&c.raw%1?2:0)+' '+u)}}}},
+      scales:Object.assign({
+        x:ax({grid:{display:false},ticks:{font:{size:11},autoSkip:false,maxRotation:40,minRotation:0}}),
+        y:ax({type:o.bar.log?'logarithmic':'linear',beginAtZero:!o.bar.log,min:o.bar.log?lmin(o.bar.data):undefined,position:'left',ticks:{callback:v=>tick(v,o.bar.log)}})},
+        same?{}:{y1:ax({type:o.line.log?'logarithmic':'linear',beginAtZero:!o.line.log,min:o.line.log?lmin(o.line.data):undefined,position:'right',grid:{display:false},
+          ticks:{callback:v=>tick(v,o.line.log)}})})}});
+}
 function renderAgri(){
   const C=D.crop,B=D.base,val=cropValue();
+  /* แถวบน 4 การ์ดในกรอบเดียวกัน · แถวล่าง มูลค่าผลผลิต กับ ท่องเที่ยวเชิงเกษตร */
+  const FR=D.fruit, frArea=FR.reduce((a,x)=>a+(+x.area||0),0), frKg=FR.reduce((a,x)=>a+(+x.kg||0),0);
+  const agriLand=B.agriArea;
   $('#agriKpi').innerHTML=[
-    kpiCard({icon:'people',img:'household',color:cv('--leaf'),label:'ครัวเรือนเกษตรกร',value:f(C.hh,0),unit:'ครัวเรือน',
+    kpiCard({icon:'people',img:'household',color:cv('--leaf'),label:'ครัวเรือนภาคการเกษตร',value:f(C.hh,0),unit:'ครัวเรือน',
       chip:'<span class="chip">ทะเบียน '+f(B.agriHH,0)+'</span>',sub:'ราว 1 ใน 5 ของประชากร',
-      tip:tipOf({t:'ครัวเรือนเกษตรกร',
-        d:'จำนวนครัวเรือนที่ปลูกพืชอายุสั้นในฤดูกาลนี้ นับซ้ำได้ถ้าครัวเรือนหนึ่งปลูกหลายชนิดพืช จึงสูงกว่าจำนวนครัวเรือนที่ขึ้นทะเบียนเกษตรกร',
-        calc:'ผลรวมครัวเรือนที่รายงานการปลูกในแต่ละชนิดพืช',src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})}),
-    kpiCard({icon:'leaf',img:'landuse',color:cv('--brand'),label:'เนื้อที่ปลูกพืชอายุสั้น',value:f(C.area,0),unit:'ไร่',
-      chip:'<span class="chip">ข้าวนาปี 60.9%</span>',sub:'จากพื้นที่เกษตร 1.55 ล้านไร่',
-      tip:tipOf({t:'เนื้อที่ปลูกพืชอายุสั้น',
-        d:'พื้นที่เพาะปลูกจริงในฤดูกาลนี้ ไม่ใช่พื้นที่ถือครอง ข้าวนาปีครองสัดส่วนมากที่สุด รองลงมาคืออ้อยโรงงาน',
-        calc:'ผลรวมเนื้อที่ปลูกของพืชอายุสั้นทุกชนิด = '+f_num(C.area)+' ไร่ · คิดเป็น '+(C.area/1550000*100).toFixed(1)+'% ของพื้นที่เกษตรทั้งจังหวัด 1.55 ล้านไร่',
+      tip:tipOf({t:'ครัวเรือนภาคการเกษตร',
+        d:'จำนวนครัวเรือนที่ปลูกพืชอายุสั้นในฤดูกาลนี้ นับซ้ำได้ถ้าครัวเรือนหนึ่งปลูกหลายชนิดพืช จึงสูงกว่าจำนวนครัวเรือนที่ขึ้นทะเบียนเกษตรกร '+f_num(B.agriHH)+' ครัวเรือน',
+        calc:'ผลรวมครัวเรือนที่รายงานการปลูกในแต่ละชนิดพืช = '+f_num(C.hh)+' ครัวเรือน',src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})}),
+    kpiCard({icon:'leaf',img:'landuse',color:cv('--brand'),label:'พื้นที่ภาคการเกษตร',value:f(agriLand/1e6,2),unit:'ล้านไร่',
+      chip:'<span class="chip">'+f(agriLand,0)+' ไร่</span>',sub:'พื้นที่ถือครองทางการเกษตรทั้งจังหวัด',
+      tip:tipOf({t:'พื้นที่ภาคการเกษตร',
+        d:'พื้นที่ถือครองทางการเกษตรทั้งจังหวัด ใช้เป็นฐานเทียบว่าแต่ละฤดูกาลมีการเพาะปลูกจริงมากน้อยเพียงใด',
+        calc:f_num(agriLand)+' ไร่ = '+f(agriLand/1e6,2)+' ล้านไร่ · ฤดูกาลนี้ปลูกพืชอายุสั้น '+f_num(C.area)+' ไร่ คิดเป็น '+(C.area/agriLand*100).toFixed(1)+'%',
+        src:'crop',when:'ข้อมูลฐานเกษตรจังหวัด'})}),
+    kpiCard({icon:'leaf',img:'crop',color:cv('--brand2'),label:'การปลูกพืชอายุสั้น',
+      rows:[['พื้นที่ปลูก',f(C.area,2),'ไร่'],['ผลผลิตรวม',f(C.yieldKg,2),'กิโลกรัม']],
+      tip:tipOf({t:'การปลูกพืชอายุสั้น',
+        d:C.rows.length+' ชนิดพืช · ข้าวนาปีครองพื้นที่มากที่สุดแต่ยังไม่มีผลผลิตเพราะอยู่ระหว่างฤดูกาล อ้อยโรงงานคิดเป็นผลผลิตเกือบทั้งหมดเมื่อวัดเป็นกิโลกรัม',
+        calc:'พื้นที่ปลูก = ผลรวมเนื้อที่ทุกชนิดพืช '+f_num(C.area)+' ไร่ · ผลผลิตรวม = ผลรวมผลผลิตทุกชนิดพืช '+f_num(C.yieldKg)+' กก.',
         src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})}),
-    kpiCard({icon:'drop',img:'crop',color:cv('--brand2'),label:'ผลผลิตรวม',value:f(C.yieldKg/1e6,0),unit:'ล้าน กก.',
-      chip:'<span class="chip">อ้อยโรงงาน 95%</span>',sub:'ข้าวนาปีอยู่ระหว่างฤดูกาล',
-      tip:tipOf({t:'ผลผลิตรวมพืชอายุสั้น',
-        d:'ปริมาณผลผลิตที่เก็บเกี่ยวได้แล้วในฤดูกาลนี้ อ้อยโรงงานมีน้ำหนักต่อไร่สูงจึงครองสัดส่วนเกือบทั้งหมดเมื่อวัดเป็นกิโลกรัม แต่มูลค่าต่อกิโลกรัมต่ำกว่าพืชอื่น',
-        calc:'ผลรวมผลผลิตทุกชนิดพืช ÷ 1,000,000 = '+f_num(C.yieldKg/1e6)+' ล้าน กก. · ข้าวนาปียังไม่นับเพราะอยู่ระหว่างฤดูกาล',
-        src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})}),
+    kpiCard({icon:'leaf',img:'fruit',color:cv('--gold'),label:'ไม้ผลเศรษฐกิจสำคัญ',
+      rows:[['พื้นที่ปลูก',f(frArea,2),'ไร่'],['ผลผลิตรวม',f(frKg,0),'กิโลกรัม']],
+      tip:tipOf({t:'ไม้ผลเศรษฐกิจสำคัญ',
+        d:FR.length+' ชนิด คือ '+FR.map(x=>x.n).join(' ')+' · ผลผลิตเป็นปริมาณต่อปี',
+        calc:'พื้นที่ปลูก = '+FR.map(x=>f(x.area,2)).join(' + ')+' = '+f(frArea,2)+' ไร่ · ผลผลิตรวม = '+FR.map(x=>f(x.kg,0)).join(' + ')+' = '+f_num(frKg)+' กก.',
+        src:'crop',when:'ข้อมูลสำนักงานเกษตรจังหวัด'})})
+  ].join('');
+  $('#agriKpi2').innerHTML=[
     kpiCard({icon:'coin',img:'income',color:cv('--gold'),label:'มูลค่าผลผลิต',value:f(val,0),unit:'ล้านบาท',
       chip:'<span class="chip up">คำนวณจากราคาที่ขายได้</span>',sub:'ยังไม่รวมข้าวนาปี',
       tip:tipOf({t:'มูลค่าผลผลิตพืชอายุสั้น',
@@ -179,16 +234,25 @@ function renderAgri(){
       borderColor:cv('--card'),borderWidth:3}]},
     options:{cutout:'58%',plugins:{legend:{position:'bottom',labels:{padding:10}},
       tooltip:{callbacks:{label:c=>c.label+' '+c.raw+'%'}}}}});
-  const wv=C.rows.filter(r=>r.price).map(r=>({n:r.n,v:+(r.y*r.price/1e6).toFixed(2)})).sort((a,b)=>b.v-a.v);
-  mk('cCropValue',{type:'bar',data:{labels:wv.map(r=>r.n),
-    datasets:[{data:wv.map(r=>r.v),backgroundColor:cv('--leaf'),borderRadius:5,barThickness:14}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>f(c.raw,2)+' ล้านบาท'}}},
-      scales:{x:ax({type:'logarithmic',ticks:{callback:v=>f(v,0)}}),y:ax({grid:{display:false},ticks:{font:{size:10.5}}})}}});
-  const yl=C.rows.filter(r=>r.per>0).sort((a,b)=>b.per-a.per);
-  mk('cCropYield',{type:'bar',data:{labels:yl.map(r=>r.n),
-    datasets:[{data:yl.map(r=>r.per),backgroundColor:cv('--brand2'),borderRadius:5,barThickness:14}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>f(c.raw,2)+' กก./ไร่'}}},
-      scales:{x:ax({type:'logarithmic',ticks:{callback:v=>f(v,0)}}),y:ax({grid:{display:false},ticks:{font:{size:10.5}}})}}});
+  /* เนื้อที่ปลูก (แท่ง) กับมูลค่าผลผลิต (เส้น) · ดูว่าใช้พื้นที่มากแค่ไหนและสร้างมูลค่ากลับมาเท่าไร */
+  const CR=C.rows.slice().sort((a,b)=>b.area-a.area);
+  comboChart('cCropValue',{labels:CR.map(r=>r.n),
+    bar:{label:'เนื้อที่ปลูก',data:CR.map(r=>r.area),unit:'ไร่',color:cv('--brand'),log:true},
+    line:{label:'มูลค่าผลผลิต',data:CR.map(r=>r.price&&r.y?+(r.y*r.price/1e6).toFixed(3):null),unit:'ล้านบาท',color:cv('--gold'),log:true}});
+  const topV=CR.filter(r=>r.price&&r.y).sort((a,b)=>b.y*b.price-a.y*a.price)[0];
+  $('#nCropValue').innerHTML=`แท่งคือเนื้อที่ปลูก เส้นคือมูลค่าผลผลิต · ใช้ดูว่าพืชแต่ละชนิดใช้พื้นที่มากแค่ไหน และสร้างมูลค่ากลับมาเท่าไร<br>
+    ${topV?`<b>${topV.n}</b> สร้างมูลค่าสูงสุด ${f(topV.y*topV.price/1e6,1)} ล้านบาท จากพื้นที่ ${f(topV.area,0)} ไร่ · `:''}ข้าวนาปีมีพื้นที่มากที่สุดแต่ยังไม่มีมูลค่าเพราะอยู่ระหว่างฤดูกาล
+    <span style="color:var(--faint)">· ใช้สเกลลอการิทึมเพราะพืชแต่ละชนิดต่างกันหลายพันเท่า ตัวเลขจริงดูได้จากการชี้</span>`;
+
+  /* ผลผลิตเฉลี่ยต่อไร่ (แท่ง) กับราคาขายเฉลี่ย (เส้น) · ดูว่าพืชไหนให้ผลผลิตต่อพื้นที่สูง และพืชไหนราคาสูง */
+  const CY=C.rows.filter(r=>r.per>0).sort((a,b)=>b.per-a.per);
+  comboChart('cCropYield',{labels:CY.map(r=>r.n),
+    bar:{label:'ผลผลิตเฉลี่ยต่อไร่',data:CY.map(r=>r.per),unit:'กก./ไร่',color:cv('--brand2'),log:true},
+    line:{label:'ราคาขายเฉลี่ย',data:CY.map(r=>r.price),unit:'บาท/กก.',color:cv('--coral')}});
+  const hiP=CY.slice().sort((a,b)=>b.price-a.price)[0];
+  $('#nCropYield').innerHTML=`แท่งคือผลผลิตเฉลี่ยต่อไร่ เส้นคือราคาขายเฉลี่ย · ใช้ดูว่าพืชไหนให้ผลผลิตต่อพื้นที่สูง และพืชไหนมีราคาสูง<br>
+    <b>${CY[0].n}</b> ให้ผลผลิตต่อไร่สูงสุด ${f(CY[0].per,0)} กก./ไร่ แต่ราคาเพียง ${f(CY[0].price,2)} บาท/กก. ขณะที่<b>${hiP.n}</b> ราคาสูงสุด ${f(hiP.price,2)} บาท/กก.
+    <span style="color:var(--faint)">· ข้าวนาปียังไม่มีผลผลิตจึงไม่อยู่ในกราฟ</span>`;
 
   /* ไม้ผล */
   const FRUIT_BG={'ทุเรียน':'durian','ลำไย':'longan','กาแฟ':'coffee','เงาะ':'rambutan','ลิ้นจี่':'lychee','อินทผลัม':'date'};
@@ -204,11 +268,27 @@ function renderAgri(){
         <div style="display:flex;gap:6px;margin-top:3px;flex-wrap:wrap">
           <span class="chip">${fr.season}</span>${fr.pmin?`<span class="chip fl">${fr.pmin}–${fr.pmax} บ./กก.</span>`:''}</div>
       </div></div>`).join('');
-  mk('cFruit',{type:'bar',data:{labels:D.fruit.map(x=>x.n),datasets:[
-    {label:'พื้นที่ปลูก (ไร่)',data:D.fruit.map(x=>x.area),backgroundColor:cv('--leaf'),borderRadius:4},
-    {label:'พื้นที่ให้ผล (ไร่)',data:D.fruit.map(x=>x.yieldArea),backgroundColor:cv('--gold'),borderRadius:4}]},
-    options:{plugins:{legend:{position:'bottom',labels:{padding:11}}},
-      scales:{x:ax({grid:{display:false}}),y:ax({ticks:{callback:v=>f(v,0)}})}}});
+  /* พื้นที่ปลูก (แท่ง) กับพื้นที่ให้ผล (เส้น) ใช้แกนเดียวกันเพราะหน่วยเดียวกัน
+     ถ้าเส้นต่ำกว่าแท่งมาก แปลว่ายังมีพื้นที่ที่ยังไม่ให้ผลผลิต */
+  comboChart('cFruit',{labels:FR.map(x=>x.n),
+    bar:{label:'พื้นที่เพาะปลูก',data:FR.map(x=>x.area),unit:'ไร่',color:cv('--leaf')},
+    line:{label:'พื้นที่ให้ผลผลิต',data:FR.map(x=>x.yieldArea),unit:'ไร่',color:cv('--gold'),same:true}});
+  const gapF=FR.map(x=>({n:x.n,g:x.area-x.yieldArea,r:x.yieldArea/x.area*100})).sort((a,b)=>a.r-b.r)[0];
+  $('#nFruit').innerHTML=`แท่งคือพื้นที่เพาะปลูก เส้นคือพื้นที่ให้ผลผลิต · ใช้ดูว่าพื้นที่ที่ปลูกแล้วให้ผลผลิตได้มากน้อยแค่ไหน
+    ถ้าเส้นต่ำกว่าแท่งมาก แสดงว่ายังมีพื้นที่ที่ยังไม่ให้ผลผลิต<br>
+    <b>${gapF.n}</b> ให้ผลเพียง ${gapF.r.toFixed(0)}% ของพื้นที่ปลูก ยังเหลือ ${f(gapF.g,0)} ไร่ที่จะให้ผลในอีก 2–4 ปี`;
+
+  /* ผลผลิตเฉลี่ยต่อไร่ (แท่ง) กับราคาขายเฉลี่ย (เส้น)
+     ต่อไร่ = ผลผลิตต่อปี ÷ พื้นที่ให้ผล · ราคาขายเฉลี่ย = กึ่งกลางช่วงราคาต่ำสุด–สูงสุด */
+  const FY=FR.map(x=>({n:x.n,per:x.yieldArea?x.kg/x.yieldArea:null,price:x.pmin&&x.pmax?(x.pmin+x.pmax)/2:null}));
+  comboChart('cFruitYield',{labels:FY.map(x=>x.n),
+    bar:{label:'ผลผลิตเฉลี่ยต่อไร่',data:FY.map(x=>x.per?+x.per.toFixed(1):null),unit:'กก./ไร่',color:cv('--brand2')},
+    line:{label:'ราคาขายเฉลี่ย',data:FY.map(x=>x.price),unit:'บาท/กก.',color:cv('--coral')}});
+  const fy1=FY.filter(x=>x.per).sort((a,b)=>b.per-a.per)[0], fp1=FY.filter(x=>x.price).sort((a,b)=>b.price-a.price)[0];
+  $('#nFruitYield').innerHTML=`แท่งคือผลผลิตเฉลี่ยต่อไร่ เส้นคือราคาขายเฉลี่ย · ใช้ดูว่าพืชที่ให้ผลผลิตต่อไร่สูง มีราคาขายสูงด้วยหรือไม่<br>
+    <b>${fy1.n}</b> ให้ผลผลิตต่อไร่สูงสุด ${f(fy1.per,0)} กก./ไร่ · <b>${fp1.n}</b> ราคาสูงสุดเฉลี่ย ${f(fp1.price,1)} บาท/กก.
+    <span style="color:var(--faint)">· ผลผลิตต่อไร่ = ผลผลิตต่อปี ÷ พื้นที่ให้ผล · ราคาขายเฉลี่ย = กึ่งกลางช่วงราคาต่ำสุด–สูงสุด
+    ${FY.some(x=>!x.price)?'· '+FY.filter(x=>!x.price).map(x=>x.n).join(' ')+' ยังไม่มีข้อมูลราคา':''}</span>`;
   $('#tFruit').innerHTML=`<thead><tr><th>ไม้ผล</th><th>ช่วงเก็บเกี่ยว</th><th class="r">ผลผลิต (กก./ปี)</th><th class="r">ราคา (บ./กก.)</th></tr></thead><tbody>`+
     D.fruit.map((x,i)=>`<tr><td><span class="dot" style="background:${x.c};margin-right:7px"></span>${rowIco(x.n)}${x.n}</td>
       <td>${x.season}</td>${ec('fruit.'+i+'.kg',f(x.kg,0),0)}<td class="r">${x.pmin?x.pmin+'–'+x.pmax:'—'}</td></tr>`).join('')+'</tbody>';
@@ -224,11 +304,14 @@ function renderAgri(){
     datasets:[{data:B.mainCrop.map(r=>r.area),backgroundColor:PAL(),borderColor:cv('--card'),borderWidth:3}]},
     options:{cutout:'56%',plugins:{legend:{position:'bottom',labels:{padding:9,font:{size:10.5}}},
       tooltip:{callbacks:{label:c=>f(c.raw,0)+' ไร่'}}}}});
-  const my=B.mainCrop.filter(r=>r.per);
-  mk('cMainYield',{type:'bar',data:{labels:my.map(r=>r.n.split(' ')[0]),
-    datasets:[{data:my.map(r=>r.per),backgroundColor:[cv('--gold'),cv('--blue'),cv('--leaf')],borderRadius:6,barPercentage:.6}]},
-    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>f(c.raw,2)+' กก./ไร่'}}},
-      scales:{x:ax({grid:{display:false}}),y:ax({type:'logarithmic',ticks:{callback:v=>f(v,0)}})}}});
+  /* พื้นที่เพาะปลูก (แท่ง) กับผลผลิตเฉลี่ยต่อไร่ (เส้น) · ดูว่าพืชไหนปลูกมาก และพื้นที่นั้นมีผลิตภาพสูงแค่ไหน */
+  comboChart('cMainYield',{labels:B.mainCrop.map(r=>r.n.split(' ')[0]),
+    bar:{label:'พื้นที่เพาะปลูก',data:B.mainCrop.map(r=>r.area),unit:'ไร่',color:cv('--brand')},
+    line:{label:'ผลผลิตเฉลี่ยต่อไร่',data:B.mainCrop.map(r=>r.per||null),unit:'กก./ไร่',color:cv('--gold')}});
+  const bigA=B.mainCrop.slice().sort((a,b)=>b.area-a.area)[0], hiY=B.mainCrop.filter(r=>r.per).sort((a,b)=>b.per-a.per)[0];
+  $('#nMainYield').innerHTML=`แท่งคือพื้นที่เพาะปลูก เส้นคือผลผลิตเฉลี่ยต่อไร่ · ใช้ดูว่าพืชชนิดไหนปลูกมาก และพื้นที่นั้นมีผลิตภาพสูงแค่ไหน<br>
+    <b>${bigA.n.split(' ')[0]}</b> ปลูกมากที่สุด ${f(bigA.area,0)} ไร่ · <b>${hiY.n.split(' ')[0]}</b> ให้ผลผลิตต่อไร่สูงสุด ${f(hiY.per,0)} กก./ไร่
+    ${B.mainCrop.some(r=>!r.per)?'<span style="color:var(--faint)">· '+B.mainCrop.filter(r=>!r.per).map(r=>r.n.split(' ')[0]).join(' ')+' อยู่ระหว่างฤดูกาลจึงยังไม่มีผลผลิตต่อไร่</span>':''}`;
 
   /* แหล่งน้ำ — รวมข้อมูลชลประทานจริง */
   const W=D.water,ok=W.filter(w=>w.ok);
