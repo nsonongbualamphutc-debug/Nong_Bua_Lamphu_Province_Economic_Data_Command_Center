@@ -2039,7 +2039,7 @@ function showBootErr(ev,extra){
     /* ภาพแผนที่พื้นหลังหลุดบางแผ่นเป็นเรื่องปกติของผู้ให้บริการ tile ไม่ใช่หน้าเว็บพัง จึงไม่แจ้งเตือน */
     if((t.classList&&t.classList.contains('leaflet-tile'))||/arcgisonline|cartocdn|tile\.openstreetmap/.test(u))return;
     /* ไอคอนที่มีไฟล์สำรองจะสลับไปใช้ไฟล์สำรองเอง ไม่นับว่าหาย */
-    if(t.dataset&&(t.dataset.fb||t.dataset.chain))return;
+    if(t.dataset&&(t.dataset.fb||t.dataset.chain||t.dataset.opt!=null))return;   /* ภาพที่ไม่บังคับ (เช่นภาพประจำอำเภอ) ไม่นับว่าขาด */
     /* เรียก API ของ Apps Script ไม่สำเร็จ ไม่ใช่หน้าเว็บพัง — แดชบอร์ดอ่านจากไฟล์ข้อมูลได้ครบอยู่แล้ว
        API ใช้เฉพาะดึงค่าที่หน่วยงานแก้ผ่านระบบกรอกข้อมูล และมักหลุดเพราะ Apps Script ตื่นช้าหรือโควตาเต็ม
        จึงแจ้งเป็นหมายเหตุเบา ๆ ไม่ขึ้นกล่องแดงว่าโหลดหน้าไม่สมบูรณ์ */
