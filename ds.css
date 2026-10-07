@@ -1659,3 +1659,60 @@ body.tour .topbar,body.tour header.top{position:relative;z-index:800}
 .gdcb.map i{animation:gdcp 1.4s infinite}
 .gdcb.file{color:#6b7c76;background:#eef1f0;border-color:#dde5e1}
 @keyframes gdcp{50%{opacity:.3}}
+
+/* ══ การส่งเสริม และแหล่งท่องเที่ยวเชิงเกษตร ══ */
+.promo-head{display:flex;gap:14px;align-items:stretch;flex-wrap:wrap;margin-bottom:14px}
+.promo-kpis{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;min-width:0}
+.pk{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c);
+  border-radius:14px;padding:10px 13px;box-shadow:var(--sh)}
+.pk-i{width:34px;height:34px;flex:none;display:grid;place-items:center}.pk-i img{width:34px;height:34px;object-fit:contain}
+.pk-t{display:flex;flex-direction:column;min-width:0}.pk-t span{font-size:11.5px;color:var(--dim);white-space:nowrap}
+.pk-t b{font-family:var(--fn);font-size:24px;line-height:1.15}.pk-t b small{font-size:12px;font-weight:500;color:var(--faint)}
+.promo-view{display:flex;flex-direction:column;justify-content:center;gap:5px;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:10px 13px;box-shadow:var(--sh)}
+.promo-view>span{font-size:11.5px;color:var(--dim);font-weight:600}
+.promo-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(330px,1fr);gap:16px;align-items:start}
+.promo-side{overflow:hidden;padding:0}
+.promo-side .b{padding:14px 16px 16px}
+.ps-hero{position:relative;height:150px;background-image:linear-gradient(90deg,rgba(5,32,26,.86),rgba(5,32,26,.25)),var(--img);
+  background-size:cover;background-position:center;display:flex;align-items:flex-end;padding:14px 16px;color:#fff}
+.ps-hero small{display:block;font-size:11.5px;opacity:.85}.ps-hero b{font-family:var(--fd);font-size:24px}
+.ps-back{position:absolute;top:12px;right:12px;font:inherit;font-size:12px;border:1px solid rgba(255,255,255,.45);
+  background:rgba(255,255,255,.14);color:#fff;border-radius:10px;padding:5px 11px;cursor:pointer;backdrop-filter:blur(4px)}
+.ps-sec{padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line2)}.ps-sec:last-child{border-bottom:0;margin-bottom:0}
+.ps-sec h4{font-family:var(--fd);font-size:15px;margin:0 0 9px;color:var(--forest,#0b3c32);display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ps-sec h4 span{font-size:11px;font-weight:400;color:var(--faint);font-family:var(--fs)}
+.ps-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:9px}
+.ps-stats div{background:var(--card2);border:1px solid var(--line2);border-radius:11px;padding:8px 10px;text-align:center}
+.ps-stats b{display:block;font-family:var(--fn);font-size:21px}.ps-stats span{font-size:11px;color:var(--dim)}
+.ps-sub{font-size:11.5px;color:var(--faint);margin:2px 0 4px}
+.ps-pend{font-size:12px;color:#8a6714;background:#fdf3e0;border:1px dashed #ecd8a8;border-radius:10px;padding:8px 11px;margin:4px 0 8px}
+.ps-gm{display:inline-block;font-size:12.5px;font-weight:600;color:var(--brand);text-decoration:none}
+.prk{display:grid;grid-template-columns:20px 1fr 90px 34px;gap:8px;align-items:center;padding:6px 4px;border-radius:9px;cursor:pointer;font-size:13px}
+.prk:hover,.prk.on{background:var(--card2)}.prk.on{box-shadow:inset 3px 0 0 var(--brand)}
+.prk .n{font-family:var(--fn);color:var(--faint);font-size:12px}.prk b{font-family:var(--fn);text-align:right}
+.prk .tr{height:7px;background:var(--line2);border-radius:4px;overflow:hidden}.prk .tr i{display:block;height:100%;background:var(--coral,#d0563f);border-radius:4px}
+/* tooltip แผนที่แบบมีภาพ */
+.leaflet-tooltip.cho-tt.rich{padding:0;border-radius:12px;overflow:hidden;border:0;box-shadow:0 14px 30px -12px rgba(0,0,0,.45)}
+.ptt{width:230px;font-family:var(--fs);background:#fff}
+.ptt img{display:block;width:100%;height:110px;object-fit:cover}
+.ptt b{display:block;font-family:var(--fd);font-size:14.5px;color:#0b3c32;padding:9px 12px 4px}
+.ptt-r{display:flex;justify-content:space-between;gap:8px;padding:2px 12px;font-size:12px;color:#4d635b}
+.ptt-r em{font-style:normal;font-weight:600;color:#14231f}
+.ptt small{display:block;padding:6px 12px 9px;font-size:10.5px;color:#80938c}
+.cho-lbl span{display:inline-flex;flex-direction:column;align-items:center;transform:translate(-50%,-50%);white-space:nowrap;
+  font-family:var(--fd);font-size:11.5px;font-weight:600;color:#0b3c32;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 4px #fff}
+.cho-lbl b{font-family:var(--fn);font-size:13px}
+.cho-fb-r{cursor:pointer}.cho-fb-r.on{outline:2px solid var(--brand);border-radius:8px}
+@media(max-width:1150px){.promo-grid{grid-template-columns:1fr}.promo-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.promo-view{flex:1 1 100%}}
+@media(max-width:640px){.promo-kpis{grid-template-columns:1fr 1fr}.pk-t b{font-size:20px}.prk{grid-template-columns:18px 1fr 60px 28px}}
+
+/* ══ แหล่งน้ำเพื่อการเกษตร · ตัวเลือกปีและการ์ดที่ยังเชื่อมไม่ได้ ══ */
+.wyear{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.wyear .sl-lab{font-size:12px;color:var(--dim);font-weight:600;margin-right:4px}
+.wyear button{font:inherit;font-size:12.5px;border:1px solid var(--line);background:var(--card);border-radius:9px;padding:5px 12px;cursor:pointer}
+.wyear button.on{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:600}
+.mini.pend{border-style:dashed}.mini .pendtx{font-size:12px;font-weight:500;color:#8a6714}
+
+.wyear{padding:2px 2px}
+.wyear .sl-lab{padding-left:4px}

@@ -65,11 +65,11 @@ function renderCover(){
   stats.push([f(D0.pct,2)+'%','เบิกจ่ายงบประมาณ<br>อันดับ '+D0.rank+' ของประเทศ',
     tipOf({t:'ร้อยละการเบิกจ่ายงบประมาณภาพรวม',d:'ปีงบประมาณ 2569',
       calc:'(เบิกจ่ายสะสม ÷ งบที่ได้รับจัดสรร) × 100 = ('+f_num(D0.val)+' ÷ '+f_num(D0.alloc)+') × 100',
-      src:'spend',when:'ข้อมูล ณ '+CFG.asof})]);
+      src:'spend',when:'ข้อมูล ณ '+(D.fiscal.asof||CFG.asof)})]);
   stats.push([f(D0.val,0),'ล้านบาท เม็ดเงินภาครัฐ<br>ที่ลงสู่พื้นที่แล้ว',
     tipOf({t:'เม็ดเงินภาครัฐที่ลงสู่พื้นที่แล้ว',d:'ยอดเบิกจ่ายสะสมของทุกส่วนราชการในจังหวัด',
       calc:'เป็นยอดสะสม ไม่นำรายเดือนมาบวกกัน · คงเหลือรอเบิก '+f_num(D0.alloc-D0.val)+' ล้านบาท',
-      src:'spend',when:'ปีงบประมาณ 2569'})]);
+      src:'spend',when:'ปีงบประมาณ '+(D.fiscal.fy||2569)})]);
   stats.push([f(D.base.pop,0),'ประชากรจังหวัด<br>ใน 6 อำเภอ 59 ตำบล',
     tipOf({t:'ประชากรตามทะเบียนราษฎร',d:'ใช้เป็นตัวหารของตัวชี้วัดต่อหัวทุกตัวในระบบ',
       calc:'ยอด ณ สิ้นงวดที่ประกาศ ไม่นำรายเดือนมาบวกกัน',src:'popreg',when:'ข้อมูล ณ ก.ค. 2569'})]);
@@ -92,7 +92,7 @@ function renderCover(){
 }
 
 
-DS.init('cover',renderCover);
+DS.init('cover',function(){renderCover();if(FISCAL_API.state==='idle')fiscalSync();});
 </script>
 </body>
 </html>

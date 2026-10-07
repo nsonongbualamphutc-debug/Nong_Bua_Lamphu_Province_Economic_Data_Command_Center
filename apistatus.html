@@ -28,7 +28,7 @@ body{background:var(--bg,#eef3f1);margin:0;font-family:var(--fs,'Sarabun',sans-s
 .rs{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line2);align-items:start}
 .rs:last-child{border-bottom:0}
 .rs .dot{width:12px;height:12px;border-radius:50%;margin-top:5px;background:#c6d2cd}
-.rs.ok .dot{background:var(--good)} .rs.err .dot{background:var(--bad)} .rs.wait .dot{background:var(--gold);animation:pl 1s infinite}
+.rs.ok .dot{background:var(--good)} .rs.err .dot{background:var(--bad)} .rs.link .dot{background:transparent;border:2px dashed var(--gold)} .rs.wait .dot{background:var(--gold);animation:pl 1s infinite}
 @keyframes pl{50%{opacity:.35}}
 .rs .nm{font-weight:600;font-size:14px}
 .rs .id{font-family:ui-monospace,monospace;font-size:11px;color:var(--faint);word-break:break-all}
@@ -79,6 +79,7 @@ const PAGES=[['overview','ภาพรวมเศรษฐกิจ'],['gpp','G
   ['otop','OTOP และเศรษฐกิจชุมชน'],['labor','ตลาดแรงงาน'],['household','ครัวเรือนและความเหลื่อมล้ำ'],['population','ประชากรและโครงสร้างอายุ']];
 const ST={api:'ดึงจาก API แล้ว',part:'ดึงจาก API บางส่วน',map:'กำลังย้าย · รอจับคู่คอลัมน์',file:'ใช้ไฟล์ข้อมูล / ระบบกรอกเดิม'};
 const RESULT={};
+const RK=r=>r.id||('link:'+r.n);
 function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function drawPages(){
   document.getElementById('pages').innerHTML='<thead><tr><th>หน้าแดชบอร์ด</th><th>แหล่งข้อมูล</th><th>ชุดข้อมูลใน API</th></tr></thead><tbody>'+
@@ -87,9 +88,9 @@ function drawPages(){
         <td>${L.length?L.filter(r=>r.state==='api').length+' / '+L.length+' ชุด':'—'}</td></tr>`}).join('')+'</tbody>';
 }
 function drawSum(){
-  const all=GDC.RES, ok=all.filter(r=>RESULT[r.id]&&RESULT[r.id].ok).length, er=all.filter(r=>RESULT[r.id]&&!RESULT[r.id].ok).length;
+  const all=GDC.RES, ok=all.filter(r=>RESULT[RK(r)]&&RESULT[RK(r)].ok).length, er=all.filter(r=>RESULT[RK(r)]&&RESULT[RK(r)].err).length;
   document.getElementById('sum').innerHTML=[
-    [all.length,'ชุดข้อมูลที่ลงทะเบียน'],[ok,'เชื่อมต่อได้'],[er,'เชื่อมต่อไม่ได้'],[all.filter(r=>r.state==='api').length,'ต่อเข้าแดชบอร์ดแล้ว']]
+    [all.length,'ชุดข้อมูลที่ลงทะเบียน'],[ok,'เชื่อมต่อได้'],[all.filter(r=>r.state==='link').length,'กำลังเชื่อมข้อมูล'],[all.filter(r=>r.state==='api').length,'ต่อเข้าแดชบอร์ดแล้ว']]
     .map(x=>`<div class="k"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
 }
 function drawList(){
@@ -98,7 +99,7 @@ function drawList(){
     const name=(PAGES.find(x=>x[0]===p)||[p,p])[1];
     return `<div class="pg" id="${p}"><header><h2>${name}</h2><span class="sp"></span>${gdcBadge(p)}</header>`+
       groups[p].map(r=>{
-        const R=RESULT[r.id], cls=!R?'wait':R.ok?'ok':'err';
+        const R=RESULT[RK(r)], cls=r.state==='link'?'link':!R?'wait':R.ok?'ok':'err';
         let body='';
         if(R&&R.ok){
           const v=R.v;
@@ -110,22 +111,22 @@ function drawList(){
         }else if(R){ body=`<div class="msg e">${esc(R.err)}</div>`; }
         else body='<div class="msg">กำลังตรวจ…</div>';
         return `<div class="rs ${cls}"><span class="dot"></span><div><div class="nm">${esc(r.n)}</div>
-          <div class="id">resource_id: ${r.id}</div>${body}</div>
-          <div><span class="st ${r.state==='part'?'map':r.state}">${{api:'ต่อเข้าแดชบอร์ดแล้ว',map:'รอจับคู่คอลัมน์',file:'ยังไม่ใช้'}[r.state]}</span></div></div>`;
+          <div class="id">${r.id?'resource_id: '+r.id:'ยังไม่มี resource_id'}</div>${body}</div>
+          <div><span class="st ${r.state==='link'?'map':r.state}">${{api:'ต่อเข้าแดชบอร์ดแล้ว',map:'รอจับคู่คอลัมน์',link:'กำลังเชื่อมข้อมูล',file:'ยังไม่ใช้'}[r.state]}</span></div></div>`;
       }).join('')+'</div>';
   }).join('');
 }
 async function check(fresh){
-  GDC.RES.forEach(r=>delete RESULT[r.id]); drawSum(); drawList();
-  await Promise.all(GDC.RES.map(async r=>{
-    try{ RESULT[r.id]={ok:true,v:await GDC.all(r.id,{fresh})}; }
-    catch(e){ RESULT[r.id]={ok:false,err:e.message}; }
+  GDC.RES.forEach(r=>delete RESULT[RK(r)]); drawSum(); drawList();
+  await Promise.all(GDC.RES.filter(r=>r.id).map(async r=>{
+    try{ RESULT[RK(r)]={ok:true,v:await GDC.all(r.id,{fresh})}; }
+    catch(e){ RESULT[RK(r)]={ok:false,err:e.message}; }
     drawSum(); drawList();
   }));
 }
 document.getElementById('btnRe').onclick=()=>check(true);
 document.getElementById('btnCopy').onclick=async()=>{
-  const out=GDC.RES.map(r=>{const R=RESULT[r.id];
+  const out=GDC.RES.filter(r=>r.id).map(r=>{const R=RESULT[RK(r)];
     return {name:r.n,resource_id:r.id,ok:!!(R&&R.ok),error:R&&!R.ok?R.err:undefined,
       total:R&&R.ok?R.v.total:undefined,fields:R&&R.ok?R.v.fields.map(x=>x.id+':'+x.type):undefined,
       sample:R&&R.ok?R.v.records.slice(0,5).map(x=>{const o={};Object.keys(x).filter(k=>k!=='_id').forEach(k=>o[k]=x[k]);return o}):undefined}});

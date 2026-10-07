@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="ds.css">
 
 </head>
@@ -22,7 +23,7 @@
   <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start">
     <span class="bigico icow img" id="agriBigIco"></span><span><h2>ภาคเกษตรและฐานรากเศรษฐกิจ</h2>
     <p>ครัวเรือนเกษตรกรกว่า 1 แสนครัวเรือน คือฐานรายได้ของคนส่วนใหญ่ ภาคนี้จึงเป็นตัวชี้กำลังซื้อระดับหมู่บ้าน</p></span></div>
-    <div class="r"><span class="chip real">ข้อมูลจริง</span><span class="chip">สนง.เกษตรจังหวัด</span></div></div>
+    <div class="r"><span class="chip real">ข้อมูลจริง</span><span class="chip">สนง.เกษตรจังหวัด</span><span id="gdcSlotA"></span></div></div>
   <div class="kpibox mb"><div class="grid g4" id="agriKpi"></div></div>
   <div class="grid g2 mb" id="agriKpi2"></div>
   <div class="segs mb" id="agriSeg">
@@ -30,7 +31,7 @@
     <button data-t="fruit"><img class="segico" src="assets/icons/ic-fruit.png" alt="" onerror="this.remove()">ไม้ผลเศรษฐกิจ</button>
     <button data-t="main"><img class="segico" src="assets/icons/ic-maincrop.png" alt="" onerror="this.remove()">พืชเศรษฐกิจหลัก</button>
     <button data-t="water"><img class="segico" src="assets/icons/ic-water.png" alt="" onerror="this.remove()">แหล่งน้ำเพื่อการเกษตร</button>
-    <button data-t="org"><img class="segico" src="assets/icons/ic-bigplot.png" alt="" onerror="this.remove()">แปลงใหญ่และสถาบันเกษตรกร</button>
+    <button data-t="org"><img class="segico" src="assets/icons/ic-bigplot.png" alt="" onerror="this.remove()">การส่งเสริม และแหล่งท่องเที่ยวเชิงเกษตร</button>
     <button data-t="base"><img class="segico" src="assets/icons/ic-base.png" alt="" onerror="this.remove()">ฐานข้อมูลพื้นฐาน</button>
   </div>
 
@@ -80,15 +81,16 @@
   </div>
 
   <div id="agri-water" class="hide">
+    <div class="wyear mb" id="waterYear"></div>
     <div class="grid g4 mb" id="waterKpi"></div>
     <div class="grid g21 mb">
       <div class="c"><header><span class="hdico icow img" data-hdico="water"></span><h3>แหล่งน้ำเพื่อการเกษตร</h3><span class="u">แยกตามประเภท</span>
-        <span class="r"><span class="chip mock">บางรายการรอยืนยัน</span></span></header>
+        <span class="r" id="waterChip"><span class="chip mock">กำลังเชื่อมข้อมูล</span></span></header>
         <div class="b"><div class="sc"><table class="t" data-owner="crop" id="tWater"></table></div></div></div>
       <div class="c"><header><span class="hdico icow img" data-hdico="irrigation"></span>
         <h3>แหล่งน้ำชลประทานจำแนกตามประเภท</h3></header>
         <div class="b"><div id="irrBox"></div>
-          <div class="note">ข้อมูลจากโครงการชลประทานหนองบัวลำภู กรมชลประทาน — เป็นแหล่งน้ำที่มีระบบส่งน้ำถึงแปลงจริง
+          <div class="note">ข้อมูลจากโครงการชลประทานหนองบัวลำภู ผ่านระบบบัญชีข้อมูลจังหวัด — เป็นแหล่งน้ำที่มีระบบส่งน้ำถึงแปลงจริง
           ต่างจากแหล่งน้ำธรรมชาติที่ยังต้องสูบเอง</div></div></div>
     </div>
     <div class="c"><header><span class="hdico icow img" data-hdico="network"></span><h3>ความเชื่อมโยงกับศูนย์บัญชาการข้อมูลสถานการณ์น้ำ</h3></header>
@@ -101,12 +103,20 @@
   </div>
 
   <div id="agri-org" class="hide">
-    <div class="grid g21 mb">
-      <div class="c"><header><span class="hdico icow img" data-hdico="bigplot"></span><h3>โครงการระบบส่งเสริมการเกษตรแบบแปลงใหญ่</h3>
-        <span class="u">73 แปลง · 3,996 ราย · 36,900 ไร่</span></header>
-        <div class="b"><div class="sc"><table class="t" data-owner="crop" id="tBigPlot"></table></div></div></div>
-      <div class="c"><header><span class="hdico icow img" data-hdico="tourism"></span><h3>แหล่งท่องเที่ยวเชิงเกษตรรายอำเภอ</h3><span class="u">73 แห่ง</span></header>
-        <div class="b"><div class="ch"><canvas id="cAgriTour"></canvas></div></div></div>
+    <div class="promo mb">
+      <div class="promo-head">
+        <div class="promo-kpis" id="promoKpi"></div>
+        <div class="promo-view"><span>มุมมองข้อมูลบนแผนที่</span>
+          <div class="vswitch" id="promoView">
+            <button data-pv="tour" class="on">ท่องเที่ยวเชิงเกษตร</button>
+            <button data-pv="plot">เกษตรแปลงใหญ่</button></div></div>
+      </div>
+      <div class="promo-grid">
+        <div class="c promo-map"><header><span class="hdico icow img" data-hdico="area"></span><h3>แผนที่ข้อมูลรายอำเภอ</h3>
+          <span class="u" id="promoMapSub"></span></header>
+          <div class="b"><div id="promoMap"></div><div class="note" id="promoMapNote"></div></div></div>
+        <div class="c promo-side" id="promoSide"></div>
+      </div>
     </div>
     <div class="grid g3">
       <div class="c"><header><span class="hdico icow img" data-hdico="organic"></span><h3>สถาบันและศูนย์เรียนรู้</h3></header><div class="b" id="instBox"></div></div>
@@ -128,6 +138,7 @@
   </main>
 </div>
 <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script crossorigin="anonymous" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="data1.js"></script>
 <script src="data2.js"></script>
 <script src="ds.js"></script>
@@ -171,13 +182,221 @@ function comboChart(id,o){
         same?{}:{y1:ax({type:o.line.log?'logarithmic':'linear',beginAtZero:!o.line.log,min:o.line.log?lmin(o.line.data):undefined,position:'right',grid:{display:false},
           ticks:{callback:v=>tick(v,o.line.log)}})})}});
 }
+/* ════════ ภาคเกษตร · ชุดข้อมูลจากระบบบัญชีข้อมูลจังหวัด ════════
+   ปีที่เลือกได้มาจากข้อมูลใน API · เพิ่มปีใหม่ในระบบบัญชีข้อมูลจังหวัด ตัวเลือกปีจะเพิ่มเอง */
+const AG_RES={irr:'95537e06-3fbd-48ed-b64a-f7ff75b8a85b',small:'5d8b0bd9-9f5a-4385-a63e-16a300cd7a5e',
+  hh:'94c6b113-e8f7-4aca-bb8c-4fbea3454b70',benefit:'e7795256-a7e4-46d1-86d8-c58cd22023db'};
+const AG_API={state:'idle',d:{},err:{}};
+let WATER_Y=null;
+function agriRows(rows,typeKey){
+  return rows.map(r=>({y:gdcYear(r),amp:String(r['อำเภอ']||'').trim(),t:typeKey?String(r[typeKey]||'').trim():'',v:gdcVal(r)}))
+    .filter(r=>r.y&&r.v!=null);
+}
+function agriSync(){
+  if(AG_API.state!=='idle')return; AG_API.state='loading';
+  Promise.all(Object.keys(AG_RES).map(k=>GDC.all(AG_RES[k]).then(v=>{AG_API.d[k]=agriRows(gdcRows(v),k==='irr'?'ประเภทแหล่งน้ำ':null)})
+    .catch(e=>{AG_API.err[k]=e.message})))
+  .then(()=>{AG_API.state='ok';try{renderAgri()}catch(e){console.error(e)}});
+}
+const agYears=k=>[...new Set((AG_API.d[k]||[]).map(r=>r.y))].sort((a,b)=>a-b);
+const agSum=(k,y,f)=>(AG_API.d[k]||[]).filter(r=>r.y===y&&(!f||f(r))).reduce((a,r)=>a+r.v,0);
+const agHas=k=>(AG_API.d[k]||[]).length>0;
+/* การ์ดของชุดที่ยังไม่เปิดอ่านผ่าน API */
+function linkCard(label,img,color,unit,src,ds){
+  return kpiCard({icon:'drop',img,color,label,value:'—',unit,
+    chip:'<span class="chip mock">กำลังเชื่อมข้อมูล</span>',sub:'ที่มา: '+src,
+    tip:tipOf({t:label,d:'ชุดข้อมูลมีอยู่ในระบบบัญชีข้อมูลจังหวัดแล้ว แต่ระบบยังไม่เปิดให้อ่านผ่าน API'+(ds?' ('+ds+')':''),
+      calc:'เมื่อเปิดอ่านได้ ตัวเลขจะขึ้นเองโดยไม่ต้องแก้แดชบอร์ด',src:'',when:''})});
+}
+function renderWater(){
+  const gs=document.getElementById('gdcSlotA'); if(gs)gs.innerHTML=gdcBadge('agri');
+  const loading=AG_API.state!=='ok';
+  const ys=[...new Set([].concat(agYears('irr'),agYears('small'),agYears('benefit')))].sort((a,b)=>a-b);
+  if(WATER_Y==null||ys.indexOf(WATER_Y)<0)WATER_Y=ys[ys.length-1]||null;
+  const Y=WATER_Y, PY=ys[ys.indexOf(Y)-1]||null;
+  /* ตัวเลือกปี */
+  const yb=document.getElementById('waterYear');
+  if(yb)yb.innerHTML=ys.length?`<span class="sl-lab">ปีข้อมูล</span>`+ys.slice().reverse().map(y=>`<button class="${y===Y?'on':''}" data-wy="${y}">${y}</button>`).join('')
+    :`<span class="sl-lab">${loading?'กำลังดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัด…':'ยังไม่มีข้อมูลจาก API'}</span>`;
+  const yoy=(k,f)=>{if(!PY)return '';const a=agSum(k,Y,f),b=agSum(k,PY,f);if(!b)return '';const d=a-b;
+    return `<span class="chip ${d>0?'up':d<0?'dn':'fl'}">${d>0?'▲ +':d<0?'▼ ':'▬ '}${f_num(d)} จากปี ${PY}</span>`};
+  const ampTip=(k,unit,f)=>{const m={};(AG_API.d[k]||[]).filter(r=>r.y===Y&&(!f||f(r))).forEach(r=>m[r.amp]=(m[r.amp]||0)+r.v);
+    return Object.keys(m).sort((a,b)=>m[b]-m[a]).map(a=>a+' '+f_num(m[a])).join(' · ')+(unit?' '+unit:'')};
+  const W=D.water;
+  const irrT=agSum('irr',Y), byT={};
+  (AG_API.d.irr||[]).filter(r=>r.y===Y).forEach(r=>byT[r.t]=(byT[r.t]||0)+r.v);
+  const TORD=['อ่างเก็บน้ำ (ใหญ่)','อ่างเก็บน้ำ (กลาง)','อ่างเก็บน้ำ (เล็ก)','ฝายคอนกรีต'];
+  const tList=TORD.filter(t=>t in byT).concat(Object.keys(byT).filter(t=>TORD.indexOf(t)<0));
+  const IRR='โครงการชลประทานหนองบัวลำภู';
+  const apiCard=(k,label,img,color,unit,extra)=>agHas(k)?kpiCard(Object.assign({icon:'drop',img,color,label,value:f(agSum(k,Y),0),unit,
+      chip:'<span class="chip real">API · ปี '+Y+'</span>'+yoy(k)},extra)):
+    kpiCard({icon:'drop',img,color,label,value:'—',unit,chip:'<span class="chip mock">'+(loading?'กำลังดึงข้อมูล…':'เชื่อมต่อ API ไม่ได้')+'</span>',
+      sub:'ที่มา: '+(extra&&extra.srcName||IRR)});
+  $('#waterKpi').innerHTML=[
+    apiCard('irr','แหล่งน้ำชลประทาน','irrigation',cv('--blue'),'แห่ง',{
+      sub:tList.map(t=>t+' '+f(byT[t],0)).join(' · ')+'<br>ที่มา: '+IRR,
+      tip:tipOf({t:'แหล่งน้ำชลประทาน ปี '+Y,d:'แยกตามประเภท · '+tList.map(t=>t+' '+f_num(byT[t])).join(' · '),
+        calc:'ผลรวมทุกประเภททุกอำเภอ = '+f_num(irrT)+' แห่ง · รายอำเภอ: '+ampTip('irr','แห่ง'),src:'irrig',when:'ปี '+Y+' · ระบบบัญชีข้อมูลจังหวัด'})}),
+    apiCard('benefit','พื้นที่ที่ได้รับประโยชน์ในเขตชลประทาน','irrigation',cv('--brand'),'ไร่',{
+      sub:'ที่มา: '+IRR,
+      tip:tipOf({t:'พื้นที่ที่ได้รับประโยชน์ในเขตชลประทาน ปี '+Y,d:'พื้นที่การเกษตรที่ระบบชลประทานส่งน้ำถึง',
+        calc:'ผลรวมทุกอำเภอ = '+f_num(agSum('benefit',Y))+' ไร่ · รายอำเภอ: '+ampTip('benefit','ไร่'),src:'irrig',when:'ปี '+Y+' · ระบบบัญชีข้อมูลจังหวัด'})}),
+    linkCard('พื้นที่เพาะปลูกในเขตชลประทาน','irrigation',cv('--leaf'),'ไร่',IRR,'dataset_02_24'),
+    kpiCard({icon:'bolt',img:'power',color:cv('--gold'),label:'ระบบกระจายน้ำด้วย Solar Cell',value:f(W[0].cnt,0),unit:'แห่ง',
+      chip:'<span class="chip real">ข้อมูลจริง</span>',sub:'พื้นที่รับประโยชน์ '+f(W[0].benefit,0)+' ไร่<br>ที่มา: สนง.พลังงานจังหวัดหนองบัวลำภู',
+      tip:tipOf({t:'ระบบกระจายน้ำด้วย Solar Cell',
+        d:'ระบบสูบและกระจายน้ำพลังงานแสงอาทิตย์ ทางเลือกในพื้นที่ที่ระบบชลประทานส่งไม่ถึง · เป็นจำนวนสะสมตั้งแต่เริ่มโครงการ',
+        calc:'จำนวนจุดติดตั้ง '+f_num(W[0].cnt)+' แห่ง · พื้นที่รับประโยชน์ '+f_num(W[0].benefit)+' ไร่',src:'irrig',when:'ข้อมูล ณ ก.ค. 2569'})}),
+    apiCard('small','แหล่งน้ำขนาดเล็ก','water',cv('--blue'),'แห่ง',{
+      sub:'ที่มา: '+IRR,
+      tip:tipOf({t:'แหล่งน้ำขนาดเล็ก ปี '+Y,d:'แหล่งน้ำขนาดเล็กในความรับผิดชอบของโครงการชลประทาน',
+        calc:'ผลรวมทุกอำเภอ = '+f_num(agSum('small',Y))+' แห่ง · รายอำเภอ: '+ampTip('small','แห่ง'),src:'irrig',when:'ปี '+Y+' · ระบบบัญชีข้อมูลจังหวัด'})}),
+    linkCard('สระน้ำในไร่นานอกเขตชลประทาน','water',cv('--brand2'),'บ่อ','สถานีพัฒนาที่ดินหนองบัวลำภู','information-on'),
+    linkCard('บ่อบาดาล (ประเภทเกษตรกรรม)','water',cv('--plum'),'แห่ง','สนง.ทรัพยากรธรรมชาติและสิ่งแวดล้อมจังหวัดหนองบัวลำภู','dataset_02_05'),
+    kpiCard({icon:'drop',img:'water',color:cv('--faint'),label:'บ่อขนาดเล็ก (เกษตรทฤษฎีใหม่)',value:'—',unit:'บ่อ',
+      chip:'<span class="chip">รอสอบถามแหล่งข้อมูล</span>',sub:'ยังไม่ทราบหน่วยงานเจ้าของข้อมูล',
+      tip:tipOf({t:'บ่อขนาดเล็ก (เกษตรทฤษฎีใหม่)',d:'อยู่ระหว่างสอบถามว่าหน่วยงานใดเป็นเจ้าของข้อมูล',calc:'',src:'',when:''})})
+  ].join('');
+
+  /* ตาราง แหล่งน้ำแยกตามประเภท */
+  const ST={api:'<span class="chip real">API</span>',link:'<span class="chip mock">กำลังเชื่อมข้อมูล</span>',ask:'<span class="chip">รอสอบถาม</span>'};
+  const TR=[
+    ['แหล่งน้ำชลประทาน',agHas('irr')?f(irrT,0):'—','แห่ง',agHas('irr')?'api':'link'],
+    ['แหล่งน้ำขนาดเล็ก',agHas('small')?f(agSum('small',Y),0):'—','แห่ง',agHas('small')?'api':'link'],
+    ['สระน้ำไร่นานอกเขตชลประทาน','—','บ่อ','link'],
+    ['บ่อบาดาล ประเภทเกษตรกรรม','—','แห่ง','link'],
+    ['บ่อขนาดเล็ก (เกษตรทฤษฎีใหม่)','—','บ่อ','ask'],
+    ['โครงการแก้มลิง','—','แห่ง','link']];
+  $('#tWater').innerHTML=`<thead><tr><th>ประเภทแหล่งน้ำ</th><th class="r">จำนวน</th><th>หน่วย</th><th style="width:130px">สถานะ</th></tr></thead><tbody>`+
+    TR.map(r=>`<tr><td>${rowIco(r[0])}${r[0]}</td><td class="r">${r[1]}</td><td>${r[2]}</td><td>${ST[r[3]]}</td></tr>`).join('')+
+    `</tbody><tfoot><tr><td colspan="4" style="font-family:var(--fb);font-weight:400;color:var(--faint);font-size:10.5px">
+      ${Y?'ปี '+Y+' · ':''}API = ดึงจากระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู · กำลังเชื่อมข้อมูล = มีชุดข้อมูลในระบบแล้วแต่ยังเปิดอ่านผ่าน API ไม่ได้</td></tr></tfoot>`;
+  const wc=document.getElementById('waterChip'); if(wc)wc.innerHTML=agHas('irr')?'<span class="chip real">ดึงจาก API บางส่วน</span>':'<span class="chip mock">กำลังเชื่อมข้อมูล</span>';
+
+  /* แหล่งน้ำชลประทานจำแนกตามประเภท */
+  const box=document.getElementById('irrBox');
+  if(box){
+    const mx=Math.max(1,...tList.map(t=>byT[t]));
+    const mini=(l,v,u,tip)=>`<div class="mini${v==null?' pend':''}" data-tip2="${tip}"><div class="l">${l}</div>
+      <div class="v">${v==null?'<span class="pendtx">กำลังเชื่อมข้อมูล</span>':v+'<small> '+u+'</small>'}</div></div>`;
+    box.innerHTML=(tList.length?tList.slice().sort((a,b)=>byT[b]-byT[a]).map((t,i)=>`<div class="barrow" data-tip2="${tipOf({t:t+' ปี '+Y,
+        d:'จำนวนแหล่งน้ำประเภทนี้ทั้งจังหวัด',calc:'รายอำเภอ: '+ampTip('irr','แห่ง',r=>r.t===t),src:'irrig',when:'ปี '+Y})}">
+        <span class="nm">${t}</span><span class="tr"><i style="width:${(byT[t]/mx*100).toFixed(0)}%;background:${PAL()[i%7]}"></i></span>
+        <span class="vv">${f(byT[t],0)}</span></div>`).join(''):`<div class="note">${loading?'กำลังดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัด…':'เชื่อมต่อ API ไม่ได้'}</div>`)+
+      `<div class="grid g2" style="gap:9px;margin-top:11px">
+        ${mini('ปริมาณเก็บกักน้ำ',null,'ล้าน ลบ.ม.',tipOf({t:'ปริมาณเก็บกักน้ำ',d:'ชุดข้อมูล dataset_04_03 อยู่ในระบบบัญชีข้อมูลจังหวัดแล้ว รอเปิดอ่านผ่าน API',calc:'',src:'irrig',when:''}))}
+        ${mini('พื้นที่ชลประทาน',null,'ไร่',tipOf({t:'พื้นที่ชลประทาน',d:'ชุดข้อมูล dataset_04_04 อยู่ในระบบบัญชีข้อมูลจังหวัดแล้ว รอเปิดอ่านผ่าน API',calc:'',src:'irrig',when:''}))}
+        ${mini('พื้นที่ที่ได้รับประโยชน์ในเขตชลประทาน',agHas('benefit')?f(agSum('benefit',Y),0):null,'ไร่',
+           tipOf({t:'พื้นที่ที่ได้รับประโยชน์ในเขตชลประทาน ปี '+Y,d:'ดึงจากระบบบัญชีข้อมูลจังหวัด',calc:'รายอำเภอ: '+ampTip('benefit','ไร่'),src:'irrig',when:'ปี '+Y}))}
+        ${mini('ครัวเรือนในเขตชลประทานที่ได้รับประโยชน์',null,'ครัวเรือน',tipOf({t:'ครัวเรือนในเขตชลประทานที่ได้รับประโยชน์',d:'ชุดข้อมูล dataset_04_06 อยู่ในระบบบัญชีข้อมูลจังหวัดแล้ว รอเปิดอ่านผ่าน API',calc:'',src:'irrig',when:''}))}
+      </div>`;
+  }
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-wy]');if(b){WATER_Y=+b.dataset.wy;renderWater()}});
+
+/* ════════ การส่งเสริม และแหล่งท่องเที่ยวเชิงเกษตร ════════
+   ซ้าย: แผนที่ 6 อำเภอ ระบายสีตามมุมมองที่เลือก · ขวา: ภาพรวมจังหวัด หรือรายละเอียดอำเภอที่กดเลือก
+   ข้อมูลรายอำเภอของแปลงใหญ่ และรายชื่อแหล่งท่องเที่ยว อยู่ระหว่างขอจากสำนักงานเกษตรจังหวัด */
+let PROMO_V='tour', PROMO_A=null;
+const AMP_IMG=c=>'assets/amp/amp-'+c+'.webp';         /* ภาพประจำอำเภอ 1200×600 ถ้ามีจะแสดงเอง */
+const gmap=q=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);
+function promoData(){
+  const B=D.base, tot=B.tour.total;
+  const tour=DISTRICTS.map(d=>({code:d.code,name:d.name,v:B.tour.byAmphoe[d.code]||0}));
+  const rk=tour.slice().sort((a,b)=>b.v-a.v);
+  tour.forEach(t=>{t.rank=rk.findIndex(x=>x.code===t.code)+1;t.share=tot?t.v/tot*100:0});
+  /* แปลงใหญ่รายอำเภอยังไม่มี · byAmphoe จะถูกใช้เองเมื่อเพิ่มข้อมูล */
+  const pb=(B.bigPlot.byAmphoe)||null;
+  const plot=DISTRICTS.map(d=>({code:d.code,name:d.name,v:pb&&pb[d.code]!=null?(pb[d.code].plots??pb[d.code]):null,
+    farmers:pb&&pb[d.code]&&pb[d.code].farmers,area:pb&&pb[d.code]&&pb[d.code].area}));
+  return {tour,plot,tot,B};
+}
+function promoTip(r,P){
+  const t=P.tour.find(x=>x.name===r.name)||{}, pl=P.plot.find(x=>x.name===r.name)||{};
+  return `<div class="ptt"><img src="${AMP_IMG(t.code)}" alt="" onerror="this.remove()">
+    <b>อำเภอ${r.name}</b>
+    <div class="ptt-r"><span>แหล่งท่องเที่ยวเชิงเกษตร</span><em>${f(t.v,0)} แห่ง</em></div>
+    <div class="ptt-r"><span>สัดส่วนของจังหวัด</span><em>${(t.share||0).toFixed(1)}% · อันดับ ${t.rank}</em></div>
+    <div class="ptt-r"><span>เกษตรแปลงใหญ่</span><em>${pl.v!=null?f(pl.v,0)+' แปลง':'รอข้อมูลรายอำเภอ'}</em></div>
+    <small>กดเพื่อดูรายละเอียดอำเภอ</small></div>`;
+}
+function renderPromo(){
+  const P=promoData(), B=P.B;
+  /* แถบตัวเลขด้านบน */
+  const k=(ic,l,v,u,col,tip)=>`<div class="pk" style="--c:${col}" data-tip2="${tip}"><span class="pk-i icow img">${icoImg(ic,30)}</span>
+    <span class="pk-t"><span>${l}</span><b>${v}<small> ${u}</small></b></span></div>`;
+  $('#promoKpi').innerHTML=
+    k('bigplot','จำนวนแปลงใหญ่',f(B.bigPlot.plots,0),'แปลง',cv('--brand'),tipOf({t:'เกษตรแปลงใหญ่',d:'โครงการระบบส่งเสริมการเกษตรแบบแปลงใหญ่ทั้งจังหวัด',calc:B.bigPlot.rows.length+' ชนิดสินค้า',src:'crop',when:'ข้อมูลสำนักงานเกษตรจังหวัด'}))+
+    k('farmerage','จำนวนเกษตรกร',f(B.bigPlot.farmers,0),'ราย',cv('--gold'),tipOf({t:'เกษตรกรในแปลงใหญ่',d:'สมาชิกของทุกแปลงใหญ่',calc:'ผลรวมทุกชนิดสินค้า',src:'crop',when:''}))+
+    k('landuse','พื้นที่',f(B.bigPlot.area,0),'ไร่',cv('--leaf'),tipOf({t:'พื้นที่แปลงใหญ่',d:'พื้นที่รวมของทุกแปลงใหญ่',calc:'ผลรวมทุกชนิดสินค้า',src:'crop',when:''}))+
+    k('tourism','แหล่งท่องเที่ยวเชิงเกษตร',f(P.tot,0),'แห่ง',cv('--coral'),tipOf({t:'แหล่งท่องเที่ยวเชิงเกษตร',d:'จุดที่เปิดให้เยี่ยมชมกิจกรรมการเกษตร',calc:'ผลรวมทั้ง 6 อำเภอ',src:'crop',when:'ข้อมูล ณ ก.ค. 2569'}));
+  document.querySelectorAll('#promoView [data-pv]').forEach(b=>b.classList.toggle('on',b.dataset.pv===PROMO_V));
+
+  /* แผนที่ */
+  const M=PROMO_V==='tour'?P.tour:P.plot, unit=PROMO_V==='tour'?'แห่ง':'แปลง';
+  const hasM=M.some(r=>r.v!=null);
+  $('#promoMapSub').textContent=(PROMO_V==='tour'?'แหล่งท่องเที่ยวเชิงเกษตร':'จำนวนแปลงใหญ่')+' · กดอำเภอเพื่อดูรายละเอียด';
+  window.onChoPick=nm=>{PROMO_A=PROMO_A===nm?null:nm;renderPromo()};
+  const orgOn=!document.getElementById('agri-org').classList.contains('hide');
+  if(orgOn)drawAmpChoropleth('promoMap',M.map(r=>({name:r.name,value:r.v})),{unit,dec:0,height:innerWidth>1150?600:400,selected:PROMO_A,labels:true,
+    onClick:nm=>{PROMO_A=PROMO_A===nm?null:nm;renderPromo()},
+    tipHtml:r=>promoTip(r,P),tipOf:r=>tipOf({t:'อำเภอ'+r.name,d:r.value==null?'ยังไม่มีข้อมูลรายอำเภอ':f(r.value,0)+' '+unit,calc:'กดเพื่อดูรายละเอียด',src:'crop',when:''})});
+  $('#promoMapNote').innerHTML=hasM
+    ? `สีเข้มคือมีมาก · ${PROMO_V==='tour'?'อำเภอ<b>'+P.tour.slice().sort((a,b)=>b.v-a.v)[0].name+'</b> มีแหล่งท่องเที่ยวเชิงเกษตรมากที่สุด':''}`
+    : `<b>ยังไม่มีจำนวนแปลงใหญ่รายอำเภอ</b> · กำลังสอบถามสำนักงานเกษตรจังหวัด ระหว่างนี้แสดงภาพรวมจังหวัดในแผงด้านขวา`;
+
+  /* แผงขวา */
+  const side=document.getElementById('promoSide'); if(!side)return;
+  const A=PROMO_A?P.tour.find(x=>x.name===PROMO_A):null, AP=PROMO_A?P.plot.find(x=>x.name===PROMO_A):null;
+  const cmx=Math.max(...B.bigPlot.rows.map(r=>r[1]));
+  const commodity=B.bigPlot.rows.map((r,i)=>`<div class="barrow" data-tip2="${tipOf({t:'แปลงใหญ่ '+r[0],d:f_num(r[1])+' แปลง · เกษตรกร '+f_num(r[2])+' ราย · พื้นที่ '+f_num(r[3])+' ไร่',calc:'สัดส่วน '+(r[1]/B.bigPlot.plots*100).toFixed(1)+'% ของแปลงทั้งหมด',src:'crop',when:''})}">
+    <span class="nm">${rowIco(r[0],17)}${r[0]}</span><span class="tr"><i style="width:${(r[1]/cmx*100).toFixed(0)}%;background:${PAL()[i%7]}"></i></span>
+    <span class="vv">${r[1]} แปลง</span></div>`).join('');
+  const rankList=P.tour.slice().sort((a,b)=>b.v-a.v).map((t,i)=>`<div class="prk${PROMO_A===t.name?' on':''}" data-cho-amp="${t.name}">
+    <span class="n">${i+1}</span><span class="a">${t.name}</span><span class="tr"><i style="width:${(t.v/P.tour.reduce((m,x)=>Math.max(m,x.v),1)*100).toFixed(0)}%"></i></span><b>${t.v}</b></div>`).join('');
+  side.innerHTML=!A?`
+    <div class="ps-hero" style="--img:url('assets/a-bigplot.jpg')"><div><small>ภาพรวมทั้งจังหวัด</small><b>จังหวัดหนองบัวลำภู</b></div></div>
+    <div class="b">
+      <div class="ps-sec"><h4>เกษตรแปลงใหญ่</h4>
+        <div class="ps-stats"><div><b>${f(B.bigPlot.plots,0)}</b><span>แปลง</span></div><div><b>${f(B.bigPlot.farmers,0)}</b><span>ราย</span></div><div><b>${f(B.bigPlot.area,0)}</b><span>ไร่</span></div></div>
+        <div class="ps-sub">แยกตามชนิดสินค้า</div>${commodity}</div>
+      <div class="ps-sec"><h4>แหล่งท่องเที่ยวเชิงเกษตรรายอำเภอ <span>กดชื่ออำเภอเพื่อดูรายละเอียด</span></h4>${rankList}</div>
+    </div>`
+    :`
+    <div class="ps-hero" style="--img:url('${AMP_IMG(A.code)}'),url('assets/a-bigplot.jpg')"><div><small>รายละเอียดอำเภอ</small><b>อำเภอ${A.name}</b></div>
+      <button class="ps-back" data-cho-amp="${A.name}">‹ ภาพรวมจังหวัด</button></div>
+    <div class="b">
+      <div class="ps-sec"><h4>แหล่งท่องเที่ยวเชิงเกษตร</h4>
+        <div class="ps-stats"><div><b>${f(A.v,0)}</b><span>แห่ง</span></div><div><b>${A.share.toFixed(1)}%</b><span>ของจังหวัด</span></div><div><b>${A.rank}</b><span>อันดับใน 6 อำเภอ</span></div></div>
+        <div class="ps-pend">รายชื่อและภาพแหล่งท่องเที่ยวรายแห่ง รอข้อมูลจากสำนักงานเกษตรจังหวัด</div>
+        <a class="ps-gm" href="${gmap('แหล่งท่องเที่ยวเชิงเกษตร อำเภอ'+A.name+' หนองบัวลำภู')}" target="_blank" rel="noopener">ค้นหาแหล่งท่องเที่ยวในอำเภอ${A.name}บน Google Maps ›</a></div>
+      <div class="ps-sec"><h4>เกษตรแปลงใหญ่</h4>
+        ${AP&&AP.v!=null?`<div class="ps-stats"><div><b>${f(AP.v,0)}</b><span>แปลง</span></div><div><b>${f(AP.farmers||0,0)}</b><span>ราย</span></div><div><b>${f(AP.area||0,0)}</b><span>ไร่</span></div></div>`
+          :`<div class="ps-pend">ยังไม่มีข้อมูลแปลงใหญ่รายอำเภอ · กำลังสอบถามสำนักงานเกษตรจังหวัด</div>`}</div>
+      <div class="ps-sec"><h4>อำเภออื่น</h4>${rankList}</div>
+    </div>`;
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pv]');if(b){PROMO_V=b.dataset.pv;renderPromo()}});
+
 function renderAgri(){
   const C=D.crop,B=D.base,val=cropValue();
   /* แถวบน 4 การ์ดในกรอบเดียวกัน · แถวล่าง มูลค่าผลผลิต กับ ท่องเที่ยวเชิงเกษตร */
   const FR=D.fruit, frArea=FR.reduce((a,x)=>a+(+x.area||0),0), frKg=FR.reduce((a,x)=>a+(+x.kg||0),0);
   const agriLand=B.agriArea;
   $('#agriKpi').innerHTML=[
-    kpiCard({icon:'people',img:'household',color:cv('--leaf'),label:'ครัวเรือนภาคการเกษตร',value:f(C.hh,0),unit:'ครัวเรือน',
+    (function(){
+      /* ครัวเรือนเกษตรกรจากระบบบัญชีข้อมูลจังหวัด · ปีล่าสุดที่มีใน API */
+      const ys=agYears('hh'); if(!ys.length)return null;
+      const y=ys[ys.length-1], py=ys[ys.length-2], v=agSum('hh',y), pv=py?agSum('hh',py):null;
+      const m={};(AG_API.d.hh||[]).filter(r=>r.y===y).forEach(r=>m[r.amp]=(m[r.amp]||0)+r.v);
+      return kpiCard({icon:'people',img:'household',color:cv('--leaf'),label:'ครัวเรือนภาคการเกษตร',value:f(v,0),unit:'ครัวเรือน',
+        chip:'<span class="chip real">API · ปี '+y+'</span>'+(pv?'<span class="chip '+(v>=pv?'up':'dn')+'">'+(v>=pv?'▲ +':'▼ ')+f_num(v-pv)+' จากปี '+py+'</span>':''),
+        sub:'ครัวเรือนเกษตรกรที่ปลูกพืช ทั้ง 6 อำเภอ',
+        tip:tipOf({t:'ครัวเรือนภาคการเกษตร ปี '+y,
+          d:'จำนวนครัวเรือนเกษตรกรที่ปลูกพืช จากระบบบัญชีข้อมูลจังหวัด · ต่างจากผลรวมครัวเรือนรายชนิดพืช '+f_num(C.hh)+' ครัวเรือน ซึ่งนับซ้ำเมื่อครัวเรือนเดียวปลูกหลายชนิด',
+          calc:'ผลรวมทุกอำเภอ = '+f_num(v)+' · '+Object.keys(m).sort((a,b)=>m[b]-m[a]).map(a=>a+' '+f_num(m[a])).join(' · '),
+          src:'crop',when:'ปี '+y+' · ระบบบัญชีข้อมูลจังหวัด'})});
+    })()||kpiCard({icon:'people',img:'household',color:cv('--leaf'),label:'ครัวเรือนภาคการเกษตร',value:f(C.hh,0),unit:'ครัวเรือน',
       chip:'<span class="chip">ทะเบียน '+f(B.agriHH,0)+'</span>',sub:'ราว 1 ใน 5 ของประชากร',
       tip:tipOf({t:'ครัวเรือนภาคการเกษตร',
         d:'จำนวนครัวเรือนที่ปลูกพืชอายุสั้นในฤดูกาลนี้ นับซ้ำได้ถ้าครัวเรือนหนึ่งปลูกหลายชนิดพืช จึงสูงกว่าจำนวนครัวเรือนที่ขึ้นทะเบียนเกษตรกร '+f_num(B.agriHH)+' ครัวเรือน',
@@ -194,7 +413,7 @@ function renderAgri(){
         d:C.rows.length+' ชนิดพืช · ข้าวนาปีครองพื้นที่มากที่สุดแต่ยังไม่มีผลผลิตเพราะอยู่ระหว่างฤดูกาล อ้อยโรงงานคิดเป็นผลผลิตเกือบทั้งหมดเมื่อวัดเป็นกิโลกรัม',
         calc:'พื้นที่ปลูก = ผลรวมเนื้อที่ทุกชนิดพืช '+f_num(C.area)+' ไร่ · ผลผลิตรวม = ผลรวมผลผลิตทุกชนิดพืช '+f_num(C.yieldKg)+' กก.',
         src:'crop',when:'ข้อมูล ณ 8 กันยายน 2569'})}),
-    kpiCard({icon:'leaf',img:'fruit',color:cv('--gold'),label:'ไม้ผลเศรษฐกิจสำคัญ',
+    kpiCard({icon:'leaf',img:'fruit',bg:'fruit-durian',color:cv('--gold'),label:'ไม้ผลเศรษฐกิจสำคัญ',
       rows:[['พื้นที่ปลูก',f(frArea,2),'ไร่'],['ผลผลิตรวม',f(frKg,0),'กิโลกรัม']],
       tip:tipOf({t:'ไม้ผลเศรษฐกิจสำคัญ',
         d:FR.length+' ชนิด คือ '+FR.map(x=>x.n).join(' ')+' · ผลผลิตเป็นปริมาณต่อปี',
@@ -313,77 +532,14 @@ function renderAgri(){
     <b>${bigA.n.split(' ')[0]}</b> ปลูกมากที่สุด ${f(bigA.area,0)} ไร่ · <b>${hiY.n.split(' ')[0]}</b> ให้ผลผลิตต่อไร่สูงสุด ${f(hiY.per,0)} กก./ไร่
     ${B.mainCrop.some(r=>!r.per)?'<span style="color:var(--faint)">· '+B.mainCrop.filter(r=>!r.per).map(r=>r.n.split(' ')[0]).join(' ')+' อยู่ระหว่างฤดูกาลจึงยังไม่มีผลผลิตต่อไร่</span>':''}`;
 
-  /* แหล่งน้ำ — รวมข้อมูลชลประทานจริง */
-  const W=D.water,ok=W.filter(w=>w.ok);
-  const IR=(typeof DX!=='undefined')?DX.irrig:null;
-  const irrTot=IR?Object.values(IR.byType).reduce((a,b)=>a+b,0):0;
-  const benefit=IR?IR.benefitArea.total:0;
-  const hhBen=IR?IR.households.total:0;
-  $('#waterKpi').innerHTML=[
-    kpiCard({icon:'drop',img:'irrigation',color:cv('--blue'),label:'แหล่งน้ำชลประทาน',
-      value:f(irrTot,0),unit:'แห่ง',
-      chip:'<span class="chip real">ข้อมูลจริง</span>',
-      sub:IR?('ปี '+IR.year+' · แก้มลิง '+IR.monkey.total+' · สถานีสูบน้ำ '+IR.pump.total):'',
-      tip:tipOf({t:'แหล่งน้ำชลประทาน',
-        d:'ฝาย อ่างเก็บน้ำขนาดเล็ก ประตูระบายน้ำ และสถานีสูบน้ำด้วยไฟฟ้าในความรับผิดชอบของโครงการชลประทานจังหวัด',
-        calc:'ผลรวมจำนวนแหล่งน้ำทุกประเภทที่ขึ้นทะเบียน',src:'irrig',when:IR?('ปี '+IR.year):''})}),
-    kpiCard({icon:'leaf',img:'irrigation',color:cv('--brand'),label:'พื้นที่รับประโยชน์',value:f(benefit,0),unit:'ไร่',
-      chip:'<span class="chip">'+(benefit/1550000*100).toFixed(1)+'% ของพื้นที่เกษตร</span>',
-      sub:'ครัวเรือนได้ประโยชน์ '+f(hhBen,0)+' ครัวเรือน',
-      tip:tipOf({t:'พื้นที่รับประโยชน์ในเขตชลประทาน',
-        d:'พื้นที่การเกษตรที่อยู่ในระยะที่ระบบชลประทานส่งน้ำถึง ใช้ประเมินว่าเกษตรกรกี่รายพ้นจากการพึ่งน้ำฝน',
-        calc:'ผลรวมพื้นที่รับประโยชน์ของทุกโครงการ ÷ พื้นที่เกษตรทั้งจังหวัด 1.55 ล้านไร่',
-        src:'irrig',when:IR?('ปี '+IR.benefitArea.year):''})}),
-    kpiCard({icon:'bolt',img:'power',color:cv('--gold'),label:'ระบบสูบน้ำโซลาร์เซลล์',value:f(W[0].cnt,0),unit:'แห่ง',
-      chip:'<span class="chip real">ข้อมูลจริง</span>',sub:'พื้นที่รับประโยชน์ '+f(W[0].benefit,0)+' ไร่',
-      tip:tipOf({t:'ระบบสูบน้ำพลังงานแสงอาทิตย์',
-        d:'ทางเลือกแทนระบบชลประทานขนาดใหญ่ในพื้นที่ที่น้ำส่งไม่ถึง ต้นทุนเดินเครื่องต่ำเพราะไม่ใช้น้ำมันหรือไฟฟ้า',
-        calc:'นับจำนวนจุดติดตั้งที่ใช้งานได้ = '+f_num(W[0].cnt)+' แห่ง · พื้นที่รับประโยชน์รวม '+f_num(W[0].benefit)+' ไร่',
-        src:'irrig',when:'ข้อมูล ณ ก.ค. 2569'})}),
-    kpiCard({icon:'drop',img:'water',color:cv('--coral'),label:'พื้นที่เกษตรที่ยังพึ่งน้ำฝน',
-      value:((1550000-benefit)/1e6).toFixed(2),unit:'ล้านไร่',
-      chip:'<span class="chip fl">'+((1550000-benefit)/1550000*100).toFixed(0)+'% ของพื้นที่เกษตร</span>',
-      sub:'เป็นกลุ่มเสี่ยงที่สุดเมื่อฝนทิ้งช่วง',
-      tip:tipOf({t:'พื้นที่เกษตรนอกเขตชลประทาน',
-        d:'พื้นที่ที่ยังไม่มีระบบส่งน้ำถึง ต้องพึ่งน้ำฝนอย่างเดียว ผลผลิตจึงผันผวนตามสภาพอากาศ',
-        calc:'พื้นที่เกษตรทั้งจังหวัด − พื้นที่รับประโยชน์ในเขตชลประทาน',src:'irrig'})})
-  ].join('');
-  if(IR){
-    const box=document.getElementById('irrBox');
-    if(box){
-      const T=Object.entries(IR.byType).sort((a,b)=>b[1]-a[1]);
-      const mx=T[0][1];
-      box.innerHTML=T.map((r,i)=>`<div class="barrow"><span class="nm">${r[0]}</span>
-        <span class="tr"><i style="width:${(r[1]/mx*100).toFixed(0)}%;background:${PAL()[i%7]}"></i></span>
-        <span class="vv">${f(r[1],0)}</span></div>`).join('')+
-        `<div class="grid g2" style="gap:9px;margin-top:11px">
-          <div class="mini"><div class="l">แก้มลิง</div><div class="v">${IR.monkey.total}<small> แห่ง</small></div></div>
-          <div class="mini"><div class="l">สถานีสูบน้ำด้วยไฟฟ้า</div><div class="v">${IR.pump.total}<small> สถานี</small></div></div>
-          <div class="mini"><div class="l">ความจุเก็บกัก</div><div class="v">${f(IR.storage.total,0)}<small> ลบ.ม.</small></div></div>
-          <div class="mini"><div class="l">พื้นที่เพาะปลูกในเขต</div><div class="v">${f(IR.cropArea.total,0)}<small> ไร่</small></div></div>
-        </div>`;
-    }
-  }
-  $('#tWater').innerHTML=`<thead><tr><th>ประเภทแหล่งน้ำ</th><th class="r">จำนวน</th><th>หน่วย</th>
-    <th class="r">พื้นที่รับประโยชน์ (ไร่)</th><th style="width:90px">สถานะ</th></tr></thead><tbody>`+
-    W.map((w,i)=>`<tr><td>${rowIco(w.n)}${w.n}</td>${ec('water.'+i+'.cnt',w.cnt!=null?f(w.cnt,0):'—',0)}<td>${w.unit}</td>
-      ${ec('water.'+i+'.benefit',w.benefit!=null?f(w.benefit,0):'—',0)}
-      <td>${w.ok?'<span class="chip real">ยืนยันแล้ว</span>':'<span class="chip mock">รอข้อมูล</span>'}</td></tr>`).join('')+
-    `</tbody><tfoot><tr><td colspan="5" style="font-family:var(--fb);font-weight:400;color:var(--faint);font-size:10.5px">
-      ยืนยันจากเอกสาร สนง.เกษตรจังหวัด ณ ก.ค. 2569 เฉพาะระบบสูบน้ำพลังงานแสงอาทิตย์ · รายการอื่นรอหนังสือยืนยันตัวเลข</td></tr></tfoot>`;
+  /* แหล่งน้ำเพื่อการเกษตร — ดึงจากระบบบัญชีข้อมูลจังหวัด (API) */
+  renderWater();
 
 
-  /* แปลงใหญ่ */
-  const mxA=Math.max(...B.bigPlot.rows.map(r=>r[3]));
-  $('#tBigPlot').innerHTML=`<thead><tr><th>ชนิดสินค้า</th><th class="r">แปลง</th><th class="r">เกษตรกร</th><th class="r">พื้นที่ (ไร่)</th><th style="width:70px"></th></tr></thead><tbody>`+
-    B.bigPlot.rows.map((r,i)=>`<tr><td>${rowIco(r[0])}${r[0]}</td>${ec('base.bigPlot.rows.'+i+'.1',f(r[1],0),0)}${ec('base.bigPlot.rows.'+i+'.2',f(r[2],0),0)}${ec('base.bigPlot.rows.'+i+'.3',f(r[3],0),0)}
-      <td><div class="bar"><i style="width:${(r[3]/mxA*100).toFixed(0)}%;background:var(--brand)"></i></div></td></tr>`).join('')+
-    `</tbody><tfoot><tr><td>รวม</td><td class="r">${B.bigPlot.plots}</td><td class="r">${f(B.bigPlot.farmers,0)}</td><td class="r">${f(B.bigPlot.area,0)}</td><td></td></tr></tfoot>`;
-  const tr=DISTRICTS.map(d=>({n:d.name,v:B.tour.byAmphoe[d.code]||0})).sort((a,b)=>b.v-a.v);
-  mk('cAgriTour',{type:'bar',data:{labels:tr.map(x=>x.n),
-    datasets:[{data:tr.map(x=>x.v),backgroundColor:cv('--gold'),borderRadius:5,barThickness:17}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+' แห่ง'}}},
-      scales:{x:ax({ticks:{stepSize:5}}),y:ax({grid:{display:false},ticks:{font:{size:11}}})}}});
+  /* การส่งเสริม และแหล่งท่องเที่ยวเชิงเกษตร · แผนที่ซ้าย รายละเอียดขวา */
+  renderPromo();
+
+  /* สถาบันเกษตรกร การรับรองมาตรฐาน วิสาหกิจชุมชน */
   $('#instBox').innerHTML=B.inst.map(x=>`<div style="display:flex;align-items:baseline;gap:9px;font-size:12px;padding:6px 0;border-bottom:1px solid var(--line2)">
     <span style="color:var(--dim);flex:1">${rowIco(x[0],17)}${x[0]}</span><b class="n" style="font-size:14px">${f(x[1],0)}</b><span style="font-size:10px;color:var(--faint)">${x[2]}</span></div>`).join('');
   $('#gapBox').innerHTML=`<div class="grid g2" style="gap:9px;margin-bottom:10px">
@@ -444,6 +600,7 @@ window.onSeg=function(w,btn){
     ['crop','fruit','main','water','org','base'].forEach(function(t){
       document.getElementById('agri-'+t).classList.toggle('hide',t!==btn.dataset.t);
     });
+    if(btn.dataset.t==='org')setTimeout(renderPromo,30);
   }
 };
 const AGRI_IMG={crop:'a-crop',fruit:'a-fruit',main:'a-maincrop',water:'a-water',org:'a-bigplot',base:'a-base'};
@@ -452,11 +609,12 @@ const AGRI_SUB={
   fruit:['ไม้ผลเศรษฐกิจ','ทุเรียน ลำไย กาแฟ เงาะ ลิ้นจี่ อินทผลัม'],
   main:['พืชเศรษฐกิจหลัก','ข้าวนาปี อ้อยโรงงาน มันสำปะหลัง ยางพารา'],
   water:['แหล่งน้ำเพื่อการเกษตร','ระบบสูบน้ำพลังงานแสงอาทิตย์และแหล่งน้ำต้นทุน'],
-  org:['แปลงใหญ่และสถาบันเกษตรกร','73 แปลง เกษตรกร 3,996 ราย พื้นที่ 36,900 ไร่'],
+  org:['การส่งเสริม และแหล่งท่องเที่ยวเชิงเกษตร','เกษตรแปลงใหญ่ 73 แปลง · แหล่งท่องเที่ยวเชิงเกษตร 73 แห่ง · ทั้ง 6 อำเภอ'],
   base:['ฐานข้อมูลพื้นฐาน','โครงสร้างประชากร พื้นที่ และครัวเรือนเกษตรกร']
 };
 DS.init('agri',function(){
   renderAgri();
+  agriSync();
   const bi=document.getElementById('agriBigIco');
   if(bi&&!bi.innerHTML)bi.innerHTML=icoImg('agri',52);
   const v=document.getElementById('v-agri');

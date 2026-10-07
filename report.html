@@ -86,8 +86,8 @@ function renderReport(){
 
     <h4>1. การคลังภาครัฐ — เครื่องยนต์หลักที่ยังทำงานเต็มกำลัง</h4>
     <p>จังหวัดเบิกจ่ายงบประมาณแล้ว <b>${F.fn.dis[0].pct}%</b> (${f(F.fn.dis[0].val,2)} จาก ${f(F.fn.dis[0].alloc,2)} ล้านบาท)
-    สูงกว่าเป้าหมาย ${F.fn.dis[0].over}% และเป็น <b>อันดับ ${F.fn.dis[0].rank} ของประเทศ</b>
-    งบลงทุนเบิกจ่ายแล้ว ${F.fn.dis[2].pct}% สูงกว่าเป้าหมายถึง ${F.fn.dis[2].over}% ซึ่งเป็นอันดับ ${F.fn.dis[2].rank} ของประเทศเช่นกัน
+    ${F.fn.dis[0].over!=null?'สูงกว่าเป้าหมาย '+F.fn.dis[0].over+'% และ':''}เป็น <b>อันดับ ${F.fn.dis[0].rank} ของประเทศ</b>
+    งบลงทุนเบิกจ่ายแล้ว ${F.fn.dis[2].pct}% ${F.fn.dis[2].over!=null?'สูงกว่าเป้าหมายถึง '+F.fn.dis[2].over+'% ':''}ซึ่งเป็นอันดับ ${F.fn.dis[2].rank} ของประเทศเช่นกัน
     ยังมีเงินกันไว้เบิกเหลื่อมปี 2568 คงเหลืออีก ${f(F.carry.left,2)} ล้านบาทที่ผลักลงพื้นที่ได้ทันที</p>
 
     <h4>2. ภาคเกษตร — ฐานรายได้ของคนส่วนใหญ่</h4>
@@ -128,6 +128,7 @@ function dl(name,text,type){
 
 
 DS.init('report',function(){
+  if(typeof FISCAL_API!=='undefined'&&FISCAL_API.state==='idle')setTimeout(fiscalSync,0);
   renderReport();
   document.getElementById('btnCsv').onclick=function(){dl('nbl-economy-'+CFG.latest.y+'.csv',toCsv(),'text/csv;charset=utf-8')};
   document.getElementById('btnJson').onclick=function(){dl('nbl-economy-data.json',JSON.stringify({real:D,monthly:DB,district:DBD},null,1),'application/json')};

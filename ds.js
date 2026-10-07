@@ -1748,21 +1748,22 @@ function choLegend(mn,mx,unit,dec){
 function choFallback(rows,mn,span,o){
   const sorted=rows.slice().sort((a,b)=>b.value-a.value);
   return `<div class="cho-fb">`+sorted.map(r=>`
-    <div class="cho-fb-r" data-tip2="${o.tipOf?o.tipOf(r):''}">
+    <div class="cho-fb-r${o.selected===r.name?' on':''}" data-cho-amp="${r.name}" data-tip2="${o.tipOf?o.tipOf(r):''}">
       <span class="nm">${r.name}</span>
       <span class="tr"><i style="width:${Math.max(6,((r.value-mn)/span)*100).toFixed(0)}%;background:${choColor((r.value-mn)/span)}"></i></span>
-      <span class="vv">${f(r.value,o.dec??0)}</span></div>`).join('')+
+      <span class="vv">${r.value==null||!isFinite(r.value)?'—':f(r.value,o.dec??0)}</span></div>`).join('')+
     `</div><div class="note">แสดงเป็นแผนผังสำรองเพราะโหลดขอบเขตแผนที่ไม่ได้ ตรวจว่าอัปโหลด <code>assets/nbl-amphoe.geojson</code> แล้วหรือยัง</div>`;
 }
 /* rows = [{name,value}] · o = {unit,dec,height,title,tipOf} */
 async function drawAmpChoropleth(boxId,rows,o){
   const box=document.getElementById(boxId); if(!box)return;
   o=o||{};
-  const vals=rows.map(r=>r.value).filter(v=>isFinite(v));
-  const mn=Math.min(...vals), mx=Math.max(...vals), span=(mx-mn)||1;
+  const vals=rows.map(r=>r.value).filter(v=>v!=null&&isFinite(v));
+  const mn=vals.length?Math.min(...vals):0, mx=vals.length?Math.max(...vals):0, span=(mx-mn)||1;
   const geo=(typeof L!=='undefined')?await ampGeoJson():null;
   if(!geo){box.innerHTML=choFallback(rows,mn,span,o)+choLegend(mn,mx,o.unit,o.dec??0);return}
   const byName={}; rows.forEach(r=>byName[r.name]=r.value);
+  const selW=nm=>o.selected&&nm===o.selected;
   const pick=nm=>{
     if(byName[nm]!=null)return byName[nm];
     const hit=rows.find(r=>nm&&(nm.indexOf(r.name)>=0||r.name.indexOf(nm)>=0));
@@ -1774,16 +1775,22 @@ async function drawAmpChoropleth(boxId,rows,o){
   const map=L.map(el,{zoomControl:true,scrollWheelZoom:false,attributionControl:false,dragging:true});
   box._map=map;
   const layer=L.geoJSON(geo,{
-    style:ft=>{const v=pick(choAmpName(ft));
-      return{color:'#ffffff',weight:1.6,fillColor:v==null?'#e8ecea':choColor((v-mn)/span),fillOpacity:.92}},
+    style:ft=>{const nm=choAmpName(ft),v=pick(nm);
+      return{color:selW(nm)?'#0b3c32':'#ffffff',weight:selW(nm)?3.4:1.6,
+        fillColor:v==null?'#e8ecea':(o.colorFor?o.colorFor(v,(v-mn)/span):choColor((v-mn)/span)),fillOpacity:o.selected&&!selW(nm)?.55:.92}},
     onEachFeature:(ft,lyr)=>{
       const nm=choAmpName(ft), v=pick(nm);
       const row={name:nm,value:v};
-      lyr.bindTooltip(`<b>${nm}</b><br>${v==null?'ไม่มีข้อมูล':f(v,o.dec??0)+' '+(o.unit||'')}`,
-        {sticky:true,direction:'top',className:'cho-tt'});
-      lyr.on('mouseover',()=>lyr.setStyle({weight:3,color:'#0b3c32'}));
-      lyr.on('mouseout',()=>lyr.setStyle({weight:1.6,color:'#ffffff'}));
-      if(v!=null)lyr.bindPopup(`<div class="cho-pop"><b>${nm}</b>
+      lyr.bindTooltip(o.tipHtml?o.tipHtml(row):`<b>${nm}</b><br>${v==null?'ไม่มีข้อมูล':f(v,o.dec??0)+' '+(o.unit||'')}`,
+        {sticky:true,direction:'top',className:'cho-tt'+(o.tipHtml?' rich':'')});
+      lyr.on('mouseover',()=>lyr.setStyle({weight:3.4,color:'#0b3c32'}));
+      lyr.on('mouseout',()=>lyr.setStyle({weight:selW(nm)?3.4:1.6,color:selW(nm)?'#0b3c32':'#ffffff'}));
+      if(o.onClick){lyr.on('click',()=>o.onClick(nm));
+        /* ป้ายชื่ออำเภอบนแผนที่ */
+        if(o.labels){try{const c=lyr.getBounds().getCenter();
+          L.marker(c,{interactive:false,icon:L.divIcon({className:'cho-lbl',html:`<span>${nm.replace('เมืองหนองบัวลำภู','เมืองฯ')}${v!=null?'<b>'+f(v,o.dec??0)+'</b>':''}</span>`,iconSize:null})}).addTo(map)}catch(e){}}
+      }
+      else if(v!=null)lyr.bindPopup(`<div class="cho-pop"><b>${nm}</b>
         <span>${f(v,o.dec??0)} ${o.unit||''}</span>
         <small>สูงสุด ${f(mx,o.dec??0)} · ต่ำสุด ${f(mn,o.dec??0)}</small></div>`);
     }}).addTo(map);
@@ -2404,15 +2411,28 @@ const GDC={
   /* ทะเบียนชุดข้อมูลที่ย้ายมาใช้ API
      state: 'api' = ต่อเข้าแดชบอร์ดแล้ว · 'map' = ลงทะเบียนแล้ว รอจับคู่คอลัมน์ · 'file' = ยังใช้ไฟล์ข้อมูลเดิม */
   RES:[
-    {id:'b58050df-6cd7-461e-be9b-f1108d6a152c',page:'fiscal',agency:'spend',n:'เงินกันไว้เบิกเหลื่อมปีงบประมาณ',state:'map'},
-    {id:'2fb4cd9f-efcf-4719-b35b-34a20c89ab67',page:'fiscal',agency:'spend',n:'คงเหลือเงินกันไว้เบิกเหลื่อมปี',state:'map'},
-    {id:'b0e1424c-409d-4200-be75-a6a026851bbd',page:'fiscal',agency:'spend',n:'การเบิกจ่ายงบประมาณ',state:'map'},
-    {id:'3bafb802-ddb5-4534-a391-d399c91b3588',page:'fiscal',agency:'spend',n:'การเบิกจ่ายเงินกันไว้เบิกเหลื่อมปี',state:'map'},
-    {id:'e180a38e-e31f-4338-967e-91ebb42424c9',page:'fiscal',agency:'spend',n:'ความต้องการ (เพิ่ม) การเบิกจ่ายงบประมาณ',state:'map'},
-    {id:'e68752b1-8f4b-4b28-92a6-0a78e849575a',page:'fiscal',agency:'spend',n:'การก่อหนี้ผูกพันของการเบิกจ่ายงบประมาณ',state:'map'},
-    {id:'07053215-af15-4271-9539-88d142a63dc8',page:'fiscal',agency:'spend',n:'ผลการเบิกจ่ายงบประมาณ',state:'map'},
-    {id:'21962d43-ccb4-48e6-a760-c815212f271e',page:'fiscal',agency:'spend',n:'ผลการใช้จ่ายงบประมาณ',state:'map'},
-    {id:'8206aee0-36e0-45de-b5cf-6bb850a6ae3c',page:'fiscal',agency:'spend',n:'ลำดับผลการเบิกจ่ายงบประมาณ',state:'map'}
+    {id:'b58050df-6cd7-461e-be9b-f1108d6a152c',page:'fiscal',agency:'spend',n:'เงินกันไว้เบิกเหลื่อมปีงบประมาณ',state:'api'},
+    {id:'2fb4cd9f-efcf-4719-b35b-34a20c89ab67',page:'fiscal',agency:'spend',n:'คงเหลือเงินกันไว้เบิกเหลื่อมปี',state:'api'},
+    {id:'b0e1424c-409d-4200-be75-a6a026851bbd',page:'fiscal',agency:'spend',n:'การเบิกจ่ายงบประมาณ',state:'api'},
+    {id:'3bafb802-ddb5-4534-a391-d399c91b3588',page:'fiscal',agency:'spend',n:'การเบิกจ่ายเงินกันไว้เบิกเหลื่อมปี',state:'api'},
+    {id:'e180a38e-e31f-4338-967e-91ebb42424c9',page:'fiscal',agency:'spend',n:'ความต้องการ (เพิ่ม) การเบิกจ่ายงบประมาณ',state:'api'},
+    {id:'e68752b1-8f4b-4b28-92a6-0a78e849575a',page:'fiscal',agency:'spend',n:'การก่อหนี้ผูกพันของการเบิกจ่ายงบประมาณ',state:'api'},
+    {id:'07053215-af15-4271-9539-88d142a63dc8',page:'fiscal',agency:'spend',n:'ผลการเบิกจ่ายงบประมาณ',state:'api'},
+    {id:'21962d43-ccb4-48e6-a760-c815212f271e',page:'fiscal',agency:'spend',n:'ผลการใช้จ่ายงบประมาณ',state:'api'},
+    {id:'8206aee0-36e0-45de-b5cf-6bb850a6ae3c',page:'fiscal',agency:'spend',n:'ลำดับผลการเบิกจ่ายงบประมาณ',state:'api'},
+    /* ภาคเกษตร · แหล่งน้ำเพื่อการเกษตร */
+    {id:'95537e06-3fbd-48ed-b64a-f7ff75b8a85b',page:'agri',agency:'irrig',n:'แหล่งน้ำชลประทาน จำแนกตามประเภทแหล่งน้ำ',state:'api'},
+    {id:'5d8b0bd9-9f5a-4385-a63e-16a300cd7a5e',page:'agri',agency:'irrig',n:'จำนวนแหล่งน้ำขนาดเล็ก',state:'api'},
+    {id:'94c6b113-e8f7-4aca-bb8c-4fbea3454b70',page:'agri',agency:'crop',n:'จำนวนครัวเรือนเกษตรกร',state:'api'},
+    {id:'e7795256-a7e4-46d1-86d8-c58cd22023db',page:'agri',agency:'irrig',n:'จำนวนพื้นที่ที่ได้รับประโยชน์ในเขตชลประทาน',state:'api'},
+    /* ชุดที่มีในระบบบัญชีข้อมูลจังหวัดแล้ว แต่ระบบยังไม่เปิดอ่านผ่าน API (ยังไม่มีรหัส resource) */
+    {id:'',page:'agri',agency:'irrig',n:'จำนวนพื้นที่เพาะปลูกในเขตชลประทาน',state:'link',ds:'dataset_02_24'},
+    {id:'',page:'agri',agency:'ldd',n:'ข้อมูลสระน้ำในไร่นานอกเขตชลประทาน',state:'link',ds:'information-on'},
+    {id:'',page:'agri',agency:'env',n:'จำนวนบ่อบาดาล ประเภทเกษตรกรรม',state:'link',ds:'dataset_02_05'},
+    {id:'',page:'agri',agency:'irrig',n:'จำนวนปริมาณเก็บกักน้ำ',state:'link',ds:'dataset_04_03'},
+    {id:'',page:'agri',agency:'irrig',n:'จำนวนพื้นที่ชลประทาน',state:'link',ds:'dataset_04_04'},
+    {id:'',page:'agri',agency:'irrig',n:'จำนวนครัวเรือนในเขตชลประทานที่ได้รับประโยชน์',state:'link',ds:'dataset_04_06'},
+    {id:'',page:'agri',agency:'irrig',n:'โครงการแก้มลิง',state:'link'}
   ],
   _mem:{},
   /* เรียก API แบบ JSONP (CKAN รองรับพารามิเตอร์ callback) จึงข้ามโดเมนได้โดยไม่ติด CORS */
@@ -2459,7 +2479,12 @@ const GDC={
 };
 /* ป้ายแหล่งข้อมูลของหน้า · กดแล้วไปหน้าสถานะ API */
 function gdcBadge(page){
-  const st=GDC.pageState(page);
+  let st=GDC.pageState(page);
+  if(page==='fiscal'&&typeof FISCAL_API!=='undefined'){
+    if(FISCAL_API.state==='err')return `<a class="gdcb file" href="apistatus.html#fiscal" data-tip2="${tipOf({t:'เชื่อมต่อระบบบัญชีข้อมูลจังหวัดไม่ได้',
+      d:'แสดงตัวเลขชุดล่าสุดที่บันทึกไว้ในแดชบอร์ดไปก่อน '+(FISCAL_API.err||''),calc:'ระบบจะลองใหม่เมื่อเปิดหน้าอีกครั้ง · กดเพื่อดูสถานะรายชุด',src:'',when:''})}"><i></i>API ไม่ตอบสนอง · ใช้ข้อมูลสำรอง</a>`;
+    if(FISCAL_API.state==='loading')return '<span class="gdcb map"><i></i>กำลังดึงจากระบบบัญชีข้อมูลจังหวัด…</span>';
+  }
   const T={api:['api','ดึงจากระบบบัญชีข้อมูลจังหวัด (API)'],part:['part','ดึงจาก API บางส่วน'],
            map:['map','กำลังย้ายไปใช้ API'],file:['file','ใช้ไฟล์ข้อมูล']}[st];
   const n=GDC.byPage(page);
@@ -2470,3 +2495,79 @@ function gdcBadge(page){
       :'ยังไม่ได้ย้ายไปใช้ระบบบัญชีข้อมูลจังหวัด',
     calc:'กดเพื่อดูสถานะการเชื่อมต่อรายชุดข้อมูล',src:'',when:''})}"><i></i>${T[1]}</a>`;
 }
+
+/* ────────────────── ตัวช่วยอ่านแถวจาก API ──────────────────
+   ชื่อคอลัมน์และค่าบางช่องมีช่องว่างหัวท้าย (เช่น " ค่าข้อมูล ") และตัวเลขมีจุลภาค จึงทำความสะอาดก่อนใช้ */
+const TH_MONTH_FULL=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+function gdcRows(v){
+  return (v&&v.records||[]).map(r=>{const o={};Object.keys(r).forEach(k=>{if(k!=='_id')o[String(k).trim()]=typeof r[k]==='string'?r[k].trim():r[k]});return o});
+}
+function gdcNum(x){
+  if(x==null)return null; if(typeof x==='number')return isFinite(x)?x:null;
+  const t=String(x).replace(/[,\s]/g,''); if(t===''||t==='-')return null;
+  const n=Number(t); return isFinite(n)?n:null;
+}
+const gdcMonth=t=>TH_MONTH_FULL.indexOf(String(t||'').trim())+1;
+const gdcVal=r=>gdcNum(r['ค่าข้อมูล']!=null?r['ค่าข้อมูล']:(r['จำนวน']!=null?r['จำนวน']:r['ค่า']));
+const gdcYear=r=>parseInt(String(r['ปีงบประมาณ']||r['ปี']||'').trim(),10)||null;
+
+/* ══════════════ การคลัง · ประกอบข้อมูลจาก 9 ชุดของคลังจังหวัด ══════════════
+   ผลลัพธ์มีโครงเดียวกับข้อมูลเดิมของหน้าการคลัง ทุกหน้าที่ใช้ D.fiscal จึงทำงานต่อได้ทันที
+   ปีงบประมาณ เดือน และงวดที่เลือกได้ มาจากข้อมูลใน API ทั้งหมด เพิ่มปีหรือเดือนใหม่ในระบบบัญชีข้อมูลจังหวัด หน้าจะเพิ่มตามเอง */
+GDC.FIS={alloc:'b0e1424c-409d-4200-be75-a6a026851bbd',dis:'07053215-af15-4271-9539-88d142a63dc8',
+  use:'21962d43-ccb4-48e6-a760-c815212f271e',commit:'e68752b1-8f4b-4b28-92a6-0a78e849575a',
+  demand:'e180a38e-e31f-4338-967e-91ebb42424c9',rank:'8206aee0-36e0-45de-b5cf-6bb850a6ae3c',
+  cNet:'b58050df-6cd7-461e-be9b-f1108d6a152c',cDis:'3bafb802-ddb5-4534-a391-d399c91b3588',cLeft:'2fb4cd9f-efcf-4719-b35b-34a20c89ab67'};
+GDC.fiscal=async function(fresh){
+  const K=Object.keys(GDC.FIS), R={};
+  await Promise.all(K.map(async k=>{try{R[k]=gdcRows(await GDC.all(GDC.FIS[k],{fresh}))}catch(e){R[k]=null;GDC.err=GDC.err||{};GDC.err[k]=e.message}}));
+  if(!R.alloc||!R.dis)throw new Error('ดึงชุดข้อมูลหลักของการเบิกจ่ายไม่ได้');
+  /* งวด = ปีงบประมาณ + เดือน เรียงตามปีงบ (ต.ค. เป็นเดือนแรก) */
+  const pk=r=>{const y=gdcYear(r),m=gdcMonth(r['เดือน']);return (y&&m)?y+'-'+String(m).padStart(2,'0'):null};
+  const P={};
+  R.dis.forEach(r=>{const k=pk(r);if(k&&gdcVal(r)!=null){const y=gdcYear(r),m=gdcMonth(r['เดือน']);P[k]={fy:y,m,o:(m+2)%12,key:k}}});
+  const periods=Object.values(P).sort((a,b)=>(a.fy-b.fy)||(a.o-b.o));
+  const TY={'ภาพรวม':'ภาพรวม','ประจำ':'รายจ่ายประจำ','ลงทุน':'รายจ่ายลงทุน'};
+  const pick=(rows,k,f)=>{if(!rows)return null;const r=rows.find(r=>pk(r)===k&&Object.keys(f).every(c=>String(r[c]||'').trim()===f[c]));return r?gdcVal(r):null};
+  const noteOf=(rows,k)=>{const r=(rows||[]).find(r=>pk(r)===k&&/ข้อมูล ณ/.test(r['หมายเหตุ']||''));
+    return r?String(r['หมายเหตุ']).replace(/ข้อมูล\s*ณ\s*(วันที่)?\s*/,'').trim():''};
+  const build=p=>{
+    const k=p.key, FN='งบส่วนราชการ(Function)', PV='งบจังหวัด';
+    const row=(t,src,ข้อมูล)=>pick(src,k,{'ข้อมูล':ข้อมูล,'ประเภทข้อมูล':t});
+    const fnDis=Object.keys(TY).map(t=>{const a=row(t,R.alloc,FN),v=row(t,R.dis,FN);
+      return {k:TY[t],alloc:a,val:v,pct:a&&v!=null?+(v/a*100).toFixed(2):null,over:null,
+        rank:pick(R.rank,k,{'ข้อมูล':'ระดับประเทศ','ประเภทข้อมูล':t}),
+        rankR:pick(R.rank,k,{'ข้อมูล':'ระดับภาค','ประเภทข้อมูล':t}),rankZ:pick(R.rank,k,{'ข้อมูล':'ระดับเขต','ประเภทข้อมูล':t})}});
+    const fnUse=Object.keys(TY).map(t=>{const a=row(t,R.alloc,FN),v=row(t,R.use,FN);
+      return {k:TY[t],alloc:a,val:v,pct:a&&v!=null?+(v/a*100).toFixed(2):null,over:null,rank:null,
+        commit:row(t,R.commit,FN),demand:row(t,R.demand,FN)}});
+    const prov=Object.keys(TY).map(t=>{const a=row(t,R.alloc,PV),d=row(t,R.dis,PV),u=row(t,R.use,PV);
+      return {k:TY[t],alloc:a,dis:d,dpct:a&&d!=null?+(d/a*100).toFixed(2):null,drank:null,
+        use:u,upct:a&&u!=null?+(u/a*100).toFixed(2):null,urank:null,commit:row(t,R.commit,PV)}});
+    const sh=(arr)=>{const c=arr[1].val||0,i=arr[2].val||0,t=c+i;return t?{cur:+(c/t*100).toFixed(2),inv:+(i/t*100).toFixed(2)}:{cur:null,inv:null}};
+    const CI={'ข้อมูล':'เงินกันไว้เบิกเหลื่อมปีงบประมาณ พ.ศ. '+(p.fy-1)};
+    const cv=(src,item)=>pick(src,k,Object.assign({'รายการข้อมูล':item},CI))??pick(src,k,{'รายการข้อมูล':item});
+    const cA=cv(R.cNet,'เงินกันฯ ภาพรวม'), cD=cv(R.cDis,'เงินกันฯ ภาพรวม'), cL=cv(R.cLeft,'เงินกันฯ ภาพรวม');
+    const parts=['ส่วนราชการ อบจ. เทศบาลตำบลและเทศบาลเมือง','องค์การบริหารส่วนตำบล'].map(n=>({n,alloc:cv(R.cNet,n),dis:cv(R.cDis,n),left:cv(R.cLeft,n)}));
+    return {fn:{dis:fnDis,use:fnUse},mix:{dis:sh(fnDis),use:sh(fnUse)},prov,
+      carry:{alloc:cA,dis:cD,left:cL,pct:cA&&cD!=null?+(cD/cA*100).toFixed(2):null,year:p.fy-1,parts},
+      asof:noteOf(R.dis,k)||noteOf(R.alloc,k), fy:p.fy, m:p.m, key:k, src:'api'};
+  };
+  const all=periods.map(build);
+  return {periods,all,latest:all[all.length-1],at:new Date().toISOString()};
+};
+/* โหลดข้อมูลการคลังจาก API แล้วแทนข้อมูลเดิมของหน้า · หน้าใดที่ใช้ D.fiscal จะวาดใหม่ด้วยตัวเลขจาก API */
+const FISCAL_API={state:'idle',model:null,err:null};
+function fiscalSync(after){
+  if(FISCAL_API.state==='loading')return;
+  FISCAL_API.state='loading';
+  GDC.fiscal().then(M=>{
+    if(!M.latest)throw new Error('ไม่พบงวดข้อมูลใน API');
+    FISCAL_API.model=M; FISCAL_API.state='ok';
+    D.fiscal=Object.assign({},D.fiscal,M.latest);
+    if(after)after(M); else if(PAGE&&PAGE.render)try{PAGE.render()}catch(e){console.error(e)}
+  }).catch(e=>{FISCAL_API.state='err';FISCAL_API.err=e.message;
+    if(PAGE&&PAGE.render)try{PAGE.render()}catch(x){} });
+}
+/* แผนผังสำรอง (ตอนโหลดแผนที่ไม่ได้) กดเลือกอำเภอได้เหมือนแผนที่ */
+document.addEventListener('click',e=>{const r=e.target.closest('[data-cho-amp]');if(r&&window.onChoPick)window.onChoPick(r.dataset.choAmp)});
