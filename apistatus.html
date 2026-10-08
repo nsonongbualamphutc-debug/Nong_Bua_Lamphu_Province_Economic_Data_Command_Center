@@ -563,11 +563,13 @@ function drawList(){
         <td>${x.id?`<a class="cc-ab" href="${m&&m.url||GDC.base+'/dataset/?q='+x.id}" target="_blank" rel="noopener">เปิดในระบบ ↗</a>`:''}</td></tr>`}).join('')
       :'<tr><td colspan="8" class="cc-empty">ไม่พบในทะเบียนของแดชบอร์ด · <a href="#find" data-gofind="1" style="color:#3ce0a0">ค้นหาในระบบบัญชีข้อมูลจังหวัด</a></td></tr>')+'</tbody>';
 }
+/* โลโก้หน่วยงานที่อัปโหลดไว้แล้วใน assets/agency/ (ชื่อไฟล์ ag-<รหัส>.png) · ใส่รหัสเพิ่มเมื่อมีไฟล์ จะได้ไม่เรียกไฟล์ที่ยังไม่มี */
+const AG_LOGO=[];
 function drawAgency(){
   const g={};INV.forEach(x=>(g[x.agency]=g[x.agency]||[]).push(x));
   const K=Object.keys(g).sort((a,b)=>g[b].filter(x=>x.type==='api').length-g[a].filter(x=>x.type==='api').length||g[b].length-g[a].length);
   document.getElementById('agrid').innerHTML=K.map(a=>{const L=g[a],S=L.filter(x=>x.type!=='avail'),api=S.filter(x=>x.type==='api').length,p=S.length?api/S.length:0;
-    return `<div class="cc-glass cc-ag"><div class="cc-ah"><img class="cc-agl" src="assets/agency/ag-${a}.png" alt="" onerror="this.onerror=()=>this.remove();this.classList.remove('cc-agl');this.src='assets/icons/ic-institution.png'"><span class="cc-ring">${ring(p,p===1?'#3ce0a0':p>0?'#f0c45a':'#8fb5a8')}<b>${api}/${S.length}</b></span>
+    return `<div class="cc-glass cc-ag"><div class="cc-ah">${AG_LOGO.indexOf(a)>=0?`<img class="cc-agl" src="assets/agency/ag-${a}.png" alt="" onerror="this.onerror=()=>this.remove();this.classList.remove('cc-agl');this.src='assets/icons/ic-institution.png'">`:'<img src="assets/icons/ic-institution.png" alt="" onerror="this.remove()">'}<span class="cc-ring">${ring(p,p===1?'#3ce0a0':p>0?'#f0c45a':'#8fb5a8')}<b>${api}/${S.length}</b></span>
       <div><h4>${esc(agN(a))}</h4><div class="cc-sub">${api} ชุดดึงจาก API</div></div></div>
       <ul>${L.map(x=>`<li>${esc(x.n)} <span style="color:${TC[x.type]}">(${SRC_TYPE[x.type][0]})</span></li>`).join('')}</ul></div>`}).join('');
 }

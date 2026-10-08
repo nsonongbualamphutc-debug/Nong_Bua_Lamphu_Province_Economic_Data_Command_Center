@@ -85,6 +85,7 @@
 /* ── บล็อกระบบบัญชีข้อมูลจังหวัดบนหน้าปก · ตัวเลขดึงสดจาก GD Catalog ── */
 window.addEventListener('load',function(){
   const run=(id,v)=>{const el=document.getElementById(id);if(!el||v==null)return;const t0=performance.now();
+    el.textContent=v.toLocaleString('th-TH');if(document.hidden)return;
     const st=n=>{const k=Math.min(1,(n-t0)/900);el.textContent=Math.round(v*(1-Math.pow(1-k,3))).toLocaleString('th-TH');if(k<1)requestAnimationFrame(st)};requestAnimationFrame(st)};
   try{run('cgdN3',new Set(GDC.RES.filter(r=>r.state==='api').map(r=>r.id)).size)}catch(e){}
   GDC.call('package_search',{rows:0,'facet.field':'["organization"]','facet.limit':200}).then(r=>{run('cgdN1',r.count);run('cgdN2',Object.keys((r.facets||{}).organization||{}).length)}).catch(()=>{});
