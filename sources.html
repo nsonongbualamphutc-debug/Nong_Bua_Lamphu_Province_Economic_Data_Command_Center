@@ -44,8 +44,34 @@
   <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start"><span class="bigico icow img" data-bigico="source"></span><span><h2>แหล่งข้อมูลและผู้รับผิดชอบ</h2>
     <p>ทุกตัวเลขบนแดชบอร์ดนี้ระบุเจ้าของข้อมูลได้ พร้อมรอบการส่งและสถานะความทันสมัย</p></span></div>
     <div class="r"><a class="briefbtn" href="apistatus.html" style="margin-right:6px">สถานะการเชื่อมต่อระบบบัญชีข้อมูลจังหวัด</a><span class="chip">แอดมิน: สนง.จังหวัด และ สนง.สถิติจังหวัด</span></div></div>
-  <div class="c mb"><header><span class="hdico icow img" data-hdico="source"></span><h3>ทะเบียนชุดข้อมูล</h3></header>
-    <div class="b"><div class="sc" style="max-height:470px"><table class="t" id="tSrc"></table></div></div></div>
+  <div class="grid g4 mb" id="srKpi"></div>
+
+  <div class="secthead"><span class="sn">1</span><b>ความพร้อมของข้อมูล</b><span>แต่ละหน้าดึงจาก API ได้แล้วกี่ชุด และยังเหลือส่วนใดที่เป็นไฟล์หรือข้อมูลจำลอง</span></div>
+  <div class="grid g21 mb">
+    <div class="c"><header><span class="hdico icow img" data-hdico="datastatus"></span><h3>ความพร้อมรายหน้า</h3><span class="u">จำนวนชุดข้อมูลแยกตามแหล่งที่มา</span></header>
+      <div class="b"><div class="ch" style="height:360px"><canvas id="cReady"></canvas></div>
+        <div class="note">คลิกที่แถบเพื่อเปิดหน้านั้น · ชุดที่มีใน API แต่ยังไม่ได้แสดง ไม่นับรวม</div></div></div>
+    <div class="c"><header><span class="hdico icow img" data-hdico="catalog"></span><h3>สัดส่วนตามแหล่งที่มา</h3></header>
+      <div class="b"><div class="sr-donut"><div class="ch sm" style="height:210px"><canvas id="cType"></canvas></div>
+        <div class="sr-dc" id="srDc"></div></div>
+        <div class="sr-leg" id="srLeg"></div></div></div>
+  </div>
+
+  <div class="secthead"><span class="sn">2</span><b>ทะเบียนชุดข้อมูล</b><span>ทุกตัวเลขบนแดชบอร์ดระบุได้ว่ามาจากชุดใด หน่วยงานใด และปรับปรุงล่าสุดเมื่อไร</span></div>
+  <div class="c mb"><header><span class="hdico icow img" data-hdico="source"></span><h3>รายการชุดข้อมูล</h3><span class="u" id="srCount"></span>
+      <span class="r"><a class="briefbtn" href="apistatus.html#find">ค้นหาในระบบบัญชีข้อมูล ↗</a></span></header>
+    <div class="b">
+      <div class="sr-tools">
+        <div class="segs" id="srSeg"></div>
+        <div class="sr-q"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+          <input id="srQ" placeholder="พิมพ์ชื่อชุดข้อมูล หน่วยงาน หรือหน้า…" autocomplete="off"></div>
+      </div>
+      <div class="sc" style="max-height:560px"><table class="t sr-t" id="tSrc"></table></div></div></div>
+
+  <div class="secthead"><span class="sn">3</span><b>หน่วยงานเจ้าของข้อมูล</b><span>วงแหวนแสดงสัดส่วนชุดที่ดึงผ่าน API ได้แล้ว</span></div>
+  <div class="sr-ag mb" id="srAg"></div>
+
+  <div class="secthead"><span class="sn">4</span><b>วิธีอ่านและช่องทางติดต่อ</b><span>หลักการอ่านเครื่องชี้เศรษฐกิจ และแหล่งอ้างอิงภายนอก</span></div>
   <div class="grid g2">
     <div class="c"><header><span class="hdico icow img"><img class="ico" src="assets/icons/ic-forecast.png" alt="" width="26" height="26" loading="lazy" onerror="this.remove()"></span><h3>วิธีอ่านภาวะเศรษฐกิจรายเดือน</h3></header>
       <div class="b" style="font-size:12.5px;line-height:1.85;color:var(--dim)">
@@ -76,29 +102,79 @@
 <script src="ds.js"></script>
 <script>
 /* ─────────────── 17) แหล่งข้อมูล ─────────────── */
+const SR_COL={api:'#0d9268',link:'#2f7fd1',gas:'#c98a1b',file:'#7a8a99',ext:'#8b5cf6',sim:'#d9534f'};
+let SR_F='all';
+function srPages(){const m={index:'หน้าปกจังหวัด'};NAVI.forEach(n=>{if(n.id)m[n.id]=n.label});return m}
+function srAgName(a){return (GDC.AGENCY&&GDC.AGENCY[a])||a||'—'}
 function renderSources(){
-  let h=`<thead><tr><th style="width:150px">ภาคส่วน</th><th>ตัวชี้วัด</th><th>หน่วยงานผู้รับผิดชอบ</th>
-    <th style="width:66px">รอบส่ง</th><th class="r" style="width:66px">ความช้า</th><th style="width:96px">สถานะ</th></tr></thead><tbody>`;
-  SECTORS.forEach(sec=>{let first=true;
-    sec.datasets.forEach(id=>{const d=DATASETS.find(x=>x.id===id);
-      d.series.forEach((s,i)=>{
-        const st=d.lag<=25?'<span class="chip up">ทันรอบ</span>':d.lag<=45?'<span class="chip fl">รอยืนยัน</span>':'<span class="chip dn">ล่าช้า</span>';
-        h+=`<tr><td>${first?`<span class="dot" style="background:${sec.color};margin-right:7px"></span>${sec.name}`:''}</td>
-          <td>${s.label} <span style="color:var(--faint)">(${s.unit})</span>${d.real&&i===0?' <span class="chip real">ข้อมูลจริง</span>':''}</td>
-          <td style="color:var(--dim)">${i===0?d.agency:'”'}</td><td>รายเดือน</td>
-          <td class="r">${d.lag} วัน</td><td>${st}</td></tr>`;first=false})})});
-  h+=`<tr><td><span class="dot" style="background:var(--plum);margin-right:7px"></span>ภาพรวม</td>
-    <td>ประมวลผลและดูแลแดชบอร์ด</td><td style="color:var(--dim)">สนง.สถิติจังหวัด · สนง.จังหวัด</td>
-    <td>รายเดือน</td><td class="r">15 วัน</td><td><span class="chip up">ทันรอบ</span></td></tr>
-    <tr><td></td><td>ผลิตภัณฑ์มวลรวมจังหวัด (GPP)</td><td style="color:var(--dim)">สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ</td>
-    <td>รายปี</td><td class="r">730 วัน</td><td><span class="chip dn">ล่าช้า 2 ปี</span></td></tr>
-    <tr><td></td><td>เครื่องชี้ภาวะเศรษฐกิจรายเดือน · ภาพรวม อุปสงค์ อุปทาน การเงิน การจ้างงาน</td>
-    <td style="color:var(--dim)">สำนักงานคลังจังหวัดหนองบัวลำภู</td>
-    <td>รายเดือน</td><td class="r">45 วัน</td><td><span class="chip real">ข้อมูลจริง</span></td></tr>
-    <tr><td></td><td>อัตราการขยายตัว GPP จังหวัดและ GDP ประเทศ</td>
-    <td style="color:var(--dim)">สำนักงานคลังจังหวัดหนองบัวลำภู · อ้างอิง สศช.</td>
-    <td>รายปี</td><td class="r">730 วัน</td><td><span class="chip real">ข้อมูลจริง</span></td></tr></tbody>`;
-  $('#tSrc').innerHTML=h;
+  const PN=srPages(), mod=(()=>{try{return JSON.parse(localStorage.getItem('gdc-mod')||'{}')}catch(e){return{}}})();
+  const ALL=srcInventory().filter(x=>x.type!=='avail');
+  const n=ALL.length, api=ALL.filter(x=>x.type==='api').length, ags=new Set(ALL.map(x=>x.agency)).size;
+  const left=ALL.filter(x=>x.type==='file'||x.type==='sim'||x.type==='ext').length;
+  const avail=srcInventory().filter(x=>x.type==='avail').length;
+  document.getElementById('srKpi').innerHTML=[
+    kpiCard({sim:false,img:'database',color:'#0d9268',label:'ชุดข้อมูลที่แดชบอร์ดใช้',value:f(n,0),unit:'ชุด',sub:'ครอบคลุม '+new Set(ALL.map(x=>x.page)).size+' หน้า'}),
+    kpiCard({sim:false,img:'network',color:'#2f7fd1',label:'ดึงจาก API อัตโนมัติ',value:f(api,0),unit:'ชุด',chip:'<span class="chip up">'+(api/n*100).toFixed(0)+'%</span>',sub:'อัปเดตเองเมื่อหน่วยงานปรับปรุง'}),
+    kpiCard({sim:false,img:'institution',color:'#8b5cf6',label:'หน่วยงานเจ้าของข้อมูล',value:f(ags,0),unit:'หน่วยงาน',sub:'ระดับจังหวัดและส่วนกลาง'}),
+    kpiCard({sim:false,img:'datagap',color:'#c98a1b',label:'รอเปลี่ยนเป็น API',value:f(left,0),unit:'ชุด',sub:avail?'มีใน API อีก '+avail+' ชุดที่ยังไม่ได้แสดง':'ไฟล์ ไฟล์ภายนอก และข้อมูลจำลอง'})].join('');
+  /* ความพร้อมรายหน้า */
+  const TY=['api','link','gas','file','ext','sim'];
+  const pages=[...new Set(ALL.map(x=>x.page))].sort((a,b)=>{const ra=ALL.filter(x=>x.page===a),rb=ALL.filter(x=>x.page===b);
+    return rb.filter(x=>x.type==='api').length/rb.length-ra.filter(x=>x.type==='api').length/ra.length||rb.length-ra.length});
+  mk('cReady',{type:'bar',data:{labels:pages.map(p=>PN[p]||p),datasets:TY.map(t=>({label:SRC_TYPE[t][0],
+      data:pages.map(p=>ALL.filter(x=>x.page===p&&x.type===t).length||null),backgroundColor:SR_COL[t],borderRadius:4,barThickness:15,stack:'s'}))},
+    options:{indexAxis:'y',onClick:(e,el)=>{if(el[0])location.href=pages[el[0].index]+'.html'},
+      onHover:(e,el)=>{e.native.target.style.cursor=el.length?'pointer':''},
+      plugins:{legend:{position:'bottom',labels:{padding:10,boxWidth:10}},tooltip:{mode:'index',intersect:false,
+        callbacks:{label:c=>c.raw?c.dataset.label+' '+c.raw+' ชุด':null,
+          footer:it=>{const p=pages[it[0].dataIndex],L=ALL.filter(x=>x.page===p);return 'ดึงจาก API '+L.filter(x=>x.type==='api').length+'/'+L.length+' ชุด'}}}},
+      scales:{x:ax({stacked:true,ticks:{precision:0}}),y:ax({stacked:true,grid:{display:false},ticks:{font:{size:11}}})}}});
+  /* สัดส่วนตามแหล่งที่มา */
+  const TC=TY.map(t=>ALL.filter(x=>x.type===t).length);
+  mk('cType',{type:'doughnut',data:{labels:TY.map(t=>SRC_TYPE[t][0]),datasets:[{data:TC,backgroundColor:TY.map(t=>SR_COL[t]),borderColor:cv('--card'),borderWidth:3}]},
+    options:{cutout:'70%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+' '+c.raw+' ชุด ('+(c.raw/n*100).toFixed(0)+'%)'}}}}});
+  document.getElementById('srDc').innerHTML='<b>'+(api/n*100).toFixed(0)+'%</b><span>ดึงจาก API</span>';
+  document.getElementById('srLeg').innerHTML=TY.map((t,i)=>TC[i]?`<button class="sr-li" data-srf="${t}"><i style="background:${SR_COL[t]}"></i><span>${SRC_TYPE[t][0]}</span><b>${TC[i]}</b></button>`:'').join('');
+  /* ตัวกรอง */
+  document.getElementById('srSeg').innerHTML=[['all','ทั้งหมด',n]].concat(TY.filter((t,i)=>TC[i]).map((t,i)=>[t,SRC_TYPE[t][0],ALL.filter(x=>x.type===t).length]))
+    .map(x=>`<button data-srf="${x[0]}" class="${SR_F===x[0]?'on':''}">${x[1]} <small>${x[2]}</small></button>`).join('');
+  window.__SR={ALL,PN,mod};srTable();
+  /* หน่วยงาน */
+  const G={};ALL.forEach(x=>(G[x.agency]=G[x.agency]||[]).push(x));
+  const K=Object.keys(G).sort((a,b)=>G[b].filter(x=>x.type==='api').length-G[a].filter(x=>x.type==='api').length||G[b].length-G[a].length);
+  document.getElementById('srAg').innerHTML=K.map(a=>{const L=G[a],ap=L.filter(x=>x.type==='api').length,p=ap/L.length,
+      C=2*Math.PI*19,col=p===1?'#0d9268':p>0?'#c98a1b':'#9aa7a2',
+      pg=[...new Set(L.map(x=>PN[x.page]||x.page))];
+    return `<div class="sr-agc"><div class="sr-ring"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="19" fill="none" stroke="var(--line)" stroke-width="5"/>
+        <circle cx="24" cy="24" r="19" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(C*p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 24 24)"/></svg>
+        <span>${ap}/${L.length}</span></div>
+      <div class="sr-agt"><b>${srAgName(a)}</b><small>${pg.slice(0,3).join(' · ')}${pg.length>3?' และอีก '+(pg.length-3)+' หน้า':''}</small></div></div>`}).join('');
+  window.__SR={ALL,PN,mod};
+}
+function srTable(){
+  const {ALL,PN,mod}=window.__SR||{};if(!ALL)return;
+  const q=(document.getElementById('srQ').value||'').trim().toLowerCase();
+  const L=ALL.filter(x=>(SR_F==='all'||x.type===SR_F)&&(!q||[x.n,srAgName(x.agency),PN[x.page]||x.page,x.note||''].join(' ').toLowerCase().includes(q)));
+  const order=Object.keys(PN);
+  L.sort((a,b)=>(order.indexOf(a.page)-order.indexOf(b.page))||(a.type==='api'?-1:1)-(b.type==='api'?-1:1));
+  document.getElementById('srCount').textContent=L.length+' จาก '+ALL.length+' ชุด';
+  let last=null;
+  document.getElementById('tSrc').innerHTML=`<thead><tr><th style="width:170px">หน้า</th><th>ชุดข้อมูล</th><th style="width:230px">หน่วยงาน</th>
+      <th style="width:150px">แหล่งที่มา</th><th style="width:118px">ปรับปรุงล่าสุด</th><th style="width:84px"></th></tr></thead><tbody>`+
+    (L.length?L.map(x=>{const first=x.page!==last;last=x.page;const m=x.id&&mod[x.id];
+      return `<tr class="${first?'sr-first':''}"><td>${first?`<a class="sr-pg" href="${x.page}.html">${PN[x.page]||x.page}</a>`:''}</td>
+        <td>${x.n}${x.note?`<small class="sr-note">${x.note}</small>`:x.use?`<small class="sr-note">${x.use}</small>`:''}</td>
+        <td style="color:var(--dim)">${srAgName(x.agency)}</td>
+        <td><span class="sr-b" style="--c:${SR_COL[x.type]||'#999'}"><i></i>${(SRC_TYPE[x.type]||[x.type])[0]}</span></td>
+        <td class="n" style="color:var(--dim)">${m?new Date(m).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}):x.id?'—':''}</td>
+        <td>${x.id?`<a class="sr-open" href="${GDC.base}/dataset/?q=${x.id}" target="_blank" rel="noopener">เปิด ↗</a>`:''}</td></tr>`}).join('')
+     :'<tr><td colspan="6" class="sr-empty">ไม่พบชุดข้อมูลที่ตรงกับคำค้น · <a href="apistatus.html#find">ลองค้นในระบบบัญชีข้อมูลจังหวัด</a></td></tr>')+'</tbody>';
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-srf]');if(!b)return;SR_F=SR_F===b.dataset.srf&&b.classList.contains('sr-li')?'all':b.dataset.srf;
+  document.querySelectorAll('#srSeg button').forEach(x=>x.classList.toggle('on',x.dataset.srf===SR_F));srTable();
+  if(b.classList.contains('sr-li'))document.getElementById('tSrc').closest('.c').scrollIntoView({behavior:'smooth',block:'start'})});
+document.addEventListener('input',e=>{if(e.target.id==='srQ')srTable()});
+function renderSourcesExtra(){
   /* น้ำหนักด้านอุปทานตามแฟ้มของคลังจังหวัด ไม่ใช่น้ำหนักที่ระบบตั้งเอง */
   const MWs=(typeof DX!=='undefined'&&DX.macro&&DX.macro.weight)||{agri:21,indus:22,serv:57};
   const WL=[['ภาคเกษตรกรรม',MWs.agri,cv('--leaf')],['ภาคอุตสาหกรรม',MWs.indus,cv('--blue')],['ภาคบริการ',MWs.serv,cv('--brand')]];
@@ -110,7 +186,7 @@ function renderSources(){
 }
 
 
-DS.init('sources',renderSources);
+DS.init('sources',function(){renderSources();renderSourcesExtra()});
 </script>
 </body>
 </html>
