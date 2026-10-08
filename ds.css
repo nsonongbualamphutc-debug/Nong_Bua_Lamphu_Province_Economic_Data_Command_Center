@@ -1958,3 +1958,75 @@ body.tour .topbar,body.tour header.top{position:relative;z-index:800}
 .gx-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;max-height:120px;overflow:auto}
 .gx-list span{font-size:11.5px;background:var(--card2);border:1px solid var(--line2);border-radius:8px;padding:2px 8px;color:var(--dim)}
 .gx-list em{font-style:normal;font-size:11.5px;color:var(--faint);padding:2px 4px}
+
+/* ═══ v5 · โลโก้ GD บนแถบบน · ป้ายท้ายเมนู · จุดข้อมูลสด · แถบเรืองระหว่างรอ API ═══ */
+.gdtop{height:40px;width:40px;flex:none;display:grid;place-items:center;border-radius:12px;background:#fff;position:relative;
+  border:1px solid var(--line);box-shadow:0 2px 8px -3px rgba(0,0,0,.35);margin-left:-4px;transition:transform .2s}
+.gdtop img{width:30px;height:30px;object-fit:contain}
+.gdtop:hover{transform:translateY(-1px) scale(1.04);box-shadow:0 6px 16px -6px rgba(13,146,104,.6)}
+.gdtop::after{content:"";position:absolute;right:-2px;top:-2px;width:9px;height:9px;border-radius:50%;background:#22c55e;
+  border:2px solid var(--card);animation:ldp 2s infinite}
+@media (max-width:767px){.gdtop{display:none}}
+.sgdc{display:flex;align-items:center;gap:10px;margin:12px 4px 0;padding:9px 10px;border-radius:12px;position:relative;
+  background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.14);
+  color:var(--sideink);text-decoration:none;transition:.18s;overflow:hidden}
+.sgdc:hover{background:rgba(255,255,255,.14);border-color:rgba(120,220,255,.45)}
+.sgdc::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.14) 50%,transparent 70%);
+  transform:translateX(-100%);animation:sgsh 5s ease-in-out infinite}
+.sgdc-l{width:32px;height:32px;flex:none;border-radius:9px;background:#fff;display:grid;place-items:center}
+.sgdc-l img{width:24px;height:24px;object-fit:contain}
+.sgdc-t{display:flex;flex-direction:column;min-width:0;line-height:1.3}
+.sgdc-t b{font-size:11.5px;font-weight:600;white-space:nowrap}
+.sgdc-t small{font-size:10px;color:var(--sidedim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sgdc .ldot{position:absolute;right:9px;top:9px;width:7px;height:7px;border-radius:50%;background:#22c55e;animation:ldp 2s infinite}
+.app.narrow .sgdc{justify-content:center;padding:8px 0;margin:10px 2px 0}
+.app.narrow .sgdc-t{display:none}
+@media (max-width:1150px){.app .side .sgdc{justify-content:center;padding:8px 0;margin:10px 2px 0}.app .side .sgdc-t{display:none}}
+@keyframes sgsh{0%,60%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+@keyframes ldp{0%{box-shadow:0 0 0 0 rgba(34,197,94,.65)}70%{box-shadow:0 0 0 7px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.livedot{display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:1px 7px 1px 6px;border-radius:999px;vertical-align:middle;
+  font:700 9px/1.6 var(--fn,inherit);letter-spacing:.8px;color:#0b7a4f;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);
+  text-decoration:none;cursor:help}
+.livedot i{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:ldp 1.8s infinite}
+[data-theme=dark] .livedot{color:#5ee49a;background:rgba(34,197,94,.14)}
+.c.gdc-shim{position:relative}
+.c.gdc-shim>.b{position:relative}
+.c.gdc-shim>.b::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:3;
+  background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.55) 45%,rgba(160,230,200,.35) 50%,transparent 75%) no-repeat;
+  background-size:220% 100%;animation:shim 1.25s linear infinite;mix-blend-mode:soft-light}
+[data-theme=dark] .c.gdc-shim>.b::after{background-image:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.12) 45%,rgba(46,192,137,.18) 50%,transparent 75%);mix-blend-mode:normal}
+.c.gdc-shim>.b canvas{filter:saturate(.35) opacity(.55);transition:filter .5s}
+.c.gdc-shim header h3::after{content:"กำลังดึงข้อมูลล่าสุด…";margin-left:8px;font-size:10px;font-weight:500;color:var(--faint)}
+@keyframes shim{0%{background-position:120% 0}100%{background-position:-120% 0}}
+@media print{.livedot,.sgdc,.gdtop{display:none!important}.c.gdc-shim>.b::after{display:none}}
+
+/* ═══ หน้าปก · บล็อกระบบบัญชีข้อมูลจังหวัด (GD Catalog) ═══ */
+.cgd{position:relative;display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"lock tx go" "lock st go";align-items:center;gap:10px 22px;
+  margin:22px 6vw 0;padding:22px 26px;border-radius:20px;overflow:hidden;color:#fff;text-decoration:none;isolation:isolate;
+  background:#061f2b;box-shadow:0 22px 50px -26px rgba(4,40,60,.75);border:1px solid rgba(110,220,255,.25);transition:transform .25s,box-shadow .25s}
+.cgd:hover{transform:translateY(-2px);box-shadow:0 28px 60px -24px rgba(20,120,170,.7)}
+.cgd::before{content:"";position:absolute;inset:-2px;z-index:-3;border-radius:inherit;
+  background:conic-gradient(from var(--cga,0deg),#2fb6e8,#3cf0b0,#f0c75e,#ff5fa2,#2fb6e8);animation:cgspin 6s linear infinite;opacity:.55}
+.cgd::after{content:"";position:absolute;inset:1px;z-index:-2;border-radius:19px;background:linear-gradient(100deg,rgba(4,22,34,.97) 0%,rgba(4,24,36,.93) 58%,rgba(4,26,38,.5) 100%)}
+@property --cga{syntax:'<angle>';inherits:false;initial-value:0deg}
+@keyframes cgspin{to{--cga:360deg}}
+.cgd-bg{position:absolute;inset:0;z-index:-1;background:url('assets/gdc-promo.jpg') center/cover;opacity:.55;mix-blend-mode:screen}
+.cgd-grid{position:absolute;inset:0;z-index:-1;background-image:linear-gradient(rgba(110,220,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(110,220,255,.07) 1px,transparent 1px);background-size:26px 26px}
+.cgd-lock{grid-area:lock;display:flex;align-items:center;gap:8px}
+.cgd-lg{width:62px;height:62px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 0 0 4px rgba(255,255,255,.1),0 10px 24px rgba(0,0,0,.4)}
+.cgd-lg img{width:52px;height:52px;object-fit:contain}.cgd-lg.gd{border-radius:17px}.cgd-lg.gd img{width:44px;height:44px}
+.cgd-x{color:rgba(255,255,255,.5);font-size:18px}
+.cgd-tx{grid-area:tx;display:flex;flex-direction:column;gap:4px;min-width:0}
+.cgd-tx em{font-style:normal;font-size:11.5px;letter-spacing:.6px;color:#7ef0bd;display:inline-flex;align-items:center;gap:7px}
+.cgd-tx em i{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:ldp 1.8s infinite}
+.cgd-tx b{font-family:var(--fd);font-size:20px;font-weight:600;line-height:1.3}
+.cgd-tx small{font-size:12.5px;color:#b8d8e6;line-height:1.5}
+.cgd-st{grid-area:st;display:flex;flex-wrap:wrap;gap:8px}
+.cgd-st span{display:flex;align-items:baseline;gap:6px;font-size:11.5px;color:#b8d8e6;padding:6px 12px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1)}
+.cgd-st b{font-family:var(--fn);font-size:17px;color:#fff;font-weight:700}
+.cgd-go{grid-area:go;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:13px;font-weight:600;font-size:13.5px;white-space:nowrap;
+  background:linear-gradient(135deg,#1aa3d9,#0d9268);box-shadow:0 10px 24px -10px rgba(26,163,217,.8)}
+.cgd-go svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.cgd:hover .cgd-go svg{transform:translateX(4px)}
+@media (max-width:900px){.cgd{grid-template-columns:1fr;grid-template-areas:"lock" "tx" "st" "go";margin:18px 16px 0;padding:20px}.cgd-go{justify-self:start}}
+@media print{.cgd{display:none}}

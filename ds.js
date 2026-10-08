@@ -1835,6 +1835,7 @@ function buildShell(active){
   if(top)top.innerHTML=`
     <button class="tb hamb" id="hamb" aria-label="เมนู"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     <div class="seal"><img src="${SEAL}" alt="ตราประจำจังหวัดหนองบัวลำภู"></div>
+    <a class="gdtop" href="apistatus.html" data-tip2="เชื่อมข้อมูลกับ GD Catalog|แดชบอร์ดดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู (nongbualamphu.gdcatalog.go.th) ผ่าน API โดยอัตโนมัติ · คลิกเพื่อดูสถานะการเชื่อมต่อ"><img src="assets/logo-gd.png" alt="GD Catalog" onerror="this.parentNode.remove()"></a>
     <div class="brand"><h1>ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</h1>
       <p>Nong Bua Lam Phu Economic Data Command Center</p></div>
     <div class="sp"></div>
@@ -1855,7 +1856,9 @@ function buildShell(active){
     +NAVI.map(n=>n.grp?`<div class="grp">${n.grp}</div>`
     :`<a class="nv${n.id===active?' act':''}" href="${n.file}" data-tip="${n.label}">
         <svg viewBox="0 0 24 24">${n.ic}</svg><span>${n.label}</span></a>`).join('')
-    +`<div class="sfoot">“ข้อมูลที่เร็วกว่า<br>คือการตัดสินใจที่ดีกว่า”</div>`;
+    +`<div class="sfoot">“ข้อมูลที่เร็วกว่า<br>คือการตัดสินใจที่ดีกว่า”</div>`
+    +`<a class="sgdc" href="apistatus.html" data-tip="ข้อมูลจาก GD Catalog"><span class="sgdc-l"><img src="assets/logo-gd.png" alt="" onerror="this.remove()"></span>
+        <span class="sgdc-t"><b>ข้อมูลจาก GD Catalog</b><small id="sgdcT">ระบบบัญชีข้อมูลจังหวัด</small></span><i class="ldot"></i></a>`;
 
   const main=document.querySelector('.main');
   if(main&&!document.getElementById('pgfoot')){
@@ -1886,6 +1889,7 @@ function buildShell(active){
       <div class="pf-copy">© 2025 จัดทำโดย สำนักงานสถิติจังหวัดหนองบัวลำภู · โทร 0 4231 6736 · build ${CFG.build}</div>`;
     main.appendChild(f);
   }
+  try{sgdcDate()}catch(e){}
 }
 
 /* เตือนเมื่อโฟลเดอร์ assets ยังไม่ได้อัปโหลด */
@@ -2689,8 +2693,9 @@ function fiscalSync(after){
     FISCAL_API.model=M; FISCAL_API.state='ok';
     D.fiscal=Object.assign({},D.fiscal,M.latest);
     if(after)after(M); else if(PAGE&&PAGE.render)try{PAGE.render()}catch(e){console.error(e)}
+    try{gdcLive(PAGE.id)}catch(x){}
   }).catch(e=>{FISCAL_API.state='err';FISCAL_API.err=e.message;
-    if(PAGE&&PAGE.render)try{PAGE.render()}catch(x){} });
+    if(PAGE&&PAGE.render)try{PAGE.render()}catch(x){} try{gdcLive(PAGE.id)}catch(x){} });
 }
 /* แผนผังสำรอง (ตอนโหลดแผนที่ไม่ได้) กดเลือกอำเภอได้เหมือนแผนที่ */
 document.addEventListener('click',e=>{const r=e.target.closest('[data-cho-amp]');if(r&&window.onChoPick)window.onChoPick(r.dataset.choAmp)});
@@ -2883,6 +2888,7 @@ GDC.SYNC={
 const SYNC_STATE={};          /* สถานะรายชุดของหน้านี้ · ใช้ติดป้ายและหน้าสถานะ */
 /* ป้ายสถานะ API ที่หัวหน้า (เหมือนหน้าการคลัง) · วาดใหม่ทุกครั้งที่หน้า render เพื่อไม่ให้หาย */
 function gdcSyncBadge(pageId){
+  try{gdcLive(pageId)}catch(e){}
   const st=Object.values(SYNC_STATE); if(!st.length)return;
   let gs=document.getElementById('gdcPageBadge');
   if(!gs||!document.body.contains(gs)){const r=document.querySelector('.view.on .ph .r, .ph .r'); if(!r)return; gs=document.createElement('span');gs.id='gdcPageBadge';r.appendChild(gs)}
@@ -2908,6 +2914,51 @@ function gdcSyncPage(pageId){
       });
   });
   gdcSyncBadge(pageId);
+}
+
+/* ════════════ จุดไฟ "ข้อมูลสด" บนการ์ดที่ตัวเลขมาจาก API + แถบเรืองระหว่างรอข้อมูล ════════════
+   แต่ละหน้า: รหัสกราฟหรือกล่อง → ชุดข้อมูลที่ใช้ (job.key) · จุดขึ้นเฉพาะเมื่อดึงชุดนั้นได้จริง */
+const LIVE_MAP={
+  labor:{cUe:['labor.status'],cAnn:['labor.status'],cForce:['labor.status'],cSec:['labor.ind'],cStatus:['labor.wst'],cUnder:['labor.under'],cSso:['labor.s33','labor.s39','labor.s40']},
+  otop:{cRev:['otop.rev'],cMon:['otop.mon'],cType:['otop.prod'],cCap:['otop.star','otop.shop','otop.vich'],cCmp:['otop.rev','otop.prod','otop.star']},
+  tourism:{cTrend:['tour.internal','tour.visy'],cMix:['tour.internal'],cSpend:['tour.spend'],cOcc:['tour.occ'],cMon:['tour.vis','tour.occm'],cYoY:['tour.vis','tour.rev','tour.occm'],cSpot:['tour.spots'],cAcc:['tour.acc']},
+  population:{cPop:['pop.pop'],cBD:['pop.birth','pop.death'],cDep:['pop.age'],cAmp:['pop.pop'],cMove:['pop.move'],pyrBox:['pop.pyr','pop.age']},
+  household:{cIE:['house.main'],cDebt:['house.debt'],cGini:['house.gini'],cSrc:['house.income_src'],cSize:['house.expense'],cDist:['house.poverty']},
+  industry:{cEst:['ind.est'],cGpp:['ind.gpp'],tAmp:['ind.est']},
+  fiscal:{cFiscalMix:['fis.dis','fis.alloc'],cFiscalTrend:['fis.dis','fis.alloc','fis.use']}
+};
+function liveRes(key){const [j,k]=key.split('.');if(j==='fis')return GDC.FIS&&GDC.FIS[k];const S=GDC.SYNC[j];return S&&S.res[k]}
+function liveState(key){const j=key.split('.')[0];
+  if(j==='fis')return typeof FISCAL_API==='undefined'?'':FISCAL_API.state==='ok'?'ok':FISCAL_API.state==='loading'||FISCAL_API.state==='idle'?'loading':'err';
+  const st=SYNC_STATE[j];if(!st)return'';if(st.state==='loading')return'loading';
+  const k=key.split('.')[1];return st.state==='err'||(st.err&&st.err[k])?'err':'ok'}
+const thDate=x=>{try{return new Date(x).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'})}catch(e){return''}};
+function gdcLive(pageId){
+  const M=LIVE_MAP[pageId];if(!M)return;
+  const mod=ld(NOTI.K,{})||{};
+  Object.keys(M).forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const card=el.closest('.c');if(!card)return;
+    const keys=M[id],sts=keys.map(liveState);
+    card.classList.toggle('gdc-shim',sts.some(x=>x==='loading'));
+    const ok=keys.filter((k,i)=>sts[i]==='ok');
+    const h=card.querySelector(':scope>header h3, header h3');if(!h)return;
+    let dot=h.querySelector('.livedot');
+    if(!ok.length){if(dot)dot.remove();return}
+    const names=ok.map(k=>{const rid=liveRes(k),r=GDC.RES.find(z=>z.id===rid);return {n:r?r.n:k,m:mod[rid]}});
+    const last=names.map(x=>x.m).filter(Boolean).sort().pop();
+    const tip='ข้อมูลสดจาก API|'+[...new Set(names.map(x=>x.n))].join(' · ')+(last?' — ปรับปรุงบนระบบบัญชีข้อมูลล่าสุด '+thDate(last):' — ดึงจากระบบบัญชีข้อมูลจังหวัดเมื่อเปิดหน้านี้');
+    if(!dot){dot=document.createElement('a');dot.className='livedot';dot.href='apistatus.html#'+pageId;dot.innerHTML='<i></i><span>LIVE</span>';h.appendChild(dot)}
+    dot.setAttribute('data-tip2',tip.replace(/"/g,'&quot;'));
+  });
+}
+/* ป้ายท้ายเมนู: วันที่ล่าสุดที่หน่วยงานปรับปรุงชุดข้อมูลที่แดชบอร์ดใช้ */
+function sgdcDate(){
+  const el=document.getElementById('sgdcT');if(!el)return;
+  const mod=ld(NOTI.K,null);if(!mod)return;
+  const ids=new Set(GDC.RES.filter(r=>r.state==='api').map(r=>r.id));
+  const last=Object.keys(mod).filter(id=>ids.has(id)).map(id=>mod[id]).sort().pop();
+  if(last)el.textContent='อัปเดตล่าสุด '+thDate(last);
 }
 
 /* ════════════ ประวัติการอัปเดต และข้อมูลเมตาจากระบบบัญชีข้อมูล ════════════ */
@@ -3314,6 +3365,7 @@ function updateBell(){
   const n=GDC.unread(), b=document.getElementById('bellN');
   if(b){b.textContent=n>9?'9+':n||'';b.classList.toggle('on',n>0)}
   const bt=document.getElementById('btnBell'); if(bt)bt.classList.toggle('ring',n>0);
+  sgdcDate(); try{if(PAGE)gdcLive(PAGE.id)}catch(e){}
   const p=document.getElementById('notiPanel'); if(p&&p.classList.contains('on'))drawNoti();
 }
 const PG_NAME={fiscal:'การคลังภาครัฐ',agri:'ภาคเกษตร',labor:'ตลาดแรงงาน',household:'ครัวเรือนและความเหลื่อมล้ำ',population:'ประชากร',
