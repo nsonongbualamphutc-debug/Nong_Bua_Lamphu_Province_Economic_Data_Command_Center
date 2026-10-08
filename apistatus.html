@@ -124,6 +124,28 @@ a{color:inherit}
 .cc-pc li{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.45;color:var(--tx2)}
 .cc-pc li small{color:var(--tx3)}
 /* ทะเบียน */
+.cc-find{padding:18px 20px;margin-bottom:14px}
+.cc-find-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;margin-bottom:12px}
+.cc-find-h b{font-family:'Kanit',sans-serif;font-size:16px;font-weight:600}.cc-find-h span{font-size:12.5px;color:var(--tx3)}
+.cc-srch-lg input{font-size:15.5px;padding:13px 0}
+.cc-fd-sug{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cc-fd-sug button{font:inherit;font-size:12px;border:1px solid var(--ln);background:transparent;color:var(--tx2);border-radius:20px;padding:4px 11px;cursor:pointer}
+.cc-fd-sug button:hover{color:#fff;border-color:var(--neo)}
+.cc-fd-sum{font-size:13px;color:var(--tx2);margin:2px 2px 10px}.cc-fd-sum b{color:#fff}
+.cc-fd{padding:14px 16px;margin-bottom:10px}
+.cc-fd-t{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}
+.cc-fd-t a{font-family:'Kanit',sans-serif;font-size:15px;font-weight:600;color:#fff;text-decoration:none}.cc-fd-t a:hover{text-decoration:underline}
+.cc-fd-t small{font-size:12px;color:var(--tx3)}
+.cc-fd-n{font-size:12.5px;color:var(--tx2);margin:4px 0 8px}
+.cc-fd-r{display:grid;grid-template-columns:1fr auto auto;gap:8px 12px;align-items:center;padding:8px 0;border-top:1px dashed var(--ln);font-size:13px}
+.cc-fd-r code{font-size:11px;color:var(--tx3);word-break:break-all}
+.cc-fd-st{font-size:11.5px;border-radius:20px;padding:3px 10px;white-space:nowrap;border:1px solid currentColor}
+.cc-fd-st.use{color:#3ce0a0}.cc-fd-st.av{color:#6aa8ff}.cc-fd-st.no{color:#f0c45a}.cc-fd-st.nf{color:#8fb5a8}
+.cc-fd-r button{font:inherit;font-size:11.5px;border:1px solid var(--ln);background:transparent;color:var(--tx2);border-radius:8px;padding:4px 9px;cursor:pointer}
+.cc-fd-r button:hover{color:#fff}
+.cc-fd-more{display:block;margin:6px auto 0;font:inherit;font-size:13px;border:1px solid var(--ln);background:var(--gl);color:var(--tx);border-radius:12px;padding:9px 18px;cursor:pointer}
+.cc-fd-empty{padding:26px;text-align:center;color:var(--tx2);font-size:13.5px}
+@media (max-width:640px){.cc-fd-r{grid-template-columns:1fr}}
 .cc-flt{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}
 .cc-srch{flex:1;min-width:240px;display:flex;align-items:center;gap:8px;padding:0 13px;border-radius:13px;border:1px solid var(--ln);background:var(--gl)}
 .cc-srch svg{width:16px;height:16px;stroke:var(--tx3);fill:none;stroke-width:2}
@@ -181,6 +203,42 @@ table.ds tr{transition:background .15s}table.ds tbody tr:hover{background:rgba(6
 .cc-cvb{height:7px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}.cc-cvb i{display:block;height:100%;border-radius:4px;box-shadow:0 0 8px currentColor}
 .cc-cv b{font:600 12px 'Kanit',sans-serif;text-align:right;color:var(--tx)}
 @media(max-width:640px){.cc-cov{grid-template-columns:1fr}}
+
+/* ── v4: ภาพและไอคอน 3 มิติ ── */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(1200px 600px at 85% -10%,rgba(60,240,176,.10),transparent 60%),radial-gradient(900px 500px at -10% 30%,rgba(106,168,255,.08),transparent 60%),
+  linear-gradient(rgba(140,255,210,.035) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(140,255,210,.035) 1px,transparent 1px) 0 0/44px 44px;
+  mask-image:linear-gradient(180deg,#000,transparent 85%);-webkit-mask-image:linear-gradient(180deg,#000,transparent 85%)}
+.cc-wrap,.cc-top{position:relative;z-index:1}
+.cc-h-l{isolation:isolate}
+.cc-h-l .cc-hbg{position:absolute;inset:0;z-index:-2;background-size:cover;background-position:72% center;opacity:0;transition:opacity .8s}
+.cc-h-l .cc-hbg.on{opacity:.95}
+.cc-h-l.hasimg .cc-flow{display:none}
+.cc-h-l::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(6,28,22,.97) 36%,rgba(6,28,22,.72) 56%,rgba(6,28,22,.15) 82%,rgba(6,28,22,0) 100%),linear-gradient(0deg,rgba(6,28,22,.55),transparent 45%)}
+.cc-flow{position:absolute;right:6px;top:14px;width:250px;height:174px;z-index:-1;opacity:.85;pointer-events:none}
+.cc-h-l h1,.cc-h-l p{max-width:calc(100% - 210px)}
+@media(max-width:1100px){.cc-h-l h1,.cc-h-l p{max-width:none}}
+.cc-flow .ln{fill:none;stroke:rgba(60,240,176,.22);stroke-width:1.4}
+.cc-flow .pk{fill:none;stroke:#3cf0b0;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:6 140;animation:flow 3.2s linear infinite;filter:drop-shadow(0 0 4px #3cf0b0)}
+.cc-flow .nd{fill:#0b2a22;stroke:rgba(60,240,176,.55);stroke-width:1.4}
+.cc-flow .core{fill:url(#coreg);filter:drop-shadow(0 0 16px rgba(60,240,176,.7))}
+@keyframes flow{to{stroke-dashoffset:-146}}
+.cc-kp{padding-right:64px}
+.cc-kp .cc-ki{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:54px;height:54px;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45));transition:.3s}
+.cc-kp:hover .cc-ki{transform:translateY(-50%) scale(1.1) rotate(-4deg)}
+.cc-tabs button img{width:20px;height:20px;object-fit:contain;vertical-align:-5px;margin-right:6px}
+.cc-pc{padding:0;overflow:hidden;gap:0}
+.cc-pc .cc-pban{position:relative;height:92px;background-size:cover;background-position:center 55%}
+.cc-pc .cc-pban::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,22,17,.15),rgba(6,28,22,.92))}
+.cc-pc .cc-pban .cc-pico{position:absolute;left:14px;bottom:-22px;z-index:2;width:56px;height:56px;border-radius:16px;display:grid;place-items:center;
+  background:linear-gradient(160deg,#123d31,#0a241d);border:1px solid var(--ln);box-shadow:0 10px 24px -10px rgba(0,0,0,.7)}
+.cc-pc .cc-pban .cc-pico img{width:42px;height:42px;object-fit:contain}
+.cc-pc .cc-pban .cc-ring{position:absolute;right:12px;bottom:-20px;z-index:2;background:#0a241d;border-radius:50%;box-shadow:0 8px 20px -8px rgba(0,0,0,.7)}
+.cc-pc .cc-ph{padding:28px 16px 4px}
+.cc-pc ul{padding:6px 16px 16px}
+.cc-ag .cc-ah img{width:40px;height:40px;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4))}
+.cc-feed .cc-fi{transition:.2s;border-radius:12px}.cc-feed .cc-fi:hover{background:var(--gl)}
+@media(max-width:640px){.cc-flow{display:none}.cc-kp{padding-right:14px}.cc-kp .cc-ki{top:10px;right:8px;transform:none;width:34px;height:34px}.cc-kp:hover .cc-ki{transform:none}}
 </style>
 </head>
 <body>
@@ -197,6 +255,9 @@ table.ds tr{transition:background .15s}table.ds tbody tr:hover{background:rgba(6
 <div class="cc-wrap">
   <div class="cc-hero">
     <div class="cc-glass cc-h-l">
+      <div class="cc-hbg" id="heroBg"></div>
+      <svg class="cc-flow" viewBox="0 0 360 250" aria-hidden="true"><defs><radialGradient id="coreg"><stop offset="0" stop-color="#b8ffe2"/><stop offset=".55" stop-color="#3cf0b0"/><stop offset="1" stop-color="#0d6f52"/></radialGradient></defs>
+        <g id="flowG"></g></svg>
       <div class="cc-eyebrow">Data Source Control Center</div>
       <h1>ทุกตัวเลขบนแดชบอร์ด<br>มาจากไหน สดแค่ไหน</h1>
       <p>เชื่อมกับระบบบัญชีข้อมูลจังหวัดหนองบัวลำภูแบบสด ตรวจการเชื่อมต่อทุกชุด ดูวันที่หน่วยงานปรับปรุงข้อมูล
@@ -228,13 +289,23 @@ table.ds tr{transition:background .15s}table.ds tbody tr:hover{background:rgba(6
   </div>
 
   <div class="cc-tabs cc-glass" id="tabs">
-    <button data-p="pages" class="cc-on">รายหน้าแดชบอร์ด</button>
-    <button data-p="list">ทะเบียนชุดข้อมูล<b id="nList"></b></button>
-    <button data-p="agency">หน่วยงาน<b id="nAg"></b></button>
-    <button data-p="hist">ประวัติการอัปเดต<b id="nHist"></b></button>
-    <button data-p="qa">คุณภาพข้อมูล<b id="nQa"></b></button>
+    <button data-p="pages" class="cc-on"><img src="assets/icons/ic-table.png" alt="" onerror="this.remove()">รายหน้าแดชบอร์ด</button>
+    <button data-p="find"><img src="assets/icons/ic-source.png" alt="" onerror="this.remove()">ค้นหาชุดข้อมูลในระบบ</button>
+    <button data-p="list"><img src="assets/icons/ic-catalog.png" alt="" onerror="this.remove()">ทะเบียนชุดข้อมูล<b id="nList"></b></button>
+    <button data-p="agency"><img src="assets/icons/ic-institution.png" alt="" onerror="this.remove()">หน่วยงาน<b id="nAg"></b></button>
+    <button data-p="hist"><img src="assets/icons/ic-history.png" alt="" onerror="this.remove()">ประวัติการอัปเดต<b id="nHist"></b></button>
+    <button data-p="qa"><img src="assets/icons/ic-datastatus.png" alt="" onerror="this.remove()">คุณภาพข้อมูล<b id="nQa"></b></button>
   </div>
   <div class="cc-pane cc-on" id="p-pages"><div class="cc-pgrid" id="pgrid"></div></div>
+  <div class="cc-pane" id="p-find">
+    <div class="cc-glass cc-find">
+      <div class="cc-find-h"><b>ค้นหาชุดข้อมูลในระบบบัญชีข้อมูลจังหวัด</b><span id="fdAll">ค้นจากทุกชุดที่เผยแพร่บน nongbualamphu.gdcatalog.go.th</span></div>
+      <label class="cc-srch cc-srch-lg"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input id="fq" placeholder="พิมพ์ชื่อชุดข้อมูล เช่น ผู้เยี่ยมเยือน ข้าว OTOP ประชากร" autocomplete="off"></label>
+      <div class="cc-fd-sug" id="fdSug"></div>
+    </div>
+    <div id="fdOut"></div>
+  </div>
   <div class="cc-pane" id="p-list">
     <div class="cc-flt"><label class="cc-srch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
         <input id="q" placeholder="ค้นหาชื่อชุดข้อมูล หน่วยงาน หรือรหัส resource"><kbd>/</kbd></label>
@@ -257,6 +328,14 @@ const PAGES={index:'หน้าปกจังหวัด',overview:'ภาพ
   industry:'อุตสาหกรรมและการผลิต',trade:'การค้าและค่าครองชีพ',consume:'การบริโภคและพลังงาน',tourism:'ภาคการท่องเที่ยว',
   otop:'OTOP และเศรษฐกิจชุมชน',labor:'ตลาดแรงงาน',household:'ครัวเรือนและความเหลื่อมล้ำ',population:'ประชากรและโครงสร้างอายุ',area:'ข้อมูลเชิงพื้นที่'};
 const TORD=['api','link','avail','gas','file','ext','sim'];
+const PICO={index:'summary',overview:'analysis'}, PBAN={index:'assets/cover-city.jpg'};
+/* ภาพพื้นหลังส่วนหัว (ใส่ไฟล์ assets/api-hero.jpg เมื่อพร้อม · ยังไม่มีไฟล์ก็แสดงลายเส้นตามเดิม) */
+(function(){const im=new Image();im.onload=()=>{const b=document.getElementById('heroBg');if(b){b.style.backgroundImage="url('assets/api-hero.jpg')";b.classList.add('on');b.parentNode.classList.add('hasimg')}};im.src='assets/api-hero.jpg'})();
+/* ภาพเคลื่อนไหวข้อมูลไหลจากหน่วยงานเข้าสู่แดชบอร์ด */
+(function(){const g=document.getElementById('flowG');if(!g)return;const cx=250,cy=140,N=[[40,40],[30,120],[60,205],[150,232],[140,22],[330,40],[340,215]];
+  g.innerHTML=N.map((n,i)=>{const d=`M${n[0]} ${n[1]} Q ${(n[0]+cx)/2} ${(n[1]+cy)/2-30} ${cx} ${cy}`;
+    return `<path class="ln" d="${d}"/><path class="pk" d="${d}" style="animation-delay:${(i*0.45).toFixed(2)}s"/><circle class="nd" cx="${n[0]}" cy="${n[1]}" r="7"/>`}).join('')+
+    `<circle class="core" cx="${cx}" cy="${cy}" r="20"/><circle cx="${cx}" cy="${cy}" r="30" fill="none" stroke="rgba(60,240,176,.35)" stroke-width="1.2"><animate attributeName="r" values="22;40;22" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values=".8;0;.8" dur="3s" repeatCount="indefinite"/></circle>`})();
 const TC={api:'#3ce0a0',link:'#f0c45a',avail:'#6aa8ff',gas:'#b48cff',file:'#8fb5a8',ext:'#49d4e8',sim:'#ff7a6a'};
 const INV=srcInventory(), APILIVE={}, APIMETA={};
 const esc=x=>String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -285,7 +364,8 @@ function drawTop(){
     [c.link,'กำลังเชื่อมข้อมูล','#f0c45a','มีบนระบบ รอเปิด API','link'],[c.gas+c.file+c.ext,'ไฟล์และระบบกรอก','#b48cff','กรอก '+c.gas+' · ไฟล์ '+(c.file+c.ext),'gas'],
     [c.sim,'ข้อมูลจำลอง','#ff7a6a','รอหน่วยงานส่งข้อมูลจริง','sim'],[ags.size,'หน่วยงานที่ส่ง API','#6aa8ff',ids.length+' resource ที่เฝ้าดู','']];
   const box=document.getElementById('kpis');
-  if(!box.children.length)box.innerHTML=K.map((k,i)=>`<div class="cc-glass cc-kp" style="--c:${k[2]}" data-ft="${k[4]}"><b id="kv${i}">0</b><span>${k[1]}</span><small id="ks${i}"></small></div>`).join('');
+  if(!box.children.length)box.innerHTML=K.map((k,i)=>`<div class="cc-glass cc-kp" style="--c:${k[2]}" data-ft="${k[4]}"><b id="kv${i}">0</b><span>${k[1]}</span><small id="ks${i}"></small>
+    <img class="cc-ki" src="assets/icons/ic-${['catalog','database','network','excel','datagap','institution'][i]}.png" alt="" onerror="this.remove()"></div>`).join('');
   K.forEach((k,i)=>{countUp(document.getElementById('kv'+i),k[0]);document.getElementById('ks'+i).textContent=k[3]});
   const mb=document.getElementById('mixBar');
   if(!mb.children.length){mb.innerHTML=TORD.filter(t=>t!=='avail'&&c[t]).map(t=>`<i style="background:${TC[t]};box-shadow:0 0 12px ${TC[t]}" data-w="${c[t]/S.length*100}" data-tip2="${SRC_TYPE[t][0]}|${c[t]} ชุด · ${(c[t]/S.length*100).toFixed(0)}% ของข้อมูลบนแดชบอร์ด"></i>`).join('');
@@ -313,8 +393,10 @@ function drawPages(){
   document.getElementById('pgrid').innerHTML=Object.keys(PAGES).filter(p=>g[p]).map(p=>{
     const L=g[p].slice().sort((a,b)=>TORD.indexOf(a.type)-TORD.indexOf(b.type)),S=L.filter(x=>x.type!=='avail'),a=S.filter(x=>x.type==='api').length,pc=S.length?a/S.length:0;
     const col=pc===1?'#3ce0a0':pc>0?'#f0c45a':'#8fb5a8';
-    return `<div class="cc-glass cc-pc" id="pg-${p}"><div class="cc-ph"><span class="cc-ring">${ring(pc,col)}<b>${Math.round(pc*100)}%</b></span>
-      <div><h4><a href="${p}.html">${PAGES[p]}</a></h4><div class="cc-sub">${a}/${S.length} ชุดดึงจาก API</div></div></div>
+    return `<div class="cc-glass cc-pc" id="pg-${p}"><div class="cc-pban" style="background-image:url('${PBAN[p]||'assets/h-'+p+'.jpg'}')">
+        <span class="cc-pico"><img src="assets/icons/ic-${PICO[p]||p}.png" alt="" onerror="this.remove()"></span>
+        <span class="cc-ring">${ring(pc,col)}<b>${Math.round(pc*100)}%</b></span></div>
+      <div class="cc-ph"><div><h4><a href="${p}.html">${PAGES[p]}</a></h4><div class="cc-sub">${a}/${S.length} ชุดดึงจาก API</div></div></div>
       <ul>${L.map(x=>`<li>${tp(x.type)}<span>${esc(x.n)}${x.type!=='api'&&x.note?` <small>(${esc(x.note)})</small>`:''}</span></li>`).join('')}</ul></div>`}).join('');
 }
 function drawList(){
@@ -330,13 +412,13 @@ function drawList(){
         <td class="cc-when">${m&&m.modified?dt(m.modified)+`<small>${ago(m.modified)}</small>`:x.id?'<small>—</small>':''}</td>
         <td class="cc-when">${sn?dt(sn.at)+`<small>${tm(sn.at)} น.</small>`:x.id?'<small>ยังไม่เคยดึง</small>':''}</td>
         <td>${x.id?`<a class="cc-ab" href="${m&&m.url||GDC.base+'/dataset/?q='+x.id}" target="_blank" rel="noopener">เปิดในระบบ ↗</a>`:''}</td></tr>`}).join('')
-      :'<tr><td colspan="8" class="cc-empty">ไม่พบชุดข้อมูลตามเงื่อนไข</td></tr>')+'</tbody>';
+      :'<tr><td colspan="8" class="cc-empty">ไม่พบในทะเบียนของแดชบอร์ด · <a href="#find" data-gofind="1" style="color:#3ce0a0">ค้นหาในระบบบัญชีข้อมูลจังหวัด</a></td></tr>')+'</tbody>';
 }
 function drawAgency(){
   const g={};INV.forEach(x=>(g[x.agency]=g[x.agency]||[]).push(x));
   const K=Object.keys(g).sort((a,b)=>g[b].filter(x=>x.type==='api').length-g[a].filter(x=>x.type==='api').length||g[b].length-g[a].length);
   document.getElementById('agrid').innerHTML=K.map(a=>{const L=g[a],S=L.filter(x=>x.type!=='avail'),api=S.filter(x=>x.type==='api').length,p=S.length?api/S.length:0;
-    return `<div class="cc-glass cc-ag"><div class="cc-ah"><span class="cc-ring">${ring(p,p===1?'#3ce0a0':p>0?'#f0c45a':'#8fb5a8')}<b>${api}/${S.length}</b></span>
+    return `<div class="cc-glass cc-ag"><div class="cc-ah"><img src="assets/icons/ic-institution.png" alt="" onerror="this.remove()"><span class="cc-ring">${ring(p,p===1?'#3ce0a0':p>0?'#f0c45a':'#8fb5a8')}<b>${api}/${S.length}</b></span>
       <div><h4>${esc(agN(a))}</h4><div class="cc-sub">${api} ชุดดึงจาก API</div></div></div>
       <ul>${L.map(x=>`<li>${esc(x.n)} <span style="color:${TC[x.type]}">(${SRC_TYPE[x.type][0]})</span></li>`).join('')}</ul></div>`}).join('');
 }
@@ -377,6 +459,45 @@ document.addEventListener('click',e=>{const f=e.target.closest('[data-ft]');if(f
 document.addEventListener('click',e=>{const c=e.target.closest('[data-pg]');if(c){e.preventDefault();showTab('pages');
   setTimeout(()=>{const el=document.getElementById('pg-'+c.dataset.pg);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.animate([{boxShadow:'0 0 0 2px #3cf0b0,0 0 40px -6px #3cf0b0'},{boxShadow:'none'}],{duration:1800})}},60)}});
 document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement.tagName!=='INPUT'){e.preventDefault();showTab('list');document.getElementById('q').focus()}});
+/* ══ ค้นหาชุดข้อมูลในระบบบัญชีข้อมูลจังหวัด (package_search) · บอกว่าแต่ละชุดเชื่อมกับแดชบอร์ดแล้วหรือยัง ══ */
+const FD={q:'',start:0,rows:20,res:[],count:0,seq:0};
+const RESMAP={};GDC.RES.forEach(r=>{if(r.id)RESMAP[r.id]=r});
+function fdStatus(rs){const r=RESMAP[rs.id];
+  if(r&&r.state==='api')return `<span class="cc-fd-st use">ใช้ในแดชบอร์ดแล้ว · ${esc(PAGES[r.page]||r.page)}</span>`;
+  if(r)return `<span class="cc-fd-st av">เชื่อมไว้แล้ว ยังไม่ได้แสดง · ${esc(PAGES[r.page]||r.page)}</span>`;
+  if(!rs.datastore_active)return '<span class="cc-fd-st nf">เป็นไฟล์อย่างเดียว ยังดึงผ่าน API ไม่ได้</span>';
+  return '<span class="cc-fd-st no">ดึงผ่าน API ได้ · ยังไม่ได้เชื่อมกับแดชบอร์ด</span>'}
+function fdDraw(){const o=document.getElementById('fdOut');
+  if(!FD.q){o.innerHTML='';return}
+  if(!FD.res.length){o.innerHTML=`<div class="cc-glass cc-fd-empty">ไม่พบชุดข้อมูลที่ตรงกับ “${esc(FD.q)}” ในระบบบัญชีข้อมูลจังหวัด<br><small>ลองใช้คำที่สั้นลง เช่น คำหลักคำเดียว</small></div>`;return}
+  const nRes=FD.res.reduce((a,p)=>a+(p.resources||[]).length,0);
+  o.innerHTML=`<div class="cc-fd-sum">พบ <b>${FD.count}</b> ชุดข้อมูล (แสดง ${FD.res.length} ชุด ${nRes} ตาราง)</div>`+
+    FD.res.map(p=>`<div class="cc-glass cc-fd"><div class="cc-fd-t"><a href="${GDC.base}/dataset/${encodeURIComponent(p.name)}" target="_blank" rel="noopener">${esc(p.title||p.name)}</a>
+      <small>${esc(p.organization?p.organization.title:'')}${p.metadata_modified?' · ปรับปรุง '+fdDate(p.metadata_modified):''}</small></div>
+      ${p.notes&&p.notes!==p.title?`<div class="cc-fd-n">${esc(String(p.notes).slice(0,160))}</div>`:''}
+      ${(p.resources||[]).map(r=>`<div class="cc-fd-r"><div>${esc(r.name||r.id)} <small style="color:var(--tx3)">${esc(r.format||'')}</small><br><code>${r.id}</code></div>
+        ${fdStatus(r)}<button data-copy="${r.id}">คัดลอกรหัส</button></div>`).join('')}</div>`).join('')+
+    (FD.res.length<FD.count?'<button class="cc-fd-more" id="fdMore">แสดงเพิ่ม</button>':'');
+}
+const fdDate=t=>{const d=new Date(t+(/Z|\+/.test(t)?'':'Z'));return isNaN(d)?'':d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'})};
+async function fdSearch(more){const seq=++FD.seq,o=document.getElementById('fdOut');
+  if(!more){FD.start=0;FD.res=[]}
+  if(!FD.q){fdDraw();return}
+  if(!more)o.innerHTML='<div class="cc-glass cc-fd-empty">กำลังค้นหาในระบบบัญชีข้อมูลจังหวัด…</div>';
+  try{const r=await GDC.call('package_search',{q:FD.q,rows:FD.rows,start:FD.start});if(seq!==FD.seq)return;
+    FD.count=r.count;FD.res=FD.res.concat(r.results||[]);FD.start+=FD.rows;fdDraw()}
+  catch(e){if(seq===FD.seq)o.innerHTML=`<div class="cc-glass cc-fd-empty">ค้นหาไม่สำเร็จ: ${esc(e.message)} · ตรวจการเชื่อมต่อกับระบบบัญชีข้อมูลจังหวัด</div>`}}
+let fdT=0;
+document.getElementById('fq').addEventListener('input',e=>{clearTimeout(fdT);FD.q=e.target.value.trim();fdT=setTimeout(()=>fdSearch(false),380)});
+document.getElementById('fq').addEventListener('keydown',e=>{if(e.key==='Enter'){clearTimeout(fdT);fdSearch(false)}});
+document.addEventListener('click',e=>{
+  if(e.target.id==='fdMore'){fdSearch(true);return}
+  if(e.target.dataset&&e.target.dataset.gofind){e.preventDefault();const i=document.getElementById('fq');i.value=document.getElementById('q').value;FD.q=i.value.trim();showTab('find');fdSearch(false);i.focus();return}
+  const c=e.target.closest('[data-copy]');if(c){navigator.clipboard&&navigator.clipboard.writeText(c.dataset.copy);c.textContent='คัดลอกแล้ว';setTimeout(()=>c.textContent='คัดลอกรหัส',1400);return}
+  const g=e.target.closest('[data-fdq]');if(g){const i=document.getElementById('fq');i.value=g.dataset.fdq;FD.q=i.value;fdSearch(false)}});
+document.getElementById('fdSug').innerHTML='<span style="font-size:12px;color:var(--tx3);align-self:center">ตัวอย่าง:</span>'+
+  ['ผู้เยี่ยมเยือน','ข้าว','OTOP','ประชากร','แรงงาน','ชลประทาน','งบประมาณ'].map(x=>`<button data-fdq="${x}">${x}</button>`).join('');
+GDC.call('package_search',{q:'',rows:0}).then(r=>{document.getElementById('fdAll').textContent='ค้นจากทั้งหมด '+r.count+' ชุดที่เผยแพร่บนระบบบัญชีข้อมูลจังหวัด'}).catch(()=>{});
 async function check(fresh){
   Object.keys(APILIVE).forEach(k=>delete APILIVE[k]);drawAll();
   const ids=[...new Set(INV.filter(x=>x.id).map(x=>x.id))];let i=0,done=0;
@@ -404,7 +525,7 @@ document.getElementById('btnCopy').onclick=async()=>{
 initTip();
 drawAll();
 const h=location.hash.slice(1);
-if(['pages','list','agency','hist','qa'].indexOf(h)>=0)showTab(h);
+if(['pages','find','list','agency','hist','qa'].indexOf(h)>=0)showTab(h);
 else if(h&&PAGES[h]){setTimeout(()=>{const el=document.getElementById('pg-'+h);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.boxShadow='0 0 0 2px #3cf0b0,0 0 40px -10px #3cf0b0'}},400)}
 check(false).then(()=>GDC.watchUpdates().then(()=>{updateBell();drawFeed();drawTop();drawHist()}));
 setInterval(()=>{drawFeed()},60e3);
