@@ -234,6 +234,7 @@ function drawHist(){
 function drawQa(){
   const out=[];
   ['labor','house','popgrowth'].forEach(j=>{try{const c=JSON.parse(localStorage.getItem('gdc-qa-'+j)||'null');if(c)(c.qa||[]).forEach(q=>out.push({t:'warn',m:q,at:c.at}))}catch(e){}});
+  try{const P=JSON.parse(localStorage.getItem('gdc-qa-panels')||'{}');Object.keys(P).forEach(k=>P[k].forEach(q=>out.push({t:'warn',m:k+': '+q})))}catch(e){}
   Object.keys(APILIVE).forEach(id=>{const l=APILIVE[id];const x=INV.find(y=>y.id===id);
     if(l.err)out.push({t:'err',m:'เชื่อมต่อไม่ได้: '+(x?x.n:id)+' — '+l.err});
     else if(l.total===0)out.push({t:'warn',m:'ชุดข้อมูลว่าง ไม่มีแถว: '+(x?x.n:id)})});
