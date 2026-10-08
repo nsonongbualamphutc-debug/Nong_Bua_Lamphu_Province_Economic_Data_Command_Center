@@ -2698,7 +2698,7 @@ GDC.SYNC={
       if(R.main)o.main=R.main.map(r=>({y:gdcYear(r),k:r['ประเภท'],v:gdcVal(r),u:r['หน่วย']||'บาท'})).filter(r=>r.y&&r.v!=null);
       if(R.debt)o.debt=R.debt.map(r=>({y:gdcYear(r),k:r['ประเภทหนี้'],v:gdcVal(r)})).filter(r=>r.y&&r.v!=null);
       if(R.gini)o.gini=R.gini.map(r=>{const b=String(r['ขอบเขตจำกัดชั้นรายได้']||'');
-        return {y:gdcYear(r),k:r['รายการข้อมูล'],g:/10\s*กลุ่ม/.test(b)?10:/5\s*กลุ่ม/.test(b)?5:null,v:gdcVal(r)}}).filter(r=>r.y&&r.v!=null);
+        return {y:gdcYear(r),k:r['รายการข้อมูล'],g:/10\s*กลุ่ม/.test(b)?10:/5\s*กลุ่ม/.test(b)?5:null,v:gdcVal(r)}}).filter(r=>r.y&&r.y>2500&&r.v!=null);
       if(R.expense)o.expense=R.expense.map(r=>({y:gdcYear(r),size:r['ขนาดครัวเรือน'],k:r['รายการ'],v:gdcNum(r['ค่าของข้อมูล'])})).filter(r=>r.y&&r.v!=null);
       if(R.income_src)o.income_src=R.income_src.map(r=>({y:gdcYear(r),k:r['แหล่งรายได้'],item:r['รายการ'],v:gdcVal(r)})).filter(r=>r.y&&r.v!=null);
       if(R.poverty)o.poverty=R.poverty.map(r=>({y:gdcYear(r),k:r['รายการข้อมูล'],t:r['ประเภท'],v:gdcVal(r),u:r['หน่วย']})).filter(r=>r.y&&r.v!=null);
@@ -2954,36 +2954,50 @@ function tiers(R){
    รายชื่อ (ร้านอาหาร ที่พัก ผู้ประกอบการ) → นับรายอำเภอ + รายชื่อเด่น
    มีอำเภอ → เทียบรายอำเภอปีล่าสุด · มีหลายหมวด → เส้นรายปีแยกหมวด · มีเดือน → เส้นรายเดือน · มีแต่ปี → แท่งรายปี */
 const TH_MF=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-function autoBuild2(R){
-  if(!R||!R.length)return null;
-  const K=Object.keys(R[0]);
+function autoBuild2(R0,qaKey){
+  if(!R0||!R0.length)return null;
+  const K=Object.keys(R0[0]);
+  /* ทำความสะอาดก่อนใช้: ปีที่เป็นไปไม่ได้ (เช่น 2464 ที่น่าจะพิมพ์ผิดจาก 2564) ไม่นำมาใช้ · ถ้ามีแถวเพศ "รวม" ใช้เฉพาะแถวรวม ไม่บวกชาย+หญิงซ้ำ */
+  const BE=new Date().getFullYear()+543, qa=m=>{if(qaKey)(PNL_QA[qaKey]=PNL_QA[qaKey]||new Set()).add(m)};
+  let R=R0.filter(r=>{const y=gdcYear(r);if(y&&(y<2500||y>BE+1)){qa('ปี '+y+' ไม่สมเหตุผล (น่าจะพิมพ์ผิด) จึงไม่นำมาใช้');return false}return true});
+  if(K.indexOf('เพศ')>=0&&R.some(r=>pTxt(r,'เพศ')==='รวม'))R=R.filter(r=>pTxt(r,'เพศ')==='รวม');
+  if(!R.length)return null;
   const yc=K.find(k=>/^(ปี|ปีงบประมาณ|พ\.ศ\.)$/.test(k)), mc=K.find(k=>/^เดือน$/.test(k)), ac=K.find(k=>/^อำเภอ$/.test(k));
   const uc=K.find(k=>/^หน่วย$/.test(k));
-  const numOK=k=>R.filter(r=>gdcNum(r[k])!=null).length>=R.length*.6;
+  /* คอลัมน์ตัวเลข: นับเฉพาะช่องที่กรอกแล้ว ("-" "n.a." หรือช่องว่าง ถือว่ายังไม่มีข้อมูล) */
+  const blank=x=>x==null||/^(-+|n\.?a\.?|)$/i.test(String(x).replace(/\s/g,''));
+  const numOK=k=>{let n=0,t=0;R.forEach(r=>{if(blank(r[k]))return;t++;if(gdcNum(r[k])!=null)n++});return n>0&&n>=t*.6};
   const vc=['ค่าข้อมูล','จำนวน','ปริมาณ','ค่าของข้อมูล','ค่า','ร้อยละ','จำนวนห้องพัก','มูลค่า'].find(k=>K.indexOf(k)>=0&&numOK(k));
   const skip=/^(จังหวัด|แหล่งที่มา|ที่มา|หน่วยงาน|หมายเหตุ|หน่วย|ปี|ปีงบประมาณ|เดือน|อำเภอ|เบอร์|โทร)/;
   const uniq=k=>new Set(R.map(r=>pTxt(r,k))).size;
   const txt=K.filter(k=>!skip.test(k)&&k!==vc&&!numOK(k));
   /* คอลัมน์ชื่อรายการ: ตรวจความไม่ซ้ำภายในปีล่าสุด เพราะรายชื่อเดิมถูกลงซ้ำทุกปี */
-  const RL=(()=>{if(!yc)return R;const ys=R.map(gdcYear).filter(Boolean);const y=Math.max(...ys);return R.filter(r=>gdcYear(r)===y)})();
+  /* รายชื่อ: ใช้ปีล่าสุดถ้าปีนั้นลงข้อมูลครบ (อย่างน้อยครึ่งหนึ่งของปีที่มากที่สุด) ไม่งั้นรวมทุกปีโดยตัดชื่อซ้ำ (เก็บแถวปีล่าสุด) */
   const uq=(k,A)=>new Set(A.map(r=>pTxt(r,k))).size;
-  const nameC=txt.find(k=>/ชื่อ|รายชื่อ|ที่ตั้งตลาด/.test(k)&&uq(k,RL)>8&&uq(k,RL)>=RL.length*.5);
+  const nameLike=k=>/ชื่อ|รายชื่อ|ที่ตั้งตลาด/.test(k);
+  const RL=(()=>{if(!yc)return R;const c={};R.forEach(r=>{const y=gdcYear(r);if(y)c[y]=(c[y]||0)+1});const ys=Object.keys(c).map(Number);if(!ys.length)return R;
+    const y=Math.max(...ys),mx=Math.max(...ys.map(v=>c[v]));if(c[y]>=mx*.5)return R.filter(r=>gdcYear(r)===y);
+    const nk=txt.filter(nameLike).sort((p,q)=>uniq(q)-uniq(p))[0];if(!nk)return R.filter(r=>gdcYear(r)===y);
+    const M={};R.slice().sort((a,b)=>(gdcYear(a)||0)-(gdcYear(b)||0)).forEach(r=>M[pTxt(r,nk)]=r);return Object.values(M)})();
+  const nameC=txt.filter(k=>nameLike(k)&&uq(k,RL)>8&&uq(k,RL)>=RL.length*.5).sort((p,q)=>uq(q,RL)-uq(p,RL))[0];
   const cats=txt.filter(k=>k!==nameC&&uniq(k)>1&&uniq(k)<=12&&!/ที่อยู่|ที่ตั้ง|ช่องทาง|เมนู|รางวัล|พิกัด|ตำบล/.test(k));
   const unit=uc?(R.map(r=>pTxt(r,uc)).find(Boolean)||''):'';
   const Y=yc?[...new Set(R.map(gdcYear).filter(Boolean))].sort((a,b)=>a-b):[];
   const yl=Y[Y.length-1], yp=Y[Y.length-2];
   const val=r=>vc?gdcNum(r[vc]):1;
   const sum=f=>R.filter(f).reduce((a,r)=>a+(val(r)||0),0);
-  const amp=x=>String(x||'').replace(/^อำเภอ/,'').trim();
+  /* ชื่ออำเภอให้ตรงกัน ("เมือง" = "เมืองหนองบัวลำภู") · แถว ในเขต/นอกเขตเทศบาล เป็นการแบ่งอีกแบบ ไม่ใช่อำเภอ ไม่นับรวม */
+  const amp=x=>{const a=String(x||'').replace(/^อำเภอ/,'').trim();return a==='เมือง'?'เมืองหนองบัวลำภู':a};
+  const notAmp=a=>!a||/รวม|ทั้งจังหวัด|ทุกอำเภอ|เขตเทศบาล/.test(a);
   /* 1) รายชื่อ */
   if(nameC){
-    const L=yl?R.filter(r=>gdcYear(r)===yl):R;
-    const byA={};if(ac)L.forEach(r=>{const a=amp(r[ac]);byA[a]=(byA[a]||0)+(vc&&!/^จำนวน$/.test(vc)?(val(r)||0):1)});
+    const L=RL;
+    const byA={};if(ac)L.forEach(r=>{const a=amp(r[ac]);if(notAmp(a))return;byA[a]=(byA[a]||0)+(vc&&!/^จำนวน$/.test(vc)?(val(r)||0):1)});
     const A=Object.keys(byA).sort((a,b)=>byA[b]-byA[a]);
     const mode=vc&&vc!=='จำนวน'?vc:'จำนวนรายการ';
     return {type:ac?'hbar':'none',labels:A,sets:[{label:mode,data:A.map(a=>byA[a])}],u:mode==='จำนวนรายการ'?'รายการ':unit,
-      kpi:[['ทั้งหมด'+(yl?' ปี '+yl:''),f_num(L.length),'รายการ']].concat(vc&&vc!=='จำนวน'?[['รวม'+vc,f_num(L.reduce((a,r)=>a+(val(r)||0),0)),unit]]:[]),
-      list:L.map(r=>pTxt(r,nameC)+(ac?' · '+amp(r[ac]):'')),note:(ac?'นับรายอำเภอ':'')+(yl?' · ปี '+yl:'')};
+      kpi:[['ทั้งหมด'+(yl&&L.every(r=>gdcYear(r)===yl)?' ปี '+yl:''),f_num(L.length),'รายการ']].concat(vc&&vc!=='จำนวน'?[['รวม'+vc,f_num(L.reduce((a,r)=>a+(val(r)||0),0)),unit]]:[]),
+      list:L.map(r=>pTxt(r,nameC)+(ac?' · '+amp(r[ac]):'')),note:(ac?'นับรายอำเภอ':'')+(yl?(L.every(r=>gdcYear(r)===yl)?' · ปี '+yl:' · รวมทุกปี ตัดชื่อซ้ำ'):'')};
   }
   /* ไม่มีคอลัมน์ค่ามาตรฐาน แต่มีหลายคอลัมน์ตัวเลข (เช่น ตำบล/หมู่บ้าน หรือ ครัวเรือน/แปลง/เนื้อที่) */
   if(!vc){
@@ -2991,7 +3005,7 @@ function autoBuild2(R){
     if(!nums.length)return null;
     const main=nums.find(k=>/เนื้อที่|พื้นที่|ไร่|หมู่บ้าน|มูลค่า/.test(k))||nums[nums.length-1];
     const L=yc?R.filter(r=>gdcYear(r)===Math.max(...R.map(gdcYear).filter(Boolean))):R;
-    if(ac){const byA={};L.forEach(r=>{const a=amp(r[ac]);if(!a||/รวม/.test(a))return;byA[a]=(byA[a]||0)+(gdcNum(r[main])||0)});
+    if(ac){const byA={};L.forEach(r=>{const a=amp(r[ac]);if(notAmp(a))return;byA[a]=(byA[a]||0)+(gdcNum(r[main])||0)});
       const A=Object.keys(byA).sort((a,b)=>byA[b]-byA[a]);
       return {type:'hbar',labels:A,sets:[{label:main.replace(/_/g,' '),data:A.map(a=>+byA[a].toFixed(2))}],u:main.replace(/_/g,' '),
         kpi:nums.slice(0,4).map(k=>['รวม'+k.replace(/_/g,' '),f_num(Math.round(L.reduce((a,r)=>a+(gdcNum(r[k])||0),0))),'']),
@@ -3026,10 +3040,10 @@ function autoBuild2(R){
   }
   /* 3) รายอำเภอ */
   if(ac&&uniq(ac)>2){
-    const L=yl?R.filter(r=>gdcYear(r)===yl):R;const byA={};L.forEach(r=>{const a=amp(r[ac]);if(!a||/รวม|ทั้งจังหวัด/.test(a))return;byA[a]=(byA[a]||0)+(val(r)||0)});
+    const L=yl?R.filter(r=>gdcYear(r)===yl):R;const byA={};L.forEach(r=>{const a=amp(r[ac]);if(notAmp(a))return;byA[a]=(byA[a]||0)+(val(r)||0)});
     const A=Object.keys(byA).sort((a,b)=>byA[b]-byA[a]);
-    const tot=A.reduce((a,k)=>a+byA[k],0), ptot=yp?sum(r=>gdcYear(r)===yp&&!/รวม|ทั้งจังหวัด/.test(amp(r[ac]))):null;
-    const avgType=/อัตรา|ร้อยละ|ความหนาแน่น|เฉลี่ย|สัดส่วน/.test(unit+' '+K.join(' ')+' '+pTxt(R[0],'รายการ')+pTxt(R[0],'รายการข้อมูล'));
+    const tot=A.reduce((a,k)=>a+byA[k],0), ptot=yp?sum(r=>gdcYear(r)===yp&&!notAmp(amp(r[ac]))):null;
+    const avgType=/อัตรา|ร้อยละ|เปอร์เซ็น|ความหนาแน่น|เฉลี่ย|สัดส่วน/.test(unit+' '+K.join(' ')+' '+pTxt(R[0],'รายการ')+pTxt(R[0],'รายการข้อมูล'));
     return {type:'hbar',labels:A,sets:[{label:(yl?'ปี '+yl:'ค่า'),data:A.map(a=>+byA[a].toFixed(2))}],u:unit,dec:avgType?2:0,
       note:(yl?'ปี '+yl+' · ':'')+(avgType?'สูงสุด '+A[0]+' '+f(byA[A[0]],2)+' '+unit:'รวมทั้งจังหวัด '+f_num(Math.round(tot))+' '+unit+(ptot?' · '+(tot>=ptot?'▲ +':'▼ ')+f_num(Math.round(tot-ptot))+' จากปี '+yp:''))};
   }
@@ -3038,14 +3052,14 @@ function autoBuild2(R){
   if(cc&&Y.length>1){
     const C=[...new Set(R.map(r=>pTxt(r,cc)))].slice(0,8);
     return {type:Y.length>2?'line':'bar',labels:Y.map(y=>'ปี '+y),u:unit,
-      sets:C.map(c=>({label:c.length>34?c.slice(0,32)+'…':c,data:Y.map(y=>{const x=R.filter(r=>gdcYear(r)===y&&pTxt(r,cc)===c);return x.length?x.reduce((a,r)=>a+(val(r)||0),0):null})})),
+      sets:C.map(c=>({label:c.length>34?c.slice(0,32)+'…':c,data:Y.map(y=>{const x=R.filter(r=>gdcYear(r)===y&&pTxt(r,cc)===c&&val(r)!=null);return x.length?x.reduce((a,r)=>a+val(r),0):null})})),
       note:'แยกตาม'+cc+' · ปี '+Y[0]+'–'+yl};
   }
   /* 5) หมวดในปีเดียว */
   if(cc){const L=yl?R.filter(r=>gdcYear(r)===yl):R;const m={};L.forEach(r=>{const c=pTxt(r,cc);m[c]=(m[c]||0)+(val(r)||0)});const C=Object.keys(m).sort((a,b)=>m[b]-m[a]);
     return {type:'hbar',labels:C,sets:[{label:unit||'ค่า',data:C.map(c=>m[c])}],u:unit,note:(yl?'ปี '+yl+' · ':'')+'แยกตาม'+cc}}
   /* 6) รายปีอย่างเดียว · ถ้าเป็นอัตราหรือค่าเฉลี่ยใช้ค่าเฉลี่ย ไม่บวกกัน */
-  const isAvg=/อัตรา|ร้อยละ|ความหนาแน่น|เฉลี่ย|สัดส่วน|ต่อ/.test(unit+' '+pTxt(R[0],'รายการ')+' '+pTxt(R[0],'รายการข้อมูล'));
+  const isAvg=/อัตรา|ร้อยละ|เปอร์เซ็น|ความหนาแน่น|เฉลี่ย|สัดส่วน|ต่อ/.test(unit+' '+pTxt(R[0],'รายการ')+' '+pTxt(R[0],'รายการข้อมูล'));
   if(Y.length){const m={},c={};R.forEach(r=>{const y=gdcYear(r),v=val(r);if(y&&v!=null){m[y]=(m[y]||0)+v;c[y]=(c[y]||0)+1}});
     if(isAvg)Object.keys(m).forEach(y=>m[y]=+(m[y]/c[y]).toFixed(2));
     return {type:'bar',labels:Y.map(y=>'ปี '+y),sets:[{label:unit||'ค่า',data:Y.map(y=>m[y])}],u:unit,
@@ -3053,8 +3067,8 @@ function autoBuild2(R){
   return null;
 }
 /* กราฟอัตโนมัติสำหรับชุดที่โครงสร้างยังไม่แน่ชัด: แยกหมวดถ้ามี ไม่งั้นเป็นเส้นรายปี */
-function autoBuild(R){
-  const o=autoBuild2(R); if(o)return o;
+function autoBuild(R,qaKey){
+  const o=autoBuild2(R,qaKey); if(o)return o;
   const sh=autoShape(R)||{};const Y=[...new Set(R.map(gdcYear).filter(Boolean))].sort();
   if(sh.cat){const C=[...new Set(R.map(r=>pTxt(r,sh.cat)))].slice(0,8);
     return {type:'line',labels:Y.map(y=>'ปี '+y),sets:C.map(c=>({label:c.length>40?c.slice(0,38)+'…':c,data:Y.map(y=>{const r=R.find(z=>gdcYear(z)===y&&pTxt(z,sh.cat)===c);return r?pv(r):null})})),dec:3,note:'แยกตาม '+sh.cat}}
@@ -3083,7 +3097,7 @@ function gdcPanels(page){
     if(ids.some(id=>!(id in PNL_DATA)))return;
     const bad=ids.find(id=>PNL_DATA[id].err);
     if(bad){box.innerHTML=`<div class="ps-pend">เชื่อมต่อชุดนี้ไม่ได้ · ${PNL_DATA[bad].err}</div>`;return}
-    let o; try{o=p.auto?autoBuild(PNL_DATA[ids[0]]):p.build(...ids.map(id=>PNL_DATA[id]),PNL_SEL[i]); if(o&&o.u!=null&&p.auto){const hu=sec.querySelector('#gx-'+i+' header .u');if(hu)hu.textContent=o.u}}catch(e){box.innerHTML='<div class="ps-pend">โครงสร้างข้อมูลไม่ตรงกับที่คาด · ตรวจที่หน้าสถานะ API</div>';console.error(e);return}
+    let o; try{o=p.auto?autoBuild(PNL_DATA[ids[0]],p.t):p.build(...ids.map(id=>PNL_DATA[id]),PNL_SEL[i]); if(o&&o.u!=null&&p.auto){const hu=sec.querySelector('#gx-'+i+' header .u');if(hu)hu.textContent=o.u}}catch(e){box.innerHTML='<div class="ps-pend">โครงสร้างข้อมูลไม่ตรงกับที่คาด · ตรวจที่หน้าสถานะ API</div>';console.error(e);return}
     if(!o||((!o.labels||!o.labels.length)&&!o.list)){box.innerHTML='<div class="ps-pend">ชุดข้อมูลนี้ยังไม่มีค่าที่แสดงเป็นกราฟได้</div>';return}
     const listH=o.list?`<div class="gx-list">${o.list.slice(0,14).map(x=>`<span>${x}</span>`).join('')}${o.list.length>14?`<em>และอีก ${f_num(o.list.length-14)} รายการ</em>`:''}</div>`:'';
     if(o.type==='none'){box.innerHTML=(o.kpi?`<div class="gx-kpi">${o.kpi.map(k=>`<div><span>${k[0]}</span><b>${k[1]}</b><small>${k[2]}</small></div>`).join('')}</div>`:'')+listH+`<div class="note">${o.note||''}</div>`;return}
