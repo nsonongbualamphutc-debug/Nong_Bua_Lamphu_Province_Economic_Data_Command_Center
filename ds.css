@@ -2030,3 +2030,7 @@ body.tour .topbar,body.tour header.top{position:relative;z-index:800}
 .cgd:hover .cgd-go svg{transform:translateX(4px)}
 @media (max-width:900px){.cgd{grid-template-columns:1fr;grid-template-areas:"lock" "tx" "st" "go";margin:18px 16px 0;padding:20px}.cgd-go{justify-self:start}}
 @media print{.cgd{display:none}}
+/* ป้าย GD ท้ายเมนู: ไม่ให้ถูกบีบเมื่อเมนูยาวเกินจอ */
+.side>.sgdc,.side>.sfoot{flex:none}
+.sgdc{min-height:52px}
+.sgdc-t b,.sgdc-t small{line-height:1.35}
