@@ -643,8 +643,7 @@ function relabelIcons(root){
    เป็น background-image ใน CSS ถ้าไฟล์ยังไม่มีจะไม่ขึ้นเฉย ๆ ไม่มี error และไม่กระทบข้อความ */
 const CARD_BG_DIR='assets/cardbg/';
 /* ไอคอนที่ไม่มีภาพพื้นหลังการ์ดของตัวเอง ใช้ภาพที่มีอยู่แล้วซึ่งความหมายใกล้กัน */
-const BG_ALIAS={area:'landuse',ranking:'district',gap:'gini',compare:'unemprate',analysis:'forecast',disburse:'fiscal',cropvalue:'crop',
-  network:'gpp',database:'forecast',institution:'spend',datagap:'gauge-carry',history:'gauge-current',settings:'gauge-overall'};
+const BG_ALIAS={area:'landuse',gap:'gini',analysis:'forecast',disburse:'fiscal',cropvalue:'crop',institution:'spend'};
 function cardBg(name){name=BG_ALIAS[name]||name;return name?`<span class="kpibg" style="background-image:url('${CARD_BG_DIR}bg-${name}.webp')"></span>`:''}
 function kpiCard(o){
   const T=o.go?'button':'div';
