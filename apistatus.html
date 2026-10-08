@@ -304,12 +304,30 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 @media(max-width:1100px){.gp-in::after{background:linear-gradient(180deg,rgba(4,22,17,.86),rgba(4,22,17,.72))}.gp-bg{background-position:70% top}.gp-in{grid-template-columns:1fr}.gp-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.gp-in{padding:22px 16px 0}.gp-tk{margin:0 -16px}.gp-l h2{font-size:31px}.gp-btn{padding:11px 14px;font-size:13px}.gp-st b{font-size:24px}.gp-code{min-height:150px;font-size:11.5px}}
 @media(prefers-reduced-motion:reduce){.gp,.gp-tk .mv{animation:none}}
+
+/* ── โลโก้จังหวัดและ GD ── */
+.cc-brand .cc-logos{display:flex;align-items:center;gap:6px;padding:3px 8px 3px 3px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--ln)}
+.cc-brand .cc-logos img{height:36px;width:auto;display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
+.cc-brand .cc-logos i{width:1px;height:24px;background:var(--ln)}
+.gp-lock{display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.gp-logo{position:relative;width:86px;height:86px;flex:0 0 86px;display:grid;place-items:center;border-radius:24px;
+  background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.14),rgba(255,255,255,.03) 70%);border:1px solid rgba(140,255,210,.18);
+  box-shadow:0 18px 40px -20px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08)}
+.gp-logo::before{content:'';position:absolute;inset:-2px;border-radius:26px;padding:2px;background:conic-gradient(from var(--ang),transparent 0 70%,var(--g1) 80%,var(--g2) 90%,transparent);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:gpspin 5s linear infinite}
+.gp-logo img{width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5));transition:transform .4s}
+.gp-logo:hover img{transform:scale(1.08) rotate(-3deg)}
+.gp-logo.nbl{--g1:#ff7ad1;--g2:#f0d79a}.gp-logo.gd{--g1:#3cf0b0;--g2:#6aa8ff}
+.gp-x{font:300 26px 'Kanit',sans-serif;color:rgba(184,255,226,.55)}
+.gp-lt b{display:block;font:600 17px/1.3 'Kanit',sans-serif;color:#fff}
+.gp-lt span{display:block;font-size:12.5px;color:#9fd9c3;margin-top:2px}
+@media(max-width:640px){.gp-logo{width:64px;height:64px;flex-basis:64px;border-radius:18px}.gp-logo img{width:52px;height:52px}.gp-x{font-size:20px}.gp-lt{flex-basis:100%}.cc-brand .cc-logos img{height:30px}}
 </style>
 </head>
 <body>
 <div id="tip" class="tip"></div>
 <div class="cc-top"><div class="cc-in">
-  <a class="cc-brand" href="index.html"><span class="cc-lg"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v6.5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V5.5M4.5 12v6.5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V12"/></svg></span>
+  <a class="cc-brand" href="index.html"><span class="cc-logos"><img src="assets/logo-nbl.png" alt="ตราจังหวัดหนองบัวลำภู"><i></i><img src="assets/logo-gd.png" alt="GD Catalog"></span>
     <span><b>ศูนย์ควบคุมแหล่งข้อมูล</b><small>ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</small></span></a>
   <span class="cc-live"><i></i>LIVE</span>
   <span class="cc-sp"></span>
@@ -321,7 +339,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   <section class="gp" id="gdcPromo"><div class="gp-in">
     <div class="gp-bg" id="gpBg"></div><canvas class="gp-cv" id="gpCv"></canvas>
     <div class="gp-l">
-      <span class="gp-badge"><img src="assets/icons/ic-catalog.png" alt="" onerror="this.remove()"><i></i>ระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู · Government Data Catalog</span>
+      <div class="gp-lock">
+        <span class="gp-logo nbl"><img src="assets/logo-nbl.png" alt="ตราจังหวัดหนองบัวลำภู"></span>
+        <span class="gp-x">×</span>
+        <span class="gp-logo gd"><img src="assets/logo-gd.png" alt="Government Data Catalog"></span>
+        <span class="gp-lt"><b>จังหวัดหนองบัวลำภู</b><span>ระบบบัญชีข้อมูลจังหวัด · Government Data Catalog</span></span>
+      </div>
+      <span class="gp-badge"><i></i>เปิดให้บริการ · เชื่อมต่อแบบเรียลไทม์</span>
       <h2>ข้อมูลจังหวัด <em>เปิดให้ใช้</em><br>เชื่อมต่อได้ทันทีผ่าน API</h2>
       <p>แหล่งรวมชุดข้อมูลจากทุกหน่วยงานในจังหวัด ค้นหา ดาวน์โหลด และดึงเข้าระบบของคุณได้ฟรี
         หน่วยงานนำข้อมูลเข้าระบบครั้งเดียว แดชบอร์ดนี้และทุกระบบที่เชื่อม API จะอัปเดตตามอัตโนมัติ</p>
