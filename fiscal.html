@@ -21,7 +21,7 @@
     <section class="view on" id="v-fiscal">
   <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start"><span class="bigico icow img" data-bigico="fiscal"></span><span><h2>การคลังและการใช้จ่ายภาครัฐ</h2>
     <p>เม็ดเงินงบประมาณที่รัฐอัดเข้าสู่ระบบเศรษฐกิจจังหวัด ตัวขับเคลื่อนอันดับหนึ่งของเศรษฐกิจหนองบัวลำภู</p></span></div>
-    <div class="r"><span class="chip real">ข้อมูลจริง</span><span class="chip">สนง.คลังจังหวัด · ครั้งที่ 178/2569</span></div></div>
+    <div class="r"><span class="chip real">ข้อมูลจริง</span><span class="chip" id="fisSrcChip">สนง.คลังจังหวัด · ครั้งที่ 178/2569</span><span id="gdcSlot"></span></div></div>
   <div class="grid g4 mb" id="fiscalKpi"></div>
   <div class="c mb"><header><span class="hdico icow img"><img class="ico" src="assets/icons/ic-award.png" alt="" width="26" height="26" loading="lazy" onerror="this.remove()"></span><h3>งบส่วนราชการ (Function) ปีงบประมาณ 2569</h3><span class="u">จัดสรรรวม 5,193.57 ล้านบาท</span>
     <span class="r"><span class="segs" id="fiscalSeg"><button class="on" data-m="dis">การเบิกจ่าย</button><button data-m="use">การใช้จ่าย</button></span></span></header>
@@ -53,33 +53,51 @@
 /* ─────────────── 12) การคลัง ─────────────── */
 let fiscalMode='dis';
 function f_num(v){return Number(v).toLocaleString('th-TH',{maximumFractionDigits:2})}
+/* วันที่ข้อมูลและปีงบประมาณมาจาก API · ถ้ายังโหลดไม่เสร็จใช้ค่าเดิมไปก่อน */
+const FA=()=>(D.fiscal&&D.fiscal.asof)||CFG.asof;
+const FYR=()=>(D.fiscal&&D.fiscal.fy)||2569;
+/* บรรทัดย่อยใต้การ์ด · เป้าหมายของกรมบัญชีกลางยังไม่มีใน API จึงแสดงอันดับระดับภาคและเขตแทน */
+function overSub(r){
+  if(r.over!=null)return 'สูงกว่าเป้าหมาย '+r.over+'%';
+  if(r.rankR!=null)return 'อันดับ '+r.rankR+' ของภาค · อันดับ '+r.rankZ+' ของเขต';
+  return 'จัดสรร '+f(r.alloc,0)+' ลบ. · เบิกแล้ว '+f(r.val,0)+' ลบ.';
+}
+function rankChip(r,label){
+  if(r.rank==null)return '<span class="chip" data-tip2="'+tipOf({t:label,d:'ยอดสะสมตั้งแต่ต้นปีงบประมาณ',
+    calc:'('+f_num(r.val)+' ÷ '+f_num(r.alloc)+') × 100 = '+f(r.pct,2)+'%'+(r.commit!=null?' · รวมก่อหนี้ผูกพัน '+f_num(r.commit)+' ล้านบาท':''),src:'spend',when:'ข้อมูล ณ '+FA()})+'">'+f(r.val,0)+' ลบ.</span>';
+  return '<span class="chip up" data-tip2="'+tipOf({t:'อันดับ'+label+'ของประเทศ',
+    d:'เทียบกับทุกจังหวัดทั่วประเทศจากร้อยละสะสมของปีงบประมาณ '+FYR()+' · อันดับ 1 คือทำได้สัดส่วนสูงที่สุดในประเทศ',
+    calc:'อันดับ '+r.rank+' ของประเทศ'+(r.rankR!=null?' · '+r.rankR+' ของภาค · '+r.rankZ+' ของเขต':'')+' ด้วยร้อยละ '+f(r.pct,2)+'%',
+    src:'spend',when:'ข้อมูล ณ '+FA()})+'">อันดับ '+r.rank+' ของประเทศ</span>';
+}
 function renderFiscal(){
   const F=D.fiscal;
+  const fpSrc=document.getElementById('fisSrcChip'); if(fpSrc)fpSrc.textContent='สนง.คลังจังหวัด · ข้อมูล ณ '+FA();
   $('#fiscalKpi').innerHTML=[
     kpiCard({icon:'bank',img:'fiscal',color:cv('--brand'),label:'เบิกจ่ายภาพรวม',value:F.fn.dis[0].pct.toFixed(2),unit:'%',
-      chip:'<span class="chip up" data-tip2="'+tipOf({t:'อันดับการเบิกจ่ายภาพรวมของประเทศ',d:'เทียบกับทุกจังหวัดทั่วประเทศจากร้อยละสะสมของปีงบประมาณ 2569 · อันดับ 1 คือทำได้สัดส่วนสูงที่สุดในประเทศ',calc:'จังหวัดหนองบัวลำภูอยู่อันดับ '+F.fn.dis[0].rank+' ด้วยร้อยละ '+f(F.fn.dis[0].pct,2)+'%'+(F.fn.dis[0].over!=null?' · สูงกว่าเป้าหมาย '+f(F.fn.dis[0].over,2)+' จุด':''),src:'spend',when:'ข้อมูล ณ '+CFG.asof})+'">อันดับ '+F.fn.dis[0].rank+' ของประเทศ</span>',sub:'สูงกว่าเป้าหมาย '+F.fn.dis[0].over+'%',
+      chip:rankChip(F.fn.dis[0],'การเบิกจ่ายภาพรวม'),sub:overSub(F.fn.dis[0]),
       tip:tipOf({t:'ร้อยละการเบิกจ่ายงบประมาณภาพรวม',
         d:'สัดส่วนเงินที่ออกจากระบบคลังจริงแล้ว เทียบกับงบที่จังหวัดได้รับจัดสรรทั้งปี ยิ่งสูงยิ่งแปลว่าเงินลงถึงพื้นที่เร็ว',
         calc:'(ยอดเบิกจ่ายสะสม ÷ งบที่ได้รับจัดสรร) × 100 = ('+f_num(F.fn.dis[0].val)+' ÷ '+f_num(F.fn.dis[0].alloc)+') × 100',
-        src:'spend',when:'ข้อมูล ณ 4 กันยายน 2569 · รายงานครั้งที่ 178/2569'})}),
+        src:'spend',when:'ข้อมูล ณ '+FA()})}),
     kpiCard({icon:'coin',img:'spend',color:cv('--brand2'),label:'ใช้จ่ายภาพรวม',value:F.fn.use[0].pct.toFixed(2),unit:'%',
-      chip:'<span class="chip up" data-tip2="'+tipOf({t:'อันดับการใช้จ่ายภาพรวมของประเทศ',d:'เทียบกับทุกจังหวัดทั่วประเทศจากร้อยละสะสมของปีงบประมาณ 2569 · อันดับ 1 คือทำได้สัดส่วนสูงที่สุดในประเทศ',calc:'จังหวัดหนองบัวลำภูอยู่อันดับ '+F.fn.use[0].rank+' ด้วยร้อยละ '+f(F.fn.use[0].pct,2)+'%'+(F.fn.use[0].over!=null?' · สูงกว่าเป้าหมาย '+f(F.fn.use[0].over,2)+' จุด':''),src:'spend',when:'ข้อมูล ณ '+CFG.asof})+'">อันดับ '+F.fn.use[0].rank+' ของประเทศ</span>',sub:f(F.fn.use[0].val,2)+' ล้านบาท',
+      chip:rankChip(F.fn.use[0],'การใช้จ่ายภาพรวม'),sub:f(F.fn.use[0].val,2)+' ล้านบาท'+(F.fn.use[0].commit!=null?' · ก่อหนี้ผูกพัน '+f(F.fn.use[0].commit,2):''),
       tip:tipOf({t:'ร้อยละการใช้จ่ายงบประมาณ',
         d:'กว้างกว่าการเบิกจ่าย เพราะรวมเงินที่ก่อหนี้ผูกพันแล้ว คือลงนามสัญญาแล้วแต่ยังไม่ได้จ่ายเงินออก',
         calc:'((ยอดเบิกจ่าย + ยอดก่อหนี้ผูกพัน) ÷ งบที่ได้รับจัดสรร) × 100',
-        src:'spend',when:'ข้อมูล ณ 4 กันยายน 2569'})}),
+        src:'spend',when:'ข้อมูล ณ '+FA()})}),
     kpiCard({icon:'factory',img:'invest',color:cv('--blue'),label:'เบิกจ่ายงบลงทุน',value:F.fn.dis[2].pct.toFixed(2),unit:'%',
-      chip:'<span class="chip up" data-tip2="'+tipOf({t:'อันดับการเบิกจ่ายงบลงทุนของประเทศ',d:'เทียบกับทุกจังหวัดทั่วประเทศจากร้อยละสะสมของปีงบประมาณ 2569 · อันดับ 1 คือทำได้สัดส่วนสูงที่สุดในประเทศ',calc:'จังหวัดหนองบัวลำภูอยู่อันดับ '+F.fn.dis[2].rank+' ด้วยร้อยละ '+f(F.fn.dis[2].pct,2)+'%'+(F.fn.dis[2].over!=null?' · สูงกว่าเป้าหมาย '+f(F.fn.dis[2].over,2)+' จุด':''),src:'spend',when:'ข้อมูล ณ '+CFG.asof})+'">อันดับ '+F.fn.dis[2].rank+' ของประเทศ</span>',sub:'สูงกว่าเป้าหมาย '+F.fn.dis[2].over+'%',
+      chip:rankChip(F.fn.dis[2],'การเบิกจ่ายงบลงทุน'),sub:overSub(F.fn.dis[2]),
       tip:tipOf({t:'ร้อยละการเบิกจ่ายงบลงทุน',
         d:'งบหมวดลงทุนกระตุ้นเศรษฐกิจในพื้นที่ได้มากที่สุด เพราะแปลงเป็นค่าก่อสร้างและจัดซื้อที่จ่ายให้ผู้รับเหมา แรงงาน และร้านวัสดุในจังหวัดโดยตรง',
         calc:'(เบิกจ่ายงบลงทุน ÷ งบลงทุนที่จัดสรร) × 100 = ('+f_num(F.fn.dis[2].val)+' ÷ '+f_num(F.fn.dis[2].alloc)+') × 100',
-        src:'spend',when:'ข้อมูล ณ 4 กันยายน 2569'})}),
+        src:'spend',when:'ข้อมูล ณ '+FA()})}),
     kpiCard({icon:'chart',img:'fiscal',color:cv('--gold'),label:'งบจัดสรรทั้งจังหวัด',value:f(F.fn.dis[0].alloc,0),unit:'ลบ.',
-      chip:'<span class="chip">คงเหลือ '+f(F.fn.dis[0].alloc-F.fn.dis[0].val,0)+' ลบ.</span>',sub:'ปีงบประมาณ 2569',
+      chip:'<span class="chip">คงเหลือ '+f(F.fn.dis[0].alloc-F.fn.dis[0].val,0)+' ลบ.</span>',sub:'ปีงบประมาณ '+FYR(),
       tip:tipOf({t:'งบประมาณที่จังหวัดได้รับจัดสรรทั้งปี',
         d:'วงเงินตั้งต้นของทุกส่วนราชการในจังหวัดในปีงบประมาณนี้ เป็นตัวหารของทุกร้อยละการเบิกจ่ายในหน้านี้',
         calc:'ผลรวมงบที่จัดสรรของทุกส่วนราชการ = งบประจำ '+f_num(F.fn.dis[1].alloc)+' + งบลงทุน '+f_num(F.fn.dis[2].alloc)+' ล้านบาท · คงเหลือรอเบิกจ่าย = '+f_num(F.fn.dis[0].alloc)+' − '+f_num(F.fn.dis[0].val),
-        src:'spend',when:'ปีงบประมาณ 2569 · ข้อมูล ณ 4 กันยายน 2569'})})
+        src:'spend',when:'ปีงบประมาณ '+FYR()+' · ข้อมูล ณ '+FA()})})
   ].join('');
   drawGauges();
 
@@ -92,10 +110,10 @@ function renderFiscal(){
   $('#tFiscalProv').innerHTML=`<thead><tr><th>รายการ</th><th class="r">จัดสรร</th><th class="r">เบิกจ่าย</th>
     <th class="r">%</th><th class="r">ใช้จ่าย</th><th class="r">%</th></tr></thead><tbody>`+
     F.prov.map((r,i)=>`<tr><td>${r.k}</td>${ec('fiscal.prov.'+i+'.alloc',f(r.alloc,2),2)}${ec('fiscal.prov.'+i+'.dis',f(r.dis,2),2)}
-      <td class="r" style="color:var(--brand)">${r.dpct.toFixed(2)}<span style="font-size:9px;color:var(--faint)"> #${r.drank}</span></td>
+      <td class="r" style="color:var(--brand)">${r.dpct==null?'—':r.dpct.toFixed(2)}${r.drank!=null?`<span style="font-size:9px;color:var(--faint)"> #${r.drank}</span>`:''}</td>
       ${ec('fiscal.prov.'+i+'.use',f(r.use,2),2)}
-      <td class="r" style="color:var(--brand2)">${r.upct.toFixed(2)}<span style="font-size:9px;color:var(--faint)"> #${r.urank}</span></td></tr>`).join('')+
-    `</tbody><tfoot><tr><td colspan="6" style="font-family:var(--fb);font-weight:400;color:var(--faint);font-size:10.5px">หน่วย: ล้านบาท · #n = อันดับของประเทศ</td></tr></tfoot>`;
+      <td class="r" style="color:var(--brand2)">${r.upct==null?'—':r.upct.toFixed(2)}${r.urank!=null?`<span style="font-size:9px;color:var(--faint)"> #${r.urank}</span>`:''}</td></tr>`).join('')+
+    `</tbody><tfoot><tr><td colspan="6" style="font-family:var(--fb);font-weight:400;color:var(--faint);font-size:10.5px">หน่วย: ล้านบาท${F.prov.some(r=>r.drank!=null)?' · #n = อันดับของประเทศ':''}</td></tr></tfoot>`;
 
   const C=F.carry;
   /* การ์ดนี้เคยมีแค่แถบเดียวแล้วเหลือที่ว่างครึ่งใบ
@@ -114,39 +132,41 @@ function renderFiscal(){
 
     <div class="grid g3" style="gap:9px;margin-bottom:11px">
       <div class="mini" data-tip2="${tipOf({t:'วงเงินที่กันไว้เบิกเหลื่อมปี',
-        d:'งบของปีงบประมาณ 2568 ที่เบิกไม่ทันสิ้นปี จึงขอกันไว้ข้ามมาเบิกในปี 2569',
-        calc:'วงเงินที่ได้รับอนุมัติให้กันไว้ทั้งหมด',src:'spend',when:'ข้อมูล ณ '+CFG.asof})}">
+        d:'งบของปีงบประมาณ '+(C.year||FYR()-1)+' ที่เบิกไม่ทันสิ้นปี จึงขอกันไว้ข้ามมาเบิกในปี '+FYR(),
+        calc:'วงเงินที่ได้รับอนุมัติให้กันไว้ทั้งหมด',src:'spend',when:'ข้อมูล ณ '+FA()})}">
         <div class="l">วงเงินที่กันไว้</div><div class="v">${f(C.alloc,2)}<small> ลบ.</small></div></div>
       <div class="mini" data-tip2="${tipOf({t:'เบิกจ่ายแล้ว',
         d:'ส่วนที่เบิกออกจากระบบคลังไปแล้วจริง เงินถึงผู้รับเหมาและร้านค้าในพื้นที่แล้ว',
         calc:'(เบิกจ่าย ÷ วงเงินที่กันไว้) × 100 = ('+f_num(C.dis)+' ÷ '+f_num(C.alloc)+') × 100',
-        src:'spend',when:'ข้อมูล ณ '+CFG.asof})}">
+        src:'spend',when:'ข้อมูล ณ '+FA()})}">
         <div class="l">เบิกจ่ายแล้ว</div><div class="v" style="color:var(--brand)">${f(C.dis,2)}<small> ลบ.</small></div></div>
       <div class="mini" data-tip2="${tipOf({t:'คงเหลือรอเบิก',
         d:'เม็ดเงินที่ผลักลงพื้นที่ได้ทันทีถ้าเร่งกระบวนการ ถ้าค้างนานแปลว่างานล่าช้า',
         calc:'วงเงินที่กันไว้ − เบิกจ่ายแล้ว = '+f_num(C.alloc)+' − '+f_num(C.dis),
-        src:'spend',when:'ข้อมูล ณ '+CFG.asof})}">
+        src:'spend',when:'ข้อมูล ณ '+FA()})}">
         <div class="l">คงเหลือรอเบิก</div><div class="v" style="color:var(--warn)">${f(C.left,2)}<small> ลบ.</small></div></div>
     </div>
 
     <div class="barrow" style="margin-bottom:6px" data-tip2="${tipOf({t:'ขนาดเทียบกับงบปีปัจจุบัน',
-      d:'เงินกันเหลื่อมปีมีขนาดใหญ่แค่ไหนเมื่อเทียบกับงบที่จังหวัดได้รับจัดสรรทั้งปี 2569',
-      calc:'(วงเงินกันเหลื่อมปี ÷ งบจัดสรรปี 2569) × 100 = ('+f_num(C.alloc)+' ÷ '+f_num(thisYear)+') × 100',
-      src:'spend',when:'ข้อมูล ณ '+CFG.asof})}">
-      <span class="nm">เงินกันเหลื่อมปี 2568</span>
+      d:'เงินกันเหลื่อมปีมีขนาดใหญ่แค่ไหนเมื่อเทียบกับงบที่จังหวัดได้รับจัดสรรทั้งปี '+FYR(),
+      calc:'(วงเงินกันเหลื่อมปี ÷ งบจัดสรรปี '+FYR()+') × 100 = ('+f_num(C.alloc)+' ÷ '+f_num(thisYear)+') × 100',
+      src:'spend',when:'ข้อมูล ณ '+FA()})}">
+      <span class="nm">เงินกันเหลื่อมปี ${C.year||FYR()-1}</span>
       <span class="tr"><i style="width:${Math.min(100,shareOfYear).toFixed(1)}%;background:var(--gold)"></i></span>
       <span class="vv">${shareOfYear.toFixed(1)}%</span></div>
     <div class="barrow">
-      <span class="nm">งบจัดสรรปี 2569</span>
+      <span class="nm">งบจัดสรรปี ${FYR()}</span>
       <span class="tr"><i style="width:100%;background:var(--brand)"></i></span>
       <span class="vv">100%</span></div>
 
-    <div class="note">เงินกันไว้เบิกเหลื่อมปี 2568 เบิกไปแล้ว ${C.pct}% เหลือรอเบิกอีก ${f(C.left,2)} ล้านบาท
-      คิดเป็นเงินก้อนขนาด ${shareOfYear.toFixed(1)}% ของงบที่จังหวัดได้รับจัดสรรทั้งปี 2569
+    <div class="note">เงินกันไว้เบิกเหลื่อมปี ${C.year||FYR()-1} เบิกไปแล้ว ${C.pct}% เหลือรอเบิกอีก ${f(C.left,2)} ล้านบาท
+      คิดเป็นเงินก้อนขนาด ${shareOfYear.toFixed(1)}% ของงบที่จังหวัดได้รับจัดสรรทั้งปี ${FYR()}
+      ${C.parts?'<br>'+C.parts.map(x=>x.n+' เบิก '+f(x.dis,2)+' จาก '+f(x.alloc,2)+' ลบ. คงเหลือ '+f(x.left,2)+' ลบ.').join(' · '):''}
       เป็นเม็ดเงินที่ผลักลงพื้นที่ได้ทันทีหากเร่งกระบวนการ ไม่ต้องรอจัดสรรรอบใหม่</div>`;
 
   drawFiscalTrend();
   applyEditMode();
+  const gs=document.getElementById('gdcSlot'); if(gs)gs.innerHTML=gdcBadge('fiscal');
 }
 
 /* ══ เม็ดเงินภาครัฐตามงวดเวลา ══
@@ -178,6 +198,11 @@ document.addEventListener('change',e=>{
    1) ยอดสิ้นเดือนที่คลังจังหวัดกรอกผ่านระบบกรอกข้อมูล (หัวข้อการคลัง) — ใช้เฉพาะค่าจริง ไม่ใช้ค่าจำลอง
    2) ยอดล่าสุดจากรายงานผลการเบิกจ่ายของคลังจังหวัด (ตารางด้านบนของหน้านี้) */
 function fiscalPoints(){
+  /* ถ้าโหลดจาก API แล้ว ใช้ยอดสะสมทุกงวดที่คลังจังหวัดลงไว้ในระบบบัญชีข้อมูลจังหวัด */
+  if(FISCAL_API.model&&FISCAL_API.model.all.length){
+    return FISCAL_API.model.all.map(a=>({y:a.m>=10?a.fy-1:a.fy,m:a.m,fy:a.fy,o:(a.m+2)%12,
+      inv:a.fn.dis[2].val,ope:a.fn.dis[1].val,lab:TH_M[a.m-1]+' '+String(a.m>=10?a.fy-1:a.fy).slice(-2),src:'api',asof:a.asof}));
+  }
   const P={}, put=(y,m,key,v,lab,src)=>{const k=y+'-'+m;(P[k]=P[k]||{y,m,lab,src})[key]=v;if(src==='report')P[k].src='report',P[k].lab=lab};
   ['inv','ope'].forEach(key=>(DB.spend[key]||[]).forEach(x=>{if(x&&!x.sim&&x.v!=null)put(x.y,x.m,key,+x.v,TH_M[x.m-1]+' '+String(x.y).slice(-2),'live')}));
   const dis=D.fiscal.fn.dis, inv=dis.find(r=>/ลงทุน/.test(r.k)), ope=dis.find(r=>/ประจำ/.test(r.k));
@@ -199,6 +224,8 @@ function drawFiscalTrend(){
     if(v){const [y,m]=v.split('-').map(Number);const k=PTS.findIndex(p=>p.y===y&&p.m===m);if(k>=0)FY_I=k}}
   const box=document.getElementById('fiscalSlc'), pick=document.getElementById('fiscalPick');
   if(!PTS.length){ if(pick)pick.innerHTML='<div class="svc-empty">ยังไม่มีข้อมูลการเบิกจ่าย</div>'; return; }
+  /* ข้อมูลจาก API มาถึงทีหลัง จำนวนงวดเปลี่ยน · กลับไปงวดล่าสุด เว้นแต่เปิดมาจากลิงก์ที่ระบุงวด */
+  if(drawFiscalTrend.n!==PTS.length){ if(drawFiscalTrend.n!=null&&!URLST.get('fp'))FY_I=null; drawFiscalTrend.n=PTS.length; FP_READ=false; }
   if(FY_I==null||FY_I<0||FY_I>=PTS.length)FY_I=PTS.length-1;
   const i=FY_I, M=PTS[i], FY=M.fy, nth=M.o+1;
   URLST.set({fp:i===PTS.length-1?null:M.y+'-'+String(M.m).padStart(2,'0')});
@@ -278,13 +305,15 @@ function drawGauges(){
   const gbg=['gauge-overall','gauge-current','gauge-capital'];
   $('#fiscalGauges').innerHTML=arr.map((r,i)=>`<div class="gau hasbg">
       <span class="kpibg" style="background-image:url('assets/cardbg/bg-${gbg[i]}.webp')"></span>
-      <div class="gh"><b>${r.k}</b><span class="rank ${r.rank<=5?'top':''}">อันดับ ${r.rank}</span></div>
+      <div class="gh"><b>${r.k}</b>${r.rank!=null?`<span class="rank ${r.rank<=5?'top':''}">อันดับ ${r.rank}</span>`:''}</div>
       <div class="arc">${gaugeSvg(r.pct,cols[i])}
         <div class="nums"><span class="pc" style="color:${cols[i]}">${r.pct.toFixed(2)}%</span>
           <span><em>${f(r.val,2)}</em> จาก <em>${f(r.alloc,2)}</em> ลบ.</span>
-          <span style="color:var(--good)">▲ สูงกว่าเป้าหมาย ${r.over.toFixed(2)}%</span></div></div></div>`).join('');
+          ${r.over!=null?`<span style="color:var(--good)">▲ สูงกว่าเป้าหมาย ${r.over.toFixed(2)}%</span>`
+            :r.commit!=null?`<span style="color:var(--dim)">ก่อหนี้ผูกพัน ${f(r.commit,2)} ลบ.</span>`
+            :r.rankR!=null?`<span style="color:var(--dim)">อันดับ ${r.rankR} ของภาค · ${r.rankZ} ของเขต</span>`:''}</div></div></div>`).join('');
   $('#fiscalNote').textContent=fiscalMode==='dis'
-    ?'การเบิกจ่าย = เงินที่ออกจากระบบคลังแล้วจริง เป็นตัวเลขที่ใช้จัดอันดับจังหวัด หนองบัวลำภูอยู่อันดับ 1 ของประเทศทั้งภาพรวมและงบลงทุน'
+    ?'การเบิกจ่าย = เงินที่ออกจากระบบคลังแล้วจริง เป็นตัวเลขที่ใช้จัดอันดับจังหวัด · หนองบัวลำภูอยู่อันดับ '+D.fiscal.fn.dis[0].rank+' ของประเทศในภาพรวม และอันดับ '+D.fiscal.fn.dis[2].rank+' ในงบลงทุน'
     :'การใช้จ่าย = การเบิกจ่ายบวกการก่อหนี้ผูกพันที่ลงนามสัญญาแล้ว สะท้อนเม็ดเงินที่ผูกกับกิจกรรมเศรษฐกิจในพื้นที่ทั้งหมด';
 }
 
@@ -292,11 +321,12 @@ function drawGauges(){
 window.onSeg=function(w,btn){ if(w.id==='fiscalSeg'){fiscalMode=btn.dataset.m;renderFiscal();} };
 DS.init('fiscal',function(){
   renderFiscal();
+  if(FISCAL_API.state==='idle')fiscalSync();
   const v=document.getElementById('v-fiscal');
   if(v&&!v.querySelector('.srcbar')){
     const d=document.createElement('div');d.className='c';d.style.marginTop='13px';
     d.innerHTML='<header><span class="hdico icow img">'+icoImg('source',26)+'</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header><div class="b">'+
-      srcBar(['spend'],'ข้อมูล ณ 4 กันยายน 2569 · รายงานครั้งที่ 178/2569 · เผยแพร่รายสัปดาห์')+'</div>';
+      srcBar(['spend'],'ข้อมูล ณ '+FA()+' · ดึงจากระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู '+GDC.byPage('fiscal').length+' ชุดข้อมูล · ปรับปรุงที่ระบบบัญชีข้อมูลจังหวัดแล้วหน้านี้เปลี่ยนตามเอง')+'</div>';
     v.appendChild(d);
   }
 });

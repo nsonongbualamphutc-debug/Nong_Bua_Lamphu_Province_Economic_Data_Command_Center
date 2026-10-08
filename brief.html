@@ -136,7 +136,7 @@ function render(){
     ['ด้านอุปสงค์'],
     ['cons','การบริโภคภาคเอกชน','pct'],['invest','การลงทุนภาคเอกชน','pct'],['gov','การใช้จ่ายภาครัฐ','pct'],
     ['การเงินและการจ้างงาน'],
-    ['depo','เงินฝากรวม','lvl','ล้านบาท','depoY'],['cred','สินเชื่อรวม','lvl','ล้านบาท','credY'],['emp','การจ้างงานรวม','lvl','คน',null]
+    ['depo','เงินฝากรวม','lvl','ล้านบาท','depoY'],['cred','สินเชื่อรวม','lvl','ล้านบาท','credY'],['emp','กำลังแรงงานรวม','lvl','คน',null]
   ];
   const rowsH=IND.map(x=>{
     if(x.length===1)return `<tr class="grp"><td colspan="4">${x[0]}</td></tr>`;
@@ -188,7 +188,7 @@ function render(){
 
   <div class="keys">
     <div class="key" style="--c:var(--brand)"><div class="l">การเบิกจ่ายงบประมาณภาพรวม</div>
-      <div class="v">${f(dis[0].pct,2)}<small>%</small></div><div class="s">อันดับ ${dis[0].rank} ของประเทศ · สูงกว่าเป้า ${f(dis[0].over,2)} จุด</div></div>
+      <div class="v">${f(dis[0].pct,2)}<small>%</small></div><div class="s">อันดับ ${dis[0].rank} ของประเทศ${dis[0].over!=null?' · สูงกว่าเป้า '+f(dis[0].over,2)+' จุด':(dis[0].rankR!=null?' · อันดับ '+dis[0].rankR+' ของภาค':'')}</div></div>
     <div class="key" style="--c:var(--gold)"><div class="l">เม็ดเงินภาครัฐที่ลงสู่พื้นที่แล้ว</div>
       <div class="v">${f(dis[0].val,0)}<small>ล้านบาท</small></div><div class="s">คงเหลือรอเบิก ${f(dis[0].alloc-dis[0].val,0)} ล้านบาท</div></div>
     <div class="key" style="--c:#356aad"><div class="l">GPP ปี ${gL.y}${gL.note?' ('+gL.note+')':''}</div>
@@ -213,7 +213,7 @@ function render(){
 
   <div class="foot">
     <div class="src"><b>ที่มา</b> เครื่องชี้เศรษฐกิจรายเดือน: สำนักงานคลังจังหวัดหนองบัวลำภู ·
-      การเบิกจ่ายงบประมาณ: รายงานผลการเบิกจ่าย สำนักงานคลังจังหวัด ข้อมูล ณ ${CFG.asof} ·
+      การเบิกจ่ายงบประมาณ: สำนักงานคลังจังหวัด ผ่านระบบบัญชีข้อมูลจังหวัด ข้อมูล ณ ${F.asof||CFG.asof} ·
       GPP: สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ ฉบับ พ.ศ. 2567<br>
       ตัวเลขเทียบปีก่อนของดัชนีรายเดือนเป็นอัตราที่ต้นทางรายงาน · "จุด" คือผลต่างของอัตราระหว่างเดือน ไม่ใช่การเติบโตรายเดือน<br>
       จัดทำโดย สำนักงานสถิติจังหวัดหนองบัวลำภู</div>
@@ -233,6 +233,7 @@ sel.innerHTML=BR_MAC.map((r,i)=>({r,i})).reverse().map(({r,i})=>
 sel.addEventListener('change',()=>{BR_I=+sel.value;render()});
 document.getElementById('btnP').addEventListener('click',()=>window.print());
 render();
+fiscalSync(()=>render());
 </script>
 </body>
 </html>

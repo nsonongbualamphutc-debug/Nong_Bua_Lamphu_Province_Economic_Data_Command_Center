@@ -507,6 +507,7 @@ document.addEventListener('click',e=>{
   else if(m){NE_MET=m.dataset.nm;document.querySelectorAll('#neMetric [data-nm]').forEach(b=>b.classList.toggle('on',b.dataset.nm===NE_MET));renderNE();saveGppUrl();}
 });
 DS.init('gpp',function(){
+  if(typeof FISCAL_API!=='undefined'&&FISCAL_API.state==='idle')setTimeout(fiscalSync,0);
   renderGpp();
   onYearChange('gppYear',function(v){GPP_YEAR=+v;renderGpp();renderDS()});
   bindSlicers(function(){renderGpp();renderDS()});

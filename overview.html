@@ -97,7 +97,7 @@ const MSERIES={
   sup:[['agri','ภาคเกษตรกรรม','agri','--leaf'],['indus','ภาคอุตสาหกรรม','factorynew','--blue'],['serv','ภาคบริการ','trade','--brand']],
   dem:[['cons','การบริโภคภาคเอกชน','cpi','--brand'],['invest','การลงทุนภาคเอกชน','invest','--gold'],['gov','การใช้จ่ายภาครัฐ','spend','--blue']],
   /* ด้านการเงินและการจ้างงาน ต้นทางให้ระดับมาด้วย จึงคิดอัตราเทียบปีก่อนเองได้ตรง ๆ */
-  fin:[['depoY','เงินฝากรวม','credit','--gold'],['credY','สินเชื่อรวม','invest','--brand2'],['empY','การจ้างงานรวม','employed','--plum']],
+  fin:[['depoY','เงินฝากรวม','credit','--gold'],['credY','สินเชื่อรวม','invest','--brand2'],['empY','กำลังแรงงานรวม','employed','--plum']],
   /* ภาคการคลังใช้ชุดข้อมูลเดียวกับหน้าการคลังภาครัฐ ซึ่งเป็นยอดสะสมของปีงบประมาณ
      ไม่ใช่อัตรารายเดือนเหมือนแท็บอื่น จึงวาดแยกด้วย renderFiscalTab() */
   fis:[]
@@ -106,7 +106,7 @@ const MDESC={
   all:'ดัชนีรวมของจังหวัด สะท้อนทิศทางเศรษฐกิจโดยรวมในแต่ละเดือน',
   sup:'วัดจากกำลังการผลิตในพื้นที่ · ถ่วงน้ำหนักตามโครงสร้าง เกษตร '+MW.agri+'% อุตสาหกรรม '+MW.indus+'% บริการ '+MW.serv+'%',
   dem:'วัดจากการใช้จ่ายจริงของครัวเรือน ภาคธุรกิจ และภาครัฐ',
-  fin:'เงินฝากและสินเชื่อของสถาบันการเงินในจังหวัด กับจำนวนผู้มีงานทำ · แสดงเป็นอัตราเทียบปีก่อนเพื่อให้เทียบกับด้านอื่นได้',
+  fin:'เงินฝากและสินเชื่อของสถาบันการเงินในจังหวัด กับกำลังแรงงานรวม · แสดงเป็นอัตราเทียบปีก่อนเพื่อให้เทียบกับด้านอื่นได้',
   fis:'การเบิกจ่ายงบประมาณของจังหวัด · ชุดข้อมูลเดียวกับหน้าการคลังภาครัฐ'
 };
 /* มีตัวเลขในชุดนั้นจริงหรือยัง */
@@ -301,10 +301,10 @@ function renderOverview(){
       const back=MAC[mIdx()-12];          /* เดือนเดียวกันปีก่อน นับจากงวดที่เลือก */
       const yo=back&&back.emp?pctc(v,back.emp):null;
       const mom=(p!=null&&p)?pctc(v,p):null;
-      return kpiCard({icon:'people',img:'employed',color:cv('--plum'),label:'การจ้างงานรวม',value:f(v,0),unit:'คน',
-        chip:chip2(yo,mom,'pct',CX({label:'การจ้างงานรวม',v,vy:back?back.emp:null,vm:p,u:'คน'})),spark:spark(hist('emp'),cv('--plum')),
+      return kpiCard({icon:'people',img:'employed',color:cv('--plum'),label:'กำลังแรงงานรวม',value:f(v,0),unit:'คน',
+        chip:chip2(yo,mom,'pct',CX({label:'กำลังแรงงานรวม',v,vy:back?back.emp:null,vm:p,u:'คน'})),spark:spark(hist('emp'),cv('--plum')),
         sub:p==null?'':'เดือนก่อน '+f(p,0)+' คน',go:'labor',
-        tip:tipOf({t:'การจ้างงานรวมในจังหวัด',d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(v)+' คน',
+        tip:tipOf({t:'กำลังแรงงานรวมในจังหวัด',d:'เดือน '+mLabel(cur)+' อยู่ที่ '+f_num(v)+' คน',
           calc:(yo==null?'':'เทียบปีก่อน = ('+f_num(v)+' − '+f_num(back.emp)+') ÷ '+f_num(back.emp)+' × 100 = '+f(yo,2)+'%')+
             (p==null?'':' · เดือนก่อน '+f_num(p)+' คน'),
           src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})});
@@ -320,7 +320,7 @@ function renderOverview(){
 /* ── แท็บภาคการคลัง · ใช้ข้อมูลชุดเดียวกับหน้าการคลังภาครัฐ ── */
 function renderFiscalTab(){
   const F=D.fiscal, dis=F.fn.dis, C=F.carry;
-  $('#macroSub').textContent='ปีงบประมาณ 2569 · ยอดสะสม ข้อมูล ณ '+CFG.asof;
+  $('#macroSub').textContent='ปีงบประมาณ '+(F.fy||2569)+' · ยอดสะสม ข้อมูล ณ '+(F.asof||CFG.asof)+(F.src==='api'?' · ดึงจากระบบบัญชีข้อมูลจังหวัด':'');
   const ico={'ภาพรวม':'spend','รายจ่ายประจำ':'fiscal','รายจ่ายลงทุน':'invest'};
   const col={'ภาพรวม':'--brand','รายจ่ายประจำ':'--gold','รายจ่ายลงทุน':'--blue'};
   $('#macroKpi').innerHTML=dis.map(r=>kpiCard({icon:'coin',img:ico[r.k],color:cv(col[r.k]),
@@ -329,16 +329,17 @@ function renderFiscalTab(){
             d:'เทียบกับทุกจังหวัดทั่วประเทศ จากร้อยละการเบิกจ่ายสะสมของปีงบประมาณ',
             calc:'จังหวัดหนองบัวลำภูอยู่อันดับ '+r.rank+' ด้วยร้อยละ '+f(r.pct,2)+'% · อันดับ 1 คือเบิกจ่ายได้สัดส่วนสูงที่สุดในประเทศ',
             src:'spend',when:'ปีงบประมาณ 2569 · ข้อมูล ณ '+CFG.asof})}">อันดับ ${r.rank} <em>ของประเทศ</em></span>`+
-         `<span class="chip ${r.over>=0?'up':'dn'}" data-tip2="${tipOf({t:'เทียบเป้าหมายการเบิกจ่าย'+r.k,
+         (r.over!=null?`<span class="chip ${r.over>=0?'up':'dn'}" data-tip2="${tipOf({t:'เทียบเป้าหมายการเบิกจ่าย'+r.k,
             d:'เป้าหมายตามมาตรการเร่งรัดการเบิกจ่ายของกรมบัญชีกลาง ณ งวดเดียวกัน',
-            calc:'ร้อยละที่เบิกได้จริง − ร้อยละเป้าหมาย = '+f(r.pct,2)+'% − '+f(r.pct-r.over,2)+'% = '+(r.over>0?'+':'')+f(r.over,2)+' จุด'+
-              (r.over>=0?' · ค่าบวกคือเบิกได้เร็วกว่าเป้า':' · ค่าลบคือยังเบิกได้ช้ากว่าเป้า'),
-            src:'spend',when:'ปีงบประมาณ 2569 · ข้อมูล ณ '+CFG.asof})}">${r.over>0?'+':''}${f(r.over,2)}% <em>เทียบเป้าหมาย</em></span></span>`,
+            calc:'ร้อยละที่เบิกได้จริง − ร้อยละเป้าหมาย = '+f(r.pct,2)+'% − '+f(r.pct-r.over,2)+'% = '+(r.over>0?'+':'')+f(r.over,2)+' จุด',
+            src:'spend',when:'ข้อมูล ณ '+((D.fiscal&&D.fiscal.asof)||CFG.asof)})}">${r.over>0?'+':''}${f(r.over,2)}% <em>เทียบเป้าหมาย</em></span>`
+          :r.rankR!=null?`<span class="chip fl" data-tip2="${tipOf({t:'อันดับระดับภาคและเขต · '+r.k,d:'อันดับการเบิกจ่ายเทียบจังหวัดในภาคและในเขตตรวจราชการเดียวกัน',
+            calc:'อันดับ '+r.rankR+' ของภาค · อันดับ '+r.rankZ+' ของเขต',src:'spend',when:'ข้อมูล ณ '+((D.fiscal&&D.fiscal.asof)||CFG.asof)})}">ภาค #${r.rankR} <em>เขต #${r.rankZ}</em></span>`:'')+`</span>`,
     sub:f(r.val,2)+' จาก '+f(r.alloc,2)+' ลบ. · คงเหลือ '+f(r.alloc-r.val,2)+' ลบ.',
     tip:tipOf({t:'การเบิกจ่าย'+r.k,
       d:'ยอดสะสมตั้งแต่ต้นปีงบประมาณ ไม่ใช่ยอดรายเดือน · อันดับ '+r.rank+' ของประเทศ',
       calc:'(เบิกจ่ายสะสม ÷ งบที่ได้รับจัดสรร) × 100 = ('+f_num(r.val)+' ÷ '+f_num(r.alloc)+') × 100 = '+f(r.pct,2)+'%'+
-        ' · เกณฑ์ของกรมบัญชีกลางอยู่ที่ 90% จึงสูงกว่าเป้า '+f(r.over,2)+'%',
+        (r.over!=null?' · สูงกว่าเป้าหมาย '+f(r.over,2)+' จุด':''),
       src:'spend',when:'ปีงบประมาณ 2569'})})).join('');
 
   killChart('cMac');
@@ -358,7 +359,7 @@ function renderFiscalTab(){
     `<div class="fsrow" data-tip2="${tipOf({t:'เงินกันไว้เบิกเหลื่อมปี 2568',d:'งบปีก่อนที่ยกมาเบิกในปีนี้',
       calc:'เบิกแล้ว '+f_num(C.dis)+' จาก '+f_num(C.alloc)+' ล้านบาท คงเหลือ '+f_num(C.left),
       src:'spend',when:'ปีงบประมาณ 2569'})}">
-      <span class="fs-n">เงินกันเหลื่อมปี 2568</span>
+      <span class="fs-n">เงินกันเหลื่อมปี ${C.year||2568}</span>
       <span class="fs-tr"><i style="width:${Math.min(100,C.pct).toFixed(1)}%;background:${cv('--plum')}"></i></span>
       <span class="fs-v">${f(C.pct,2)}%</span></div>
     <div class="fs-note">เส้นประคือเกณฑ์ของกรมบัญชีกลางที่ 90%</div>`;
@@ -375,13 +376,13 @@ function renderFiscalTab(){
     dis.map(r=>`<tr><td>${r.k}</td><td class="r">${f(r.alloc,2)}</td><td class="r">${f(r.val,2)}</td>
       <td class="r">${f(r.alloc-r.val,2)}</td>
       <td class="r" style="color:${r.pct>=90?'var(--good)':'var(--bad)'}">${f(r.pct,2)}%</td>
-      <td class="r">${r.rank}</td></tr>`).join('')+
-    `<tr><td>เงินกันเหลื่อมปี 2568</td><td class="r">${f(C.alloc,2)}</td><td class="r">${f(C.dis,2)}</td>
+      <td class="r">${r.rank==null?'—':r.rank}</td></tr>`).join('')+
+    `<tr><td>เงินกันเหลื่อมปี ${C.year||2568}</td><td class="r">${f(C.alloc,2)}</td><td class="r">${f(C.dis,2)}</td>
       <td class="r">${f(C.left,2)}</td><td class="r">${f(C.pct,2)}%</td><td class="r">—</td></tr></tbody>`;
 
   $('#macroNote').innerHTML=
     `จังหวัดเบิกจ่ายภาพรวมได้ <b>${f(dis[0].pct,2)}%</b> เป็นอันดับ ${dis[0].rank} ของประเทศ
-     สูงกว่าเกณฑ์กรมบัญชีกลาง ${f(dis[0].over,2)}% · เหลือรอเบิก ${f(dis[0].alloc-dis[0].val,2)} ล้านบาท
+     ${dis[0].over!=null?'สูงกว่าเป้าหมาย '+f(dis[0].over,2)+' จุด · ':(dis[0].rankR!=null?'อันดับ '+dis[0].rankR+' ของภาค · ':'')}เหลือรอเบิก ${f(dis[0].alloc-dis[0].val,2)} ล้านบาท
      บวกเงินกันเหลื่อมปีอีก ${f(C.left,2)} ล้านบาท<br>
      <span style="color:var(--faint)">ตัวเลขชุดนี้เป็นยอดสะสมของปีงบประมาณ ไม่ใช่รายเดือน จึงไม่เปลี่ยนตามงวดที่เลือกด้านบน ·
      ดูรายละเอียดงบส่วนราชการและรายอำเภอได้ที่หน้าการคลังภาครัฐ</span>`;
@@ -593,7 +594,7 @@ function drawRibbon(){
 }
 
 window.addEventListener('resize',drawRibbon);
-DS.init('overview',renderOverview);
+DS.init('overview',function(){renderOverview();if(FISCAL_API.state==='idle')fiscalSync();});
 </script>
 </body>
 </html>

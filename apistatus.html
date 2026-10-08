@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ศูนย์ควบคุมแหล่งข้อมูล · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ds.css">
+<style>
+/* ══ ศูนย์ควบคุมแหล่งข้อมูล ══
+   รวมทุกชุดข้อมูลที่แดชบอร์ดใช้ บอกว่ามาจากไหน (API / ไฟล์ / ระบบกรอก / จำลอง)
+   ตรวจการเชื่อมต่อสด วันที่หน่วยงานปรับปรุงบนระบบบัญชีข้อมูล ประวัติการดึงมาใช้ และคุณภาพข้อมูล */
+:root{--a-api:#0d8a5f;--a-link:#b5851a;--a-avail:#356aad;--a-gas:#7a4fa8;--a-file:#5c7a70;--a-ext:#2a8fa0;--a-sim:#c34a33}
+body{margin:0;background:#eef3f1;font-family:var(--fs,'Sarabun',sans-serif);color:#14231f}
+.wrap{max-width:1280px;margin:0 auto;padding:0 18px 60px}
+.hero{background:linear-gradient(120deg,#0b3c32,#0d6f52 60%,#1f8a5f);color:#fff;border-radius:0 0 26px 26px;padding:26px 28px 22px;margin:0 -18px 18px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-60px;top:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%)}
+.hero h1{font-family:var(--fd);font-size:28px;margin:0 0 4px;position:relative;z-index:1}
+.hero p{margin:0;font-size:13.5px;opacity:.88;max-width:760px;line-height:1.6;position:relative;z-index:1}
+.hero .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;position:relative;z-index:1}
+.hb{font:inherit;font-size:13px;border-radius:11px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;padding:8px 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.hb.pri{background:#f0d79a;color:#0b3c32;border-color:#f0d79a;font-weight:600}
+.hb:hover{filter:brightness(1.08)}
+.hero .chk{font-size:12px;opacity:.8;margin-top:10px;position:relative;z-index:1}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.kp{background:#fff;border:1px solid #e1ece4;border-radius:16px;padding:12px 14px;box-shadow:0 10px 24px -20px rgba(11,60,50,.5);border-top:4px solid var(--c,#0d8a5f)}
+.kp b{display:block;font-family:var(--fn);font-size:28px;line-height:1.1}
+.kp span{font-size:12px;color:#4d635b}
+.kp small{display:block;font-size:11px;color:#80938c;margin-top:2px}
+.mix{background:#fff;border:1px solid #e1ece4;border-radius:16px;padding:14px 16px;margin-bottom:14px}
+.mix h3{margin:0 0 10px;font-family:var(--fd);font-size:16px;color:#0b3c32}
+.bar{display:flex;height:18px;border-radius:9px;overflow:hidden;background:#edf3ee}
+.bar i{display:block;height:100%}
+.lg{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:9px;font-size:12px;color:#3d5550}
+.lg span{display:inline-flex;align-items:center;gap:6px}.lg em{width:11px;height:11px;border-radius:3px;display:inline-block}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;position:sticky;top:0;z-index:5;background:#eef3f1;padding:8px 0}
+.tabs button{font:inherit;font-size:13.5px;border:1px solid #d6e3db;background:#fff;border-radius:12px;padding:8px 15px;cursor:pointer;color:#3d5550}
+.tabs button.on{background:#0b3c32;color:#fff;border-color:#0b3c32;font-weight:600}
+.tabs button b{font-family:var(--fn);margin-left:6px;opacity:.8}
+.pane{display:none}.pane.on{display:block}
+.tp{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;border-radius:999px;padding:2px 10px;white-space:nowrap;color:var(--tc);background:color-mix(in srgb,var(--tc) 12%,#fff);border:1px solid color-mix(in srgb,var(--tc) 30%,#fff)}
+.tp i{width:7px;height:7px;border-radius:50%;background:var(--tc)}
+.tp.api{--tc:var(--a-api)}.tp.link{--tc:var(--a-link)}.tp.avail{--tc:var(--a-avail)}.tp.gas{--tc:var(--a-gas)}.tp.file{--tc:var(--a-file)}.tp.ext{--tc:var(--a-ext)}.tp.sim{--tc:var(--a-sim)}
+/* รายหน้า */
+.pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.pc{background:#fff;border:1px solid #e1ece4;border-radius:16px;padding:13px 14px;display:flex;flex-direction:column;gap:8px}
+.pc h4{margin:0;font-family:var(--fd);font-size:15.5px;display:flex;align-items:center;gap:8px}
+.pc h4 a{color:#0b3c32;text-decoration:none}.pc h4 small{margin-left:auto;font-family:var(--fn);font-size:12px;color:#80938c}
+.pc .bar{height:10px}
+.pc ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.pc li{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.45}
+.pc li .tp{margin-top:1px}
+.pc li span.n{flex:1;color:#3d5550}
+/* ตารางชุดข้อมูล */
+.flt{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.flt input,.flt select{font:inherit;font-size:13px;border:1px solid #d6e3db;border-radius:10px;padding:7px 11px;background:#fff}
+.flt input{flex:1;min-width:200px}
+.tbl{background:#fff;border:1px solid #e1ece4;border-radius:16px;overflow:auto}
+table.ds{width:100%;border-collapse:collapse;font-size:12.5px;min-width:900px}
+table.ds th{background:#f3f8f5;text-align:left;font-weight:600;color:#3d5550;font-size:11.5px;padding:9px 10px;border-bottom:1px solid #e1ece4;position:sticky;top:0}
+table.ds td{padding:9px 10px;border-bottom:1px solid #eef3f0;vertical-align:top}
+table.ds tr:hover td{background:#fafcfb}
+.dn{font-weight:600;color:#14231f}.du{font-size:11px;color:#80938c;margin-top:2px}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap}
+.live i{width:9px;height:9px;border-radius:50%;background:#c6d2cd}
+.live.ok i{background:var(--a-api);box-shadow:0 0 0 3px rgba(13,138,95,.15)}.live.err i{background:var(--a-sim)}.live.wait i{background:var(--a-link);animation:pl 1s infinite}
+@keyframes pl{50%{opacity:.3}}
+.ab{font:inherit;font-size:11.5px;border:1px solid #d6e3db;background:#fff;border-radius:8px;padding:3px 9px;cursor:pointer;color:#0b6b4c;text-decoration:none;white-space:nowrap;display:inline-block;margin:1px 0}
+.ab:hover{border-color:#0b6b4c}
+.when{white-space:nowrap}.when small{display:block;color:#80938c;font-size:10.5px}
+.new{display:inline-block;font-size:10px;font-weight:700;color:#fff;background:var(--a-sim);border-radius:6px;padding:0 6px;margin-left:4px}
+/* หน่วยงาน */
+.agrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ag{background:#fff;border:1px solid #e1ece4;border-radius:16px;padding:13px 14px}
+.ag h4{margin:0 0 4px;font-family:var(--fd);font-size:15px;color:#0b3c32}
+.ag .ring{display:flex;align-items:center;gap:12px;margin:6px 0 8px}
+.ag .ring svg{width:58px;height:58px;flex:none}
+.ag .ring b{font-family:var(--fn);font-size:22px}.ag .ring span{font-size:12px;color:#4d635b}
+.ag ul{margin:0;padding-left:16px;font-size:12px;color:#3d5550;line-height:1.6}
+/* ประวัติ */
+.tl{background:#fff;border:1px solid #e1ece4;border-radius:16px;padding:6px 18px}
+.ev{display:grid;grid-template-columns:130px 26px 1fr;gap:10px;padding:11px 0;border-bottom:1px solid #eef3f0;align-items:start}
+.ev:last-child{border-bottom:0}
+.ev .t{font-size:12px;color:#4d635b;text-align:right}.ev .t b{display:block;color:#14231f;font-size:13px}
+.ev .d{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;color:#fff;background:var(--a-avail)}
+.ev .d.cat{background:#0b3c32}.ev .d.chg{background:var(--a-sim)}.ev .d.first{background:var(--a-api)}
+.ev .x{font-size:13px;line-height:1.55}.ev .x small{display:block;color:#80938c;font-size:11.5px}
+.empty{padding:20px;text-align:center;color:#80938c;font-size:13px}
+.qa{background:#fff;border:1px solid #f0c4bb;border-left:4px solid var(--a-sim);border-radius:12px;padding:11px 14px;margin-bottom:8px;font-size:13px;line-height:1.6}
+.qa.ok{border-color:#bfe3d0;border-left-color:var(--a-api)}
+.note2{font-size:12px;color:#80938c;line-height:1.6;margin-top:12px}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.pgrid,.agrid{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.kpis{grid-template-columns:1fr 1fr}.pgrid,.agrid{grid-template-columns:1fr}.hero h1{font-size:22px}.ev{grid-template-columns:86px 22px 1fr}}
+</style>
+</head>
+<body>
+<div id="tip" class="tip"></div>
+<div class="wrap">
+  <div class="hero">
+    <h1>ศูนย์ควบคุมแหล่งข้อมูล</h1>
+    <p>ทุกชุดข้อมูลที่แดชบอร์ดใช้ มาจากไหน เชื่อมต่อได้หรือไม่ หน่วยงานปรับปรุงบนระบบบัญชีข้อมูลจังหวัดล่าสุดเมื่อไร
+      และแดชบอร์ดดึงมาใช้แล้วหรือยัง · ชุดที่ยังไม่ใช่ API ระบุไว้ว่ามาจากอะไร</p>
+    <div class="acts">
+      <a class="hb" href="index.html">‹ กลับแดชบอร์ด</a>
+      <button class="hb" id="btnRe">⟳ ตรวจใหม่ทั้งหมด</button>
+      <button class="hb" id="btnCsv">⬇ ส่งออกทะเบียน (CSV)</button>
+      <button class="hb pri" id="btnCopy">คัดลอกโครงสร้าง API</button>
+    </div>
+    <div class="chk" id="chk">กำลังตรวจการเชื่อมต่อ…</div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+  <div class="mix"><h3>สัดส่วนแหล่งข้อมูลของแดชบอร์ด</h3><div class="bar" id="mixBar"></div><div class="lg" id="mixLg"></div></div>
+
+  <div class="tabs" id="tabs">
+    <button data-p="pages" class="on">รายหน้าแดชบอร์ด</button>
+    <button data-p="list">ทะเบียนชุดข้อมูล<b id="nList"></b></button>
+    <button data-p="agency">หน่วยงาน<b id="nAg"></b></button>
+    <button data-p="hist">ประวัติการอัปเดต<b id="nHist"></b></button>
+    <button data-p="qa">คุณภาพข้อมูล<b id="nQa"></b></button>
+  </div>
+  <div class="pane on" id="p-pages"><div class="pgrid" id="pgrid"></div></div>
+  <div class="pane" id="p-list">
+    <div class="flt"><input id="q" placeholder="ค้นหาชื่อชุดข้อมูล หน่วยงาน หรือรหัส resource">
+      <select id="fType"><option value="">ทุกแหล่งข้อมูล</option></select>
+      <select id="fPage"><option value="">ทุกหน้า</option></select>
+      <select id="fAg"><option value="">ทุกหน่วยงาน</option></select></div>
+    <div class="tbl"><table class="ds" id="tbl"></table></div>
+  </div>
+  <div class="pane" id="p-agency"><div class="agrid" id="agrid"></div></div>
+  <div class="pane" id="p-hist"><div class="tl" id="tl"></div>
+    <div class="note2">⬤ เขียวเข้ม = หน่วยงานปรับปรุงข้อมูลบนระบบบัญชีข้อมูลจังหวัด (จากเวลาที่ระบบบันทึก) ·
+      ⬤ แดง = แดชบอร์ดตรวจพบว่าข้อมูลเปลี่ยนและดึงฉบับใหม่มาใช้แล้ว · ⬤ เขียว = ดึงครั้งแรก ·
+      ประวัติการดึงเก็บไว้ในเครื่องนี้ ส่วนวันที่ปรับปรุงบนระบบบัญชีข้อมูลเป็นของจริงจากระบบ</div></div>
+  <div class="pane" id="p-qa"><div id="qaBox"></div></div>
+</div>
+<script src="data1.js"></script>
+<script src="data2.js"></script>
+<script src="ds.js"></script>
+<script>
+const PAGES={index:'หน้าปกจังหวัด',overview:'ภาพรวมเศรษฐกิจ',gpp:'GPP และการเติบโต',fiscal:'การคลังภาครัฐ',agri:'ภาคเกษตร',
+  industry:'อุตสาหกรรมและการผลิต',trade:'การค้าและค่าครองชีพ',consume:'การบริโภคและพลังงาน',tourism:'ภาคการท่องเที่ยว',
+  otop:'OTOP และเศรษฐกิจชุมชน',labor:'ตลาดแรงงาน',household:'ครัวเรือนและความเหลื่อมล้ำ',population:'ประชากรและโครงสร้างอายุ',area:'ข้อมูลเชิงพื้นที่'};
+const TORD=['api','link','avail','gas','file','ext','sim'];
+const TCOL={api:'var(--a-api)',link:'var(--a-link)',avail:'var(--a-avail)',gas:'var(--a-gas)',file:'var(--a-file)',ext:'var(--a-ext)',sim:'var(--a-sim)'};
+const INV=srcInventory();
+const APILIVE={}, APIMETA={};
+const esc=x=>String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tp=t=>`<span class="tp ${t}"><i></i>${SRC_TYPE[t][0]}</span>`;
+const agN=a=>GDC.AGENCY[a]||a||'—';
+const dt=x=>{if(!x)return '—';const d=new Date(/Z|[+-]\d\d:?\d\d$/.test(x)?x:x+'Z');return isNaN(d)?'—':d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'})};
+const tm=x=>{if(!x)return '';const d=new Date(/Z|[+-]\d\d:?\d\d$/.test(x)?x:x+'Z');return isNaN(d)?'':d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})};
+const ago=x=>{if(!x)return '';const d=new Date(/Z|[+-]\d\d:?\d\d$/.test(x)?x:x+'Z');const s=(Date.now()-d)/1000;
+  return s<3600?Math.max(1,Math.round(s/60))+' นาทีที่แล้ว':s<86400?Math.round(s/3600)+' ชั่วโมงที่แล้ว':Math.round(s/86400)+' วันที่แล้ว'};
+/* นับเฉพาะชุดที่แสดงบนแดชบอร์ด (ไม่รวม "มีใน API ยังไม่ได้แสดง") */
+const shown=()=>INV.filter(x=>x.type!=='avail');
+/* ป้ายของหน้าจากทะเบียนทั้งหมด (รวมชุดที่ใช้ API ร่วมกับหน้าอื่น) */
+function invBadge(p){const S=INV.filter(x=>x.page===p&&x.type!=='avail'),a=S.filter(x=>x.type==='api').length;
+  const st=!a?['file','ยังไม่มี API']:a===S.length?['api','ดึงจาก API ทั้งหมด']:['part','API บางส่วน · '+a+'/'+S.length];
+  return `<span class="gdcb ${st[0]}"><i></i>${st[1]}</span>`}
+
+function drawTop(){
+  const S=shown(), c={}; TORD.forEach(t=>c[t]=INV.filter(x=>x.type===t).length);
+  const ok=Object.values(APILIVE).filter(x=>x.ok).length, er=Object.values(APILIVE).filter(x=>x.err).length;
+  const ags=new Set(INV.filter(x=>x.type==='api'||x.type==='avail').map(x=>x.agency));
+  const K=[[S.length,'ชุดข้อมูลบนแดชบอร์ด','#0b3c32',''],[c.api,'ดึงจาก API แล้ว','var(--a-api)',(c.api/S.length*100).toFixed(0)+'% ของที่แสดง'],
+    [c.link,'กำลังเชื่อมข้อมูล','var(--a-link)','มีบนระบบ รอเปิด API'],[c.gas+c.file+c.ext,'ไฟล์และระบบกรอก','var(--a-file)','ระบบกรอก '+c.gas+' · ไฟล์ '+(c.file+c.ext)],
+    [c.sim,'ข้อมูลจำลอง','var(--a-sim)','รอหน่วยงานส่งข้อมูลจริง'],[ags.size,'หน่วยงานที่มี API','var(--a-avail)',c.avail+' ชุดพร้อมใช้ ยังไม่แสดง']];
+  document.getElementById('kpis').innerHTML=K.map(k=>`<div class="kp" style="--c:${k[2]}"><b>${k[0]}</b><span>${k[1]}</span><small>${k[3]}</small></div>`).join('');
+  document.getElementById('mixBar').innerHTML=TORD.filter(t=>t!=='avail'&&c[t]).map(t=>`<i style="width:${c[t]/S.length*100}%;background:${TCOL[t]}" data-tip2="${SRC_TYPE[t][0]}|${c[t]} ชุด · ${(c[t]/S.length*100).toFixed(0)}%"></i>`).join('');
+  document.getElementById('mixLg').innerHTML=TORD.filter(t=>c[t]).map(t=>`<span><em style="background:${TCOL[t]}"></em>${SRC_TYPE[t][0]} <b>${c[t]}</b></span>`).join('');
+  const done=Object.keys(APILIVE).length, need=INV.filter(x=>x.id).length;
+  document.getElementById('chk').textContent=done<need?`กำลังตรวจการเชื่อมต่อ ${done}/${need} ชุด…`
+    :`ตรวจเมื่อ ${new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})} · เชื่อมต่อได้ ${ok} ชุด${er?' · เชื่อมต่อไม่ได้ '+er+' ชุด':''}`;
+  document.getElementById('nList').textContent=INV.length;
+  document.getElementById('nAg').textContent=new Set(INV.map(x=>x.agency)).size;
+}
+function drawPages(){
+  const g={};INV.forEach(x=>(g[x.page]=g[x.page]||[]).push(x));
+  document.getElementById('pgrid').innerHTML=Object.keys(PAGES).filter(p=>g[p]).map(p=>{
+    const L=g[p].slice().sort((a,b)=>TORD.indexOf(a.type)-TORD.indexOf(b.type)), S=L.filter(x=>x.type!=='avail');
+    return `<div class="pc" id="pg-${p}"><h4><a href="${p}.html">${PAGES[p]}</a>${invBadge(p)}<small>${S.length} ชุด</small></h4>
+      <div class="bar">${TORD.filter(t=>t!=='avail').map(t=>{const n=S.filter(x=>x.type===t).length;return n?`<i style="width:${n/S.length*100}%;background:${TCOL[t]}"></i>`:''}).join('')}</div>
+      <ul>${L.map(x=>`<li>${tp(x.type)}<span class="n">${esc(x.n)}${x.type!=='api'&&x.note?` <small style="color:#80938c">(${esc(x.note)})</small>`:''}</span></li>`).join('')}</ul></div>`;
+  }).join('');
+}
+function drawList(){
+  const q=document.getElementById('q').value.trim().toLowerCase(), ft=fType.value, fp=fPage.value, fa=fAg.value;
+  const seen=GDC.seen();
+  const L=INV.filter(x=>(!ft||x.type===ft)&&(!fp||x.page===fp)&&(!fa||x.agency===fa)&&
+    (!q||(x.n+' '+agN(x.agency)+' '+(x.id||'')+' '+(PAGES[x.page]||'')).toLowerCase().indexOf(q)>=0))
+    .sort((a,b)=>TORD.indexOf(a.type)-TORD.indexOf(b.type)||(PAGES[a.page]||'').localeCompare(PAGES[b.page]||''));
+  document.getElementById('tbl').innerHTML=`<thead><tr><th>ชุดข้อมูล</th><th>หน้า</th><th>หน่วยงาน</th><th>แหล่งข้อมูล</th><th>การเชื่อมต่อ</th>
+    <th>ปรับปรุงบนระบบบัญชีข้อมูล</th><th>แดชบอร์ดดึงล่าสุด</th><th></th></tr></thead><tbody>`+
+    (L.length?L.map(x=>{const lv=APILIVE[x.id],m=APIMETA[x.id],sn=seen[x.id];
+      const fresh=m&&m.modified&&(Date.now()-new Date(m.modified+(/Z$/.test(m.modified)?'':'Z')))<7*864e5;
+      return `<tr><td><div class="dn">${esc(x.n)}</div><div class="du">${x.use?esc(x.use):x.note?esc(x.note):x.id?'resource '+x.id.slice(0,8):x.ds?esc(x.ds):''}</div></td>
+        <td>${esc(PAGES[x.page]||x.page)}</td><td>${esc(m&&m.org||agN(x.agency))}</td><td>${tp(x.type)}</td>
+        <td>${!x.id?'<span class="live"><i></i>—</span>':!lv?'<span class="live wait"><i></i>กำลังตรวจ</span>'
+          :lv.ok?`<span class="live ok"><i></i>${f_num(lv.total)} แถว · ${lv.fields} คอลัมน์</span>`:`<span class="live err" title="${esc(lv.err)}"><i></i>เชื่อมต่อไม่ได้</span>`}</td>
+        <td class="when">${m&&m.modified?dt(m.modified)+(fresh?'<span class="new">ใหม่</span>':'')+`<small>${ago(m.modified)}</small>`:x.id?'<small>—</small>':''}</td>
+        <td class="when">${sn?dt(sn.at)+`<small>${tm(sn.at)} น.</small>`:x.id?'<small>ยังไม่เคยดึง</small>':''}</td>
+        <td>${x.id?`<a class="ab" href="${m&&m.url||GDC.base+'/dataset/?q='+x.id}" target="_blank" rel="noopener">เปิดในระบบ ›</a>`:''}</td></tr>`}).join('')
+      :'<tr><td colspan="8" class="empty">ไม่พบชุดข้อมูลตามเงื่อนไข</td></tr>')+'</tbody>';
+}
+function drawAgency(){
+  const g={};INV.forEach(x=>(g[x.agency]=g[x.agency]||[]).push(x));
+  const keys=Object.keys(g).sort((a,b)=>g[b].filter(x=>x.type==='api').length-g[a].filter(x=>x.type==='api').length||g[b].length-g[a].length);
+  document.getElementById('agrid').innerHTML=keys.map(a=>{const L=g[a],api=L.filter(x=>x.type==='api').length,av=L.filter(x=>x.type==='avail').length,
+      S=L.filter(x=>x.type!=='avail'),p=S.length?api/S.length:0,C=2*Math.PI*24;
+    return `<div class="ag"><h4>${esc(agN(a))}</h4>
+      <div class="ring"><svg viewBox="0 0 58 58"><circle cx="29" cy="29" r="24" fill="none" stroke="#edf3ee" stroke-width="7"/>
+        <circle cx="29" cy="29" r="24" fill="none" stroke="#0d8a5f" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(C*p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 29 29)"/></svg>
+        <div><b>${api}/${S.length}</b><span> ชุดที่แสดงดึงจาก API${av?' · พร้อมใช้อีก '+av+' ชุด':''}</span></div></div>
+      <ul>${L.map(x=>`<li>${esc(x.n)} <span style="color:#80938c">(${SRC_TYPE[x.type][0]})</span></li>`).join('')}</ul></div>`}).join('');
+}
+function drawHist(){
+  const ev=[];
+  Object.values(APIMETA).forEach(m=>{if(m.modified)ev.push({at:m.modified,kind:'cat',id:m.id,org:m.org})});
+  GDC.history().forEach(h=>ev.push(h));
+  const nm=id=>{const x=INV.find(y=>y.id===id);return x?x.n:id};
+  ev.sort((a,b)=>new Date(b.at+(/Z|[+-]\d\d/.test(b.at)?'':'Z'))-new Date(a.at+(/Z|[+-]\d\d/.test(a.at)?'':'Z')));
+  document.getElementById('nHist').textContent=ev.length||'';
+  document.getElementById('tl').innerHTML=ev.length?ev.slice(0,150).map(e=>{
+    const t=`<div class="t"><b>${dt(e.at)}</b>${tm(e.at)} น.</div>`;
+    if(e.kind==='cat')return `<div class="ev">${t}<span class="d cat">✎</span><div class="x"><b>${esc(e.org||'หน่วยงาน')}</b> ปรับปรุงชุดข้อมูลบนระบบบัญชีข้อมูลจังหวัด
+      <small>${esc(nm(e.id))}</small></div></div>`;
+    if(e.kind==='changed')return `<div class="ev">${t}<span class="d chg">↻</span><div class="x">แดชบอร์ดพบข้อมูลเปลี่ยน และดึงฉบับใหม่มาใช้แล้ว
+      <small>${esc(nm(e.id))} · ${e.prev!=null&&e.prev!==e.total?'จำนวนแถว '+f_num(e.prev)+' → '+f_num(e.total):'เนื้อหาเปลี่ยน จำนวนแถวเท่าเดิม '+f_num(e.total)}</small></div></div>`;
+    return `<div class="ev">${t}<span class="d first">↓</span><div class="x">แดชบอร์ดดึงข้อมูลมาใช้ครั้งแรก<small>${esc(nm(e.id))} · ${f_num(e.total)} แถว</small></div></div>`;
+  }).join(''):'<div class="empty">ยังไม่มีประวัติ · เปิดหน้าแดชบอร์ดที่ใช้ API แล้วกลับมาดูอีกครั้ง</div>';
+}
+function drawQa(){
+  const out=[];
+  ['labor','house','popgrowth'].forEach(j=>{try{const c=JSON.parse(localStorage.getItem('gdc-qa-'+j)||'null');if(c)(c.qa||[]).forEach(q=>out.push({t:'warn',m:q,at:c.at}))}catch(e){}});
+  try{const P=JSON.parse(localStorage.getItem('gdc-qa-panels')||'{}');Object.keys(P).forEach(k=>P[k].forEach(q=>out.push({t:'warn',m:k+': '+q})))}catch(e){}
+  Object.keys(APILIVE).forEach(id=>{const l=APILIVE[id];const x=INV.find(y=>y.id===id);
+    if(l.err)out.push({t:'err',m:'เชื่อมต่อไม่ได้: '+(x?x.n:id)+' — '+l.err});
+    else if(l.total===0)out.push({t:'warn',m:'ชุดข้อมูลว่าง ไม่มีแถว: '+(x?x.n:id)})});
+  document.getElementById('nQa').textContent=out.length||'';
+  document.getElementById('qaBox').innerHTML=out.length?out.map(o=>`<div class="qa">${o.t==='err'?'⚠ ':'△ '}${esc(o.m)}</div>`).join('')
+    :'<div class="qa ok">✓ ไม่พบปัญหาคุณภาพข้อมูลในชุดที่ตรวจ</div>';
+}
+function drawAll(){drawTop();drawPages();drawList();drawAgency();drawHist();drawQa()}
+/* ตัวกรอง */
+const fType=document.getElementById('fType'),fPage=document.getElementById('fPage'),fAg=document.getElementById('fAg');
+fType.innerHTML+=TORD.map(t=>`<option value="${t}">${SRC_TYPE[t][0]}</option>`).join('');
+fPage.innerHTML+=Object.keys(PAGES).filter(p=>INV.some(x=>x.page===p)).map(p=>`<option value="${p}">${PAGES[p]}</option>`).join('');
+fAg.innerHTML+=[...new Set(INV.map(x=>x.agency))].map(a=>`<option value="${a}">${esc(agN(a))}</option>`).join('');
+['q','fType','fPage','fAg'].forEach(id=>document.getElementById(id).addEventListener('input',drawList));
+document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));
+  history.replaceState(null,'','#'+b.dataset.p)});
+/* ตรวจการเชื่อมต่อ และดึงวันที่ปรับปรุงจากระบบบัญชีข้อมูล */
+async function check(fresh){
+  Object.keys(APILIVE).forEach(k=>delete APILIVE[k]); drawAll();
+  const ids=[...new Set(INV.filter(x=>x.id).map(x=>x.id))];
+  let i=0; const worker=async()=>{while(i<ids.length){const id=ids[i++];
+    try{const v=fresh?await GDC.all(id,{fresh:true}):await GDC.peek(id);APILIVE[id]={ok:true,total:v.total,fields:v.fields.length,sample:v.records,fl:v.fields}}
+    catch(e){APILIVE[id]={err:e.message}}
+    try{APIMETA[id]=await GDC.meta(id,fresh)}catch(e){}
+    drawTop();drawList();}};
+  await Promise.all([worker(),worker(),worker(),worker()]);
+  drawAll();
+}
+document.getElementById('btnRe').onclick=()=>check(true);
+document.getElementById('btnCsv').onclick=()=>{
+  const rows=[['หน้า','ชุดข้อมูล','หน่วยงาน','แหล่งข้อมูล','resource_id','หมายเหตุ','จำนวนแถว','ปรับปรุงบนระบบบัญชีข้อมูล']].concat(
+    INV.map(x=>[PAGES[x.page]||x.page,x.n,agN(x.agency),SRC_TYPE[x.type][0],x.id||'',x.note||x.use||'',APILIVE[x.id]&&APILIVE[x.id].total!=null?APILIVE[x.id].total:'',APIMETA[x.id]&&APIMETA[x.id].modified||'']));
+  const csv='\ufeff'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='ทะเบียนแหล่งข้อมูล-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+};
+document.getElementById('btnCopy').onclick=async()=>{
+  const out=INV.filter(x=>x.id).map(x=>({name:x.n,resource_id:x.id,state:x.type,ok:!!(APILIVE[x.id]&&APILIVE[x.id].ok),total:APILIVE[x.id]&&APILIVE[x.id].total,
+    fields:APILIVE[x.id]&&APILIVE[x.id].fl?APILIVE[x.id].fl.map(f=>f.id+':'+f.type):undefined,sample:APILIVE[x.id]&&APILIVE[x.id].sample}));
+  const txt=JSON.stringify(out,null,1);
+  try{await navigator.clipboard.writeText(txt);toast('คัดลอกโครงสร้าง '+out.length+' ชุดแล้ว')}catch(e){const w=window.open('','_blank');w.document.write('<pre>'+esc(txt)+'</pre>')}
+};
+initTip&&initTip();
+drawAll();
+const h=location.hash.slice(1); if(h){const b=document.querySelector(`#tabs [data-p="${h}"]`); if(b)b.click(); else{const el=document.getElementById('pg-'+h); if(el)setTimeout(()=>el.scrollIntoView(),300)}}
+check(false);
+</script>
+</body>
+</html>
