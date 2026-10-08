@@ -239,6 +239,70 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .cc-ag .cc-ah img{width:40px;height:40px;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4))}
 .cc-feed .cc-fi{transition:.2s;border-radius:12px}.cc-feed .cc-fi:hover{background:var(--gl)}
 @media(max-width:640px){.cc-flow{display:none}.cc-kp{padding-right:14px}.cc-kp .cc-ki{top:10px;right:8px;transform:none;width:34px;height:34px}.cc-kp:hover .cc-ki{transform:none}}
+
+/* ── บล็อกส่งเสริมการใช้ระบบบัญชีข้อมูลจังหวัด ── */
+@property --ang{syntax:'<angle>';initial-value:0deg;inherits:false}
+.gp{position:relative;margin:26px 0 0;border-radius:28px;padding:2px;isolation:isolate;
+  background:conic-gradient(from var(--ang),#3cf0b0,#6aa8ff,#f0d79a,#ff7ad1,#3cf0b0);animation:gpspin 8s linear infinite;
+  box-shadow:0 40px 90px -50px rgba(60,240,176,.55),0 0 0 1px rgba(60,240,176,.08)}
+@keyframes gpspin{to{--ang:360deg}}
+.gp-in{position:relative;border-radius:26px;overflow:hidden;background:radial-gradient(900px 420px at 80% 0%,rgba(60,240,176,.18),transparent 60%),
+  radial-gradient(700px 400px at 0% 100%,rgba(106,168,255,.14),transparent 60%),linear-gradient(160deg,#06251d,#041611 70%);
+  display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.95fr);gap:22px;padding:30px 30px 0}
+.gp-bg{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;opacity:0;transition:opacity .8s}
+.gp-bg.on{opacity:.38}
+.gp-cv{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}
+.gp-l,.gp-r,.gp-tk{position:relative;z-index:1}
+.gp-badge{display:inline-flex;align-items:center;gap:9px;padding:6px 13px 6px 7px;border-radius:999px;border:1px solid rgba(60,240,176,.35);
+  background:rgba(60,240,176,.08);font:600 12.5px 'Kanit',sans-serif;color:#b8ffe2}
+.gp-badge img{width:24px;height:24px;object-fit:contain}
+.gp-badge i{width:7px;height:7px;border-radius:50%;background:#3cf0b0;box-shadow:0 0 10px #3cf0b0;animation:pulse 1.6s infinite}
+.gp-l h2{font-family:'Kanit',sans-serif;font-weight:700;font-size:44px;line-height:1.12;margin:14px 0 10px;letter-spacing:-.3px;
+  background:linear-gradient(95deg,#fff 10%,#b8ffe2 45%,#7fd3ff 70%,#f0d79a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gp-l h2 em{font-style:normal;color:#3cf0b0;-webkit-text-fill-color:#3cf0b0;text-shadow:0 0 28px rgba(60,240,176,.45)}
+.gp-l p{margin:0;color:#b5ccc4;font-size:15px;line-height:1.75;max-width:620px}
+.gp-acts{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 18px}
+.gp-btn{font:600 14px 'Kanit',sans-serif;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:14px;cursor:pointer;text-decoration:none;
+  border:1px solid rgba(140,255,210,.22);background:rgba(255,255,255,.05);color:#e8fff6;transition:.25s}
+.gp-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+.gp-btn:hover{transform:translateY(-2px);border-color:rgba(60,240,176,.6);box-shadow:0 12px 30px -14px rgba(60,240,176,.7)}
+.gp-btn.pri{background:linear-gradient(135deg,#3cf0b0,#12b886);color:#03221a;border-color:transparent;box-shadow:0 14px 34px -14px rgba(60,240,176,.9)}
+.gp-btn.pri:hover{box-shadow:0 18px 40px -12px rgba(60,240,176,1)}
+.gp-btn.gold{background:linear-gradient(135deg,#f0d79a,#e8b84a);color:#2a1d02;border-color:transparent}
+.gp-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:22px}
+.gp-st{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(140,255,210,.12);position:relative;overflow:hidden}
+.gp-st::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:.8}
+.gp-st b{display:block;font:700 28px/1.05 'Kanit',sans-serif;color:#fff;text-shadow:0 0 18px color-mix(in srgb,var(--c) 55%,transparent)}
+.gp-st span{font-size:12px;color:#9fb8ae}
+.gp-perks{display:flex;flex-wrap:wrap;gap:8px;margin:-6px 0 22px}
+.gp-perk{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:#cfe8df;padding:5px 12px 5px 6px;border-radius:12px;background:rgba(0,0,0,.18);border:1px solid rgba(140,255,210,.1)}
+.gp-perk img{width:26px;height:26px;object-fit:contain}
+.gp-r{display:flex;flex-direction:column;gap:12px;padding-bottom:22px}
+.gp-term{border-radius:18px;background:rgba(2,14,11,.82);border:1px solid rgba(60,240,176,.25);box-shadow:0 24px 50px -28px #000,inset 0 1px 0 rgba(255,255,255,.05);overflow:hidden;backdrop-filter:blur(6px)}
+.gp-th{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:1px solid rgba(60,240,176,.14);font:500 11.5px 'IBM Plex Mono',ui-monospace,monospace;color:#7fa99b}
+.gp-th i{width:10px;height:10px;border-radius:50%;background:#ff5f57}.gp-th i:nth-child(2){background:#febc2e}.gp-th i:nth-child(3){background:#28c840;margin-right:6px}
+.gp-th .live{margin-left:auto;color:#3cf0b0;display:inline-flex;align-items:center;gap:5px}.gp-th .live::before{content:'';width:6px;height:6px;border-radius:50%;background:#3cf0b0;box-shadow:0 0 8px #3cf0b0;animation:pulse 1.4s infinite}
+.gp-code{margin:0;padding:14px 16px;min-height:186px;font:12.5px/1.65 'IBM Plex Mono',ui-monospace,monospace;color:#cfe8df;white-space:pre-wrap;word-break:break-all}
+.gp-code .tk-k{color:#7fd3ff}.gp-code .tk-s{color:#f0d79a}.gp-code .tk-n{color:#3cf0b0}.gp-code .tk-c{color:#5f8a7c}
+.gp-code .cur{display:inline-block;width:8px;height:15px;background:#3cf0b0;vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.gp-qr{display:flex;gap:14px;align-items:center;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid rgba(140,255,210,.14)}
+.gp-qr .q{width:92px;height:92px;flex:0 0 92px;border-radius:12px;background:#fff;padding:5px;display:grid;place-items:center}
+.gp-qr .q svg{width:100%;height:100%}
+.gp-qr b{font:600 14px 'Kanit',sans-serif;color:#fff;display:block}.gp-qr span{font-size:12px;color:#9fb8ae;line-height:1.5;display:block;margin-top:2px}
+.gp-qr a{color:#3cf0b0;font-size:12px;word-break:break-all}
+.gp-tk{grid-column:1/-1;margin:0 -30px;border-top:1px solid rgba(60,240,176,.16);background:rgba(0,0,0,.25);display:flex;align-items:center;overflow:hidden}
+.gp-tk .lab{flex:0 0 auto;font:600 12px 'Kanit',sans-serif;color:#03221a;background:linear-gradient(135deg,#3cf0b0,#12b886);padding:11px 16px;display:flex;align-items:center;gap:7px;z-index:2}
+.gp-tk .lab::before{content:'';width:7px;height:7px;border-radius:50%;background:#03221a;animation:pulse 1.4s infinite}
+.gp-tk .rail{flex:1;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.gp-tk .mv{display:inline-flex;gap:34px;white-space:nowrap;padding:11px 0;animation:tick 60s linear infinite}
+.gp-tk:hover .mv{animation-play-state:paused}
+.gp-tk a{color:#dff7ee;text-decoration:none;font-size:13px}.gp-tk a:hover{color:#3cf0b0}
+.gp-tk a small{color:#7fa99b;margin-left:6px}.gp-tk a em{font-style:normal;color:#f0d79a;margin-left:6px;font-size:12px}
+@keyframes tick{to{transform:translateX(-50%)}}
+@media(max-width:1100px){.gp-in{grid-template-columns:1fr}.gp-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gp-in{padding:22px 16px 0}.gp-tk{margin:0 -16px}.gp-l h2{font-size:31px}.gp-btn{padding:11px 14px;font-size:13px}.gp-st b{font-size:24px}.gp-code{min-height:150px;font-size:11.5px}}
+@media(prefers-reduced-motion:reduce){.gp,.gp-tk .mv{animation:none}}
 </style>
 </head>
 <body>
@@ -253,6 +317,40 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 </div></div>
 
 <div class="cc-wrap">
+  <section class="gp" id="gdcPromo"><div class="gp-in">
+    <div class="gp-bg" id="gpBg"></div><canvas class="gp-cv" id="gpCv"></canvas>
+    <div class="gp-l">
+      <span class="gp-badge"><img src="assets/icons/ic-catalog.png" alt="" onerror="this.remove()"><i></i>ระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู · Government Data Catalog</span>
+      <h2>ข้อมูลจังหวัด <em>เปิดให้ใช้</em><br>เชื่อมต่อได้ทันทีผ่าน API</h2>
+      <p>แหล่งรวมชุดข้อมูลจากทุกหน่วยงานในจังหวัด ค้นหา ดาวน์โหลด และดึงเข้าระบบของคุณได้ฟรี
+        หน่วยงานนำข้อมูลเข้าระบบครั้งเดียว แดชบอร์ดนี้และทุกระบบที่เชื่อม API จะอัปเดตตามอัตโนมัติ</p>
+      <div class="gp-acts">
+        <a class="gp-btn pri" href="https://nongbualamphu.gdcatalog.go.th/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>เข้าสู่ระบบบัญชีข้อมูล</a>
+        <button class="gp-btn" type="button" id="gpFind"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>ค้นหาชุดข้อมูล</button>
+        <a class="gp-btn gold" href="https://nongbualamphu.gdcatalog.go.th/user/login" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 16V4m0 0l-4 4m4-4l4 4M5 20h14"/></svg>นำข้อมูลเข้าระบบ (หน่วยงาน)</a>
+        <button class="gp-btn" type="button" id="gpApi"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg>คัดลอกตัวอย่าง API</button>
+      </div>
+      <div class="gp-stats">
+        <div class="gp-st" style="--c:#3cf0b0"><b id="gpN1">—</b><span>ชุดข้อมูลบนระบบ</span></div>
+        <div class="gp-st" style="--c:#6aa8ff"><b id="gpN2">—</b><span>หน่วยงานที่เผยแพร่</span></div>
+        <div class="gp-st" style="--c:#f0d79a"><b id="gpN3">—</b><span>ตาราง CSV พร้อม API</span></div>
+        <div class="gp-st" style="--c:#ff7ad1"><b id="gpN4">—</b><span>อัปเดตใน 7 วันล่าสุด</span></div>
+      </div>
+      <div class="gp-perks">
+        <span class="gp-perk"><img src="assets/icons/ic-database.png" alt="" onerror="this.remove()">เปิดเผย ใช้ฟรี ไม่ต้องขออนุญาต</span>
+        <span class="gp-perk"><img src="assets/icons/ic-network.png" alt="" onerror="this.remove()">เชื่อม API แบบเรียลไทม์</span>
+        <span class="gp-perk"><img src="assets/icons/ic-history.png" alt="" onerror="this.remove()">อัปเดตครั้งเดียว ทุกระบบเปลี่ยนตาม</span>
+      </div>
+    </div>
+    <div class="gp-r">
+      <div class="gp-term"><div class="gp-th"><i></i><i></i><i></i>nongbualamphu.gdcatalog.go.th / api / 3<span class="live">LIVE</span></div>
+        <pre class="gp-code" id="gpCode"></pre></div>
+      <div class="gp-qr"><div class="q" id="gpQr"></div><div><b>สแกนเข้าระบบบัญชีข้อมูล</b>
+        <span>เปิดดูชุดข้อมูลจากมือถือ หรือแชร์ให้หน่วยงานและประชาชนใช้ต่อ</span>
+        <a href="https://nongbualamphu.gdcatalog.go.th/" target="_blank" rel="noopener">nongbualamphu.gdcatalog.go.th</a></div></div>
+    </div>
+    <div class="gp-tk"><span class="lab">อัปเดตล่าสุดบนระบบ</span><div class="rail"><div class="mv" id="gpTick"><a>กำลังโหลดรายการอัปเดตจากระบบบัญชีข้อมูล…</a></div></div></div>
+  </div></section>
   <div class="cc-hero">
     <div class="cc-glass cc-h-l">
       <div class="cc-hbg" id="heroBg"></div>
@@ -524,6 +622,57 @@ document.getElementById('btnCopy').onclick=async()=>{
   try{await navigator.clipboard.writeText(JSON.stringify(out,null,1));toast('คัดลอกโครงสร้าง '+out.length+' ชุดแล้ว')}catch(e){toast('คัดลอกไม่ได้ในเบราว์เซอร์นี้','err')}};
 initTip();
 drawAll();
+
+/* ══ บล็อกส่งเสริมการใช้ระบบบัญชีข้อมูลจังหวัด · ตัวเลขดึงสดจากระบบ ══ */
+(function(){
+  const CAT=GDC.base;
+  const im=new Image();im.onload=()=>{const b=document.getElementById('gpBg');b.style.backgroundImage="url('assets/gdc-promo.jpg')";b.classList.add('on')};im.src='assets/gdc-promo.jpg';
+  const cnt=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)countUp(el,v)};
+  GDC.call('package_search',{rows:0,'facet.field':'["organization","res_format"]','facet.limit':200}).then(r=>{
+    cnt('gpN1',r.count);cnt('gpN2',Object.keys((r.facets||{}).organization||{}).length);cnt('gpN3',((r.facets||{}).res_format||{}).CSV||0)}).catch(()=>{});
+  const wk=new Date(Date.now()-7*864e5).toISOString().slice(0,19)+'Z';
+  GDC.call('package_search',{rows:0,fq:'metadata_modified:['+wk+' TO NOW]'}).then(r=>cnt('gpN4',r.count)).catch(()=>{});
+  GDC.call('package_search',{rows:14,sort:'metadata_modified desc'}).then(r=>{
+    const L=(r.results||[]).map(p=>`<a href="${CAT}/dataset/${encodeURIComponent(p.name)}" target="_blank" rel="noopener">● ${esc(p.title||p.name)}<small>${esc(p.organization?p.organization.title:'')}</small><em>${ago(p.metadata_modified)}</em></a>`).join('');
+    if(L)document.getElementById('gpTick').innerHTML=L+L}).catch(()=>{document.getElementById('gpTick').innerHTML='<a href="'+CAT+'" target="_blank" rel="noopener">เปิดระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู ↗</a>'});
+  /* QR ไปยังระบบบัญชีข้อมูล */
+  if(typeof qrSvg==='function')qrSvg(CAT+'/',4).then(sv=>{document.getElementById('gpQr').innerHTML=sv}).catch(()=>{document.querySelector('.gp-qr .q').style.display='none'});
+  /* หน้าต่างโค้ดพิมพ์ตัวอย่างการเรียก API แล้วแสดงผลจริงจากระบบ */
+  const code=document.getElementById('gpCode');
+  const RID=(GDC.RES.find(x=>x.id&&x.state==='api'&&/ผู้เยี่ยมเยือน รายเดือน/.test(x.n))||GDC.RES.find(x=>x.id&&x.state==='api')||{}).id||'';
+  const req=[['c','// ดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัด\n'],['k','GET '],['t','/api/3/action/'],['n','datastore_search'],['t','\n  ?resource_id='],['s',RID.slice(0,18)+'…'],['t','&limit=3\n\n']];
+  let html='',i=0,j=0,stop=false;
+  const span=(c,t)=>c==='t'?esc(t):`<span class="tk-${c}">${esc(t)}</span>`;
+  function type(){if(stop)return;if(i>=req.length){code.innerHTML=html+'<span class="tk-c">// กำลังรอผลตอบกลับ…</span><span class="cur"></span>';fetchLive();return}
+    const [c,t]=req[i];j++;const part=t.replace(/\\n/g,'\n').slice(0,j);code.innerHTML=html+span(c,part)+'<span class="cur"></span>';
+    if(j>=t.replace(/\\n/g,'\n').length){html+=span(c,t.replace(/\\n/g,'\n'));i++;j=0}setTimeout(type,i<2?40:18)}
+  function fetchLive(){
+    if(!RID){show(null);return}
+    GDC._jsonp({resource_id:RID,limit:3}).then(r=>show(r)).catch(()=>show(null))}
+  function show(r){
+    let out='<span class="tk-c">// 200 OK · ตอบกลับจริงจากระบบ</span>\n{ <span class="tk-k">"success"</span>: <span class="tk-n">true</span>, <span class="tk-k">"total"</span>: <span class="tk-n">'+(r&&r.total!=null?r.total:'…')+'</span>,\n  <span class="tk-k">"records"</span>: [\n';
+    const rec=(r&&r.records||[]).slice(0,3).map(x=>{const k=Object.keys(x).filter(k=>k!=='_id'&&!/จังหวัด|หน่วย|ที่มา/.test(k)).slice(0,3);
+      return '    { '+k.map(q=>'<span class="tk-k">"'+esc(q.trim())+'"</span>: <span class="tk-s">"'+esc(String(x[q]).trim())+'"</span>').join(', ')+' }'}).join(',\n');
+    out+=(rec||'    …')+'\n  ] }<span class="cur"></span>';
+    code.innerHTML=html+out;setTimeout(()=>{html='';i=0;j=0;type()},9000)}
+  type();
+  document.getElementById('gpFind').addEventListener('click',()=>{showTab('find');const t=document.getElementById('tabs');t.scrollIntoView({behavior:'smooth'});setTimeout(()=>document.getElementById('fq').focus(),500)});
+  document.getElementById('gpApi').addEventListener('click',e=>{
+    const sn="// ตัวอย่างดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู (JSONP ใช้ได้จากทุกเว็บ)\n$.ajax({\n  url: '"+CAT+"/api/3/action/datastore_search',\n  data: { resource_id: '"+RID+"', limit: 100 },\n  dataType: 'jsonp',\n  success: d => console.log(d.result.records)\n});";
+    navigator.clipboard&&navigator.clipboard.writeText(sn);const b=e.currentTarget,o=b.innerHTML;b.innerHTML='คัดลอกแล้ว ✓';setTimeout(()=>b.innerHTML=o,1600)});
+  /* อนุภาคข้อมูลลอยเบา ๆ ในพื้นหลัง */
+  const cv=document.getElementById('gpCv');if(!cv||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const cx=cv.getContext('2d');let W,H,P=[];
+  function rs(){const r=cv.getBoundingClientRect();W=cv.width=r.width*devicePixelRatio;H=cv.height=r.height*devicePixelRatio;
+    P=Array.from({length:Math.round(r.width/22)},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35*devicePixelRatio,vy:(Math.random()-.5)*.35*devicePixelRatio}))}
+  rs();addEventListener('resize',rs);
+  (function loop(){cx.clearRect(0,0,W,H);const D=120*devicePixelRatio;
+    for(const p of P){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1}
+    for(let a=0;a<P.length;a++){for(let b=a+1;b<P.length;b++){const dx=P[a].x-P[b].x,dy=P[a].y-P[b].y,d=Math.hypot(dx,dy);
+      if(d<D){cx.strokeStyle='rgba(60,240,176,'+(.16*(1-d/D))+')';cx.lineWidth=devicePixelRatio;cx.beginPath();cx.moveTo(P[a].x,P[a].y);cx.lineTo(P[b].x,P[b].y);cx.stroke()}}
+      cx.fillStyle='rgba(140,255,210,.55)';cx.beginPath();cx.arc(P[a].x,P[a].y,1.6*devicePixelRatio,0,7);cx.fill()}
+    requestAnimationFrame(loop)})();
+})();
 const h=location.hash.slice(1);
 if(['pages','find','list','agency','hist','qa'].indexOf(h)>=0)showTab(h);
 else if(h&&PAGES[h]){setTimeout(()=>{const el=document.getElementById('pg-'+h);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.boxShadow='0 0 0 2px #3cf0b0,0 0 40px -10px #3cf0b0'}},400)}
