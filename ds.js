@@ -2706,17 +2706,30 @@ GDC.SYNC={
     apply(o){if(typeof DX!=='undefined'&&DX.house)Object.keys(o).forEach(k=>{if(o[k]&&o[k].length)DX.house[k]=o[k]})}},
   labor:{pages:['labor'],agency:'nso',
     res:{status:'cf364469-3e3f-4457-aee0-87bdbb0870a0',ind:'501555c3-cd78-43ef-adc9-0713dcb38b9d',
-         wst:'37398ad3-6536-47ed-82ab-2e4883927542',under:'af4f22e7-74e4-41a8-bf45-4034514446d8'},
+         wst:'37398ad3-6536-47ed-82ab-2e4883927542',under:'af4f22e7-74e4-41a8-bf45-4034514446d8',
+         rate:'9d89b6d3-d47f-466f-8fb6-ee9138dedacb'},
     build(R){const o={_qa:[]};
       if(R.status){const Q={};
         R.status.filter(r=>String(r['เพศ']).trim()==='รวม').forEach(r=>{const q=gq(r),v=gdcVal(r);if(!q||v==null)return;
           const k=String(r['สถานภาพแรงงาน']).trim(),x=Q[q.q]=Q[q.q]||Object.assign({},q);
           ({'ประชากรอายุ 15 ปีขึ้นไป':'pop15','กำลังแรงงานรวม':'force','ผู้มีงานทำ':'emp','ผู้ว่างงาน':'ue','ผู้ไม่อยู่ในกำลังแรงงาน':'notin'}[k]&&(x[{'ประชากรอายุ 15 ปีขึ้นไป':'pop15','กำลังแรงงานรวม':'force','ผู้มีงานทำ':'emp','ผู้ว่างงาน':'ue','ผู้ไม่อยู่ในกำลังแรงงาน':'notin'}[k]]=v))});
-        const L=Object.values(Q).filter(x=>x.force&&x.emp&&x.pop15).sort((a,b)=>qKey(a)-qKey(b)).slice(-12);
+        const ALLQ=Object.values(Q).filter(x=>x.force&&x.emp&&x.pop15).sort((a,b)=>qKey(a)-qKey(b));
+        const L=ALLQ.slice(-12);
+        /* อัตราการว่างงานทางการรายไตรมาส (ชุดอัตราการว่างงาน แถว "อัตราการว่างงานรวม") · ไตรมาสที่ไม่มี ใช้ผู้ว่างงาน ÷ กำลังแรงงาน */
+        const RT={};(R.rate||[]).filter(r=>/อัตราการว่างงานรวม/.test(String(r['รายการ'])+String(r['เพศ']))).forEach(r=>{const q=gq(r),v=gdcVal(r);if(q&&v!=null)RT[q.q]=v});
+        const rq=x=>RT[x.q]!=null?RT[x.q]:(x.ue!=null?x.ue/x.force*100:null);
+        /* อัตราการว่างงานรายปี = ค่าเฉลี่ยของอัตรารายไตรมาส · ใช้เฉพาะปีที่มีข้อมูลครบ 4 ไตรมาส */
+        const YA={};ALLQ.forEach(x=>{const a=YA[x.y]=YA[x.y]||{q:0,r:[]};a.q++;const v=rq(x);if(v!=null)a.r.push(v)});
+        const ann=Object.keys(YA).map(Number).sort((a,b)=>a-b).filter(y=>YA[y].q>=4&&YA[y].r.length)
+          .map(y=>[y,+(YA[y].r.reduce((a,b)=>a+b,0)/YA[y].r.length).toFixed(1),YA[y].r.length]).slice(-6);
+        if(ann.length)o.annual=ann;
         /* ผู้ว่างงานบางไตรมาสเป็น n.a. (ตัวอย่างน้อยเกินประมาณค่าได้) · เก็บเป็นค่าว่าง ไม่แทนด้วยศูนย์ */
-        L.forEach(x=>{x.ue=x.ue==null?null:x.ue;x.ur=x.ue==null?null:+(x.ue/x.force*100).toFixed(1);x.lfpr=+(x.force/x.pop15*100).toFixed(1);x.notin=x.notin||(x.pop15-x.force)});
+        L.forEach(x=>{x.ue=x.ue==null?null:x.ue;x.ur=rq(x)==null?null:+rq(x).toFixed(2);x.lfpr=+(x.force/x.pop15*100).toFixed(1);x.notin=x.notin||(x.pop15-x.force)});
         L.filter(x=>x.ue==null).forEach(x=>o._qa.push('ผู้ว่างงาน ไตรมาส '+x.n+'/'+x.y+' เป็น n.a. ในระบบบัญชีข้อมูล (ไม่มีค่าประมาณ) จึงแสดงเป็นค่าว่าง'));
-        if(L.length){o.quarters=L;const t=L[L.length-1];o.latest='ไตรมาส '+t.n+'/'+t.y}}
+        if(L.length){o.quarters=L;const t=L[L.length-1];o.latest='ไตรมาส '+t.n+'/'+t.y;
+          const na=L.filter(x=>x.ue==null);
+          o.note=na.length?'ไตรมาส '+na.map(x=>x.n+'/'+x.y).join(', ')+' ระบบบัญชีข้อมูลรายงานจำนวนผู้ว่างงานเป็น n.a. (กลุ่มตัวอย่างน้อยเกินกว่าจะประมาณค่าได้) จึงเว้นว่างไว้ มิได้หมายความว่าไม่มีผู้ว่างงาน'
+            :'ข้อมูลจากการสำรวจภาวะการทำงานของประชากร ผ่านระบบบัญชีข้อมูลจังหวัด'}}
       const sumBy=(rows,key)=>{const Q={};rows.forEach(r=>{const q=gq(r),v=gdcVal(r);if(!q)return;const x=Q[q.q]=Q[q.q]||{q:q.q,y:q.y,n:q.n,m:{}};
         const k=String(r[key]).trim();if(v!=null)x.m[k]=(x.m[k]||0)+v});return Object.values(Q).sort((a,b)=>qKey(a)-qKey(b))};
       /* ตรวจความสอดคล้อง: ยอดรวมชาย+หญิงต้องใกล้กับผู้มีงานทำของไตรมาสเดียวกัน (คลาดได้ไม่เกิน 3%)
@@ -2734,6 +2747,29 @@ GDC.SYNC={
       if(R.under){o.under=R.under.map(r=>{const q=gq(r);return q?{q:q.q,v:gdcVal(r),_k:qKey(q)}:null}).filter(x=>x&&x.v!=null).sort((a,b)=>a._k-b._k).map(x=>({q:x.q,v:x.v}))}
       return o},
     apply(o){if(typeof D!=='undefined'&&D.labor)Object.keys(o).forEach(k=>{if(o[k]!=null&&(!Array.isArray(o[k])||o[k].length))D.labor[k]=o[k]})}},
+  otop:{pages:['otop'],agency:'cdd',
+    res:{rev:'90309f56-8577-44ab-b694-804bf492c3c5',mon:'b11c718d-fa12-4d60-aa83-37d56fbf4cef',prod:'c10f01ae-3cdc-4de4-a8b0-39f8438044ab',
+         star:'9ca59463-14ab-4247-9602-cc0c06a5ed46',shop:'4a431891-9e4e-49df-a4a0-eaaeff41b7bf',vich:'ccdf24ab-2807-4560-84f2-2ced40827cff',
+         ent:'700584d7-29bc-4749-82ee-dba82098ca0d'},
+    build(R){const o={},amp=x=>{const a=String(x||'').replace(/^อำเภอ/,'').trim();return a==='เมือง'?'เมืองหนองบัวลำภู':a};
+      const last=(rows,col)=>{const ys=rows.map(gdcYear).filter(Boolean);if(!ys.length)return null;const y=Math.max(...ys);const m={};
+        rows.filter(r=>gdcYear(r)===y).forEach(r=>{const a=amp(r['อำเภอ']),v=gdcNum(r[col]);if(a&&v!=null)m[a]=(m[a]||0)+v});return {y,m}};
+      if(R.rev){const Y={};R.rev.forEach(r=>{const y=gdcYear(r),a=amp(r['อำเภอ']),v=gdcVal(r);if(y&&a&&v!=null)(Y[y]=Y[y]||{})[a]=(Y[y][a]||0)+v});if(Object.keys(Y).length)o.revByYear=Y}
+      if(R.mon){const M={};R.mon.forEach(r=>{const fy=gdcYear(r),i=parseInt(r['ลำดับตามปีงบประมาณ'],10),v=gdcVal(r);if(!fy||!i||v==null)return;
+          const k=fy*100+i;(M[k]=M[k]||{fy,i,label:String(r['ช่วงเวลา']||'').trim(),v:0}).v+=v});
+        const L=Object.keys(M).map(Number).sort((a,b)=>a-b).map(k=>M[k]);if(L.length)o.revMonthly=L}
+      if(R.prod){const ys=R.prod.map(gdcYear).filter(Boolean);if(ys.length){const y=Math.max(...ys),T={},A={};
+        R.prod.filter(r=>gdcYear(r)===y).forEach(r=>{const v=gdcNum(r['ปริมาณ']);if(v==null)return;const t=String(r['ประเภทผลิตภัณฑ์']||'').trim(),a=amp(r['อำเภอ']);
+          T[t]=(T[t]||0)+v;A[a]=(A[a]||0)+v});o.prodYear=y;o.prodByType=T;o.prodByAmp=A}}
+      if(R.star){const x=last(R.star,'ค่าข้อมูล');if(x){o.star5Year=x.y;o.star5=x.m}}
+      if(R.shop){const x=last(R.shop,'ค่าข้อมูล');if(x){o.shopYear=x.y;o.shops=x.m}}
+      if(R.vich){const x=last(R.vich,'ค่าข้อมูล');if(x)o.vichalai=x.m}
+      /* รายชื่อผู้ประกอบการถูกลงซ้ำทุกปี จึงนับเฉพาะปีล่าสุด ไม่รวมทุกปี (รวมทุกปีจะนับคนเดิมซ้ำราว 4 เท่า) */
+      if(R.ent){const ys=R.ent.map(gdcYear).filter(Boolean);if(ys.length){const y=Math.max(...ys),L=R.ent.filter(r=>gdcYear(r)===y),A={},T={};
+        L.forEach(r=>{const a=amp(r['อำเภอ']),t=String(r['ลักษณะผู้ประกอบการ']||'').trim();if(a)A[a]=(A[a]||0)+1;if(t)T[t]=(T[t]||0)+1});
+        o.entYear=y;o.entTotal=L.length;o.entByAmp=A;o.entByType=T}}
+      return o},
+    apply(o){if(typeof DX!=='undefined'&&DX.otop)Object.keys(o).forEach(k=>{if(o[k]!=null)DX.otop[k]=o[k]})}},
   popgrowth:{pages:['population'],agency:'nso',
     res:{growth:'7d183fa3-e333-48aa-ae9f-f9fd13746a80'},
     build(R){return R.growth?{growth:R.growth.map(r=>({y:gdcYear(r),a:String(r['อำเภอ']||'').replace(/^อำเภอ/,'').trim(),v:gdcVal(r)})).filter(r=>r.y&&r.v!=null)}:{}},
@@ -2839,9 +2875,7 @@ const SRC_INV=[
   ['consume','รถจดทะเบียนใหม่','sim','dlt','รอหน่วยงานส่งข้อมูลจริง'],
   ['tourism','ผู้เยี่ยมเยือนและรายได้ท่องเที่ยวรายปี','file','mots','เอกสารสำนักงานการท่องเที่ยวและกีฬา'],
   ['tourism','ท่องเที่ยวรายเดือน','sim','mots','รอหน่วยงานส่งข้อมูลจริง'],
-  ['otop','ยอดจำหน่าย OTOP และผู้ประกอบการ','file','cdd','เอกสารสำนักงานพัฒนาชุมชนจังหวัด'],
   ['labor','ผู้ประกันตนในระบบประกันสังคม','sim','sso','รอหน่วยงานส่งข้อมูลจริง'],
-  ['labor','สรุปรายปีและหมายเหตุ','file','nso','จากรายงานสำรวจภาวะการทำงาน'],
   ['population','ประชากรรายอำเภอ เพศ อายุ การเกิด การตาย การย้ายถิ่น บ้าน','gas','dopa','ทะเบียนราษฎร ผ่านระบบกรอกข้อมูล'],
   ['area','ข้อมูลเชิงพื้นที่รายอำเภอ','file','dopa','รวมจากหลายหน่วยงาน']
 ];
@@ -3077,7 +3111,10 @@ function autoBuild(R,qaKey){
 let PNL_SEL={};
 const PG_IC={tourism:'tourism',otop:'otop',population:'population',agri:'agri',labor:'labor',household:'household',trade:'credit'};
 const PNL_ALL={};
+/* หน้าที่ใช้ API แทนข้อมูลเดิมในตัวหน้าเองแล้ว ไม่ต่อท้ายแผงข้อมูลเพิ่มเติม (คงหน้าตาเดิมไว้) */
+const PNL_OFF=['otop','labor'];
 function gdcPanels(page){
+  if(PNL_OFF.indexOf(page)>=0){const x=document.getElementById('gdcExtra');if(x)x.remove();return}
   const P=(GDC.PANELS[page]||[]).concat(GDC.RES.filter(r=>r.page===page&&r.auto).map(r=>({id:r.id,t:r.n,u:'',ic:PG_IC[page]||'chart',auto:2})));
   if(!P.length)return;
   const view=document.querySelector('.view.on'); if(!view)return;

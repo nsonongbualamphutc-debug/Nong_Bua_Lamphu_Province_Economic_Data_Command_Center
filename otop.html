@@ -44,7 +44,8 @@ function renderOtop(){
   const star5=Object.values(O.star5).reduce((a,b)=>a+b,0);
   const shops=Object.values(O.shops).reduce((a,b)=>a+b,0);
   const vich=Object.values(O.vichalai||{}).reduce((a,b)=>a+b,0);
-  const M=fy(2569);
+  /* ปีงบประมาณล่าสุดที่มีข้อมูลรายเดือน มาจาก API · เพิ่มปีใหม่ในระบบบัญชีข้อมูล หน้าจะเปลี่ยนตามเอง */
+  const FYM=O.revMonthly.length?Math.max(...O.revMonthly.map(x=>x.fy)):null, M=FYM?fy(FYM):[];
 
   document.getElementById('v-otop').innerHTML=`
   <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start">
@@ -52,7 +53,7 @@ function renderOtop(){
     <span><h2>OTOP และเศรษฐกิจชุมชน</h2>
     <p>รายได้จากผลิตภัณฑ์ชุมชนคือเงินที่ไหลถึงครัวเรือนโดยตรง ไม่ผ่านคนกลาง เป็นเครื่องยนต์เศรษฐกิจฐานรากที่จังหวัดควบคุมได้เอง</p></span></div>
     <div class="r"><span class="chip real">ข้อมูลจริง</span></div></div>
-  ${yearBar('yb-otop',{years:yearsOf(O),value:SEL_YEAR,selId:'otopYear',note:'รายได้และผลิตภัณฑ์ OTOP ประกาศปีละครั้ง เลือกดูย้อนหลังได้ 7 ปี'})}
+  ${yearBar('yb-otop',{years:yearsOf(O),value:SEL_YEAR,selId:'otopYear',note:'รายได้และผลิตภัณฑ์ OTOP ประกาศปีละครั้ง เลือกดูย้อนหลังได้ '+yearsOf(O).length+' ปี'})}
 
   <div class="grid g5 mb" id="oKpi"></div>
 
@@ -64,7 +65,7 @@ function renderOtop(){
         <div id="cRev-table" class="hide"><div class="sc" style="max-height:330px"><table class="t" id="tRev"></table></div></div>
         <div class="note" id="revNote"></div>
       </div></div>
-    <div class="c"><header><span class="hdico icow img" data-hdico="history"></span><h3>รายได้รายเดือน ปีงบประมาณ 2569</h3><span class="u">ล้านบาท</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="history"></span><h3>รายได้รายเดือน ปีงบประมาณ ${FYM||'—'}</h3><span class="u">ล้านบาท</span></header>
       <div class="b"><div class="ch lg"><canvas id="cMon"></canvas></div>
         <div class="note" id="monNote"></div></div></div>
   </div>
@@ -79,9 +80,9 @@ function renderOtop(){
         <div id="cType-chart"><div class="ch"><canvas id="cType"></canvas></div></div>
         <div id="cType-table" class="hide"><div class="sc"><table class="t" id="tType"></table></div></div>
       </div></div>
-    <div class="c"><header><span class="hdico icow img" data-hdico="household"></span><h3>ลักษณะผู้ประกอบการ</h3><span class="u">${f(O.entTotal,0)} ราย</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="household"></span><h3>ลักษณะผู้ประกอบการ</h3><span class="u">${O.entYear?'ปี '+O.entYear+' · ':''}${f(O.entTotal,0)} ราย</span></header>
       <div class="b"><div id="entBox"></div>
-        <div class="note">ผู้ประกอบการ OTOP ในระบบทั้งหมด ${f(O.entTotal,0)} ราย กระจายทุกอำเภอ กลุ่มที่มีสัดส่วนสูงสุดคือกลุ่มผู้ผลิตชุมชน ซึ่งเป็นรูปแบบที่กระจายรายได้ได้กว้างที่สุด</div></div></div>
+        <div class="note">ผู้ประกอบการ OTOP ในระบบ${O.entYear?' ปี '+O.entYear:'ทั้งหมด'} ${f(O.entTotal,0)} ราย กระจายทุกอำเภอ กลุ่มที่มีสัดส่วนสูงสุดคือกลุ่มผู้ผลิตชุมชน ซึ่งเป็นรูปแบบที่กระจายรายได้ได้กว้างที่สุด</div></div></div>
   </div>
 
   <div class="grid g2 mb">
@@ -111,7 +112,7 @@ function renderOtop(){
         calc:'รวมยอดจำหน่ายที่กลุ่มผู้ผลิตรายงานทุกเดือนในปีนั้น ÷ 1,000,000 · เทียบปีก่อน = ('+f_num(rev/1e6)+' − '+f_num(revPrev/1e6)+') ÷ '+f_num(revPrev/1e6)+' × 100',
         src:'otop',when:'ปี '+CY})}),
     kpiCard({icon:'people',img:'household',color:cv('--gold'),label:'ผู้ประกอบการ',value:f(O.entTotal,0),unit:'ราย',
-      chip:'<span class="chip">ทุกอำเภอ</span>',sub:'ลงทะเบียนในระบบ OTOP',
+      chip:'<span class="chip">ทุกอำเภอ</span>',sub:'ลงทะเบียนในระบบ OTOP'+(O.entYear?' ปี '+O.entYear:''),
       tip:tipOf({t:'ผู้ประกอบการ OTOP',
         d:'กลุ่มผู้ผลิตและผู้ประกอบการที่ลงทะเบียน OTOP กับจังหวัด นับรวมทุกอำเภอ ทั้งกลุ่มวิสาหกิจชุมชน กลุ่มอาชีพ และรายเดี่ยว',
         calc:'นับจำนวนรายที่ลงทะเบียนในระบบ OTOP ณ สิ้นปี · เป็นจำนวนคงค้าง ไม่นำแต่ละปีมาบวกกัน',
@@ -172,7 +173,7 @@ function renderOtop(){
       scales:{x:ax({grid:{display:false},ticks:{font:{size:9.5}}}),y:ax({ticks:{callback:v=>f(v,0)}})}}});
   const best=M[mv.indexOf(Math.max(...mv))], sum=mv.reduce((a,b)=>a+b,0);
   document.getElementById('monNote').innerHTML=
-    `สะสม ${M.length} เดือนแรกของปีงบประมาณ 2569 ได้ <b>${f(sum,0)} ล้านบาท</b>
+    `สะสม ${M.length} เดือนแรกของปีงบประมาณ ${FYM} ได้ <b>${f(sum,0)} ล้านบาท</b>
      เดือนที่ทำรายได้สูงสุดคือ <b>${best.label}</b> ที่ ${f(best.v/1e6,1)} ล้านบาท
      ข้อมูลรายเดือนช่วยให้วางแผนจัดงานแสดงสินค้าและช่วงโปรโมตได้ตรงจังหวะ`;
 
