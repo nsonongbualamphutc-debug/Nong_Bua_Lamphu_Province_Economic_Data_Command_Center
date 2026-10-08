@@ -145,7 +145,7 @@ function renderTour(){
   <div class="grid g3 mb" id="tBig"></div>
 
   <div class="grid g21 mb">
-    <div class="c"><header><span class="hdico icow img" data-hdico="visitor"></span><h3>แนวโน้มผู้เยี่ยมเยือน</h3><span class="u">คน · ${YRS[0]}–${YRS[YRS.length-1]}</span>
+    <div class="c"><header><span class="hdico icow img" data-hdico="visitor"></span><h3>แนวโน้มผู้เยี่ยมเยือน</h3><span class="u">คน · ${Math.min(YRS[0],...Object.keys(T.visitorYear||{}).map(Number))}–${YRS[YRS.length-1]}</span>
       <span class="r">${viewToggle('cTrend')}</span></header>
       <div class="b">
         <div id="cTrend-chart"><div class="ch lg"><canvas id="cTrend"></canvas></div></div>
@@ -295,17 +295,23 @@ function renderTour(){
   }
 
   /* ── แนวโน้ม ── */
-  mk('cTrend',{data:{labels:YRS.map(y=>'ปี '+y),datasets:[
-    {type:'bar',label:'ชาวไทย',data:YRS.map(y=>val(y,'ผู้เยี่ยมเยือน','ชาวไทย')),
+  /* ผู้เยี่ยมเยือนรวมรายปีจาก API ย้อนได้ไกลกว่าชุดแยกไทย/ต่างชาติ · ปีที่ไม่มีการแยกจะแสดงเฉพาะเส้นรวม */
+  const VY=T.visitorYear||{};
+  const TRY=[...new Set([...YRS,...Object.keys(VY).map(Number)])].sort((a,b)=>a-b);
+  const vyK=(y,k)=>VY[y]&&VY[y][k]!=null?VY[y][k]:tot(y,k);
+  const vyTot=y=>VY[y]?(VY[y]['นักท่องเที่ยว']||0)+(VY[y]['นักทัศนาจร']||0):tot(y,'ผู้เยี่ยมเยือน');
+  const inY=y=>YRS.indexOf(y)>=0;
+  mk('cTrend',{data:{labels:TRY.map(y=>'ปี '+y),datasets:[
+    {type:'bar',label:'ชาวไทย',data:TRY.map(y=>inY(y)?val(y,'ผู้เยี่ยมเยือน','ชาวไทย'):null),
       backgroundColor:cv('--brand'),borderRadius:6,stack:'s',yAxisID:'y'},
-    {type:'bar',label:'ชาวต่างชาติ',data:YRS.map(y=>val(y,'ผู้เยี่ยมเยือน','ชาวต่างชาติ')),
+    {type:'bar',label:'ชาวต่างชาติ',data:TRY.map(y=>inY(y)?val(y,'ผู้เยี่ยมเยือน','ชาวต่างชาติ'):null),
       backgroundColor:cv('--coral'),borderRadius:6,stack:'s',yAxisID:'y'},
-    {type:'line',label:'รวมผู้เยี่ยมเยือน',data:YRS.map(y=>tot(y,'ผู้เยี่ยมเยือน')),
+    {type:'line',label:'รวมผู้เยี่ยมเยือน',data:TRY.map(vyTot),stack:'line',
       borderColor:cv('--gold'),borderWidth:2.6,borderDash:[6,4],pointRadius:4,pointBackgroundColor:cv('--gold'),tension:.25,yAxisID:'y'}]},
     options:{interaction:{mode:'index',intersect:false},
       plugins:{legend:{position:'bottom',labels:{padding:11}},
-        tooltip:{callbacks:{footer:it=>{const y=YRS[it[0].dataIndex];
-          return 'นักท่องเที่ยว '+f(tot(y,'นักท่องเที่ยว'),0)+' คน · นักทัศนาจร '+f(tot(y,'นักทัศนาจร'),0)+' คน'}}}},
+        tooltip:{callbacks:{footer:it=>{const y=TRY[it[0].dataIndex];
+          return 'นักท่องเที่ยว '+f(vyK(y,'นักท่องเที่ยว'),0)+' คน · นักทัศนาจร '+f(vyK(y,'นักทัศนาจร'),0)+' คน'+(inY(y)?'':' · ปีนี้ไม่มีข้อมูลแยกไทย/ต่างชาติ')}}}},
       scales:{x:ax({grid:{display:false},stacked:true}),y:ax({stacked:true,ticks:{callback:v=>f(v/1000,0)+'K'}})}}});
   document.getElementById('tTrend').innerHTML=`<thead><tr><th>ปี</th><th class="r">ชาวไทย</th><th class="r">ชาวต่างชาติ</th>
     <th class="r">รวม</th><th class="r">%YoY</th><th class="r">เข้าพัก (%)</th></tr></thead><tbody>`+

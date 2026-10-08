@@ -11,6 +11,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ds.css">
 
+<style>
+.ind-donut{display:grid;grid-template-columns:minmax(150px,1fr) 1.25fr;gap:10px;align-items:center}
+.ind-donut .ch{position:relative}
+.ind-dc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.ind-dc b{font-family:var(--fd);font-size:26px;font-weight:700;color:var(--ink);line-height:1}.ind-dc span{font-size:11.5px;color:var(--dim)}
+.ind-tl{display:flex;flex-direction:column;gap:5px}
+.ind-tr{display:grid;grid-template-columns:10px 1fr auto 46px;gap:7px;align-items:center;font-size:12px}
+.ind-tr i{width:10px;height:10px;border-radius:3px}
+.ind-tr .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink2,var(--ink))}
+.ind-tr b{font-weight:600;text-align:right}.ind-tr .pc{color:var(--dim);text-align:right;font-size:11.5px}
+.ind-tr.tot{border-top:1px solid var(--line);padding-top:5px;margin-top:2px;font-weight:600}.ind-tr.tot i{background:transparent}
+.ind-amp td small{font-size:10.5px;color:var(--dim);margin-left:6px}
+.ind-bar{display:inline-block;vertical-align:middle;width:72px;height:8px;border-radius:6px;background:var(--line);overflow:hidden}
+.ind-bar i{display:block;height:100%;border-radius:6px}
+table.t tr.hl td{background:var(--brand-l);font-weight:600}
+@media (max-width:767px){.ind-donut{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <div id="tip"></div>
@@ -26,8 +43,213 @@
 <script src="data2.js"></script>
 <script src="ds.js"></script>
 <script>
-window.onSeg=function(w,btn){ if(w.dataset.dom)drawSectorChart(w.dataset.dom,btn.dataset.mode); };
-DS.init('industry',function(){renderSector('industry')});
+/* ══════════════ อุตสาหกรรมและการผลิต ══════════════
+   ดึงจาก API (ระบบบัญชีข้อมูลจังหวัด): สถานประกอบการอุตสาหกรรมรายอำเภอ · รายได้ภาคอุตสาหกรรม (GPP)
+   ยังไม่มีใน API ใช้ไฟล์รายงานสถิติ สำนักงานอุตสาหกรรมจังหวัด (ตาราง 12.3–12.5):
+   เงินทุน · คนงาน · สถานประกอบการตามประเภทอุตสาหกรรม · เหมืองแร่ คนงานเหมือง ปริมาณแร่
+   ถ้า API ไม่ตอบสนอง จำนวนสถานประกอบการจะใช้ค่าจากไฟล์เดียวกันแทนชั่วคราว */
+const IND_FILE={"cap":{"2564":{"เมืองหนองบัวลำภู":1314.87,"นากลาง":10454.72,"โนนสัง":298.54,"ศรีบุญเรือง":967.91,"สุวรรณคูหา":0,"นาวัง":169.85},"2565":{"เมืองหนองบัวลำภู":1372.38,"นากลาง":10454.73,"โนนสัง":298.54,"ศรีบุญเรือง":1044.69,"สุวรรณคูหา":0,"นาวัง":176.86},"2566":{"เมืองหนองบัวลำภู":1361.57,"นากลาง":10502.73,"โนนสัง":298.54,"ศรีบุญเรือง":1104.29,"สุวรรณคูหา":0,"นาวัง":169.86},"2567":{"เมืองหนองบัวลำภู":1412.35,"นากลาง":10552.73,"โนนสัง":298.54,"ศรีบุญเรือง":1097.88,"สุวรรณคูหา":0,"นาวัง":169.86},"2568":{"เมืองหนองบัวลำภู":1411.85,"นากลาง":10527.17,"โนนสัง":298.54,"ศรีบุญเรือง":1067.86,"สุวรรณคูหา":0,"นาวัง":161.56}},"work":{"2564":{"เมืองหนองบัวลำภู":{"ชาย":1004,"หญิง":1267},"นากลาง":{"ชาย":1333,"หญิง":90},"โนนสัง":{"ชาย":50,"หญิง":11},"ศรีบุญเรือง":{"ชาย":648,"หญิง":510},"สุวรรณคูหา":{"ชาย":0,"หญิง":0},"นาวัง":{"ชาย":107,"หญิง":9}},"2565":{"เมืองหนองบัวลำภู":{"ชาย":1001,"หญิง":1271},"นากลาง":{"ชาย":1333,"หญิง":90},"โนนสัง":{"ชาย":50,"หญิง":11},"ศรีบุญเรือง":{"ชาย":647,"หญิง":512},"สุวรรณคูหา":{"ชาย":0,"หญิง":0},"นาวัง":{"ชาย":107,"หญิง":9}},"2566":{"เมืองหนองบัวลำภู":{"ชาย":1042,"หญิง":1281},"นากลาง":{"ชาย":1332,"หญิง":99},"โนนสัง":{"ชาย":50,"หญิง":11},"ศรีบุญเรือง":{"ชาย":679,"หญิง":549},"สุวรรณคูหา":{"ชาย":0,"หญิง":0},"นาวัง":{"ชาย":107,"หญิง":9}},"2567":{"เมืองหนองบัวลำภู":{"ชาย":1059,"หญิง":1282},"นากลาง":{"ชาย":1340,"หญิง":111},"โนนสัง":{"ชาย":50,"หญิง":11},"ศรีบุญเรือง":{"ชาย":671,"หญิง":549},"สุวรรณคูหา":{"ชาย":0,"หญิง":0},"นาวัง":{"ชาย":107,"หญิง":9}},"2568":{"เมืองหนองบัวลำภู":{"ชาย":1028,"หญิง":1269},"นากลาง":{"ชาย":1330,"หญิง":111},"โนนสัง":{"ชาย":50,"หญิง":11},"ศรีบุญเรือง":{"ชาย":630,"หญิง":570},"สุวรรณคูหา":{"ชาย":0,"หญิง":0},"นาวัง":{"ชาย":97,"หญิง":9}}},"type":{"2564":{"ผลิตภัณฑ์จากพืช":12,"อุตสาหกรรมอาหาร":18,"อุตสาหกรรมเครื่องดื่ม":1,"สิ่งทอ":2,"อุตสาหกรรมเครื่องแต่งกาย ยกเว้นรองเท้า":1,"ผลิตหนังสัตว์และผลิตภัณฑ์จากหนังสัตว์":0,"แปรรูปไม้และผลิตภัณฑ์จากไม้":15,"เครื่องเรือนหรือเครื่องตบแต่งในอาคารจากไม้ แก้ว ยาง หรืออโลหะอื่น":0,"ผลิตกระดาษหรือผลิตภัณฑ์กระดาษ":0,"การพิมพ์ การเย็บเล่ม ทำปก หรือการทำแม่พิมพ์":0,"เคมีภัณฑ์และผลิตภัณฑ์เคมี":0,"ผลิตภัณฑ์จากปิโตรเลียม":8,"ยางและผลิตภัณฑ์ยาง":1,"ผลิตภัณฑ์พลาสติก":2,"ผลิตภัณฑ์อโลหะ":30,"ผลิตภัณฑ์โลหะขั้นมูลฐาน":1,"ผลิตภัณฑ์โลหะ":9,"ผลิตภัณฑ์เครื่องจักร และเครื่องกล":0,"ผลิตภัณฑ์เครื่องใช้ไฟฟ้าและอุปกรณ์":0,"ผลิตยานพาหนะและอุปกรณ์ รวมทั้งการซ่อมยานพาหนะและอุปกรณ์":10,"การผลิตอื่น ๆ":13},"2565":{"ผลิตภัณฑ์จากพืช":11,"อุตสาหกรรมอาหาร":19,"อุตสาหกรรมเครื่องดื่ม":1,"สิ่งทอ":2,"อุตสาหกรรมเครื่องแต่งกาย ยกเว้นรองเท้า":1,"ผลิตหนังสัตว์และผลิตภัณฑ์จากหนังสัตว์":0,"แปรรูปไม้และผลิตภัณฑ์จากไม้":14,"เครื่องเรือนหรือเครื่องตบแต่งในอาคารจากไม้ แก้ว ยาง หรืออโลหะอื่น":0,"ผลิตกระดาษหรือผลิตภัณฑ์กระดาษ":0,"การพิมพ์ การเย็บเล่ม ทำปก หรือการทำแม่พิมพ์":0,"เคมีภัณฑ์และผลิตภัณฑ์เคมี":0,"ผลิตภัณฑ์จากปิโตรเลียม":9,"ยางและผลิตภัณฑ์ยาง":1,"ผลิตภัณฑ์พลาสติก":1,"ผลิตภัณฑ์อโลหะ":31,"ผลิตภัณฑ์โลหะขั้นมูลฐาน":1,"ผลิตภัณฑ์โลหะ":8,"ผลิตภัณฑ์เครื่องจักร และเครื่องกล":0,"ผลิตภัณฑ์เครื่องใช้ไฟฟ้าและอุปกรณ์":0,"ผลิตยานพาหนะและอุปกรณ์ รวมทั้งการซ่อมยานพาหนะและอุปกรณ์":10,"การผลิตอื่น ๆ":13},"2566":{"ผลิตภัณฑ์จากพืช":10,"อุตสาหกรรมอาหาร":22,"อุตสาหกรรมเครื่องดื่ม":1,"สิ่งทอ":2,"อุตสาหกรรมเครื่องแต่งกาย ยกเว้นรองเท้า":1,"ผลิตหนังสัตว์และผลิตภัณฑ์จากหนังสัตว์":0,"แปรรูปไม้และผลิตภัณฑ์จากไม้":13,"เครื่องเรือนหรือเครื่องตบแต่งในอาคารจากไม้ แก้ว ยาง หรืออโลหะอื่น":0,"ผลิตกระดาษหรือผลิตภัณฑ์กระดาษ":0,"การพิมพ์ การเย็บเล่ม ทำปก หรือการทำแม่พิมพ์":0,"เคมีภัณฑ์และผลิตภัณฑ์เคมี":0,"ผลิตภัณฑ์จากปิโตรเลียม":9,"ยางและผลิตภัณฑ์ยาง":1,"ผลิตภัณฑ์พลาสติก":2,"ผลิตภัณฑ์อโลหะ":31,"ผลิตภัณฑ์โลหะขั้นมูลฐาน":0,"ผลิตภัณฑ์โลหะ":7,"ผลิตภัณฑ์เครื่องจักร และเครื่องกล":0,"ผลิตภัณฑ์เครื่องใช้ไฟฟ้าและอุปกรณ์":0,"ผลิตยานพาหนะและอุปกรณ์ รวมทั้งการซ่อมยานพาหนะและอุปกรณ์":9,"การผลิตอื่น ๆ":15},"2567":{"ผลิตภัณฑ์จากพืช":9,"อุตสาหกรรมอาหาร":22,"อุตสาหกรรมเครื่องดื่ม":1,"สิ่งทอ":2,"อุตสาหกรรมเครื่องแต่งกาย ยกเว้นรองเท้า":1,"ผลิตหนังสัตว์และผลิตภัณฑ์จากหนังสัตว์":0,"แปรรูปไม้และผลิตภัณฑ์จากไม้":13,"เครื่องเรือนหรือเครื่องตบแต่งในอาคารจากไม้ แก้ว ยาง หรืออโลหะอื่น":0,"ผลิตกระดาษหรือผลิตภัณฑ์กระดาษ":0,"การพิมพ์ การเย็บเล่ม ทำปก หรือการทำแม่พิมพ์":0,"เคมีภัณฑ์และผลิตภัณฑ์เคมี":0,"ผลิตภัณฑ์จากปิโตรเลียม":9,"ยางและผลิตภัณฑ์ยาง":1,"ผลิตภัณฑ์พลาสติก":2,"ผลิตภัณฑ์อโลหะ":30,"ผลิตภัณฑ์โลหะขั้นมูลฐาน":0,"ผลิตภัณฑ์โลหะ":7,"ผลิตภัณฑ์เครื่องจักร และเครื่องกล":0,"ผลิตภัณฑ์เครื่องใช้ไฟฟ้าและอุปกรณ์":0,"ผลิตยานพาหนะและอุปกรณ์ รวมทั้งการซ่อมยานพาหนะและอุปกรณ์":9,"การผลิตอื่น ๆ":17},"2568":{"ผลิตภัณฑ์จากพืช":8,"อุตสาหกรรมอาหาร":22,"อุตสาหกรรมเครื่องดื่ม":1,"สิ่งทอ":2,"อุตสาหกรรมเครื่องแต่งกาย ยกเว้นรองเท้า":1,"ผลิตหนังสัตว์และผลิตภัณฑ์จากหนังสัตว์":0,"แปรรูปไม้และผลิตภัณฑ์จากไม้":12,"เครื่องเรือนหรือเครื่องตบแต่งในอาคารจากไม้ แก้ว ยาง หรืออโลหะอื่น":0,"ผลิตกระดาษหรือผลิตภัณฑ์กระดาษ":0,"การพิมพ์ การเย็บเล่ม ทำปก หรือการทำแม่พิมพ์":0,"เคมีภัณฑ์และผลิตภัณฑ์เคมี":0,"ผลิตภัณฑ์จากปิโตรเลียม":9,"ยางและผลิตภัณฑ์ยาง":1,"ผลิตภัณฑ์พลาสติก":2,"ผลิตภัณฑ์อโลหะ":28,"ผลิตภัณฑ์โลหะขั้นมูลฐาน":0,"ผลิตภัณฑ์โลหะ":7,"ผลิตภัณฑ์เครื่องจักร และเครื่องกล":0,"ผลิตภัณฑ์เครื่องใช้ไฟฟ้าและอุปกรณ์":0,"ผลิตยานพาหนะและอุปกรณ์ รวมทั้งการซ่อมยานพาหนะและอุปกรณ์":9,"การผลิตอื่น ๆ":17}},"mine":{"n":{"2564":4,"2565":3,"2566":2,"2567":2,"2568":2},"work":{"2564":165,"2565":115,"2566":56,"2567":50,"2568":50},"prod":{"2564":2541752,"2565":2578152,"2566":1906536,"2567":2013256,"2568":2599368}},"est":{"2564":{"เมืองหนองบัวลำภู":47,"นากลาง":25,"โนนสัง":6,"ศรีบุญเรือง":36,"สุวรรณคูหา":0,"นาวัง":9},"2565":{"เมืองหนองบัวลำภู":46,"นากลาง":25,"โนนสัง":6,"ศรีบุญเรือง":37,"สุวรรณคูหา":0,"นาวัง":9},"2566":{"เมืองหนองบัวลำภู":46,"นากลาง":24,"โนนสัง":6,"ศรีบุญเรือง":38,"สุวรรณคูหา":0,"นาวัง":9},"2567":{"เมืองหนองบัวลำภู":46,"นากลาง":25,"โนนสัง":6,"ศรีบุญเรือง":37,"สุวรรณคูหา":0,"นาวัง":9},"2568":{"เมืองหนองบัวลำภู":45,"นากลาง":24,"โนนสัง":6,"ศรีบุญเรือง":36,"สุวรรณคูหา":0,"นาวัง":8}}};
+const AMP6=['เมืองหนองบัวลำภู','ศรีบุญเรือง','นากลาง','โนนสัง','สุวรรณคูหา','นาวัง'];
+const AMPS=a=>a.replace('เมืองหนองบัวลำภู','เมือง');
+let IY=null;
+
+const sum=o=>Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
+function IND(){
+  const A=window.IND_API||{};
+  const est=A.est&&Object.keys(A.est).length?A.est:IND_FILE.est;
+  return {est,estApi:!!(A.est&&Object.keys(A.est).length),gpp:A.gpp||[],cap:IND_FILE.cap,work:IND_FILE.work,type:IND_FILE.type,mine:IND_FILE.mine};
+}
+const yrs=o=>Object.keys(o||{}).map(Number).sort((a,b)=>a-b);
+const wTot=(W,y)=>{const r=W[y];if(!r)return null;return Object.values(r).reduce((a,v)=>a+(v['ชาย']||0)+(v['หญิง']||0),0)};
+const wSex=(W,y,s)=>{const r=W[y];if(!r)return null;return Object.values(r).reduce((a,v)=>a+(v[s]||0),0)};
+const prevOf=(ys,y)=>{const p=ys.filter(x=>x<y);return p.length?p[p.length-1]:null};
+const firstOf=ys=>ys.length?ys[0]:null;
+const sgn=v=>v>0?'▲ +':v<0?'▼ ':'● ';
+const dchip=(d,u,dec)=>d==null?'<span class="chip">—</span>':`<span class="chip ${d>0?'up':d<0?'dn':'fl'}">${sgn(d)}${f(Math.abs(d),dec||0)} ${u}</span>`;
+const GSTAT={p:'ข้อมูลเบื้องต้น',r:'ข้อมูลปรับปรุง','':''};
+
+function renderInd(){
+  const X=IND();
+  const ESTY=yrs(X.est), CAPY=yrs(X.cap), WY=yrs(X.work), TY=yrs(X.type), MY=yrs(X.mine.n);
+  const YS=[...new Set([].concat(ESTY,CAPY,WY,TY,MY))].sort((a,b)=>a-b);
+  if(IY===null||YS.indexOf(IY)<0)IY=YS[YS.length-1];
+  const y=IY;
+  /* ค่าของปีที่เลือก */
+  const est=X.est[y]?sum(X.est[y]):null, eFirst=firstOf(ESTY), estFirst=eFirst!=null?sum(X.est[eFirst]):null, eP=prevOf(ESTY,y), estPrev=eP!=null?sum(X.est[eP]):null;
+  const cap=X.cap[y]?sum(X.cap[y]):null, cP=prevOf(CAPY,y), capPrev=cP!=null?sum(X.cap[cP]):null;
+  const wk=wTot(X.work,y), wP=prevOf(WY,y), wkPrev=wP!=null?wTot(X.work,wP):null;
+  const G=X.gpp, g=G.filter(r=>r.y<=y).pop()||G[G.length-1]||null, gP=g?G.filter(r=>r.y<g.y).pop():null;
+  const mn=X.mine.n[y], mP=prevOf(MY,y), mnPrev=mP!=null?X.mine.n[mP]:null;
+
+  document.getElementById('v-industry').innerHTML=`
+  <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start">
+    <span class="bigico icow img" data-bigico="industry"></span>
+    <span><h2>อุตสาหกรรมและการผลิต</h2>
+    <p>สถานประกอบการ เงินลงทุน การจ้างงาน และรายได้ภาคอุตสาหกรรมของจังหวัด รวมถึงการทำเหมืองแร่ซึ่งเป็นฐานวัตถุดิบของอุตสาหกรรมก่อสร้าง</p></span></div>
+    <div class="r"><span class="chip real">ข้อมูลจริง</span></div></div>
+  ${yearBar('yb-ind',{years:YS,value:y,selId:'indYear',note:'ข้อมูลอุตสาหกรรมประกาศปีละครั้ง เปลี่ยนปีแล้วการ์ด ตาราง และกราฟทั้งหน้าจะเปลี่ยนตาม'})}
+
+  <div class="grid g5 mb" id="iKpi"></div>
+
+  <div class="grid g3 mb">
+    <div class="c"><header><span class="hdico icow img" data-hdico="factorynew"></span><h3>สถานประกอบการและคนงาน</h3>
+      <span class="r">${viewToggle('cEst')}</span></header>
+      <div class="b"><div id="cEst-chart"><div class="ch"><canvas id="cEst"></canvas></div></div>
+        <div id="cEst-table" class="hide"><div class="sc"><table class="t" id="tEst"></table></div></div>
+        <div class="note" id="estNote"></div></div></div>
+    <div class="c"><header><span class="hdico icow img" data-hdico="invest"></span><h3>เงินทุนสถานประกอบการ</h3><span class="u">ล้านบาท</span></header>
+      <div class="b"><div class="ch"><canvas id="cCap"></canvas></div>
+        <div class="note" id="capNote"></div></div></div>
+    <div class="c"><header><span class="hdico icow img" data-hdico="gpp"></span><h3>รายได้ภาคอุตสาหกรรม</h3><span class="u">GPP · ล้านบาท</span></header>
+      <div class="b"><div class="ch"><canvas id="cGpp"></canvas></div>
+        <div class="note" id="gppNote"></div></div></div>
+  </div>
+
+  <div class="grid g3 mb">
+    <div class="c"><header><span class="hdico icow img" data-hdico="topindustry"></span><h3>ตามประเภทอุตสาหกรรม</h3><span class="u">ปี <b>${X.type[y]?y:'—'}</b></span></header>
+      <div class="b"><div class="ind-donut"><div class="ch" style="height:210px"><canvas id="cType"></canvas>
+          <div class="ind-dc"><b class="n">${X.type[y]?f(sum(X.type[y]),0):'—'}</b><span>แห่ง</span></div></div>
+        <div id="typeList"></div></div>
+        <div class="note" id="typeNote"></div></div></div>
+    <div class="c"><header><span class="hdico icow img" data-hdico="district"></span><h3>รายอำเภอ</h3><span class="u">ปี <b>${y}</b></span></header>
+      <div class="b"><div class="sc"><table class="t ind-amp" id="tAmp"></table></div>
+        <div class="note" id="ampNote"></div></div></div>
+    <div class="c"><header><span class="hdico icow img" data-hdico="natural"></span><h3>เหมืองแร่</h3><span class="u">แห่ง · คน · เมตริกตัน</span></header>
+      <div class="b"><div class="ch"><canvas id="cMine"></canvas></div>
+        <div class="note" id="mineNote"></div></div></div>
+  </div>
+
+  <div class="c"><header><span class="hdico icow img">${icoImg('source',26)}</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
+    <div class="b">${srcBar(['factory','gpp'],'ดึงจากระบบบัญชีข้อมูลจังหวัด (API): จำนวนสถานประกอบการอุตสาหกรรมรายอำเภอ และรายได้ภาคอุตสาหกรรม (GPP) · '+
+      'ข้อมูลไฟล์ (ยังไม่มีใน API): เงินทุน คนงาน ประเภทอุตสาหกรรม และเหมืองแร่ จากรายงานสถิติจังหวัด ตาราง 12.3–12.5 ของสำนักงานอุตสาหกรรมจังหวัด'+
+      (X.estApi?'':' · ขณะนี้ API ไม่ตอบสนอง จำนวนสถานประกอบการจึงใช้ค่าจากไฟล์ชั่วคราว'))}</div></div>`;
+
+  /* ── KPI ── */
+  const cy=v=>v==null?'<span class="sub">ไม่มีข้อมูลปีนี้</span>':'';
+  document.getElementById('iKpi').innerHTML=[
+    kpiCard({sim:false,icon:'factory',img:'factorynew|industry',bg:'factorynew',color:cv('--brand'),label:'สถานประกอบการอุตสาหกรรม',
+      value:est==null?'—':f(est,0),unit:'แห่ง',chip:dchip(est!=null&&estPrev!=null?est-estPrev:null,'แห่ง'),
+      sub:eP!=null?'จากปี '+eP+' ('+f(estPrev,0)+' แห่ง)':'',
+      tip:tipOf({t:'สถานประกอบการอุตสาหกรรม',d:'โรงงานที่ได้รับอนุญาตประกอบกิจการตามกฎหมายโรงงาน รวมทุกอำเภอ',
+        calc:'รวมจำนวนสถานประกอบการ 6 อำเภอของปี '+y+(estFirst!=null?' · ปี '+eFirst+' มี '+f(estFirst,0)+' แห่ง':''),src:'factory',when:'ปี '+y})}),
+    kpiCard({sim:false,icon:'coin',img:'invest',bg:'invest',color:cv('--leaf'),label:'เงินทุนสถานประกอบการ',
+      value:cap==null?'—':f(cap,2),unit:'ลบ.',chip:dchip(cap!=null&&capPrev!=null?cap-capPrev:null,'ล้านบาท',2),
+      sub:cP!=null?'จากปี '+cP+' ('+f(capPrev,2)+' ล้านบาท)':'',
+      tip:tipOf({t:'เงินทุนของสถานประกอบการอุตสาหกรรม',d:'เงินลงทุนที่แจ้งไว้กับสำนักงานอุตสาหกรรมจังหวัด เป็นตัวบอกขนาดการลงทุนสะสมในภาคการผลิต',
+        calc:'รวมเงินทุนทุกอำเภอของปี '+y,src:'factory',when:'ปี '+y})}),
+    kpiCard({sim:false,icon:'people',img:'employed',bg:'employed',color:cv('--gold'),label:'จำนวนคนงาน',
+      value:wk==null?'—':f(wk,0),unit:'คน',chip:dchip(wk!=null&&wkPrev!=null?wk-wkPrev:null,'คน'),
+      sub:wk!=null?'ชาย '+f(wSex(X.work,y,'ชาย'),0)+' · หญิง '+f(wSex(X.work,y,'หญิง'),0)+(wP!=null?' · จากปี '+wP+' ('+f(wkPrev,0)+')':''):'',
+      tip:tipOf({t:'คนงานในสถานประกอบการอุตสาหกรรม',d:'จำนวนคนงานที่สถานประกอบการแจ้งไว้ แยกชายหญิง',calc:'รวมคนงานชายและหญิงทุกอำเภอของปี '+y,src:'factory',when:'ปี '+y})}),
+    kpiCard({sim:false,icon:'chart',img:'gpp',bg:'gpp',color:cv('--blue'),label:'รายได้ภาคอุตสาหกรรม (GPP)',
+      value:g?f(g.v,0):'—',unit:'ล้านบาท',chip:g&&gP?chip(pctc(g.v,gP.v)):'<span class="chip">—</span>',
+      sub:g?('ปี '+g.y+(g.st?' · '+GSTAT[g.st]:'')+(g.y!==y?' · ล่าสุดที่มี':'')):'กำลังดึงจากระบบบัญชีข้อมูล',
+      tip:tipOf({t:'รายได้ภาคอุตสาหกรรม (GPP)',d:'มูลค่าเพิ่มของสาขาอุตสาหกรรมในผลิตภัณฑ์มวลรวมจังหวัด เผยแพร่โดย สศช. ช้ากว่าปีปัจจุบันราว 2 ปี',
+        calc:g&&gP?'เทียบปี '+gP.y+' = ('+f_num(g.v)+' − '+f_num(gP.v)+') ÷ '+f_num(gP.v)+' × 100':'',src:'gpp',when:g?'ปี '+g.y:''})}),
+    kpiCard({sim:false,icon:'brief',img:'natural',bg:'natural',color:cv('--plum'),label:'เหมืองแร่',
+      value:mn==null?'—':f(mn,0),unit:'แห่ง',chip:dchip(mn!=null&&mnPrev!=null?mn-mnPrev:null,'แห่ง'),
+      sub:mn!=null?'คนงาน '+f(X.mine.work[y],0)+' คน · ผลิตแร่ '+f(X.mine.prod[y]/1e6,2)+' ล้านตัน':'',
+      tip:tipOf({t:'เหมืองแร่',d:'ประทานบัตรเหมืองแร่ที่ดำเนินการในจังหวัด ส่วนใหญ่เป็นหินอุตสาหกรรมสำหรับก่อสร้าง',
+        calc:'จำนวนเหมือง คนงาน และปริมาณแร่ที่ผลิตได้ของปี '+y,src:'factory',when:'ปี '+y})})
+  ].join('');
+
+  const hl=(arr,col)=>arr.map(v=>v===y?col:col+'8c');
+
+  /* ── สถานประกอบการ + คนงาน ── */
+  const EY=[...new Set([].concat(ESTY,WY))].sort((a,b)=>a-b);
+  const eV=EY.map(t=>X.est[t]?sum(X.est[t]):null), wV=EY.map(t=>wTot(X.work,t));
+  mk('cEst',{data:{labels:EY.map(t=>'ปี '+t),datasets:[
+    {type:'bar',label:'สถานประกอบการ (แห่ง)',data:eV,backgroundColor:hl(EY,cv('--brand')),borderRadius:6,barPercentage:.62,yAxisID:'y',order:2},
+    {type:'line',label:'จำนวนคนงาน (คน)',data:wV,borderColor:cv('--gold'),backgroundColor:cv('--gold'),borderWidth:2.6,pointRadius:EY.map(t=>t===y?6:3.5),tension:.28,yAxisID:'y2',spanGaps:true,order:1}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:10,font:{size:10}}}},
+      scales:{x:ax({grid:{display:false},ticks:{font:{size:10}}}),y:ax({beginAtZero:true,ticks:{callback:v=>f(v,0)}}),
+        y2:{position:'right',beginAtZero:true,grid:{display:false},border:{display:false},ticks:{callback:v=>f(v,0),font:{size:9.5}}}}}});
+  document.getElementById('tEst').innerHTML='<thead><tr><th>ปี</th><th class="r">สถานประกอบการ</th><th class="r">คนงาน</th><th class="r">เงินทุน (ลบ.)</th></tr></thead><tbody>'+
+    EY.slice().reverse().map(t=>`<tr${t===y?' class="hl"':''}><td>${t}</td><td class="r">${X.est[t]?f(sum(X.est[t]),0):'—'}</td><td class="r">${wTot(X.work,t)!=null?f(wTot(X.work,t),0):'—'}</td><td class="r">${X.cap[t]?f(sum(X.cap[t]),2):'—'}</td></tr>`).join('')+'</tbody>';
+  const e0=ESTY[0], eN=ESTY[ESTY.length-1];
+  document.getElementById('estNote').innerHTML=est!=null?
+    `ปี ${y} มีสถานประกอบการ <b>${f(est,0)} แห่ง</b>`+(eP!=null?` ${est>=estPrev?'เพิ่มขึ้น':'ลดลง'} ${f(Math.abs(est-estPrev),0)} แห่งจากปี ${eP}`:'')+
+    (wk!=null?` · จ้างงาน ${f(wk,0)} คน เฉลี่ย ${f(wk/est,0)} คนต่อแห่ง`:'')+
+    (e0!==eN?` · ช่วงปี ${e0}–${eN} จำนวนสถานประกอบการ${sum(X.est[eN])>=sum(X.est[e0])?'เพิ่มขึ้น':'ลดลง'}จาก ${f(sum(X.est[e0]),0)} เป็น ${f(sum(X.est[eN]),0)} แห่ง`:'')
+    :'ไม่มีข้อมูลสถานประกอบการของปีนี้';
+
+  /* ── เงินทุน ── */
+  const cV=CAPY.map(t=>+sum(X.cap[t]).toFixed(2));
+  mk('cCap',{type:'line',data:{labels:CAPY.map(t=>'ปี '+t),datasets:[{label:'เงินทุน (ล้านบาท)',data:cV,
+      borderColor:cv('--blue'),backgroundColor:cv('--blue')+'26',fill:true,borderWidth:2.6,tension:.3,
+      pointRadius:CAPY.map(t=>t===y?6.5:4),pointBackgroundColor:CAPY.map(t=>t===y?cv('--gold'):cv('--blue'))}]},
+    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>f(c.raw,2)+' ล้านบาท'}}},
+      scales:{x:ax({grid:{display:false}}),y:ax({ticks:{callback:v=>f(v,0)}})}}});
+  const capTop=cap!=null?AMP6.slice().sort((a,b)=>(X.cap[y][b]||0)-(X.cap[y][a]||0))[0]:null;
+  document.getElementById('capNote').innerHTML=cap!=null?
+    `ปี ${y} เงินทุนรวม <b>${f(cap,2)} ล้านบาท</b>`+(cP!=null?` ${cap>=capPrev?'เพิ่มขึ้น':'ลดลง'} ${f(Math.abs(cap-capPrev),2)} ล้านบาทจากปี ${cP}`:'')+
+    ` · <b>${capTop}</b> มีเงินทุนสูงสุด ${f(X.cap[y][capTop],2)} ล้านบาท คิดเป็น ${(X.cap[y][capTop]/cap*100).toFixed(1)}% ของทั้งจังหวัด ซึ่งมาจากโรงงานขนาดใหญ่ไม่กี่แห่ง`
+    :'ไม่มีข้อมูลเงินทุนของปีนี้ (ข้อมูลไฟล์มีปี '+CAPY[0]+'–'+CAPY[CAPY.length-1]+')';
+
+  /* ── GPP ── */
+  if(G.length){
+    mk('cGpp',{type:'bar',data:{labels:G.map(r=>'ปี '+r.y+(r.st==='p'?' (p)':r.st==='r'?' (r)':'')),datasets:[{label:'รายได้ภาคอุตสาหกรรม (ล้านบาท)',data:G.map(r=>r.v),
+        backgroundColor:G.map(r=>r===g?cv('--plum'):cv('--plum')+'8c'),borderRadius:6,barPercentage:.62}]},
+      options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>f(c.raw,0)+' ล้านบาท',footer:it=>{const r=G[it[0].dataIndex];return r.st?GSTAT[r.st]:''}}}},
+        scales:{x:ax({grid:{display:false},ticks:{font:{size:9.5}}}),y:ax({beginAtZero:true,ticks:{callback:v=>f(v,0)}})}}});
+    const g0=G[0],gN=G[G.length-1];
+    document.getElementById('gppNote').innerHTML=
+      `ปี ${g.y} รายได้ภาคอุตสาหกรรม <b>${f(g.v,0)} ล้านบาท</b>`+(gP?` ${g.v>=gP.v?'เพิ่มขึ้น':'ลดลง'} ${Math.abs(pctc(g.v,gP.v)).toFixed(1)}% จากปี ${gP.y}`:'')+
+      ` · ช่วงปี ${g0.y}–${gN.y} ${gN.v>=g0.v?'เติบโต':'ลดลง'} ${Math.abs(pctc(gN.v,g0.v)).toFixed(1)}%`+
+      ` · (r) ข้อมูลปรับปรุง (p) ข้อมูลเบื้องต้น ของ สศช.`+(g.y!==y?` · ยังไม่มีข้อมูลปี ${y} จึงแสดงปีล่าสุดที่มี`:'');
+  }else document.getElementById('gppNote').innerHTML='กำลังดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัด';
+
+  /* ── ประเภทอุตสาหกรรม ── */
+  const TT=X.type[y]?Object.entries(X.type[y]).filter(r=>r[1]>0).sort((a,b)=>b[1]-a[1]):[];
+  const top=TT.slice(0,5), rest=TT.slice(5).reduce((a,r)=>a+r[1],0);
+  const TD=top.concat(rest?[['อื่น ๆ ('+TT.slice(5).length+' ประเภท)',rest]]:[]), tTot=TT.reduce((a,r)=>a+r[1],0);
+  const TC=[cv('--brand'),cv('--coral'),cv('--blue'),cv('--gold'),cv('--plum'),cv('--line2')||'#c9d3cf'];
+  if(TD.length){
+    mk('cType',{type:'doughnut',data:{labels:TD.map(r=>r[0]),datasets:[{data:TD.map(r=>r[1]),backgroundColor:TD.map((r,i)=>TC[i%TC.length]),borderColor:cv('--card'),borderWidth:3}]},
+      options:{cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+' '+c.raw+' แห่ง ('+(c.raw/tTot*100).toFixed(1)+'%)'}}}}});
+    document.getElementById('typeList').innerHTML='<div class="ind-tl">'+TD.map((r,i)=>`<div class="ind-tr" title="${r[0]}"><i style="background:${TC[i%TC.length]}"></i>
+      <span class="nm">${r[0]}</span><b>${r[1]}</b><span class="pc">${(r[1]/tTot*100).toFixed(1)}%</span></div>`).join('')+
+      `<div class="ind-tr tot"><i></i><span class="nm">รวม</span><b>${tTot}</b><span class="pc">100%</span></div></div>`;
+    document.getElementById('typeNote').innerHTML=`ประเภทที่มีมากที่สุดคือ <b>${top[0][0]}</b> ${top[0][1]} แห่ง (${(top[0][1]/tTot*100).toFixed(1)}%) `+
+      `5 ประเภทแรกรวมกันคิดเป็น ${(top.reduce((a,r)=>a+r[1],0)/tTot*100).toFixed(0)}% ของสถานประกอบการทั้งหมด`;
+  }else{document.getElementById('typeList').innerHTML='';document.getElementById('typeNote').innerHTML='ไม่มีข้อมูลประเภทอุตสาหกรรมของปีนี้ (ข้อมูลไฟล์มีปี '+TY[0]+'–'+TY[TY.length-1]+')'}
+
+  /* ── รายอำเภอ ── */
+  const AE=X.est[y]||{}, AC=X.cap[y]||{}, AW=X.work[y]||{};
+  const rows=AMP6.map(a=>({a,n:AE[a]!=null?+AE[a]:null,c:AC[a],w:AW[a]?(AW[a]['ชาย']||0)+(AW[a]['หญิง']||0):null})).sort((p,q)=>(q.n||0)-(p.n||0));
+  const nT=rows.reduce((s,r)=>s+(r.n||0),0)||1;
+  document.getElementById('tAmp').innerHTML=`<thead><tr><th>อำเภอ</th><th class="r">แห่ง</th><th>สัดส่วน</th><th class="r">เงินทุน (ลบ.)</th><th class="r">คนงาน</th></tr></thead><tbody>`+
+    rows.map((r,i)=>`<tr><td>${AMPS(r.a)}</td><td class="r"><b>${r.n==null?'—':f(r.n,0)}</b></td>
+      <td><span class="ind-bar"><i style="width:${((r.n||0)/nT*100).toFixed(1)}%;background:${i===0?cv('--brand'):cv('--brand')+'99'}"></i></span><small>${((r.n||0)/nT*100).toFixed(1)}%</small></td>
+      <td class="r">${r.c==null?'—':f(r.c,2)}</td><td class="r">${r.w==null?'—':f(r.w,0)}</td></tr>`).join('')+
+    `</tbody><tfoot><tr><td>รวม</td><td class="r">${f(nT,0)}</td><td>100%</td><td class="r">${cap!=null?f(cap,2):'—'}</td><td class="r">${wk!=null?f(wk,0):'—'}</td></tr></tfoot>`;
+  const zero=rows.filter(r=>r.n===0).map(r=>r.a);
+  document.getElementById('ampNote').innerHTML=`<b>${rows[0].a}</b> มีสถานประกอบการมากที่สุด ${f(rows[0].n,0)} แห่ง (${(rows[0].n/nT*100).toFixed(1)}%)`+
+    (zero.length?` · ${zero.join(' ')} ยังไม่มีสถานประกอบการอุตสาหกรรมในทะเบียน`:'')+
+    (X.estApi?'':' · จำนวนแห่งใช้ข้อมูลไฟล์ชั่วคราว');
+
+  /* ── เหมืองแร่ ── */
+  mk('cMine',{data:{labels:MY.map(t=>'ปี '+t),datasets:[
+    {type:'bar',label:'เหมืองแร่ (แห่ง)',data:MY.map(t=>X.mine.n[t]),backgroundColor:hl(MY,cv('--plum')),borderRadius:5,yAxisID:'y',order:2},
+    {type:'bar',label:'คนงานเหมือง (คน)',data:MY.map(t=>X.mine.work[t]),backgroundColor:hl(MY,cv('--blue')),borderRadius:5,yAxisID:'y',order:2},
+    {type:'line',label:'ปริมาณแร่ที่ผลิตได้ (ล้านตัน)',data:MY.map(t=>+(X.mine.prod[t]/1e6).toFixed(2)),borderColor:cv('--gold'),backgroundColor:cv('--gold'),
+      borderWidth:2.6,pointRadius:MY.map(t=>t===y?6:3.5),tension:.28,yAxisID:'y2',order:1}]},
+    options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:9,font:{size:10}}},
+      tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y2'?'ปริมาณแร่ '+f(X.mine.prod[MY[c.dataIndex]],0)+' เมตริกตัน':c.dataset.label+' '+f(c.raw,0)}}},
+      scales:{x:ax({grid:{display:false},ticks:{font:{size:10}}}),y:ax({beginAtZero:true,ticks:{callback:v=>f(v,0)}}),
+        y2:{position:'right',beginAtZero:true,grid:{display:false},border:{display:false},ticks:{callback:v=>f(v,1)+' ล.',font:{size:9.5}}}}}});
+  document.getElementById('mineNote').innerHTML=mn!=null?
+    `ปี ${y} มีเหมืองแร่ <b>${mn} แห่ง</b> คนงาน ${f(X.mine.work[y],0)} คน ผลิตแร่ได้ ${f(X.mine.prod[y],0)} เมตริกตัน`+
+    (MY[0]!==y?` · เทียบปี ${MY[0]} เหมืองลดจาก ${X.mine.n[MY[0]]} เหลือ ${mn} แห่ง แต่ผลผลิต${X.mine.prod[y]>=X.mine.prod[MY[0]]?'สูงขึ้น':'ลดลง'} ${Math.abs(pctc(X.mine.prod[y],X.mine.prod[MY[0]])).toFixed(1)}% แสดงว่าการผลิตกระจุกอยู่ในเหมืองที่เหลือ`:'')
+    :'ไม่มีข้อมูลเหมืองแร่ของปีนี้';
+
+  applyEditMode();
+}
+
+DS.init('industry',function(){
+  renderInd();
+  onYearChange('indYear',function(v){IY=+v;renderInd()});
+});
 </script>
 </body>
 </html>

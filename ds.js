@@ -1488,6 +1488,7 @@ document.addEventListener('change',function(e){
   const el=e.target;
   if(!el||!el.id||!YEAR_HOOK[el.id])return;
   YEAR_HOOK[el.id](el.value);
+  try{if(typeof PAGE!=='undefined'&&PAGE)gdcSyncBadge(PAGE.id)}catch(x){}
 });
 function onYearChange(selId,fn){YEAR_HOOK[selId]=fn}
 
@@ -2120,7 +2121,8 @@ function fillIcons(root){
 /* แถบบอกความน่าเชื่อถือของตัวเลขรายเดือน — แสดงเฉพาะหน้าที่ใช้ชุดรายเดือน */
 /* หน้าภาพรวมและหน้า GPP ใช้ข้อมูลจริงจากแฟ้มของหน่วยงานแล้ว ไม่ต้องมีแถบเตือนข้อมูลจำลอง */
 /* หน้าการคลังใช้เฉพาะข้อมูลจริงแล้ว (รายงานผลการเบิกจ่าย + ยอดที่คลังจังหวัดกรอก) จึงไม่อยู่ในรายการนี้ */
-const TRUST_PAGES={industry:['factory','power'],trade:['cpi','credit'],
+/* หน้าอุตสาหกรรมใช้ข้อมูลรายปีจาก API และไฟล์รายงานสถิติแล้ว ไม่มีชุดรายเดือนจำลอง */
+const TRUST_PAGES={trade:['cpi','credit'],
   consume:['fuel','car'],area:null};
 function trustBar(){
   if(typeof PAGE==='undefined'||!TRUST_PAGES.hasOwnProperty(PAGE.id))return;
@@ -2441,6 +2443,12 @@ const GDC={
     {id:'',page:'agri',agency:'irrig',n:'โครงการแก้มลิง',state:'link'},
     /* ตลาดแรงงาน · สำนักงานสถิติจังหวัด */
     {id:'cf364469-3e3f-4457-aee0-87bdbb0870a0',page:'labor',agency:'nso',n:'ประชากรอายุ 15 ปีขึ้นไป จำแนกตามสถานภาพแรงงาน เป็นรายไตรมาส',state:'api',use:'กำลังแรงงาน ผู้มีงานทำ ผู้ว่างงาน อัตราการว่างงาน อัตราการมีส่วนร่วม'},
+    {id:'a392e50d-2b4c-4367-97eb-2591d04ca6dc',page:'labor',agency:'sso',n:'จำนวนผู้ประกันตนตามมาตรา 33',state:'api',use:'ผู้ประกันตนในระบบประกันสังคม'},
+    {id:'4e729f3a-6676-470c-ab7f-6465bf538a38',page:'labor',agency:'sso',n:'จำนวนผู้ประกันตนตามมาตรา 39',state:'api',use:'ผู้ประกันตนในระบบประกันสังคม'},
+    {id:'ae943535-c621-420c-beb0-fe1b5af287dd',page:'labor',agency:'sso',n:'จำนวนผู้ประกันตนตามมาตรา 40',state:'api',use:'ผู้ประกันตนในระบบประกันสังคม'},
+    {id:'38498cfc-f015-448a-815b-b9ab09691698',page:'labor',agency:'sso',n:'การใช้บริการของผู้ประกันตนตามมาตรา 33 และมาตรา 39',state:'avail'},
+    {id:'f913c7e3-1b77-4239-9daf-29d8e23e01bc',page:'industry',agency:'ind',n:'จำนวนสถานประกอบการอุตสาหกรรม',state:'api',use:'สถานประกอบการรายปีและรายอำเภอ'},
+    {id:'a0ea6508-d3f2-4b6b-9a49-60c6a3acb059',page:'industry',agency:'nesdc',n:'รายได้ภาคอุตสาหกรรม (GPP)',state:'api',use:'รายได้ภาคอุตสาหกรรม (GPP)'},
     {id:'501555c3-cd78-43ef-adc9-0713dcb38b9d',page:'labor',agency:'nso',n:'ประชากรอายุ 15 ปีขึ้นไปที่มีงานทำ จำแนกตามกิจกรรมทางเศรษฐกิจ และเพศ เป็นรายไตรมาส',state:'api',use:'ผู้มีงานทำแยกตามสาขาเศรษฐกิจ ในภาคเกษตร/นอกภาคเกษตร'},
     {id:'37398ad3-6536-47ed-82ab-2e4883927542',page:'labor',agency:'nso',n:'ประชากรอายุ 15 ปีขึ้นไปที่มีงานทำ จำแนกตามสถานภาพการทำงาน และเพศ เป็นรายไตรมาส',state:'api',use:'ผู้มีงานทำแยกตามสถานภาพการทำงาน'},
     {id:'af4f22e7-74e4-41a8-bf45-4034514446d8',page:'labor',agency:'nso',n:'การทำงานต่ำกว่าระดับด้านชั่วโมงการทำงาน',state:'api',use:'ผู้ทำงานต่ำกว่าระดับรายไตรมาส'},
@@ -2492,11 +2500,13 @@ const GDC={
     {id:'5e65986f-ebe0-44e9-adf7-215ce4e90dad',page:'tourism',agency:'mots',n:'นักท่องเที่ยวภายในจังหวัดหนองบัวลำภู จำแนกประเภท',state:'api'},
     {id:'baad78a2-9acd-4ee3-ae3d-1cb81086cb83',page:'tourism',agency:'mots',n:'รายได้จากการท่องเที่ยว',state:'avail'},
     {id:'170f017c-126e-4432-a58f-20f4bef30f78',page:'tourism',agency:'mots',n:'รายได้จากการท่องเที่ยว รายเดือน',state:'api'},
-    {id:'051f08e3-265d-4399-9e96-01f4daf8eb02',page:'tourism',agency:'mots',n:'จำนวนผู้เยี่ยมเยือน',state:'avail'},
+    {id:'051f08e3-265d-4399-9e96-01f4daf8eb02',page:'tourism',agency:'mots',n:'จำนวนผู้เยี่ยมเยือน',state:'api',use:'แนวโน้มผู้เยี่ยมเยือนรายปี'},
     {id:'450a2393-a4a6-412f-8d08-6f7dcfc87203',page:'tourism',agency:'mots',n:'แหล่งท่องเที่ยวจังหวัด',state:'avail'},
     {id:'5213acd6-1913-4cc7-9807-1caa20855cd5',page:'tourism',agency:'mots',n:'จำนวนแหล่งท่องเที่ยว จำแนกตามประเภท',state:'api'},
-    {id:'f6d19f7c-82ed-4ff5-adb3-eeafa859161f',page:'tourism',agency:'mots',n:'รายชื่อแหล่งท่องเที่ยว',state:'avail'},
-    {id:'e379647a-653f-467c-9d93-f3f0d2df85b1',page:'tourism',agency:'mots',n:'พิกัด ตำแหน่ง รายชื่อแหล่งท่องเที่ยว',state:'avail'},
+    {id:'f6d19f7c-82ed-4ff5-adb3-eeafa859161f',page:'tourism',agency:'mots',n:'รายชื่อแหล่งท่องเที่ยว',state:'api',use:'ตรวจทานรายชื่อแหล่งท่องเที่ยวกับชุดพิกัด'},
+    {id:'e379647a-653f-467c-9d93-f3f0d2df85b1',page:'tourism',agency:'mots',n:'พิกัด ตำแหน่ง รายชื่อแหล่งท่องเที่ยว',state:'api',use:'แผนที่และรายชื่อแหล่งท่องเที่ยว'},
+    {id:'42694bb9-6870-4d50-bbae-27859db9d06c',page:'tourism',agency:'mots',n:'จำนวนผู้เยี่ยมเยือน รายเดือน',state:'api',use:'ผู้เยี่ยมเยือนรายเดือนและเทียบปีต่อปี'},
+    {id:'ce3fd380-daef-4e3e-b6ef-eca62e45c137',page:'tourism',agency:'mots',n:'อัตราการเข้าพัก รายเดือน',state:'api',use:'อัตราการเข้าพักรายเดือน'},
     {id:'04e99c9f-fc2d-41dd-949e-524374a8cf54',page:'tourism',agency:'mots',n:'จำนวนแหล่งท่องเที่ยวที่สำคัญ',state:'avail'},
     {id:'7d37b553-3c4d-4cb2-9201-45635655b597',page:'tourism',agency:'mots',n:'ฐานข้อมูล เพื่อการท่องเที่ยวเชิงอนุรักษ์และวัฒนธรรม',state:'avail'},
     {id:'d522f7e7-7039-480b-ab9b-d96a42dfa3b1',page:'tourism',agency:'mots',n:'จำนวนธุรกิจนำเที่ยวที่ผ่านเกณฑ์มาตรฐาน',state:'avail'},
@@ -2512,6 +2522,7 @@ const GDC={
     {id:'5c879c91-8648-4771-b514-768ef75ea42b',page:'population',agency:'dopa',n:'จำนวนการจดทะเบียนสมรส',state:'avail'},
     {id:'ff6ef4f6-0503-4a66-8074-ea819916942b',page:'population',agency:'dopa',n:'จำนวนการจดทะเบียนหย่า',state:'avail'},
     {id:'03b88975-36e5-46e1-b0fa-0456f0a37193',page:'population',agency:'dopa',n:'จำนวนประชากรจากการทะเบียน',state:'api'},
+    {id:'47bf6256-547c-4e2a-81a8-ffaa55f48a3d',page:'population',agency:'dopa',n:'สถิติจำนวนประชากรแยกรายอายุ',state:'api',use:'ปิรามิดประชากรแยกสัญชาติ ในเขต/นอกเขตเทศบาล'},
     {id:'adafe2b2-6a2f-419e-9cb8-3cccf7e21032',page:'tourism',agency:'mots',n:'สถานประกอบการที่พักแรมที่ถูกต้องตามกฎหมาย',state:'avail'},
     {id:'238104ec-9d77-4d7d-8f41-475daf874056',page:'population',agency:'dopa',n:'ประชากรในเขตเมือง (ประชากรในเขตเทศบาลเมือง) จำแนกเป็นตำบล',state:'avail'},
     {id:'70bfe61c-63bf-45ff-b680-794fc435db08',page:'population',agency:'dopa',n:'พื้นที่ทั้งจังหวัด',state:'avail'},
@@ -2700,7 +2711,9 @@ GDC.SYNC={
       if(R.main)o.main=R.main.map(r=>({y:gdcYear(r),k:r['ประเภท'],v:gdcVal(r),u:r['หน่วย']||'บาท'})).filter(r=>r.y&&r.v!=null);
       if(R.debt)o.debt=R.debt.map(r=>({y:gdcYear(r),k:r['ประเภทหนี้'],v:gdcVal(r)})).filter(r=>r.y&&r.v!=null);
       if(R.gini)o.gini=R.gini.map(r=>{const b=String(r['ขอบเขตจำกัดชั้นรายได้']||'');
-        return {y:gdcYear(r),k:r['รายการข้อมูล'],g:/10\s*กลุ่ม/.test(b)?10:/5\s*กลุ่ม/.test(b)?5:null,v:gdcVal(r)}}).filter(r=>r.y&&r.y>2500&&r.v!=null);
+        /* สำรวจปีเว้นปี แต่ละรอบมี 2 แถว (แบ่ง 5 และ 10 กลุ่ม) · ปี 2464 ในระบบคือ 2564 ที่พิมพ์ผิดหลักร้อย จึงแก้ให้ */
+        let y=gdcYear(r);if(y&&y<2500&&y+100>2500){o._qa=o._qa||[];o._qa.push('Gini: ปี '+y+' ในระบบบัญชีข้อมูลน่าจะเป็น '+(y+100)+' (พิมพ์ผิด) แดชบอร์ดใช้เป็น '+(y+100)+' ให้');y+=100}
+        return {y,k:r['รายการข้อมูล'],g:/10\s*กลุ่ม/.test(b)?10:/5\s*กลุ่ม/.test(b)?5:null,v:gdcVal(r)}}).filter(r=>r.y&&r.v!=null);
       if(R.expense)o.expense=R.expense.map(r=>({y:gdcYear(r),size:r['ขนาดครัวเรือน'],k:r['รายการ'],v:gdcNum(r['ค่าของข้อมูล'])})).filter(r=>r.y&&r.v!=null);
       if(R.income_src)o.income_src=R.income_src.map(r=>({y:gdcYear(r),k:r['แหล่งรายได้'],item:r['รายการ'],v:gdcVal(r)})).filter(r=>r.y&&r.v!=null);
       if(R.poverty)o.poverty=R.poverty.map(r=>({y:gdcYear(r),k:r['รายการข้อมูล'],t:r['ประเภท'],v:gdcVal(r),u:r['หน่วย']})).filter(r=>r.y&&r.v!=null);
@@ -2709,7 +2722,8 @@ GDC.SYNC={
   labor:{pages:['labor'],agency:'nso',
     res:{status:'cf364469-3e3f-4457-aee0-87bdbb0870a0',ind:'501555c3-cd78-43ef-adc9-0713dcb38b9d',
          wst:'37398ad3-6536-47ed-82ab-2e4883927542',under:'af4f22e7-74e4-41a8-bf45-4034514446d8',
-         rate:'9d89b6d3-d47f-466f-8fb6-ee9138dedacb'},
+         rate:'9d89b6d3-d47f-466f-8fb6-ee9138dedacb',s33:'a392e50d-2b4c-4367-97eb-2591d04ca6dc',s39:'4e729f3a-6676-470c-ab7f-6465bf538a38',
+         s40:'ae943535-c621-420c-beb0-fe1b5af287dd'},
     build(R){const o={_qa:[]};
       if(R.status){const Q={};
         R.status.filter(r=>String(r['เพศ']).trim()==='รวม').forEach(r=>{const q=gq(r),v=gdcVal(r);if(!q||v==null)return;
@@ -2746,6 +2760,9 @@ GDC.SYNC={
       if(R.wst){const L=sumBy(R.wst,'สถานภาพการทำงาน').filter(x=>x.m['รวมยอด']>0&&okQ(x,'ผู้มีงานทำตามสถานภาพการทำงาน'));const t=L[L.length-1];
         if(t){const tot=t.m['รวมยอด'];o.statusQ=t.q;
           o.status=Object.keys(t.m).filter(k=>k!=='รวมยอด'&&t.m[k]>0).sort((a,b)=>t.m[b]-t.m[a]).map(k=>[k,+(t.m[k]/tot*100).toFixed(1),t.m[k]])}}
+      /* ผู้ประกันตนในระบบประกันสังคม มาตรา 33 / 39 / 40 รายปี */
+      {const S={};[['s33','m33'],['s39','m39'],['s40','m40']].forEach(([k,f])=>(R[k]||[]).forEach(r=>{const y=gdcYear(r),v=gdcVal(r);if(y&&v!=null)(S[y]=S[y]||{y})[f]=v}));
+        const L=Object.values(S).sort((a,b)=>a.y-b.y);if(L.length)o.sso=L}
       if(R.under){o.under=R.under.map(r=>{const q=gq(r);return q?{q:q.q,v:gdcVal(r),_k:qKey(q)}:null}).filter(x=>x&&x.v!=null).sort((a,b)=>a._k-b._k).map(x=>({q:x.q,v:x.v}))}
       return o},
     apply(o){if(typeof D!=='undefined'&&D.labor)Object.keys(o).forEach(k=>{if(o[k]!=null&&(!Array.isArray(o[k])||o[k].length))D.labor[k]=o[k]})}},
@@ -2776,9 +2793,30 @@ GDC.SYNC={
      ที่ยังไม่มีใน API: ผู้เยี่ยมเยือนและอัตราการเข้าพักรายเดือน, พิกัดแหล่งท่องเที่ยวที่จัดประเภทแล้ว → ใช้ข้อมูลเดิม */
   tour:{pages:['tourism'],agency:'mots',
     res:{rev:'170f017c-126e-4432-a58f-20f4bef30f78',internal:'5e65986f-ebe0-44e9-adf7-215ce4e90dad',spend:'b689c7e2-2b65-4177-8434-3aac0fca590f',
-         spot:'5213acd6-1913-4cc7-9807-1caa20855cd5',occ:'eff8b887-c008-4586-824a-159630d7fbce',acc:'03463b5e-c71f-41e8-80d5-bf7794def331'},
+         spot:'5213acd6-1913-4cc7-9807-1caa20855cd5',occ:'eff8b887-c008-4586-824a-159630d7fbce',acc:'03463b5e-c71f-41e8-80d5-bf7794def331',
+         vis:'42694bb9-6870-4d50-bbae-27859db9d06c',spots:'e379647a-653f-467c-9d93-f3f0d2df85b1',occm:'ce3fd380-daef-4e3e-b6ef-eca62e45c137',
+         visy:'051f08e3-265d-4399-9e96-01f4daf8eb02',spotList:'f6d19f7c-82ed-4ff5-adb3-eeafa859161f'},
     build(R){const o={},amp=GDC.amp,tx=(r,k)=>String(r[k]==null?'':r[k]).trim();
-      if(R.rev){const L=R.rev.map(r=>({fy:gdcYear(r),i:parseInt(r['ลำดับตามปีงบประมาณ'],10),label:tx(r,'ช่วงเวลา'),v:gdcVal(r)})).filter(x=>x.fy&&x.i&&x.v!=null).sort((a,b)=>a.fy-b.fy||a.i-b.i);if(L.length)o.revenue=L}
+      const monthly=rows=>rows.map(r=>({fy:gdcYear(r),i:parseInt(r['ลำดับตามปีงบประมาณ'],10),label:tx(r,'ช่วงเวลา'),v:gdcVal(r)})).filter(x=>x.fy&&x.i&&x.v!=null).sort((a,b)=>a.fy-b.fy||a.i-b.i);
+      if(R.rev){const L=monthly(R.rev);if(L.length)o.revenue=L}
+      if(R.vis){const L=monthly(R.vis);if(L.length)o.visitor=L}
+      if(R.occm){const L=monthly(R.occm);if(L.length)o.occ=L}
+      /* ผู้เยี่ยมเยือนรายปี (นักท่องเที่ยว + นักทัศนาจร) ย้อนหลังได้ไกลกว่าชุดแยกไทย/ต่างชาติ */
+      if(R.visy){const Y={};R.visy.forEach(r=>{const y=gdcYear(r),v=gdcVal(r),k=tx(r,'ประเภท');if(y&&v!=null)(Y[y]=Y[y]||{})[k]=(Y[y][k]||0)+v});if(Object.keys(Y).length)o.visitorYear=Y}
+      /* รายชื่อและพิกัดแหล่งท่องเที่ยว (พิกัดแบบองศา-ลิปดา-ฟิลิปดา หรือทศนิยม) · ชุดนี้ไม่มีประเภทแหล่ง ประเภทใช้ตามที่แดชบอร์ดจัดไว้โดยเทียบชื่อ */
+      if(R.spots){const dms=v=>{const t=String(v||'');const m=t.match(/(\d+(?:\.\d+)?)\s*°\s*(\d+(?:\.\d+)?)?\s*'?\s*(\d+(?:\.\d+)?)?\s*"?\s*[NS]?[\s,]+(\d+(?:\.\d+)?)\s*°\s*(\d+(?:\.\d+)?)?\s*'?\s*(\d+(?:\.\d+)?)?/i);
+          const c=(d,mi,se)=>+d+(+mi||0)/60+(+se||0)/3600; if(m)return [c(m[1],m[2],m[3]),c(m[4],m[5],m[6])];
+          const n=t.match(/(\d+\.\d+)\s*,\s*(\d+\.\d+)/);return n?[+n[1],+n[2]]:null};
+        const seen={},L=[],skip=[];
+        R.spots.slice().sort((a,b)=>(gdcYear(b)||0)-(gdcYear(a)||0)).forEach(r=>{const n=tx(r,'ชื่อแหล่งท่องเที่ยว');if(!n||seen[n])return;seen[n]=1;const c=dms(r['หน่วยพิกัด']);
+          if(!c||c[0]<15||c[0]>19||c[1]<100||c[1]>104){skip.push(n);return}
+          L.push({n,a:amp(r['อำเภอ']),ta:tx(r,'ตำบล'),lat:+c[0].toFixed(6),lng:+c[1].toFixed(6),t:'',img:'',y:gdcYear(r)})});
+        if(L.length)o.spots=L.reverse();
+        /* ตรวจทานกับชุดรายชื่อแหล่งท่องเที่ยว: ชื่อที่มีในรายชื่อแต่ไม่มีพิกัด แจ้งไว้ในคุณภาพข้อมูล */
+        if(R.spotList){const nz=t=>String(t||'').replace(/\s+/g,'');const H=new Set(R.spots.map(r=>nz(r['ชื่อแหล่งท่องเที่ยว'])));
+          const miss=R.spotList.map(r=>tx(r,'ชื่อแหล่งท่องเที่ยว')).filter(n=>n&&!H.has(nz(n)));
+          if(miss.length)(o._qa=o._qa||[]).push('มีในรายชื่อแหล่งท่องเที่ยว แต่ไม่มีในชุดพิกัด: '+miss.join(', '))}
+        if(skip.length)(o._qa=o._qa||[]).push('แหล่งท่องเที่ยวไม่มีพิกัดที่ใช้ได้ จึงไม่แสดงบนแผนที่: '+skip.join(', '))}
       if(R.internal){const L=R.internal.map(r=>({y:gdcYear(r),item:tx(r,'รายการข้อมูล'),kind:tx(r,'ประเภทข้อมูล'),who:tx(r,'นักท่องเที่ยว'),v:gdcVal(r),u:tx(r,'หน่วย')})).filter(x=>x.y&&x.v!=null);if(L.length)o.internal=L}
       if(R.spend){const L=R.spend.map(r=>({y:gdcYear(r),who:tx(r,'นักท่องเที่ยว'),kind:tx(r,'ประเภทข้อมูล'),v:gdcVal(r)})).filter(x=>x.y&&x.v!=null);if(L.length)o.spend=L}
       if(R.spot){const ys=R.spot.map(gdcYear).filter(Boolean);if(ys.length){const y=Math.max(...ys),T={},A={};
@@ -2789,12 +2827,23 @@ GDC.SYNC={
         L.forEach(r=>{const a=amp(r['อำเภอ']),n=gdcNum(r['จำนวนห้องพัก'])||0;(A[a]=A[a]||{n:0,rooms:0}).n++;A[a].rooms+=n;rooms+=n});
         o.accYear=y;o.accTotal=L.length;o.accRooms=rooms;o.accByAmp=A}}
       return o},
-    apply(o){if(typeof DX!=='undefined'&&DX.tour)Object.keys(o).forEach(k=>{if(o[k]!=null)DX.tour[k]=o[k]})}},
+    apply(o){if(typeof DX==='undefined'||!DX.tour)return;
+      if(o.spots){const T={};(DX.tour.spots||[]).forEach(s=>{if(s.t)T[s.n]=s.t;if(s.img)T[s.n+'|img']=s.img});o.spots.forEach(s=>{s.t=T[s.n]||'';s.img=T[s.n+'|img']||''})}
+      Object.keys(o).forEach(k=>{if(o[k]!=null)DX.tour[k]=o[k]})}},
+  /* อุตสาหกรรม · สถานประกอบการรายอำเภอ และรายได้ภาคอุตสาหกรรม (GPP) จาก API
+     เงินทุน คนงาน ประเภทอุตสาหกรรม และเหมืองแร่ ยังไม่มีใน API ใช้ไฟล์รายงานสถิติของสำนักงานอุตสาหกรรมจังหวัด (ในหน้า industry.html) */
+  ind:{pages:['industry'],agency:'ind',
+    res:{est:'f913c7e3-1b77-4239-9daf-29d8e23e01bc',gpp:'a0ea6508-d3f2-4b6b-9a49-60c6a3acb059'},
+    build(R){const o={};
+      if(R.est){const E={};R.est.forEach(r=>{const y=gdcYear(r),a=GDC.amp(r['อำเภอ']);if(!y||!a)return;const v=gdcNum(r['จำนวน']);(E[y]=E[y]||{})[a]=v==null?0:v});if(Object.keys(E).length)o.est=E}
+      if(R.gpp){const G=R.gpp.map(r=>{const t=String(r['ปี']).trim();return {y:parseInt(t,10),st:/p/i.test(t)?'p':/r/i.test(t)?'r':'',v:gdcNum(r['ค่าของข้อมูล']??r['ค่าข้อมูล'])}}).filter(x=>x.y&&x.v!=null).sort((a,b)=>a.y-b.y);if(G.length)o.gpp=G}
+      return o},
+    apply(o){window.IND_API=Object.assign(window.IND_API||{},o)}},
   /* ประชากร · แทนตารางเดิมที่นำเข้าเป็นไฟล์ (ปิรามิดรายอายุของกรมการปกครองยังเป็นไฟล์) */
   pop:{pages:['population'],agency:'dopa',
     res:{pop:'03b88975-36e5-46e1-b0fa-0456f0a37193',age:'c6b78bad-346b-4250-b4f5-3a1b424bece6',growth:'7d183fa3-e333-48aa-ae9f-f9fd13746a80',
          birth:'b1d4dba9-98ce-4c6a-ad70-88e045eb16af',death:'7fde384d-d5cf-4300-b9cc-d578dd80d723',move:'2a80f2c7-5397-4dc7-91ee-cc449106e9d0',
-         house:'d8eed6d0-1528-491b-8f95-5f0de887fd69'},
+         house:'d8eed6d0-1528-491b-8f95-5f0de887fd69',pyr:'47bf6256-547c-4e2a-81a8-ffaa55f48a3d'},
     build(R){const o={},amp=GDC.amp,tx=(r,k)=>String(r[k]==null?'':r[k]).trim(),notA=a=>!a||/เขตเทศบาล|รวม|ทั้งจังหวัด/.test(a);
       const last=rows=>{const ys=rows.map(gdcYear).filter(Boolean);return ys.length?Math.max(...ys):null};
       const byYear=rows=>{const m={};rows.forEach(r=>{const y=gdcYear(r),v=gdcVal(r);if(y&&v!=null)m[y]=(m[y]||0)+v});return m};
@@ -2806,9 +2855,30 @@ GDC.SYNC={
       if(R.birth){const m=byYear(R.birth);if(Object.keys(m).length)o.birth=m}
       if(R.death){const m=byYear(R.death);if(Object.keys(m).length)o.death=m}
       if(R.move){const m={};R.move.forEach(r=>{const y=gdcYear(r),t=tx(r,'ประเภท'),v=gdcVal(r);if(y&&t&&v!=null)(m[y]=m[y]||{})[t]=(m[y][t]||0)+v});if(Object.keys(m).length)o.move=m}
+      /* ปิรามิดประชากร: รายอายุปีต่อปี → ช่วง 5 ปี 17 ช่วง · ยอดอำเภอ = แถวอำเภอ (นอกเขตเทศบาล) + เทศบาลในอำเภอ · PROV = รวม 6 อำเภอ */
+      const Z=()=>new Array(17).fill(0);
+      if(R.pyr){const band=t=>{if(/น้อยกว่า 1/.test(t))return 0;if(/มากกว่า 100/.test(t))return 16;const m=t.match(/(\d+)/);return m?Math.min(16,Math.floor(+m[1]/5)):-1};
+        const nat={ALL:{},TH:{},NT:{}},nz={ALL:{},TH:{},NT:{}};
+        R.pyr.forEach(r=>{const age=tx(r,'อายุ');if(/ยอดรวม/.test(age))return;const b=band(age);if(b<0)return;
+          const y=String(gdcYear(r)),A0=amp(r['อำเภอ']),isIn=/เทศบาล/.test(tx(r,'พื้นที่')),nk=/ไม่ได้/.test(tx(r,'สัญชาติ'))?'NT':'TH',m=gdcNum(r['ชาย'])||0,f=gdcNum(r['หญิง'])||0;
+          if(y==='null'||!A0)return;
+          [nk,'ALL'].forEach(K=>[A0,'PROV'].forEach(A=>{const s=((nat[K][y]=nat[K][y]||{})[A]=nat[K][y][A]||{'ชาย':Z(),'หญิง':Z()});s['ชาย'][b]+=m;s['หญิง'][b]+=f;
+            const z=((nz[K][y]=nz[K][y]||{})[A]=nz[K][y][A]||{in:Z(),out:Z()});z[isIn?'in':'out'][b]+=m+f}))});
+        if(Object.keys(nat.ALL).length){o._pyrNat=nat;o._pyrNatZone=nz}}
+      /* ปิรามิดในเขต/นอกเขตเทศบาล และรายอำเภอ จากชุดกลุ่มอายุ */
+      if(R.age){const BANDS=(typeof DX_PYR!=='undefined'&&DX_PYR.bands)||[...new Set(R.age.map(r=>tx(r,'กลุ่มอายุ')))];const zone={},ap={};
+        R.age.forEach(r=>{const y=String(gdcYear(r)),a=amp(r['อำเภอ']),bi=BANDS.indexOf(tx(r,'กลุ่มอายุ')),v=gdcNum(r['จำนวน']);if(bi<0||v==null||y==='null')return;
+          if(/ในเขตเทศบาล/.test(a))(zone[y]=zone[y]||{in:Z(),out:Z()}).in[bi]+=v;else if(/นอกเขตเทศบาล/.test(a))(zone[y]=zone[y]||{in:Z(),out:Z()}).out[bi]+=v;else ((ap[y]=ap[y]||{})[a]=ap[y][a]||Z())[bi]+=v});
+        if(Object.keys(zone).length){o._pyrZone=zone;o._pyrAmp=ap}}
       if(R.house){const y=last(R.house);if(y){const A={};R.house.filter(r=>gdcYear(r)===y).forEach(r=>{const a=amp(r['อำเภอ']),v=gdcVal(r);if(!notA(a)&&v!=null)A[a]=(A[a]||0)+v});o.houseYear=y;o.houses=A}}
       return o},
-    apply(o){if(typeof DX!=='undefined'&&DX.pop)Object.keys(o).forEach(k=>{if(o[k]!=null)DX.pop[k]=o[k]})}}
+    apply(o){
+      if(typeof DX_PYR!=='undefined'){
+        if(o._pyrNat){DX_PYR.nat=o._pyrNat;DX_PYR.natZone=o._pyrNatZone;DX_PYR.sex=o._pyrNat.ALL;
+          try{if(typeof pyrRowsFromNat==='function'&&typeof DX!=='undefined')DX.pyr=pyrRowsFromNat()}catch(e){}}
+        if(o._pyrZone){DX_PYR.zone=o._pyrZone;DX_PYR.amp=o._pyrAmp;DX_PYR.years=Object.keys(o._pyrZone).map(Number).sort((a,b)=>a-b)}}
+      ['_pyrNat','_pyrNatZone','_pyrZone','_pyrAmp'].forEach(k=>delete o[k]);
+      if(typeof DX!=='undefined'&&DX.pop)Object.keys(o).forEach(k=>{if(o[k]!=null)DX.pop[k]=o[k]})}}
 };
 const SYNC_STATE={};          /* สถานะรายชุดของหน้านี้ · ใช้ติดป้ายและหน้าสถานะ */
 /* ป้ายสถานะ API ที่หัวหน้า (เหมือนหน้าการคลัง) · วาดใหม่ทุกครั้งที่หน้า render เพื่อไม่ให้หาย */
@@ -2905,17 +2975,14 @@ const SRC_INV=[
   ['agri','แปลงใหญ่ · แหล่งท่องเที่ยวเชิงเกษตร · องค์กรเกษตรกร · GAP · อินทรีย์','file','crop','เอกสารสำนักงานเกษตรจังหวัด'],
   ['agri','ระบบกระจายน้ำด้วย Solar Cell','file','energy','เอกสารสำนักงานพลังงานจังหวัด ก.ค. 2569'],
   ['agri','บ่อขนาดเล็ก (เกษตรทฤษฎีใหม่)','file','crop','รอสอบถามแหล่งข้อมูล'],
-  ['industry','โรงงานอุตสาหกรรมรายเดือน','sim','ind','รอหน่วยงานส่งข้อมูลจริง'],
-  ['industry','การใช้ไฟฟ้ารายเดือน','sim','pea','รอหน่วยงานส่งข้อมูลจริง'],
+  ['industry','เงินทุนและคนงานในสถานประกอบการอุตสาหกรรม รายอำเภอ','file','ind','ไฟล์รายงานสถิติ ตาราง 12.4 · ยังไม่มีใน API'],
+  ['industry','สถานประกอบการจำแนกตามประเภทอุตสาหกรรม','file','ind','ไฟล์รายงานสถิติ ตาราง 12.3 · ยังไม่มีใน API'],
+  ['industry','เหมืองแร่ คนงานเหมือง และปริมาณแร่ที่ผลิตได้','file','ind','ไฟล์รายงานสถิติ ตาราง 12.5 · ยังไม่มีใน API'],
   ['trade','ราคาสินค้าเกษตรรายสัปดาห์','gas','moc','ระบบกรอกข้อมูล ตาราง price'],
   ['trade','ดัชนีราคาผู้บริโภค','sim','moc','รอหน่วยงานส่งข้อมูลจริง'],
   ['trade','สินเชื่อ SME','sim','sme','รอหน่วยงานส่งข้อมูลจริง'],
   ['consume','การจำหน่ายน้ำมันเชื้อเพลิง','sim','energy','รอหน่วยงานส่งข้อมูลจริง'],
   ['consume','รถจดทะเบียนใหม่','sim','dlt','รอหน่วยงานส่งข้อมูลจริง'],
-  ['tourism','ผู้เยี่ยมเยือนและอัตราการเข้าพักรายเดือน','file','mots','ยังไม่มีชุดนี้ในรายการ API ที่เชื่อมไว้'],
-  ['tourism','แผนที่และประเภทแหล่งท่องเที่ยว','file','mots','API มีชื่อและพิกัด แต่ยังไม่มีประเภทแหล่งท่องเที่ยว'],
-  ['labor','ผู้ประกันตนในระบบประกันสังคม','sim','sso','รอหน่วยงานส่งข้อมูลจริง'],
-  ['population','ปิรามิดประชากรรายอายุ แยกสัญชาติ ในเขต/นอกเขตเทศบาล','file','dopa','แฟ้มสถิติรายอายุของกรมการปกครอง ยังไม่มีใน API'],
   ['area','ข้อมูลเชิงพื้นที่รายอำเภอ','file','dopa','รวมจากหลายหน่วยงาน']
 ];
 const SRC_TYPE={api:['ดึงจาก API','api'],link:['กำลังเชื่อมข้อมูล','link'],avail:['มีใน API ยังไม่ได้แสดง','avail'],

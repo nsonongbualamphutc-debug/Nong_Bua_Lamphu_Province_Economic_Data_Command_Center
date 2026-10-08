@@ -152,9 +152,9 @@ function renderLabor(){
       <span class="r"><span class="icow img" style="width:26px;height:26px;display:inline-grid;place-items:center">${icoImg('underemp',26)}</span></span></header>
       <div class="b"><div class="ch"><canvas id="cUnder"></canvas></div>
         <div class="note" id="underNote"></div></div></div>
-    <div class="c"><header><span class="hdico icow img" data-hdico="social"></span><h3>ผู้ประกันตนในระบบประกันสังคม</h3><span class="u">รายเดือน · โครงร่าง</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="social"></span><h3>ผู้ประกันตนในระบบประกันสังคม</h3><span class="u" id="ssoU">รายปี · ราย</span></header>
       <div class="b"><div class="ch"><canvas id="cSso"></canvas></div>
-        <div class="note">ผู้ประกันตนมาตรา 40 ที่เพิ่มขึ้นคือสัญญาณที่ดี แปลว่าแรงงานอิสระเข้าสู่ระบบคุ้มครองมากขึ้น ตัวเลขชุดนี้ยังเป็นโครงร่าง รอข้อมูลจริงจากสำนักงานประกันสังคมจังหวัด</div></div></div>
+        <div class="note" id="ssoNote"></div></div></div></div>
   </div>
 
   <div class="c"><header><span class="hdico icow img">${icoImg('source',26)}</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
@@ -330,15 +330,27 @@ function renderLabor(){
      หรือราว ${(uLast.v/last.emp*100).toFixed(0)}% ของผู้มีงานทำ สูงกว่าจำนวนผู้ว่างงานหลายสิบเท่า
      นี่คือ “การว่างงานแฝง” ที่ตัวเลขอัตราการว่างงานมองไม่เห็น และเป็นกลุ่มเป้าหมายที่ตรงที่สุดของมาตรการเพิ่มรายได้`;
 
-  /* ── ประกันสังคม ── */
-  mk('cSso',{type:'line',data:{labels:MONTHS.map(m=>m.label),datasets:[
-    {label:'มาตรา 33 (คน)',data:DB.social.m33.map(x=>x.v),borderColor:cv('--brand'),backgroundColor:cv('--brand')+'22',
-      borderWidth:2.3,pointRadius:0,tension:.32,fill:true,yAxisID:'y'},
-    {label:'มาตรา 40 (คน)',data:DB.social.m40.map(x=>x.v),borderColor:cv('--plum'),borderWidth:1.9,pointRadius:0,tension:.32,yAxisID:'y2'}]},
-    options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:11}}},
-      scales:{x:ax({grid:{display:false},ticks:{maxTicksLimit:12,font:{size:9.5}}}),
-        y:ax({ticks:{callback:v=>f(v,0)}}),
-        y2:{position:'right',grid:{display:false},border:{display:false},ticks:{callback:v=>f(v,0),font:{size:9.5}}}}}});
+  /* ── ประกันสังคม (API: ผู้ประกันตนมาตรา 33 / 39 / 40 รายปี) ── */
+  const SS=(L.sso||[]).slice(-8);
+  if(!SS.length){document.getElementById('ssoNote').innerHTML='กำลังเชื่อมข้อมูลจากระบบบัญชีข้อมูลจังหวัด';}
+  else{
+    const ssY=SS.map(x=>'ปี '+x.y);
+    mk('cSso',{data:{labels:ssY,datasets:[
+      {type:'bar',label:'มาตรา 33 ลูกจ้างในระบบ',data:SS.map(x=>x.m33??null),backgroundColor:cv('--brand')+'d9',borderRadius:5,stack:'s'},
+      {type:'bar',label:'มาตรา 39 ผู้ประกันตนต่อเนื่อง',data:SS.map(x=>x.m39??null),backgroundColor:cv('--gold')+'d9',borderRadius:5,stack:'s'},
+      {type:'line',label:'มาตรา 40 แรงงานอิสระ',data:SS.map(x=>x.m40??null),borderColor:cv('--plum'),backgroundColor:cv('--plum'),borderWidth:2.4,pointRadius:3.5,tension:.3,yAxisID:'y2'}]},
+      options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{padding:11,font:{size:10}}},
+        tooltip:{callbacks:{label:c=>c.dataset.label+' '+f(c.raw,0)+' ราย'}}},
+        scales:{x:ax({stacked:true,grid:{display:false},ticks:{font:{size:9.5}}}),y:ax({stacked:true,ticks:{callback:v=>f(v,0)}}),
+          y2:{position:'right',grid:{display:false},border:{display:false},ticks:{callback:v=>f(v,0),font:{size:9.5}}}}}});
+    const a=SS[SS.length-1],p=SS.find(x=>x.y===a.y-1),f40=SS.find(x=>x.m40!=null);
+    const tot=x=>(x.m33||0)+(x.m39||0)+(x.m40||0);
+    document.getElementById('ssoU').textContent='รายปี · ปี '+SS[0].y+'–'+a.y;
+    document.getElementById('ssoNote').innerHTML=
+      `ปี ${a.y} มีผู้ประกันตนรวม <b>${f(tot(a),0)} ราย</b> แยกเป็นมาตรา 33 ${f(a.m33||0,0)} · มาตรา 39 ${f(a.m39||0,0)} · มาตรา 40 ${f(a.m40||0,0)} ราย`+
+      (f40&&a.m40&&f40.y<a.y?` · มาตรา 40 (แรงงานอิสระ) เพิ่มจาก ${f(f40.m40,0)} รายในปี ${f40.y} หรือ ${((a.m40/f40.m40-1)*100).toFixed(0)}% สะท้อนว่าแรงงานนอกระบบเข้าสู่ระบบคุ้มครองมากขึ้น`:'')+
+      ` · ผู้ประกันตนรวมยังเป็นสัดส่วนไม่มากเมื่อเทียบกับผู้มีงานทำ ${f(last.emp,0)} คน`;
+  }
 
   applyEditMode();
 }
