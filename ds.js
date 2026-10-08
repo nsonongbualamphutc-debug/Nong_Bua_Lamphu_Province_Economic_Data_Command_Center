@@ -2173,6 +2173,7 @@ function bindPhMini(){
 function safeRender(){
   try{PAGE.render()}catch(e){console.error('render '+PAGE.id,e)}
   try{gdcPanels(PAGE.id)}catch(e){console.error('panels',e)}
+  try{gdcSyncBadge(PAGE.id)}catch(e){}
   try{
     bindPhMini();
     trustBar();
@@ -2444,12 +2445,12 @@ const GDC={
     {id:'37398ad3-6536-47ed-82ab-2e4883927542',page:'labor',agency:'nso',n:'ประชากรอายุ 15 ปีขึ้นไปที่มีงานทำ จำแนกตามสถานภาพการทำงาน และเพศ เป็นรายไตรมาส',state:'api',use:'ผู้มีงานทำแยกตามสถานภาพการทำงาน'},
     {id:'af4f22e7-74e4-41a8-bf45-4034514446d8',page:'labor',agency:'nso',n:'การทำงานต่ำกว่าระดับด้านชั่วโมงการทำงาน',state:'api',use:'ผู้ทำงานต่ำกว่าระดับรายไตรมาส'},
     {id:'9d89b6d3-d47f-466f-8fb6-ee9138dedacb',page:'labor',agency:'nso',n:'อัตราการว่างงาน',state:'api'},
-    {id:'5184ddd5-b72b-4ce1-8cb0-91265a3c1a8e',page:'labor',agency:'nso',n:'จำนวนผู้ว่างงาน',state:'api'},
-    {id:'d4562b99-2732-49b5-8cfe-b3282196e0ab',page:'labor',agency:'nso',n:'ประชากรอายุ 15 ปีขึ้นไปที่มีงานทำ จำแนกตามอาชีพ และเพศ เป็นรายไตรมาส',state:'api'},
-    {id:'78e14a3f-8c22-4c77-b267-b21ed68e63bd',page:'labor',agency:'nso',n:'ประชากรอายุ 15 ปีขึ้นไปที่มีงานทำ จำแนกตามระดับการศึกษาที่สำเร็จ และเพศ เป็นรายไตรมาส',state:'api'},
-    {id:'0ffce67f-bef6-4a16-a116-3107dc681a10',page:'labor',agency:'nso',n:'ประชากรอายุ 15 ปีขึ้นไป จำแนกตามเพศ และสถานภาพแรงงาน',state:'api'},
-    {id:'40275f48-de7a-4451-92a8-9c1b32fdc9bc',page:'labor',agency:'nso',n:'กำลังแรงงานจังหวัดหนองบัวลำภู',state:'api'},
-    {id:'22c3a494-1e56-47a1-abea-73574db8fada',page:'labor',agency:'nso',n:'ชุดข้อมูลกำลังแรงงาน ตามโครงการการสำรวจภาวะการทำงานของประชากร ปี 2562 ถึง 2568',state:'api'},
+    {id:'5184ddd5-b72b-4ce1-8cb0-91265a3c1a8e',page:'labor',agency:'nso',n:'จำนวนผู้ว่างงาน',state:'avail'},
+    {id:'d4562b99-2732-49b5-8cfe-b3282196e0ab',page:'labor',agency:'nso',n:'ประชากรอายุ 15 ปีขึ้นไปที่มีงานทำ จำแนกตามอาชีพ และเพศ เป็นรายไตรมาส',state:'avail'},
+    {id:'78e14a3f-8c22-4c77-b267-b21ed68e63bd',page:'labor',agency:'nso',n:'ประชากรอายุ 15 ปีขึ้นไปที่มีงานทำ จำแนกตามระดับการศึกษาที่สำเร็จ และเพศ เป็นรายไตรมาส',state:'avail'},
+    {id:'0ffce67f-bef6-4a16-a116-3107dc681a10',page:'labor',agency:'nso',n:'ประชากรอายุ 15 ปีขึ้นไป จำแนกตามเพศ และสถานภาพแรงงาน',state:'avail'},
+    {id:'40275f48-de7a-4451-92a8-9c1b32fdc9bc',page:'labor',agency:'nso',n:'กำลังแรงงานจังหวัดหนองบัวลำภู',state:'avail'},
+    {id:'22c3a494-1e56-47a1-abea-73574db8fada',page:'labor',agency:'nso',n:'ชุดข้อมูลกำลังแรงงาน ตามโครงการการสำรวจภาวะการทำงานของประชากร ปี 2562 ถึง 2568',state:'avail'},
     /* ครัวเรือนและความเหลื่อมล้ำ · สำนักงานสถิติจังหวัด */
     {id:'c0a430d9-63a9-4cc9-be0b-bf43fd49e2d9',page:'household',agency:'nso',n:'รายได้ ค่าใช้จ่าย หนี้สินโดยรวม ตามโครงการสำรวจ แต่ละช่วงปี',state:'api',use:'รายได้ ค่าใช้จ่าย หนี้สินเฉลี่ยต่อครัวเรือน'},
     {id:'a8d80120-4838-414f-bdbd-ec8667e2016e',page:'household',agency:'nso',n:'หนี้สินเฉลี่ยต่อครัวเรือน',state:'api',use:'หนี้ในระบบและนอกระบบ'},
@@ -2457,88 +2458,88 @@ const GDC={
     {id:'4fac937e-84c4-4b98-b92d-1c83e459add8',page:'household',agency:'nso',n:'ค่าใช้จ่ายเฉลี่ยต่อเดือนของครัวเรือน จำแนกตามขนาดของครัวเรือน',state:'api',use:'ค่าใช้จ่ายตามขนาดครัวเรือน'},
     {id:'ba544923-8995-4a2e-a7ab-35977f07975d',page:'household',agency:'nso',n:'รายได้เฉลี่ยต่อเดือนของครัวเรือน จำแนกตามแหล่งที่มาของรายได้',state:'api',use:'โครงสร้างแหล่งรายได้'},
     {id:'aa2c77c6-3d19-4ae3-a1b1-9605c14aa751',page:'household',agency:'nso',n:'ค่าใช้จ่ายเฉลี่ยต่อเดือนของครัวเรือน',state:'api',use:'การกระจายครัวเรือนตามช่วงค่าใช้จ่าย'},
-    {id:'73df9a5b-6433-4009-bcae-9590a46c35d6',page:'household',agency:'nso',n:'ร้อยละของครัวเรือน จำแนกตามลักษณะที่สำคัญของครัวเรือน',state:'api'},
-    {id:'399f28c9-80d6-43bc-b7f2-f214cd5c1e8d',page:'household',agency:'nso',n:'รายได้เฉลี่ยต่อเดือนของครัวเรือน จำแนกตามสถานะทางเศรษฐสังคม',state:'api'},
-    {id:'a3ebe2ae-6aa0-41a0-8805-c671bc57d0c8',page:'household',agency:'nso',n:'ค่าใช้จ่ายเฉลี่ยต่อปีของครัวเรือน จำแนกตามสถานะทางเศรษฐสังคม',state:'api'},
-    {id:'99f1ed66-2fe3-4b7b-853e-737932776c54',page:'household',agency:'nso',n:'สัมประสิทธิ์ความไม่เสมอภาค (Gini) ด้านรายจ่ายเพื่อการอุปโภคบริโภค',state:'api'},
-    {id:'9d279dbb-0e2a-483b-9bab-ecb223756a09',page:'household',agency:'nso',n:'Gini ด้านรายจ่าย แยกตามขอบเขตชั้นค่าใช้จ่ายและกลุ่มครัวเรือน',state:'api'},
-    {id:'2e73835e-fd7d-4767-817a-81ba7216b56d',page:'household',agency:'nso',n:'ครัวเรือนที่มีที่อยู่อาศัยใช้วัสดุคงทนและเป็นของตนเอง',state:'api'},
+    {id:'73df9a5b-6433-4009-bcae-9590a46c35d6',page:'household',agency:'nso',n:'ร้อยละของครัวเรือน จำแนกตามลักษณะที่สำคัญของครัวเรือน',state:'avail'},
+    {id:'399f28c9-80d6-43bc-b7f2-f214cd5c1e8d',page:'household',agency:'nso',n:'รายได้เฉลี่ยต่อเดือนของครัวเรือน จำแนกตามสถานะทางเศรษฐสังคม',state:'avail'},
+    {id:'a3ebe2ae-6aa0-41a0-8805-c671bc57d0c8',page:'household',agency:'nso',n:'ค่าใช้จ่ายเฉลี่ยต่อปีของครัวเรือน จำแนกตามสถานะทางเศรษฐสังคม',state:'avail'},
+    {id:'99f1ed66-2fe3-4b7b-853e-737932776c54',page:'household',agency:'nso',n:'สัมประสิทธิ์ความไม่เสมอภาค (Gini) ด้านรายจ่ายเพื่อการอุปโภคบริโภค',state:'avail'},
+    {id:'9d279dbb-0e2a-483b-9bab-ecb223756a09',page:'household',agency:'nso',n:'Gini ด้านรายจ่าย แยกตามขอบเขตชั้นค่าใช้จ่ายและกลุ่มครัวเรือน',state:'avail'},
+    {id:'2e73835e-fd7d-4767-817a-81ba7216b56d',page:'household',agency:'nso',n:'ครัวเรือนที่มีที่อยู่อาศัยใช้วัสดุคงทนและเป็นของตนเอง',state:'avail'},
     /* ประชากร */
     {id:'7d183fa3-e333-48aa-ae9f-f9fd13746a80',page:'population',agency:'nso',n:'อัตราเพิ่มของประชากร',state:'api',use:'อัตราเพิ่มของประชากรรายอำเภอ'},
     /* การเงิน · ธนาคารแห่งประเทศไทย */
-    {id:'ec2ae427-8a15-44e0-8be3-692e07393f2b',page:'trade',agency:'bot',n:'จำนวนธนาคารพาณิชย์',state:'api'},
-    {id:'f73d6b1a-b890-43d4-b9a1-0f4d6ed873e4',page:'trade',agency:'bot',n:'เงินฝากของธนาคารพาณิชย์',state:'api'},
-    {id:'b519ce91-d7b1-4719-96d8-795b5307b6ba',page:'trade',agency:'bot',n:'จำนวนสินเชื่อของธนาคารพาณิชย์',state:'api'},
+    {id:'ec2ae427-8a15-44e0-8be3-692e07393f2b',page:'trade',agency:'bot',n:'จำนวนธนาคารพาณิชย์',state:'avail'},
+    {id:'f73d6b1a-b890-43d4-b9a1-0f4d6ed873e4',page:'trade',agency:'bot',n:'เงินฝากของธนาคารพาณิชย์',state:'avail'},
+    {id:'b519ce91-d7b1-4719-96d8-795b5307b6ba',page:'trade',agency:'bot',n:'จำนวนสินเชื่อของธนาคารพาณิชย์',state:'avail'},
     /* ค่าเป้าหมาย */
-    {id:'85640650-a585-476c-af0e-733309d50161',page:'tourism',agency:'mots',n:'ค่าเป้าหมายตัวชี้วัดท่องเที่ยว',state:'api'},
-    {id:'64467029-96c0-4558-996f-a96ce0f4763f',page:'otop',agency:'cdd',n:'ค่าเป้าหมายตัวชี้วัด OTOP',state:'api'}
+    {id:'85640650-a585-476c-af0e-733309d50161',page:'tourism',agency:'mots',n:'ค่าเป้าหมายตัวชี้วัดท่องเที่ยว',state:'avail'},
+    {id:'64467029-96c0-4558-996f-a96ce0f4763f',page:'otop',agency:'cdd',n:'ค่าเป้าหมายตัวชี้วัด OTOP',state:'avail'}
 ,
     /* ชุดข้อมูลรอบที่ 3 · แสดงผ่านแผงอัตโนมัติ */
-    {id:'f7724a59-3324-486e-a169-aa3c42381467',page:'tourism',agency:'mots',n:'ข้อมูลรายชื่อร้านอาหาร จังหวัดหนองบัวลำภู',state:'api',auto:1},
-    {id:'afbca98b-44bb-4f16-b6de-e4c3eaee2f1b',page:'tourism',agency:'mots',n:'ข้อมูลรายชื่อร้านอาหาร ภายในจังหวัดหนองบัวลำภู',state:'api',auto:1},
-    {id:'eff8b887-c008-4586-824a-159630d7fbce',page:'tourism',agency:'mots',n:'อัตราการเข้าพัก',state:'api',auto:1},
-    {id:'49c6f93a-08ff-4790-a57e-9af4fe9e9461',page:'tourism',agency:'mots',n:'ที่พักโรงแรมห้องพักที่จดทะเบียนในจังหวัด',state:'api',auto:1},
-    {id:'c1532969-364d-43fd-89b0-b112c513d739',page:'tourism',agency:'mots',n:'ที่พัก',state:'api',auto:1},
-    {id:'b38581a7-0385-48d4-b491-6a7c30f0adf3',page:'tourism',agency:'mots',n:'ห้องพัก',state:'api',auto:1},
-    {id:'a7276fe4-85eb-463b-a1d6-98b4401896b2',page:'tourism',agency:'mots',n:'อัตราการเข้าพัก',state:'api',auto:1},
-    {id:'0a8c611d-8c18-48c0-bf32-daf9b7a82837',page:'tourism',agency:'mots',n:'การเข้าพัก',state:'api',auto:1},
-    {id:'79932db4-c98d-4117-8781-3713491fa111',page:'tourism',agency:'mots',n:'ค่าเฉลี่ยระยะเวลาเข้าพัก',state:'api',auto:1},
-    {id:'b4e18e41-b21c-406a-a05b-17968cca8dba',page:'tourism',agency:'mots',n:'คนเข้าพัก (คน/ห้อง)',state:'api',auto:1},
-    {id:'009d7f8c-7389-47f4-bdae-50f044a7ae95',page:'tourism',agency:'mots',n:'ระยะเวลาการเข้าพักโดยเฉลี่ย',state:'api',auto:1},
-    {id:'da6ebc3a-f545-4fad-a406-e527655189b9',page:'tourism',agency:'mots',n:'ที่พัก โรงแรม',state:'api',auto:1},
-    {id:'b689c7e2-2b65-4177-8434-3aac0fca590f',page:'tourism',agency:'mots',n:'ค่าใช้จ่ายต่อคนต่อวันของนักท่องเที่ยว',state:'api',auto:1},
-    {id:'04ea026d-7fd8-4e64-9268-c13007d84689',page:'tourism',agency:'mots',n:'จำนวนนักท่องเที่ยว',state:'api',auto:1},
-    {id:'5e65986f-ebe0-44e9-adf7-215ce4e90dad',page:'tourism',agency:'mots',n:'นักท่องเที่ยวภายในจังหวัดหนองบัวลำภู จำแนกประเภท',state:'api',auto:1},
-    {id:'baad78a2-9acd-4ee3-ae3d-1cb81086cb83',page:'tourism',agency:'mots',n:'รายได้จากการท่องเที่ยว',state:'api',auto:1},
-    {id:'170f017c-126e-4432-a58f-20f4bef30f78',page:'tourism',agency:'mots',n:'รายได้จากการท่องเที่ยว รายเดือน',state:'api',auto:1},
-    {id:'051f08e3-265d-4399-9e96-01f4daf8eb02',page:'tourism',agency:'mots',n:'จำนวนผู้เยี่ยมเยือน',state:'api',auto:1},
-    {id:'450a2393-a4a6-412f-8d08-6f7dcfc87203',page:'tourism',agency:'mots',n:'แหล่งท่องเที่ยวจังหวัด',state:'api',auto:1},
-    {id:'5213acd6-1913-4cc7-9807-1caa20855cd5',page:'tourism',agency:'mots',n:'จำนวนแหล่งท่องเที่ยว จำแนกตามประเภท',state:'api',auto:1},
-    {id:'f6d19f7c-82ed-4ff5-adb3-eeafa859161f',page:'tourism',agency:'mots',n:'รายชื่อแหล่งท่องเที่ยว',state:'api',auto:1},
-    {id:'e379647a-653f-467c-9d93-f3f0d2df85b1',page:'tourism',agency:'mots',n:'พิกัด ตำแหน่ง รายชื่อแหล่งท่องเที่ยว',state:'api',auto:1},
-    {id:'04e99c9f-fc2d-41dd-949e-524374a8cf54',page:'tourism',agency:'mots',n:'จำนวนแหล่งท่องเที่ยวที่สำคัญ',state:'api',auto:1},
-    {id:'7d37b553-3c4d-4cb2-9201-45635655b597',page:'tourism',agency:'mots',n:'ฐานข้อมูล เพื่อการท่องเที่ยวเชิงอนุรักษ์และวัฒนธรรม',state:'api',auto:1},
-    {id:'d522f7e7-7039-480b-ab9b-d96a42dfa3b1',page:'tourism',agency:'mots',n:'จำนวนธุรกิจนำเที่ยวที่ผ่านเกณฑ์มาตรฐาน',state:'api',auto:1},
-    {id:'4493a5ac-411a-48df-bf97-f63fdcfa313f',page:'tourism',agency:'mots',n:'จำนวนผู้ประกอบการการท่องเที่ยว',state:'api',auto:1},
-    {id:'95e09cb9-2f10-4d13-a82e-b0e0913c7c18',page:'tourism',agency:'mots',n:'จำนวนชุมชนท่องเที่ยวที่มีการประชาสัมพันธ์ผ่านสื่อ Social media ต่างๆ',state:'api',auto:1},
-    {id:'c6b78bad-346b-4250-b4f5-3a1b424bece6',page:'population',agency:'dopa',n:'ประชากรจากการทะเบียน จำแนกตามกลุ่มอายุ และอำเภอ',state:'api',auto:1},
-    {id:'2a80f2c7-5397-4dc7-91ee-cc449106e9d0',page:'population',agency:'dopa',n:'จำนวนการย้ายเข้าและย้ายออก',state:'api',auto:1},
-    {id:'9e6e0bb9-0a84-4f8f-85d1-a933d7a4824c',page:'population',agency:'dopa',n:'จำนวนหมู่บ้านทั้งสิ้นในจังหวัด',state:'api',auto:1},
-    {id:'b1d4dba9-98ce-4c6a-ad70-88e045eb16af',page:'population',agency:'dopa',n:'จำนวนการเกิด',state:'api',auto:1},
-    {id:'7fde384d-d5cf-4300-b9cc-d578dd80d723',page:'population',agency:'dopa',n:'จำนวนการตาย',state:'api',auto:1},
-    {id:'39373f2b-c360-4231-bee9-05e9ae4392a8',page:'population',agency:'dopa',n:'อัตราการจดทะเบียนสมรส',state:'api',auto:1},
-    {id:'4c87df45-e347-4044-8712-9897f349ba7b',page:'population',agency:'dopa',n:'อัตราการจดทะเบียนหย่า',state:'api',auto:1},
-    {id:'5c879c91-8648-4771-b514-768ef75ea42b',page:'population',agency:'dopa',n:'จำนวนการจดทะเบียนสมรส',state:'api',auto:1},
-    {id:'ff6ef4f6-0503-4a66-8074-ea819916942b',page:'population',agency:'dopa',n:'จำนวนการจดทะเบียนหย่า',state:'api',auto:1},
-    {id:'03b88975-36e5-46e1-b0fa-0456f0a37193',page:'population',agency:'dopa',n:'จำนวนประชากรจากการทะเบียน',state:'api',auto:1},
-    {id:'adafe2b2-6a2f-419e-9cb8-3cccf7e21032',page:'tourism',agency:'mots',n:'สถานประกอบการที่พักแรมที่ถูกต้องตามกฎหมาย',state:'api',auto:1},
-    {id:'238104ec-9d77-4d7d-8f41-475daf874056',page:'population',agency:'dopa',n:'ประชากรในเขตเมือง (ประชากรในเขตเทศบาลเมือง) จำแนกเป็นตำบล',state:'api',auto:1},
-    {id:'70bfe61c-63bf-45ff-b680-794fc435db08',page:'population',agency:'dopa',n:'พื้นที่ทั้งจังหวัด',state:'api',auto:1},
-    {id:'dc7f6fbb-1477-40d6-bf96-f18a0faa0f5d',page:'population',agency:'dopa',n:'เนื้อที่ ระยะทางจากเขตหรืออำเภอถึงจังหวัด และเขตการปกครอง',state:'api',auto:1},
-    {id:'03463b5e-c71f-41e8-80d5-bf7794def331',page:'tourism',agency:'mots',n:'ข้อมูลสถานที่ประกอบธุรกิจที่พักที่ปฏิบัติตามพระราชบัญญัติโรงแรม',state:'api',auto:1},
-    {id:'71dde2da-6581-4dd8-9baa-a7283c4aa182',page:'population',agency:'dopa',n:'สัดส่วนประชากรในเขตเมือง (ประชากรในเขต เทศบาลเมือง)',state:'api',auto:1},
-    {id:'ea696fbf-964f-408d-81f5-8547932853be',page:'population',agency:'dopa',n:'ความหนาแน่นของประชากร',state:'api',auto:1},
-    {id:'d8eed6d0-1528-491b-8f95-5f0de887fd69',page:'population',agency:'dopa',n:'จำนวนบ้านจากการทะเบียน',state:'api',auto:1},
-    {id:'e4646cb6-790f-47d2-8ab4-64ea578cddde',page:'labor',agency:'nso',n:'ประชากรอายุ 15 ปีขึ้นไปที่มีงานทำ จำแนกตามจำนวนชั่วโมงทำงานต่อสัปดาห์ และเพศ เป็นรายไตรมาส',state:'api',auto:1},
-    {id:'4a431891-9e4e-49df-a4a0-eaaeff41b7bf',page:'otop',agency:'cdd',n:'จำนวนร้านค้า OTOP ในชุมชน',state:'api',auto:1},
-    {id:'c10f01ae-3cdc-4de4-a8b0-39f8438044ab',page:'otop',agency:'cdd',n:'จำนวนผลิตภัณฑ์สินค้า OTOP จำแนกตามประเภทผลิตภัณฑ์',state:'api',auto:1},
-    {id:'700584d7-29bc-4749-82ee-dba82098ca0d',page:'otop',agency:'cdd',n:'ข้อมูลสถานประกอบการร้านค้า OTOP',state:'api',auto:1},
-    {id:'9ca59463-14ab-4247-9602-cc0c06a5ed46',page:'otop',agency:'cdd',n:'ผลิตภัณฑ์ OTOP ที่ได้มาตรฐานระดับ 5 ดาว',state:'api',auto:1},
-    {id:'ccdf24ab-2807-4560-84f2-2ced40827cff',page:'otop',agency:'cdd',n:'แหล่งเรียนรู้ วิชชาลัย',state:'api',auto:1},
-    {id:'90309f56-8577-44ab-b694-804bf492c3c5',page:'otop',agency:'cdd',n:'รายได้จากผลิตภัณฑ์ OTOP',state:'api',auto:1},
-    {id:'b11c718d-fa12-4d60-aa83-37d56fbf4cef',page:'otop',agency:'cdd',n:'รายได้จากผลิตภัณฑ์ OTOP รายเดือน',state:'api',auto:1},
-    {id:'144dbb21-4aaf-4b29-81be-43e4aa52199d',page:'otop',agency:'cdd',n:'จำนวนผู้ประกอบการ OTOP',state:'api',auto:1},
-    {id:'d15c9ff8-0b36-4977-8193-622db6e4f738',page:'otop',agency:'cdd',n:'สินค้า OTOP',state:'api',auto:1},
-    {id:'52876d96-9bc4-4f17-8161-d5f97874169e',page:'otop',agency:'cdd',n:'จำนวนหมู่บ้าน OTOP เพื่อการท่องเที่ยว',state:'api',auto:1},
-    {id:'ba82c891-eb8c-47ec-8880-5626f73ee86c',page:'agri',agency:'crop',n:'พื้นที่เพาะปลูก',state:'api',auto:1},
-    {id:'9835997c-1c59-4b76-b423-147424232d1f',page:'agri',agency:'crop',n:'จำนวนครัวเรือนเกษตรกรปลูกพืช',state:'api',auto:1},
-    {id:'6f4ddf77-1629-4aa6-9115-916759ed0fc6',page:'agri',agency:'crop',n:'ตลาดเกษตรกร',state:'api',auto:1},
-    {id:'0eb6ce3f-50fc-412b-b385-f0293fa30f9b',page:'agri',agency:'crop',n:'จำนวนตลาดเกษตรกรจังหวัดหนองบัวลำภู',state:'api',auto:1},
-    {id:'7df17762-f040-4f65-bc25-d8ea42f46426',page:'agri',agency:'crop',n:'พื้นที่ข้าว',state:'api',auto:1},
-    {id:'c74197a6-c749-4b48-ba9a-fcfe38980aae',page:'agri',agency:'crop',n:'เนื้อที่ใช้ประโยชน์ทางการเกษตร',state:'api',auto:1},
-    {id:'5fc364e9-112a-4ba2-b8c6-30389247625b',page:'agri',agency:'crop',n:'พื้นที่เกษตรปลอดภัย',state:'api',auto:1},
-    {id:'043bbed1-5a1d-4e35-acb0-1a54893df21f',page:'agri',agency:'crop',n:'เนื้อที่ใช้ประโยชน์ทางการเกษตร',state:'api',auto:1},
-    {id:'f5907cb4-e8eb-4258-a1e9-e9e418e14aec',page:'otop',agency:'cdd',n:'จำนวนวิสาหกิจชุมชน',state:'api',auto:1}
+    {id:'f7724a59-3324-486e-a169-aa3c42381467',page:'tourism',agency:'mots',n:'ข้อมูลรายชื่อร้านอาหาร จังหวัดหนองบัวลำภู',state:'avail'},
+    {id:'afbca98b-44bb-4f16-b6de-e4c3eaee2f1b',page:'tourism',agency:'mots',n:'ข้อมูลรายชื่อร้านอาหาร ภายในจังหวัดหนองบัวลำภู',state:'avail'},
+    {id:'eff8b887-c008-4586-824a-159630d7fbce',page:'tourism',agency:'mots',n:'อัตราการเข้าพัก',state:'api'},
+    {id:'49c6f93a-08ff-4790-a57e-9af4fe9e9461',page:'tourism',agency:'mots',n:'ที่พักโรงแรมห้องพักที่จดทะเบียนในจังหวัด',state:'avail'},
+    {id:'c1532969-364d-43fd-89b0-b112c513d739',page:'tourism',agency:'mots',n:'ที่พัก',state:'avail'},
+    {id:'b38581a7-0385-48d4-b491-6a7c30f0adf3',page:'tourism',agency:'mots',n:'ห้องพัก',state:'avail'},
+    {id:'a7276fe4-85eb-463b-a1d6-98b4401896b2',page:'tourism',agency:'mots',n:'อัตราการเข้าพัก',state:'avail'},
+    {id:'0a8c611d-8c18-48c0-bf32-daf9b7a82837',page:'tourism',agency:'mots',n:'การเข้าพัก',state:'avail'},
+    {id:'79932db4-c98d-4117-8781-3713491fa111',page:'tourism',agency:'mots',n:'ค่าเฉลี่ยระยะเวลาเข้าพัก',state:'avail'},
+    {id:'b4e18e41-b21c-406a-a05b-17968cca8dba',page:'tourism',agency:'mots',n:'คนเข้าพัก (คน/ห้อง)',state:'avail'},
+    {id:'009d7f8c-7389-47f4-bdae-50f044a7ae95',page:'tourism',agency:'mots',n:'ระยะเวลาการเข้าพักโดยเฉลี่ย',state:'avail'},
+    {id:'da6ebc3a-f545-4fad-a406-e527655189b9',page:'tourism',agency:'mots',n:'ที่พัก โรงแรม',state:'avail'},
+    {id:'b689c7e2-2b65-4177-8434-3aac0fca590f',page:'tourism',agency:'mots',n:'ค่าใช้จ่ายต่อคนต่อวันของนักท่องเที่ยว',state:'api'},
+    {id:'04ea026d-7fd8-4e64-9268-c13007d84689',page:'tourism',agency:'mots',n:'จำนวนนักท่องเที่ยว',state:'avail'},
+    {id:'5e65986f-ebe0-44e9-adf7-215ce4e90dad',page:'tourism',agency:'mots',n:'นักท่องเที่ยวภายในจังหวัดหนองบัวลำภู จำแนกประเภท',state:'api'},
+    {id:'baad78a2-9acd-4ee3-ae3d-1cb81086cb83',page:'tourism',agency:'mots',n:'รายได้จากการท่องเที่ยว',state:'avail'},
+    {id:'170f017c-126e-4432-a58f-20f4bef30f78',page:'tourism',agency:'mots',n:'รายได้จากการท่องเที่ยว รายเดือน',state:'api'},
+    {id:'051f08e3-265d-4399-9e96-01f4daf8eb02',page:'tourism',agency:'mots',n:'จำนวนผู้เยี่ยมเยือน',state:'avail'},
+    {id:'450a2393-a4a6-412f-8d08-6f7dcfc87203',page:'tourism',agency:'mots',n:'แหล่งท่องเที่ยวจังหวัด',state:'avail'},
+    {id:'5213acd6-1913-4cc7-9807-1caa20855cd5',page:'tourism',agency:'mots',n:'จำนวนแหล่งท่องเที่ยว จำแนกตามประเภท',state:'api'},
+    {id:'f6d19f7c-82ed-4ff5-adb3-eeafa859161f',page:'tourism',agency:'mots',n:'รายชื่อแหล่งท่องเที่ยว',state:'avail'},
+    {id:'e379647a-653f-467c-9d93-f3f0d2df85b1',page:'tourism',agency:'mots',n:'พิกัด ตำแหน่ง รายชื่อแหล่งท่องเที่ยว',state:'avail'},
+    {id:'04e99c9f-fc2d-41dd-949e-524374a8cf54',page:'tourism',agency:'mots',n:'จำนวนแหล่งท่องเที่ยวที่สำคัญ',state:'avail'},
+    {id:'7d37b553-3c4d-4cb2-9201-45635655b597',page:'tourism',agency:'mots',n:'ฐานข้อมูล เพื่อการท่องเที่ยวเชิงอนุรักษ์และวัฒนธรรม',state:'avail'},
+    {id:'d522f7e7-7039-480b-ab9b-d96a42dfa3b1',page:'tourism',agency:'mots',n:'จำนวนธุรกิจนำเที่ยวที่ผ่านเกณฑ์มาตรฐาน',state:'avail'},
+    {id:'4493a5ac-411a-48df-bf97-f63fdcfa313f',page:'tourism',agency:'mots',n:'จำนวนผู้ประกอบการการท่องเที่ยว',state:'avail'},
+    {id:'95e09cb9-2f10-4d13-a82e-b0e0913c7c18',page:'tourism',agency:'mots',n:'จำนวนชุมชนท่องเที่ยวที่มีการประชาสัมพันธ์ผ่านสื่อ Social media ต่างๆ',state:'avail'},
+    {id:'c6b78bad-346b-4250-b4f5-3a1b424bece6',page:'population',agency:'dopa',n:'ประชากรจากการทะเบียน จำแนกตามกลุ่มอายุ และอำเภอ',state:'api'},
+    {id:'2a80f2c7-5397-4dc7-91ee-cc449106e9d0',page:'population',agency:'dopa',n:'จำนวนการย้ายเข้าและย้ายออก',state:'api'},
+    {id:'9e6e0bb9-0a84-4f8f-85d1-a933d7a4824c',page:'population',agency:'dopa',n:'จำนวนหมู่บ้านทั้งสิ้นในจังหวัด',state:'avail'},
+    {id:'b1d4dba9-98ce-4c6a-ad70-88e045eb16af',page:'population',agency:'dopa',n:'จำนวนการเกิด',state:'api'},
+    {id:'7fde384d-d5cf-4300-b9cc-d578dd80d723',page:'population',agency:'dopa',n:'จำนวนการตาย',state:'api'},
+    {id:'39373f2b-c360-4231-bee9-05e9ae4392a8',page:'population',agency:'dopa',n:'อัตราการจดทะเบียนสมรส',state:'avail'},
+    {id:'4c87df45-e347-4044-8712-9897f349ba7b',page:'population',agency:'dopa',n:'อัตราการจดทะเบียนหย่า',state:'avail'},
+    {id:'5c879c91-8648-4771-b514-768ef75ea42b',page:'population',agency:'dopa',n:'จำนวนการจดทะเบียนสมรส',state:'avail'},
+    {id:'ff6ef4f6-0503-4a66-8074-ea819916942b',page:'population',agency:'dopa',n:'จำนวนการจดทะเบียนหย่า',state:'avail'},
+    {id:'03b88975-36e5-46e1-b0fa-0456f0a37193',page:'population',agency:'dopa',n:'จำนวนประชากรจากการทะเบียน',state:'api'},
+    {id:'adafe2b2-6a2f-419e-9cb8-3cccf7e21032',page:'tourism',agency:'mots',n:'สถานประกอบการที่พักแรมที่ถูกต้องตามกฎหมาย',state:'avail'},
+    {id:'238104ec-9d77-4d7d-8f41-475daf874056',page:'population',agency:'dopa',n:'ประชากรในเขตเมือง (ประชากรในเขตเทศบาลเมือง) จำแนกเป็นตำบล',state:'avail'},
+    {id:'70bfe61c-63bf-45ff-b680-794fc435db08',page:'population',agency:'dopa',n:'พื้นที่ทั้งจังหวัด',state:'avail'},
+    {id:'dc7f6fbb-1477-40d6-bf96-f18a0faa0f5d',page:'population',agency:'dopa',n:'เนื้อที่ ระยะทางจากเขตหรืออำเภอถึงจังหวัด และเขตการปกครอง',state:'avail'},
+    {id:'03463b5e-c71f-41e8-80d5-bf7794def331',page:'tourism',agency:'mots',n:'ข้อมูลสถานที่ประกอบธุรกิจที่พักที่ปฏิบัติตามพระราชบัญญัติโรงแรม',state:'api'},
+    {id:'71dde2da-6581-4dd8-9baa-a7283c4aa182',page:'population',agency:'dopa',n:'สัดส่วนประชากรในเขตเมือง (ประชากรในเขต เทศบาลเมือง)',state:'avail'},
+    {id:'ea696fbf-964f-408d-81f5-8547932853be',page:'population',agency:'dopa',n:'ความหนาแน่นของประชากร',state:'avail'},
+    {id:'d8eed6d0-1528-491b-8f95-5f0de887fd69',page:'population',agency:'dopa',n:'จำนวนบ้านจากการทะเบียน',state:'api'},
+    {id:'e4646cb6-790f-47d2-8ab4-64ea578cddde',page:'labor',agency:'nso',n:'ประชากรอายุ 15 ปีขึ้นไปที่มีงานทำ จำแนกตามจำนวนชั่วโมงทำงานต่อสัปดาห์ และเพศ เป็นรายไตรมาส',state:'avail'},
+    {id:'4a431891-9e4e-49df-a4a0-eaaeff41b7bf',page:'otop',agency:'cdd',n:'จำนวนร้านค้า OTOP ในชุมชน',state:'api'},
+    {id:'c10f01ae-3cdc-4de4-a8b0-39f8438044ab',page:'otop',agency:'cdd',n:'จำนวนผลิตภัณฑ์สินค้า OTOP จำแนกตามประเภทผลิตภัณฑ์',state:'api'},
+    {id:'700584d7-29bc-4749-82ee-dba82098ca0d',page:'otop',agency:'cdd',n:'ข้อมูลสถานประกอบการร้านค้า OTOP',state:'api'},
+    {id:'9ca59463-14ab-4247-9602-cc0c06a5ed46',page:'otop',agency:'cdd',n:'ผลิตภัณฑ์ OTOP ที่ได้มาตรฐานระดับ 5 ดาว',state:'api'},
+    {id:'ccdf24ab-2807-4560-84f2-2ced40827cff',page:'otop',agency:'cdd',n:'แหล่งเรียนรู้ วิชชาลัย',state:'api'},
+    {id:'90309f56-8577-44ab-b694-804bf492c3c5',page:'otop',agency:'cdd',n:'รายได้จากผลิตภัณฑ์ OTOP',state:'api'},
+    {id:'b11c718d-fa12-4d60-aa83-37d56fbf4cef',page:'otop',agency:'cdd',n:'รายได้จากผลิตภัณฑ์ OTOP รายเดือน',state:'api'},
+    {id:'144dbb21-4aaf-4b29-81be-43e4aa52199d',page:'otop',agency:'cdd',n:'จำนวนผู้ประกอบการ OTOP',state:'avail'},
+    {id:'d15c9ff8-0b36-4977-8193-622db6e4f738',page:'otop',agency:'cdd',n:'สินค้า OTOP',state:'avail'},
+    {id:'52876d96-9bc4-4f17-8161-d5f97874169e',page:'otop',agency:'cdd',n:'จำนวนหมู่บ้าน OTOP เพื่อการท่องเที่ยว',state:'avail'},
+    {id:'ba82c891-eb8c-47ec-8880-5626f73ee86c',page:'agri',agency:'crop',n:'พื้นที่เพาะปลูก',state:'avail'},
+    {id:'9835997c-1c59-4b76-b423-147424232d1f',page:'agri',agency:'crop',n:'จำนวนครัวเรือนเกษตรกรปลูกพืช',state:'avail'},
+    {id:'6f4ddf77-1629-4aa6-9115-916759ed0fc6',page:'agri',agency:'crop',n:'ตลาดเกษตรกร',state:'avail'},
+    {id:'0eb6ce3f-50fc-412b-b385-f0293fa30f9b',page:'agri',agency:'crop',n:'จำนวนตลาดเกษตรกรจังหวัดหนองบัวลำภู',state:'avail'},
+    {id:'7df17762-f040-4f65-bc25-d8ea42f46426',page:'agri',agency:'crop',n:'พื้นที่ข้าว',state:'avail'},
+    {id:'c74197a6-c749-4b48-ba9a-fcfe38980aae',page:'agri',agency:'crop',n:'เนื้อที่ใช้ประโยชน์ทางการเกษตร',state:'avail'},
+    {id:'5fc364e9-112a-4ba2-b8c6-30389247625b',page:'agri',agency:'crop',n:'พื้นที่เกษตรปลอดภัย',state:'avail'},
+    {id:'043bbed1-5a1d-4e35-acb0-1a54893df21f',page:'agri',agency:'crop',n:'เนื้อที่ใช้ประโยชน์ทางการเกษตร',state:'avail'},
+    {id:'f5907cb4-e8eb-4258-a1e9-e9e418e14aec',page:'otop',agency:'cdd',n:'จำนวนวิสาหกิจชุมชน',state:'avail'}
   ],
   _mem:{},
   /* เรียก API แบบ JSONP (CKAN รองรับพารามิเตอร์ callback) จึงข้ามโดเมนได้โดยไม่ติด CORS */
@@ -2690,6 +2691,7 @@ document.addEventListener('click',e=>{const r=e.target.closest('[data-cho-amp]')
    ════════════════════════════════════════════════════════════════════ */
 const gq=r=>{const y=gdcYear(r);const m=String(r['ช่วงเวลา']||r['ไตรมาส']||'').match(/(\d)/);return (y&&m)?{q:y+'-Q'+m[1],y,n:+m[1]}:null};
 const qKey=x=>x.y*10+x.n;
+GDC.amp=x=>{const a=String(x||'').replace(/^อำเภอ/,'').trim();return a==='เมือง'?'เมืองหนองบัวลำภู':a};
 GDC.SYNC={
   house:{pages:['household'],agency:'nso',
     res:{main:'c0a430d9-63a9-4cc9-be0b-bf43fd49e2d9',debt:'a8d80120-4838-414f-bdbd-ec8667e2016e',gini:'909b635e-c6e1-4fcb-b89b-aedb9c04d621',
@@ -2770,12 +2772,56 @@ GDC.SYNC={
         o.entYear=y;o.entTotal=L.length;o.entByAmp=A;o.entByType=T}}
       return o},
     apply(o){if(typeof DX!=='undefined'&&DX.otop)Object.keys(o).forEach(k=>{if(o[k]!=null)DX.otop[k]=o[k]})}},
-  popgrowth:{pages:['population'],agency:'nso',
-    res:{growth:'7d183fa3-e333-48aa-ae9f-f9fd13746a80'},
-    build(R){return R.growth?{growth:R.growth.map(r=>({y:gdcYear(r),a:String(r['อำเภอ']||'').replace(/^อำเภอ/,'').trim(),v:gdcVal(r)})).filter(r=>r.y&&r.v!=null)}:{}},
-    apply(o){if(typeof DX!=='undefined'&&DX.pop&&o.growth&&o.growth.length)DX.pop.growth=o.growth}}
+  /* ท่องเที่ยว · แทนตารางเดิมที่นำเข้าเป็นไฟล์ ด้วยชุดเดียวกันจาก API
+     ที่ยังไม่มีใน API: ผู้เยี่ยมเยือนและอัตราการเข้าพักรายเดือน, พิกัดแหล่งท่องเที่ยวที่จัดประเภทแล้ว → ใช้ข้อมูลเดิม */
+  tour:{pages:['tourism'],agency:'mots',
+    res:{rev:'170f017c-126e-4432-a58f-20f4bef30f78',internal:'5e65986f-ebe0-44e9-adf7-215ce4e90dad',spend:'b689c7e2-2b65-4177-8434-3aac0fca590f',
+         spot:'5213acd6-1913-4cc7-9807-1caa20855cd5',occ:'eff8b887-c008-4586-824a-159630d7fbce',acc:'03463b5e-c71f-41e8-80d5-bf7794def331'},
+    build(R){const o={},amp=GDC.amp,tx=(r,k)=>String(r[k]==null?'':r[k]).trim();
+      if(R.rev){const L=R.rev.map(r=>({fy:gdcYear(r),i:parseInt(r['ลำดับตามปีงบประมาณ'],10),label:tx(r,'ช่วงเวลา'),v:gdcVal(r)})).filter(x=>x.fy&&x.i&&x.v!=null).sort((a,b)=>a.fy-b.fy||a.i-b.i);if(L.length)o.revenue=L}
+      if(R.internal){const L=R.internal.map(r=>({y:gdcYear(r),item:tx(r,'รายการข้อมูล'),kind:tx(r,'ประเภทข้อมูล'),who:tx(r,'นักท่องเที่ยว'),v:gdcVal(r),u:tx(r,'หน่วย')})).filter(x=>x.y&&x.v!=null);if(L.length)o.internal=L}
+      if(R.spend){const L=R.spend.map(r=>({y:gdcYear(r),who:tx(r,'นักท่องเที่ยว'),kind:tx(r,'ประเภทข้อมูล'),v:gdcVal(r)})).filter(x=>x.y&&x.v!=null);if(L.length)o.spend=L}
+      if(R.spot){const ys=R.spot.map(gdcYear).filter(Boolean);if(ys.length){const y=Math.max(...ys),T={},A={};
+        R.spot.filter(r=>gdcYear(r)===y).forEach(r=>{const v=gdcVal(r);if(v==null)return;const t=tx(r,'ประเภท'),a=amp(r['อำเภอ']);T[t]=(T[t]||0)+v;A[a]=(A[a]||0)+v});
+        o.spotYear=y;o.spotByType=T;o.spotByAmp=A}}
+      if(R.occ){const L=R.occ.map(r=>({y:gdcYear(r),v:gdcVal(r)})).filter(x=>x.y&&x.v!=null).sort((a,b)=>b.y-a.y);if(L.length)o.occYear=L}
+      if(R.acc){const ys=R.acc.map(gdcYear).filter(Boolean);if(ys.length){const y=Math.max(...ys),L=R.acc.filter(r=>gdcYear(r)===y),A={};let rooms=0;
+        L.forEach(r=>{const a=amp(r['อำเภอ']),n=gdcNum(r['จำนวนห้องพัก'])||0;(A[a]=A[a]||{n:0,rooms:0}).n++;A[a].rooms+=n;rooms+=n});
+        o.accYear=y;o.accTotal=L.length;o.accRooms=rooms;o.accByAmp=A}}
+      return o},
+    apply(o){if(typeof DX!=='undefined'&&DX.tour)Object.keys(o).forEach(k=>{if(o[k]!=null)DX.tour[k]=o[k]})}},
+  /* ประชากร · แทนตารางเดิมที่นำเข้าเป็นไฟล์ (ปิรามิดรายอายุของกรมการปกครองยังเป็นไฟล์) */
+  pop:{pages:['population'],agency:'dopa',
+    res:{pop:'03b88975-36e5-46e1-b0fa-0456f0a37193',age:'c6b78bad-346b-4250-b4f5-3a1b424bece6',growth:'7d183fa3-e333-48aa-ae9f-f9fd13746a80',
+         birth:'b1d4dba9-98ce-4c6a-ad70-88e045eb16af',death:'7fde384d-d5cf-4300-b9cc-d578dd80d723',move:'2a80f2c7-5397-4dc7-91ee-cc449106e9d0',
+         house:'d8eed6d0-1528-491b-8f95-5f0de887fd69'},
+    build(R){const o={},amp=GDC.amp,tx=(r,k)=>String(r[k]==null?'':r[k]).trim(),notA=a=>!a||/เขตเทศบาล|รวม|ทั้งจังหวัด/.test(a);
+      const last=rows=>{const ys=rows.map(gdcYear).filter(Boolean);return ys.length?Math.max(...ys):null};
+      const byYear=rows=>{const m={};rows.forEach(r=>{const y=gdcYear(r),v=gdcVal(r);if(y&&v!=null)m[y]=(m[y]||0)+v});return m};
+      if(R.pop){const y=last(R.pop);if(y){const A={};R.pop.filter(r=>gdcYear(r)===y).forEach(r=>{const a=amp(r['อำเภอ']),g=tx(r,'เพศ'),v=gdcVal(r);if(!notA(a)&&v!=null&&/^(ชาย|หญิง)$/.test(g))(A[a]=A[a]||{})[g]=v});
+        o.popYear=y;o.popByAmpSex=A;o.popSeries=byYear(R.pop.filter(r=>/^(ชาย|หญิง)$/.test(tx(r,'เพศ'))&&!notA(amp(r['อำเภอ']))))}}
+      /* กลุ่มอายุ: รวมเฉพาะแถวอำเภอ (แถวในเขต/นอกเขตเทศบาลเป็นการแบ่งซ้ำของยอดเดียวกัน) */
+      if(R.age){const y=last(R.age);if(y){const B={};R.age.filter(r=>gdcYear(r)===y&&!notA(amp(r['อำเภอ']))).forEach(r=>{const v=gdcNum(r['จำนวน']);if(v!=null)B[tx(r,'กลุ่มอายุ')]=(B[tx(r,'กลุ่มอายุ')]||0)+v});o.ageYear=y;o.ageBands=B}}
+      if(R.growth){const L=R.growth.map(r=>({y:gdcYear(r),a:amp(r['อำเภอ']),v:gdcVal(r)})).filter(r=>r.y&&r.v!=null);if(L.length)o.growth=L}
+      if(R.birth){const m=byYear(R.birth);if(Object.keys(m).length)o.birth=m}
+      if(R.death){const m=byYear(R.death);if(Object.keys(m).length)o.death=m}
+      if(R.move){const m={};R.move.forEach(r=>{const y=gdcYear(r),t=tx(r,'ประเภท'),v=gdcVal(r);if(y&&t&&v!=null)(m[y]=m[y]||{})[t]=(m[y][t]||0)+v});if(Object.keys(m).length)o.move=m}
+      if(R.house){const y=last(R.house);if(y){const A={};R.house.filter(r=>gdcYear(r)===y).forEach(r=>{const a=amp(r['อำเภอ']),v=gdcVal(r);if(!notA(a)&&v!=null)A[a]=(A[a]||0)+v});o.houseYear=y;o.houses=A}}
+      return o},
+    apply(o){if(typeof DX!=='undefined'&&DX.pop)Object.keys(o).forEach(k=>{if(o[k]!=null)DX.pop[k]=o[k]})}}
 };
 const SYNC_STATE={};          /* สถานะรายชุดของหน้านี้ · ใช้ติดป้ายและหน้าสถานะ */
+/* ป้ายสถานะ API ที่หัวหน้า (เหมือนหน้าการคลัง) · วาดใหม่ทุกครั้งที่หน้า render เพื่อไม่ให้หาย */
+function gdcSyncBadge(pageId){
+  const st=Object.values(SYNC_STATE); if(!st.length)return;
+  let gs=document.getElementById('gdcPageBadge');
+  if(!gs||!document.body.contains(gs)){const r=document.querySelector('.view.on .ph .r, .ph .r'); if(!r)return; gs=document.createElement('span');gs.id='gdcPageBadge';r.appendChild(gs)}
+  gs.innerHTML=st.some(x=>x.state==='loading')?'<span class="gdcb map"><i></i>กำลังดึงจากระบบบัญชีข้อมูลจังหวัด…</span>'
+    :st.every(x=>x.state==='err')?'<a class="gdcb file" href="apistatus.html#'+pageId+'"><i></i>API ไม่ตอบสนอง · ใช้ข้อมูลสำรอง</a>'
+    :(function(){const S=srcInventory().filter(x=>x.page===pageId&&x.type!=='avail'),a=S.filter(x=>x.type==='api').length;
+       return a<S.length?'<a class="gdcb part" href="apistatus.html#'+pageId+'"><i></i>ดึงจาก API บางส่วน · '+a+'/'+S.length+' ชุด</a>'
+         :'<a class="gdcb api" href="apistatus.html#'+pageId+'"><i></i>ดึงจากระบบบัญชีข้อมูลจังหวัด (API)</a>'})();
+}
 function gdcSyncPage(pageId){
   const jobs=Object.keys(GDC.SYNC).filter(k=>GDC.SYNC[k].pages.indexOf(pageId)>=0);
   if(!jobs.length)return;
@@ -2788,17 +2834,10 @@ function gdcSyncPage(pageId){
           try{localStorage.setItem('gdc-qa-'+j,JSON.stringify({at:Date.now(),qa:SYNC_STATE[j].qa}))}catch(e){}}
         catch(e){SYNC_STATE[j].state='err';console.error('sync '+j,e)}
         if(SYNC_STATE[j].state!=='err')safeRender();
-        /* ป้ายแหล่งข้อมูลที่หัวหน้า · หน้าที่ยังไม่มีช่องวางป้าย จะเพิ่มต่อท้ายป้ายเดิมให้เอง */
-        let gs=document.getElementById('gdcPageBadge');
-        if(!gs){const r=document.querySelector('.view.on .ph .r, .ph .r'); if(r){gs=document.createElement('span');gs.id='gdcPageBadge';r.appendChild(gs)}}
-        if(gs){const st=Object.values(SYNC_STATE);
-          gs.innerHTML=st.some(x=>x.state==='loading')?'<span class="gdcb map"><i></i>กำลังดึงจากระบบบัญชีข้อมูลจังหวัด…</span>'
-            :st.every(x=>x.state==='err')?'<a class="gdcb file" href="apistatus.html#'+pageId+'"><i></i>API ไม่ตอบสนอง · ใช้ข้อมูลสำรอง</a>'
-            :(function(){const S=srcInventory().filter(x=>x.page===pageId&&x.type!=='avail'),a=S.filter(x=>x.type==='api').length;
-               return a<S.length?'<a class="gdcb part" href="apistatus.html#'+pageId+'"><i></i>ดึงจาก API บางส่วน · '+a+'/'+S.length+' ชุด</a>'
-                 :'<a class="gdcb api" href="apistatus.html#'+pageId+'"><i></i>ดึงจากระบบบัญชีข้อมูลจังหวัด (API)</a>'})();}
+        gdcSyncBadge(pageId);
       });
   });
+  gdcSyncBadge(pageId);
 }
 
 /* ════════════ ประวัติการอัปเดต และข้อมูลเมตาจากระบบบัญชีข้อมูล ════════════ */
@@ -2873,10 +2912,10 @@ const SRC_INV=[
   ['trade','สินเชื่อ SME','sim','sme','รอหน่วยงานส่งข้อมูลจริง'],
   ['consume','การจำหน่ายน้ำมันเชื้อเพลิง','sim','energy','รอหน่วยงานส่งข้อมูลจริง'],
   ['consume','รถจดทะเบียนใหม่','sim','dlt','รอหน่วยงานส่งข้อมูลจริง'],
-  ['tourism','ผู้เยี่ยมเยือนและรายได้ท่องเที่ยวรายปี','file','mots','เอกสารสำนักงานการท่องเที่ยวและกีฬา'],
-  ['tourism','ท่องเที่ยวรายเดือน','sim','mots','รอหน่วยงานส่งข้อมูลจริง'],
+  ['tourism','ผู้เยี่ยมเยือนและอัตราการเข้าพักรายเดือน','file','mots','ยังไม่มีชุดนี้ในรายการ API ที่เชื่อมไว้'],
+  ['tourism','แผนที่และประเภทแหล่งท่องเที่ยว','file','mots','API มีชื่อและพิกัด แต่ยังไม่มีประเภทแหล่งท่องเที่ยว'],
   ['labor','ผู้ประกันตนในระบบประกันสังคม','sim','sso','รอหน่วยงานส่งข้อมูลจริง'],
-  ['population','ประชากรรายอำเภอ เพศ อายุ การเกิด การตาย การย้ายถิ่น บ้าน','gas','dopa','ทะเบียนราษฎร ผ่านระบบกรอกข้อมูล'],
+  ['population','ปิรามิดประชากรรายอายุ แยกสัญชาติ ในเขต/นอกเขตเทศบาล','file','dopa','แฟ้มสถิติรายอายุของกรมการปกครอง ยังไม่มีใน API'],
   ['area','ข้อมูลเชิงพื้นที่รายอำเภอ','file','dopa','รวมจากหลายหน่วยงาน']
 ];
 const SRC_TYPE={api:['ดึงจาก API','api'],link:['กำลังเชื่อมข้อมูล','link'],avail:['มีใน API ยังไม่ได้แสดง','avail'],
@@ -3111,10 +3150,12 @@ function autoBuild(R,qaKey){
 let PNL_SEL={};
 const PG_IC={tourism:'tourism',otop:'otop',population:'population',agri:'agri',labor:'labor',household:'household',trade:'credit'};
 const PNL_ALL={};
-/* หน้าที่ใช้ API แทนข้อมูลเดิมในตัวหน้าเองแล้ว ไม่ต่อท้ายแผงข้อมูลเพิ่มเติม (คงหน้าตาเดิมไว้) */
-const PNL_OFF=['otop','labor'];
+/* ไม่ต่อท้ายแผงข้อมูลเพิ่มเติมในหน้าใด · API ใช้แทนข้อมูลเดิมในตัวหน้าเท่านั้น (คงหน้าตาเดิม)
+   ชุดที่มีใน API แต่หน้ายังไม่ได้แสดง ดูได้ที่หน้าสถานะ API (สถานะ "มีใน API ยังไม่ได้แสดง") */
+const PNL_ENABLED=false;
+try{if(!PNL_ENABLED)localStorage.removeItem('gdc-qa-panels')}catch(e){}
 function gdcPanels(page){
-  if(PNL_OFF.indexOf(page)>=0){const x=document.getElementById('gdcExtra');if(x)x.remove();return}
+  if(!PNL_ENABLED){const x=document.getElementById('gdcExtra');if(x)x.remove();return}
   const P=(GDC.PANELS[page]||[]).concat(GDC.RES.filter(r=>r.page===page&&r.auto).map(r=>({id:r.id,t:r.n,u:'',ic:PG_IC[page]||'chart',auto:2})));
   if(!P.length)return;
   const view=document.querySelector('.view.on'); if(!view)return;

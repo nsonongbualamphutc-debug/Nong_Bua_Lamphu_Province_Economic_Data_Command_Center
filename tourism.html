@@ -127,7 +127,9 @@ function renderTour(){
   const prev=TY-1;
   const v=tot(TY,'ผู้เยี่ยมเยือน'), vPrev=tot(prev,'ผู้เยี่ยมเยือน');
   const th=val(TY,'ผู้เยี่ยมเยือน','ชาวไทย'), fo=val(TY,'ผู้เยี่ยมเยือน','ชาวต่างชาติ');
-  const M=T.visitor.filter(x=>x.fy===2569), R=T.revenue.filter(x=>x.fy===2569), OC=T.occ.filter(x=>x.fy===2569);
+  /* ปีงบประมาณล่าสุดที่มีข้อมูลรายเดือน (รายได้มาจาก API · ผู้เยี่ยมเยือนและอัตราเข้าพักยังเป็นข้อมูลเดิม) */
+  const FYT=Math.max(...T.visitor.map(x=>x.fy).filter(Boolean));
+  const M=T.visitor.filter(x=>x.fy===FYT), R=T.revenue.filter(x=>x.fy===FYT), OC=T.occ.filter(x=>x.fy===FYT);
   /* นับประเภทและอำเภอจากรายการแหล่งท่องเที่ยวที่มีพิกัดจริง ให้ตรงกับหมุดบนแผนที่ */
   const spotTot=T.spots.length;
 
@@ -165,7 +167,7 @@ function renderTour(){
   </div>
 
   <div class="c mb"><header><span class="hdico icow img" data-hdico="history"></span><h3>ผู้เยี่ยมเยือน รายได้ และอัตราการเข้าพักรายเดือน</h3>
-    <span class="u">ปีงบประมาณ 2569</span></header>
+    <span class="u">ปีงบประมาณ ${FYT}</span></header>
     <div class="b"><div class="ch lg"><canvas id="cMon"></canvas></div>
       <div class="note" id="monNote"></div></div></div>
 
@@ -374,7 +376,7 @@ function renderTour(){
         y3:{display:false}}}});
   const rSum=R.reduce((a,b)=>a+b.v,0);
   document.getElementById('monNote').innerHTML=
-    `ปีงบประมาณ 2569 สะสม ${M.length} เดือน มีผู้เยี่ยมเยือน ${f(M.reduce((a,b)=>a+b.v,0),0)} คน
+    `ปีงบประมาณ ${FYT} สะสม ${M.length} เดือน มีผู้เยี่ยมเยือน ${f(M.reduce((a,b)=>a+b.v,0),0)} คน
      สร้างรายได้ ${f(rSum,1)} ล้านบาท เฉลี่ยเดือนละ ${f(rSum/M.length,1)} ล้านบาท
      ดูสามเส้นพร้อมกันจะเห็นว่าเดือนที่คนมามากไม่ได้แปลว่ารายได้สูงตามเสมอไป`;
 
