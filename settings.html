@@ -485,7 +485,7 @@ function renderSysStatus(){
 document.addEventListener('click',e=>{if(!e.target.closest('#sgClear'))return;
   const del=[];for(let i=0;i<sessionStorage.length;i++){const k=sessionStorage.key(i);if(/^gdc/.test(k))del.push(k)}del.forEach(k=>sessionStorage.removeItem(k));
   try{localStorage.removeItem('gdc-watch-at')}catch(x){}location.reload()});
-setTimeout(renderSysStatus,400);setTimeout(renderSysStatus,4000);
+setTimeout(renderSysStatus,400);window.onGdcMod=renderSysStatus;
 DS.init('settings',function(){renderSettings();wireSettings();wirePinAdmin()});
 </script>
 </body>

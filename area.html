@@ -542,22 +542,23 @@ function renderAreaKpi(){
   const isRate=/%|ร้อยละ|ดัชนี|อัตรา|เฉลี่ย/.test(o.unit+o.label);
   const tot=rows.reduce((a,b)=>a+b.v,0), avg=tot/rows.length;
   const hi=rows[0], lo=rows[rows.length-1], pos=rows.filter(r=>r.v>0);
-  const gap=pos.length>1?pos[0].v/pos[pos.length-1].v:null;
+  const gap=lo.v>0&&hi.v>0?hi.v/lo.v:null;
+  const sc=o.real?'':simChip({sim:1,real:0});
   document.getElementById('arKpi').innerHTML=[
-    kpiCard({sim:false,img:'area',color:'#0d9268',label:isRate?'ค่าเฉลี่ยทั้งจังหวัด':'รวมทั้งจังหวัด',value:f_(isRate?avg:tot,o.dec),unit:o.unit,sub:o.label}),
-    kpiCard({sim:false,img:'ranking',color:'#2f7fd1',label:'อำเภอที่สูงที่สุด',value:hi.d.name.replace('เมืองหนองบัวลำภู','เมืองฯ'),
+    kpiCard({sim:false,img:'area',color:'#0d9268',label:isRate?'ค่าเฉลี่ยทั้งจังหวัด':'รวมทั้งจังหวัด',value:f_(isRate?avg:tot,o.dec),unit:o.unit,chip:sc,sub:o.label}),
+    kpiCard({sim:false,img:'ranking',color:'#2f7fd1',label:'อำเภอที่สูงที่สุด',chip:sc,value:hi.d.name.replace('เมืองหนองบัวลำภู','เมืองฯ'),
       sub:f_(hi.v,o.dec)+' '+o.unit+(isRate||!tot?'':' · '+(hi.v/tot*100).toFixed(1)+'% ของจังหวัด')}),
-    kpiCard({sim:false,img:'gap',color:'#c98a1b',label:'อำเภอที่ต่ำที่สุด',value:lo.d.name.replace('เมืองหนองบัวลำภู','เมืองฯ'),
+    kpiCard({sim:false,img:'gap',color:'#c98a1b',label:'อำเภอที่ต่ำที่สุด',chip:sc,value:lo.d.name.replace('เมืองหนองบัวลำภู','เมืองฯ'),
       sub:f_(lo.v,o.dec)+' '+o.unit+(isRate||!tot?'':' · '+(lo.v/tot*100).toFixed(1)+'% ของจังหวัด')}),
-    kpiCard({sim:false,img:'compare',color:'#8b5cf6',label:'ความต่างสูงสุด–ต่ำสุด',value:gap?gap.toFixed(1):'—',unit:gap?'เท่า':'',
-      sub:gap?'อำเภอสูงสุดมากกว่าอำเภอต่ำสุด':'มีอำเภอที่เป็นศูนย์'})].join('');
+    kpiCard({sim:false,img:'compare',color:'#8b5cf6',label:'ความต่างสูงสุด–ต่ำสุด',value:gap?gap.toFixed(1):'—',unit:gap?'เท่า':'',chip:sc,
+      sub:gap?'อำเภอสูงสุดมากกว่าอำเภอต่ำสุด':'คำนวณไม่ได้ เพราะมีอำเภอที่เป็นศูนย์'})].join('');
   const above=rows.filter(r=>r.v>avg).map(r=>r.d.name);
   const n2=document.getElementById('areaNote2');
   if(n2)n2.innerHTML=`<b>${o.label}</b> · อำเภอ${hi.d.name}สูงที่สุด ${f_(hi.v,o.dec)} ${o.unit} ส่วนอำเภอ${lo.d.name}ต่ำที่สุด ${f_(lo.v,o.dec)} ${o.unit}
     · มี ${above.length} อำเภอที่สูงกว่าค่าเฉลี่ย (${above.join(' ')})`;
 }
 const _refreshSide=refreshSide;
-refreshSide=function(){_refreshSide();try{renderAreaKpi()}catch(e){console.error(e)}};
+refreshSide=function(){_refreshSide();try{renderAreaKpi();trustBar()}catch(e){console.error(e)}};
 DS.init('area',renderArea);
 </script>
 </body>

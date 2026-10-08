@@ -186,6 +186,7 @@ function renderSourcesExtra(){
 }
 
 
+window.onGdcMod=function(){try{renderSources()}catch(e){}};
 DS.init('sources',function(){renderSources();renderSourcesExtra()});
 </script>
 </body>

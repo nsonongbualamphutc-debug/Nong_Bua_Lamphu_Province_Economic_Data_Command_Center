@@ -642,7 +642,10 @@ function relabelIcons(root){
 /* พื้นหลังศิลป์ของการ์ด KPI — ใช้ชื่อเดียวกับไอคอนของการ์ดนั้น
    เป็น background-image ใน CSS ถ้าไฟล์ยังไม่มีจะไม่ขึ้นเฉย ๆ ไม่มี error และไม่กระทบข้อความ */
 const CARD_BG_DIR='assets/cardbg/';
-function cardBg(name){return name?`<span class="kpibg" style="background-image:url('${CARD_BG_DIR}bg-${name}.webp')"></span>`:''}
+/* ไอคอนที่ไม่มีภาพพื้นหลังการ์ดของตัวเอง ใช้ภาพที่มีอยู่แล้วซึ่งความหมายใกล้กัน */
+const BG_ALIAS={area:'landuse',ranking:'district',gap:'gini',compare:'unemprate',analysis:'forecast',disburse:'fiscal',cropvalue:'crop',
+  network:'gpp',database:'forecast',institution:'spend',datagap:'gauge-carry',history:'gauge-current',settings:'gauge-overall'};
+function cardBg(name){name=BG_ALIAS[name]||name;return name?`<span class="kpibg" style="background-image:url('${CARD_BG_DIR}bg-${name}.webp')"></span>`:''}
 function kpiCard(o){
   const T=o.go?'button':'div';
   let sc=o.sim===false?(SIM_TOUCH=null,''):simChip(simTake());
@@ -2131,6 +2134,8 @@ const TRUST_PAGES={trade:['cpi','credit'],
 function trustBar(){
   if(typeof PAGE==='undefined'||!TRUST_PAGES.hasOwnProperty(PAGE.id))return;
   const v=document.querySelector('.view.on'); if(!v)return;
+  /* หน้าเชิงพื้นที่: ตัวชี้วัดที่เลือกเป็นข้อมูลจริง ไม่ต้องเตือนเรื่องข้อมูลจำลองรายเดือน */
+  if(PAGE.id==='area'&&typeof curOpt==='function'){try{if(curOpt().real){const e=v.querySelector('.trust');if(e)e.remove();return}}catch(x){}}
   const ids=TRUST_PAGES[PAGE.id]||DATASETS.map(d=>d.id);
   const st=ids.map(id=>({id,d:DATASETS.find(x=>x.id===id),r:realStat(id)})).filter(x=>x.d&&x.r);
   const full=st.filter(x=>x.r.share>=.999).length, none=st.filter(x=>x.r.real===0).length, part=st.length-full-none;
@@ -3365,7 +3370,7 @@ function updateBell(){
   const n=GDC.unread(), b=document.getElementById('bellN');
   if(b){b.textContent=n>9?'9+':n||'';b.classList.toggle('on',n>0)}
   const bt=document.getElementById('btnBell'); if(bt)bt.classList.toggle('ring',n>0);
-  sgdcDate(); try{if(PAGE)gdcLive(PAGE.id)}catch(e){}
+  sgdcDate(); try{if(PAGE)gdcLive(PAGE.id)}catch(e){} try{if(typeof window.onGdcMod==='function')window.onGdcMod()}catch(e){}
   const p=document.getElementById('notiPanel'); if(p&&p.classList.contains('on'))drawNoti();
 }
 const PG_NAME={fiscal:'การคลังภาครัฐ',agri:'ภาคเกษตร',labor:'ตลาดแรงงาน',household:'ครัวเรือนและความเหลื่อมล้ำ',population:'ประชากร',
