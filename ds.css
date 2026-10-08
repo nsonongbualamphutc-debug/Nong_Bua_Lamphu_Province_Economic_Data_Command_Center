@@ -1861,3 +1861,45 @@ body.tour .topbar,body.tour header.top{position:relative;z-index:800}
   .pk{gap:8px;padding:9px 10px}.pk-i{width:36px;height:36px}.pk-i img{width:30px;height:30px}
   .pk-t b{font-size:21px}.pk-t b small{font-size:11.5px}.pk-t span{font-size:11px;white-space:normal;line-height:1.3}
 }
+
+/* คอลัมน์ซ้าย: แผนที่ + สัดส่วนสินค้า · สองคอลัมน์ยืดเท่ากัน */
+.promo-grid{align-items:stretch}
+.promo-left{display:flex;flex-direction:column;gap:14px;min-width:0}
+.promo-left .promo-map{flex:1}
+.pb-head,.pb-row{display:grid;grid-template-columns:minmax(110px,150px) 1fr 1fr;gap:12px;align-items:center}
+.pb-head{font-size:11px;color:var(--faint);padding:0 0 4px;border-bottom:1px solid #edf3ee}
+.pb-row{padding:6px 0;border-bottom:1px dashed #edf3ee;font-size:12.5px}
+.pb-row:last-child{border-bottom:0}
+.pb-row .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pb-row .nm img{width:20px;height:20px;vertical-align:-5px;margin-right:6px}
+.pb-c{display:grid;grid-template-columns:1fr 52px;gap:8px;align-items:center}
+.pb-c .tr{height:12px;background:#edf3ee;border-radius:6px;overflow:hidden}.pb-c .tr i{display:block;height:100%;border-radius:6px}
+.pb-c b{font-family:var(--fn);font-size:12.5px;text-align:right}
+@media(max-width:640px){.pb-head,.pb-row{grid-template-columns:96px 1fr 1fr;gap:8px}.pb-c{grid-template-columns:1fr 40px}}
+
+.pb-row{padding:4px 0}
+
+/* องค์กรเกษตรกร · สองคอลัมน์สูงเท่ากัน ไม่เหลือพื้นที่ว่างใต้การ์ด */
+.org-grid{align-items:stretch}
+.org-grid>.pcard{display:flex;flex-direction:column}
+.org-grid>.pcard>.pc-h.sub{margin-top:auto;padding-top:14px}
+.org-right>.pcard:last-child{flex:1}
+@media(max-width:1150px){.org-grid>.pcard>.pc-h.sub{margin-top:14px}}
+
+/* ไทล์องค์กรยืดเต็มพื้นที่ที่เหลือแทนการเว้นช่องว่างกลางการ์ด */
+.org-grid>.pcard>.pc-h.sub{margin-top:14px;padding-top:0}
+.org-grid>.pcard>.org-tiles{flex:1;grid-auto-rows:1fr}
+.org-grid .ot{align-items:center}
+@media(max-width:1150px){.org-grid>.pcard>.org-tiles{flex:none}}
+
+/* ══ การ์ดที่วางคู่กันในกริด · การ์ดที่สั้นกว่ายืดกราฟให้เต็มความสูงของแถว ไม่เหลือพื้นที่ว่างใต้กราฟ ══ */
+.grid>.c{display:flex;flex-direction:column}
+.grid>.c>.b{flex:1 1 auto;display:flex;flex-direction:column}
+.grid>.c>.b>.ch{flex:1 1 auto;min-height:190px}
+.grid>.c>.b>.ch.lg{min-height:240px}
+.grid>.c>.b>.sc{flex:1 1 auto}
+
+/* ฐานข้อมูลพื้นฐาน · ไทล์ยืดเต็มการ์ดเมื่อการ์ดข้าง ๆ สูงกว่า */
+#baseInfo{display:flex;flex-direction:column}
+#baseInfo>.grid{flex:1 1 auto;align-items:stretch}
+#baseInfo .mini{display:flex;flex-direction:column;justify-content:center}
+#baseInfo .bi-sub{font-size:12px;font-weight:600;color:var(--dim);margin:12px 0 6px}

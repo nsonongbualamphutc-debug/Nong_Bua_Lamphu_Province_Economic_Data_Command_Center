@@ -111,8 +111,11 @@
           <select id="promoSel"><option value="tour">แหล่งท่องเที่ยวเชิงเกษตร</option><option value="plot">จำนวนแปลงใหญ่</option></select></label>
       </div>
       <div class="promo-grid">
-        <div class="pcard promo-map"><div class="pc-h"><span class="pin"></span><h3>แผนที่แสดงข้อมูลรายอำเภอ</h3><span class="u" id="promoMapSub"></span></div>
-          <div id="promoMap" class="pmap"></div><div class="note" id="promoMapNote"></div></div>
+        <div class="promo-left">
+          <div class="pcard promo-map"><div class="pc-h"><span class="pin"></span><h3>แผนที่แสดงข้อมูลรายอำเภอ</h3><span class="u" id="promoMapSub"></span></div>
+            <div id="promoMap" class="pmap"></div><div class="note" id="promoMapNote"></div></div>
+          <div class="pcard" id="promoBars"></div>
+        </div>
         <div class="pcard promo-side" id="promoSide"></div>
       </div>
     </div>
@@ -321,10 +324,26 @@ function promoData(){
 /* ── แผนที่ SVG ── */
 const GREENS=['#e3f1d9','#c3e2a8','#93c97a','#5fa858','#2f7d43','#14522e'];
 function greenOf(t){return GREENS[Math.max(0,Math.min(GREENS.length-1,Math.floor(t*(GREENS.length-.001))))]}
-async function drawPromoMap(P){
+let PM_LAST=null, PM_H=null;
+/* เฝ้าความสูงแผงขวา · ไอคอนและภาพโหลดเสร็จทีหลังทำให้ความสูงเปลี่ยน จึงปรับความสูงแผนที่ตามทุกครั้ง */
+(function(){
+  if(typeof ResizeObserver==='undefined')return;
+  let t=null;
+  const ro=new ResizeObserver(()=>{clearTimeout(t);t=setTimeout(()=>{if(PM_LAST&&!document.getElementById('agri-org').classList.contains('hide'))drawPromoMap(PM_LAST,PM_H,0)},120)});
+  const hook=()=>{const a=document.getElementById('promoSide'),b=document.getElementById('promoBars');if(a)ro.observe(a);if(b)ro.observe(b)};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook);else hook();
+})();
+let PM_SEQ=0;
+async function drawPromoMap(P,forceH,iter){
+  PM_LAST=P; const seq=++PM_SEQ;
   const box=document.getElementById('promoMap'); if(!box)return;
   const geo=await ampGeoJson();
-  const W=box.clientWidth||700, narrow=W<470, H=narrow?380:560;
+  if(seq!==PM_SEQ)return;            /* มีการวาดรอบใหม่กว่าแล้ว ไม่ให้รอบเก่ามาทับ */
+  const W=box.clientWidth||700, narrow=W<470;
+  /* สองคอลัมน์: ยืดแผนที่ให้คอลัมน์ซ้ายสูงเท่าแผงขวา · คอลัมน์เดียว (แท็บเล็ต/มือถือ) ใช้ความสูงคงที่ */
+  let H=forceH||(narrow?380:560);
+  const grid=box.closest('.promo-grid');
+  const twoCol=!narrow&&grid&&getComputedStyle(grid).gridTemplateColumns.split(' ').length>1;
   const M=PROMO_V==='tour'?P.tour:P.plot, has=M.some(r=>r.v!=null);
   const vals=M.filter(r=>r.v!=null).map(r=>r.v), mn=vals.length?Math.min(...vals):0, mx=vals.length?Math.max(...vals):1;
   if(!geo){box.innerHTML='<div class="ps-pend">โหลดขอบเขตอำเภอไม่ได้ ตรวจไฟล์ assets/nbl-amphoe.geojson</div>';return}
@@ -383,6 +402,17 @@ async function drawPromoMap(P){
   box.innerHTML=`<div class="pm-wrap" style="height:${H}px">${svg}${cards}<span class="pm-n">N ↑</span></div>${lg}`+
     (narrow?`<div class="pm-list">${P.tour.slice().sort((a,b)=>b.v-a.v).map(t=>`<button class="prk${PROMO_A===t.name?' on':''}" data-pm="${t.name}">
       <span class="n">${t.rank}</span><span class="a">${t.name}</span><span class="tr"><i style="width:${(t.v/mx*100).toFixed(0)}%"></i></span><b>${t.v}</b></button>`).join('')}</div>`:'');
+  /* สองคอลัมน์: ปรับความสูงแผนที่ให้คอลัมน์ซ้ายสูงเท่าแผงขวาพอดี ไม่ให้ฝั่งไหนเหลือพื้นที่ว่าง (วาดซ้ำครั้งเดียว) */
+  if(twoCol&&(iter||0)<3){
+    const nat=el=>{if(!el)return 0;const cs=getComputedStyle(el);
+      return [...el.children].reduce((a,c)=>{const k=getComputedStyle(c);return a+c.offsetHeight+parseFloat(k.marginTop)+parseFloat(k.marginBottom)},0)
+        +parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom)+parseFloat(cs.borderTopWidth)+parseFloat(cs.borderBottomWidth)};
+    const card=box.closest('.pcard'), barsEl=document.getElementById('promoBars'), sideEl=document.getElementById('promoSide');
+    const left=nat(card)+(barsEl?barsEl.offsetHeight+14:0), right=nat(sideEl);
+    const nh=Math.round(Math.max(380,Math.min(940,H+(right-left))));
+    PM_H=H;
+    if(Math.abs(nh-H)>6){PM_H=nh;drawPromoMap(P,nh,(iter||0)+1);}
+  }
 }
 function renderPromo(){
   const P=promoData(), B=P.B;
@@ -397,7 +427,7 @@ function renderPromo(){
   const sel=document.getElementById('promoSel'); if(sel)sel.value=PROMO_V;
   $('#promoMapSub').textContent='กดอำเภอบนแผนที่เพื่อดูรายละเอียด';
   window.onChoPick=nm=>{PROMO_A=PROMO_A===nm?null:nm;renderPromo()};
-  if(!document.getElementById('agri-org').classList.contains('hide'))drawPromoMap(P);
+
   const topT=P.tour.slice().sort((a,b)=>b.v-a.v)[0];
   $('#promoMapNote').innerHTML=PROMO_V==='tour'
     ? `สีเข้มคือมีแหล่งท่องเที่ยวเชิงเกษตรมาก · อำเภอ<b>${topT.name}</b> มากที่สุด ${topT.v} แห่ง`
@@ -411,6 +441,17 @@ function renderPromo(){
   const cmx=Math.max(...R.map(r=>r[1]));
   const stat=(ic,v,u,cls)=>`<div class="ps-st ${cls}"><span class="icow img">${icoImg(ic,34)}</span><b>${v}</b><small>${u}</small></div>`;
   const plotStats=AP&&AP.v!=null?[AP.v,AP.farmers,AP.area]:(A?null:[B.bigPlot.plots,B.bigPlot.farmers,B.bigPlot.area]);
+  /* สัดส่วนตามประเภทสินค้า · วางใต้แผนที่ให้สองคอลัมน์สูงใกล้กัน · แท่งเทียบทั้งจำนวนแปลงและพื้นที่ */
+  const amx=Math.max(...R.map(r=>r[3]));
+  const bars=document.getElementById('promoBars');
+  if(bars)bars.innerHTML=`<div class="pc-h"><span class="pin"></span><h3>สัดส่วนจำแนกตามประเภทสินค้าเกษตร</h3>
+      <span class="u">${isProv?'ภาพรวมจังหวัด':'อำเภอ'+A.name}</span></div>
+    <div class="pb-head"><span></span><span>จำนวนแปลง</span><span>พื้นที่ (ไร่)</span></div>
+    ${R.map(r=>`<div class="pb-row" data-tip2="${tipOf({t:'แปลงใหญ่ '+r[0],d:f_num(r[1])+' แปลง · เกษตรกร '+f_num(r[2])+' ราย · '+f_num(r[3])+' ไร่',
+        calc:'คิดเป็น '+(r[1]/sum[0]*100).toFixed(1)+'% ของจำนวนแปลง · '+(r[3]/sum[2]*100).toFixed(1)+'% ของพื้นที่',src:'crop',when:''})}">
+      <span class="nm">${rowIco(r[0],20)}${r[0]}</span>
+      <span class="pb-c"><span class="tr"><i style="width:${(r[1]/cmx*100).toFixed(0)}%;background:${PLOT_COL[r[0]]||'#5fa858'}"></i></span><b>${r[1]}</b></span>
+      <span class="pb-c"><span class="tr"><i style="width:${(r[3]/amx*100).toFixed(0)}%;background:${PLOT_COL[r[0]]||'#5fa858'};opacity:.55"></i></span><b>${f(r[3],0)}</b></span></div>`).join('')}`;
   side.innerHTML=`
     <div class="ps-hero" style="--img:${A?`url('${AMP_IMG(A.code)}'),`:''}url('assets/a-bigplot.jpg')">
       <div><span class="pin w"></span><b>${A?'อำเภอ'+A.name:'จังหวัดหนองบัวลำภู'}</b><small>${A?'อันดับ '+A.rank+' ด้านแหล่งท่องเที่ยวเชิงเกษตร':'ภาพรวมทั้ง 6 อำเภอ'}</small></div>
@@ -429,9 +470,6 @@ function renderPromo(){
           <table class="ps-tb"><thead><tr><th>ประเภทสินค้า</th><th>แปลง</th><th>เกษตรกร (ราย)</th><th>พื้นที่ (ไร่)</th></tr></thead><tbody>
           ${R.map(r=>`<tr><td>${rowIco(r[0],18)}${r[0]}</td><td>${f(r[1],0)}</td><td>${f(r[2],0)}</td><td>${f(r[3],0)}</td></tr>`).join('')}</tbody>
           <tfoot><tr><td>รวม</td><td>${f(sum[0],0)}</td><td>${f(sum[1],0)}</td><td>${f(sum[2],0)}</td></tr></tfoot></table></div>
-        <div class="ps-box"><div class="ps-bh">สัดส่วนจำแนกตามประเภทสินค้าเกษตร</div>
-          ${R.map(r=>`<div class="ps-bar" data-tip2="${tipOf({t:'แปลงใหญ่ '+r[0],d:f_num(r[1])+' แปลง · เกษตรกร '+f_num(r[2])+' ราย · '+f_num(r[3])+' ไร่',calc:'คิดเป็น '+(r[1]/sum[0]*100).toFixed(1)+'% ของจำนวนแปลง · '+(r[3]/sum[2]*100).toFixed(1)+'% ของพื้นที่',src:'crop',when:''})}">
-            <span class="nm">${rowIco(r[0],18)}${r[0]}</span><span class="tr"><i style="width:${(r[1]/cmx*100).toFixed(0)}%;background:${PLOT_COL[r[0]]||'#5fa858'}"></i></span><b>${r[1]} แปลง</b></div>`).join('')}</div>
       </div>
       <div class="ps-box ps-tour"><div class="ps-bh"><span class="pin"></span>แหล่งท่องเที่ยวเชิงเกษตร${A?'ในอำเภอ'+A.name:'รายอำเภอ'}<b class="ps-cnt">${f(A?A.v:P.tot,0)} แห่ง</b></div>
         ${A?`<div class="ps-tcards">${Array.from({length:Math.min(5,A.v)}).map((_,i)=>`<div class="ps-tc"><span class="ph"></span><span class="l1"></span><span class="l2"></span></div>`).join('')}</div>
@@ -441,6 +479,7 @@ function renderPromo(){
             <img src="${AMP_IMG(t.code)}" alt="" data-opt onerror="this.remove()"><span>${t.name==='เมืองหนองบัวลำภู'?'เมืองฯ':t.name}</span><b>${t.v}</b><small>แห่ง</small></button>`).join('')}</div>`}
       </div>
     </div>`;
+  if(!document.getElementById('agri-org').classList.contains('hide'))drawPromoMap(P);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pm]');if(b){PROMO_A=PROMO_A===b.dataset.pm?null:b.dataset.pm;renderPromo()}});
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='promoSel'){PROMO_V=e.target.value;renderPromo()}});
@@ -667,7 +706,10 @@ function renderAgri(){
     <div class="grid g2" style="gap:10px;margin-top:10px">
       <div class="mini"><div class="l">ประชากรชาย</div><div class="v">${f(B.popM,0)}<small> คน (49.67%)</small></div></div>
       <div class="mini"><div class="l">ประชากรหญิง</div><div class="v">${f(B.popF,0)}<small> คน (50.33%)</small></div></div></div>
-    <div class="note">องค์กรปกครองส่วนท้องถิ่น: อบจ. ${B.org.obj} แห่ง · เทศบาลเมือง ${B.org.tessabanMuang} แห่ง · เทศบาลตำบล ${B.org.tessabanTambon} แห่ง · อบต. ${B.org.obt} แห่ง</div>`;
+    <div class="bi-sub">องค์กรปกครองส่วนท้องถิ่น</div>
+    <div class="grid g4" style="gap:10px">
+      ${[['อบจ.',B.org.obj],['เทศบาลเมือง',B.org.tessabanMuang],['เทศบาลตำบล',B.org.tessabanTambon],['อบต.',B.org.obt]].map(x=>
+        `<div class="mini"><div class="l">${x[0]}</div><div class="v">${f(x[1],0)}<small> แห่ง</small></div></div>`).join('')}</div>`;
   mk('cAgeBand',{type:'bar',data:{labels:B.ageBand.map(x=>x[0]),
     datasets:[{data:B.ageBand.map(x=>x[1]),
       backgroundColor:B.ageBand.map(x=>x[1]>20000?cv('--brand'):x[1]>9000?cv('--brand2'):cv('--line')),borderRadius:6,barPercentage:.7}]},
