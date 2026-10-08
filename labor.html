@@ -163,26 +163,28 @@ function renderLabor(){
       'ประกอบด้วย สถานภาพแรงงานรายไตรมาส · จำนวนและอัตราการว่างงาน · การมีงานทำจำแนกตามอุตสาหกรรมและสถานภาพการทำงาน · การทำงานต่ำกว่าระดับด้านชั่วโมงการทำงาน')}</div></div>`;
 
   /* ── KPI ── */
-  const ueY=yoy?pctc(last.ue,yoy.ue):null;
+  /* ผู้ว่างงานบางไตรมาสเป็น n.a. ในระบบบัญชีข้อมูล → ไม่เทียบ และแสดงเป็น n.a. */
+  const ueNA=last.ue==null, cmpUE=yoy&&!ueNA&&yoy.ue!=null&&last.ur!=null&&yoy.ur!=null;
+  const ueY=cmpUE?pctc(last.ue,yoy.ue):null;
   const aggNote=LB.freq==='Y'?'ค่าเฉลี่ยของไตรมาสในปีนั้น':'ค่าที่สำรวจได้ในไตรมาสนั้น';
   const SRC='labor';
   document.getElementById('lbKpi').innerHTML=[
-    kpiCard({icon:'people',img:'unemployed',color:cv('--coral'),label:'จำนวนผู้ว่างงาน',value:f(last.ue,0),unit:'คน',
+    kpiCard({icon:'people',img:'unemployed',color:cv('--coral'),label:'จำนวนผู้ว่างงาน',value:ueNA?'n.a.':f(last.ue,0),unit:ueNA?'':'คน',
       /* ฐานปีก่อนเล็กมาก (เช่น 64 คน) ร้อยละจะพุ่งหลายพัน% จนอ่านผิด → แสดงเป็นจำนวนคนที่เปลี่ยน และตัดสถานะจากอัตราว่างงานแทน */
       chip:(ueY==null?'<span class="chip">—</span>'
-          :(yoy&&yoy.ue<500)?`<span class="chip ${last.ue>=yoy.ue?'dn':'up'}">${last.ue>=yoy.ue?'+':'−'}${f(Math.abs(last.ue-yoy.ue),0)} คน</span>`
+          :(cmpUE&&yoy.ue<500)?`<span class="chip ${last.ue>=yoy.ue?'dn':'up'}">${last.ue>=yoy.ue?'+':'−'}${f(Math.abs(last.ue-yoy.ue),0)} คน</span>`
           :chip(ueY))+' '+
-        ((yoy&&yoy.ue<500&&last.ur!=null&&yoy.ur!=null)
+        ((cmpUE&&yoy.ue<500)
           ?statusBadge((last.ur-yoy.ur)*10,true,'อัตราการว่างงานเปลี่ยน '+(last.ur-yoy.ur>=0?'+':'')+(last.ur-yoy.ur).toFixed(2)+' จุด (ใช้แทนร้อยละเพราะฐานปีก่อนมีผู้ว่างงานน้อยมาก)')
           :statusBadge(ueY,true,'จำนวนผู้ว่างงานเทียบงวดเดียวกันปีก่อน')),
-      sub:yoy?('เทียบ '+prevLabel+' · '+f(yoy.ue,0)+' คน'):'ไม่มีงวดปีก่อนให้เทียบ',
+      sub:ueNA?'ไตรมาสนี้ไม่มีค่าประมาณ (n.a.) ในระบบบัญชีข้อมูล':yoy?('เทียบ '+prevLabel+' · '+(yoy.ue==null?'n.a.':f(yoy.ue,0)+' คน')):'ไม่มีงวดปีก่อนให้เทียบ',
       tip:tipOf({t:'จำนวนผู้ว่างงาน',
         d:'ผู้ที่ไม่ได้ทำงานเลยแม้แต่ชั่วโมงเดียวในสัปดาห์สำรวจ พร้อมทำงาน และกำลังหางาน · '+aggNote,
         calc:'นับจากกลุ่มตัวอย่างครัวเรือนแล้วถ่วงน้ำหนักขึ้นเป็นระดับจังหวัด'+(LB.freq==='Y'?' จากนั้นเฉลี่ยไตรมาสในปีนั้น':''),
         src:SRC,when:curLabel})}),
-    kpiCard({icon:'chart',img:'unemprate',color:cv('--gold'),label:'อัตราการว่างงาน',value:last.ur.toFixed(2),unit:'%',
-      chip:'<span class="chip fl">'+(yoy?((last.ur-yoy.ur>0?'+':'')+(last.ur-yoy.ur).toFixed(2)+' จุด'):'—')+'</span>'
-        +' '+statusBadge(yoy?-(last.ur-yoy.ur)*10:null,false,'อัตราการว่างงานเทียบงวดเดียวกันปีก่อน'),
+    kpiCard({icon:'chart',img:'unemprate',color:cv('--gold'),label:'อัตราการว่างงาน',value:last.ur==null?'n.a.':last.ur.toFixed(2),unit:last.ur==null?'':'%',
+      chip:'<span class="chip fl">'+(cmpUE?((last.ur-yoy.ur>0?'+':'')+(last.ur-yoy.ur).toFixed(2)+' จุด'):'—')+'</span>'
+        +' '+statusBadge(cmpUE?-(last.ur-yoy.ur)*10:null,false,'อัตราการว่างงานเทียบงวดเดียวกันปีก่อน'),
       sub:'จากกำลังแรงงาน '+f(last.force,0)+' คน',
       tip:tipOf({t:'อัตราการว่างงาน',
         d:'สัดส่วนผู้ว่างงานต่อกำลังแรงงานรวม · ไตรมาส 1 ของทุกปีมักสูงกว่าไตรมาสอื่น เพราะเป็นช่วงหลังฤดูเก็บเกี่ยว แรงงานเกษตรว่างงานตามฤดูกาล',
@@ -229,7 +231,7 @@ function renderLabor(){
     <th class="r">อัตราว่างงาน</th><th class="r">มีส่วนร่วม</th></tr></thead><tbody>`+
     Q.map((x,i)=>`<tr><td>${QL(x)}</td>${ec('labor.quarters.'+i+'.pop15',f(x.pop15,0),0)}
       ${ec('labor.quarters.'+i+'.force',f(x.force,0),0)}${ec('labor.quarters.'+i+'.emp',f(x.emp,0),0)}
-      ${ec('labor.quarters.'+i+'.ue',f(x.ue,0),0)}${ec('labor.quarters.'+i+'.ur',x.ur.toFixed(2),2)}
+      ${ec('labor.quarters.'+i+'.ue',x.ue==null?'n.a.':f(x.ue,0),0)}${ec('labor.quarters.'+i+'.ur',x.ur==null?'n.a.':x.ur.toFixed(2),2)}
       <td class="r">${x.lfpr.toFixed(1)}%</td></tr>`).join('')+'</tbody>';
 
   /* ── รายปี ── */

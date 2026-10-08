@@ -2,138 +2,252 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ศูนย์ควบคุมแหล่งข้อมูล · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ศูนย์ควบคุมแหล่งข้อมูล (API) · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ds.css">
 <style>
-/* ══ ศูนย์ควบคุมแหล่งข้อมูล ══
-   รวมทุกชุดข้อมูลที่แดชบอร์ดใช้ บอกว่ามาจากไหน (API / ไฟล์ / ระบบกรอก / จำลอง)
-   ตรวจการเชื่อมต่อสด วันที่หน่วยงานปรับปรุงบนระบบบัญชีข้อมูล ประวัติการดึงมาใช้ และคุณภาพข้อมูล */
-:root{--a-api:#0d8a5f;--a-link:#b5851a;--a-avail:#356aad;--a-gas:#7a4fa8;--a-file:#5c7a70;--a-ext:#2a8fa0;--a-sim:#c34a33}
-body{margin:0;background:#eef3f1;font-family:var(--fs,'Sarabun',sans-serif);color:#14231f}
-.wrap{max-width:1280px;margin:0 auto;padding:0 18px 60px}
-.hero{background:linear-gradient(120deg,#0b3c32,#0d6f52 60%,#1f8a5f);color:#fff;border-radius:0 0 26px 26px;padding:26px 28px 22px;margin:0 -18px 18px;position:relative;overflow:hidden}
-.hero::after{content:'';position:absolute;right:-60px;top:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%)}
-.hero h1{font-family:var(--fd);font-size:28px;margin:0 0 4px;position:relative;z-index:1}
-.hero p{margin:0;font-size:13.5px;opacity:.88;max-width:760px;line-height:1.6;position:relative;z-index:1}
-.hero .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;position:relative;z-index:1}
-.hb{font:inherit;font-size:13px;border-radius:11px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;padding:8px 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
-.hb.pri{background:#f0d79a;color:#0b3c32;border-color:#f0d79a;font-weight:600}
-.hb:hover{filter:brightness(1.08)}
-.hero .chk{font-size:12px;opacity:.8;margin-top:10px;position:relative;z-index:1}
-.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:14px}
-.kp{background:#fff;border:1px solid #e1ece4;border-radius:16px;padding:12px 14px;box-shadow:0 10px 24px -20px rgba(11,60,50,.5);border-top:4px solid var(--c,#0d8a5f)}
-.kp b{display:block;font-family:var(--fn);font-size:28px;line-height:1.1}
-.kp span{font-size:12px;color:#4d635b}
-.kp small{display:block;font-size:11px;color:#80938c;margin-top:2px}
-.mix{background:#fff;border:1px solid #e1ece4;border-radius:16px;padding:14px 16px;margin-bottom:14px}
-.mix h3{margin:0 0 10px;font-family:var(--fd);font-size:16px;color:#0b3c32}
-.bar{display:flex;height:18px;border-radius:9px;overflow:hidden;background:#edf3ee}
-.bar i{display:block;height:100%}
-.lg{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:9px;font-size:12px;color:#3d5550}
-.lg span{display:inline-flex;align-items:center;gap:6px}.lg em{width:11px;height:11px;border-radius:3px;display:inline-block}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;position:sticky;top:0;z-index:5;background:#eef3f1;padding:8px 0}
-.tabs button{font:inherit;font-size:13.5px;border:1px solid #d6e3db;background:#fff;border-radius:12px;padding:8px 15px;cursor:pointer;color:#3d5550}
-.tabs button.on{background:#0b3c32;color:#fff;border-color:#0b3c32;font-weight:600}
-.tabs button b{font-family:var(--fn);margin-left:6px;opacity:.8}
-.pane{display:none}.pane.on{display:block}
-.tp{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;border-radius:999px;padding:2px 10px;white-space:nowrap;color:var(--tc);background:color-mix(in srgb,var(--tc) 12%,#fff);border:1px solid color-mix(in srgb,var(--tc) 30%,#fff)}
-.tp i{width:7px;height:7px;border-radius:50%;background:var(--tc)}
-.tp.api{--tc:var(--a-api)}.tp.link{--tc:var(--a-link)}.tp.avail{--tc:var(--a-avail)}.tp.gas{--tc:var(--a-gas)}.tp.file{--tc:var(--a-file)}.tp.ext{--tc:var(--a-ext)}.tp.sim{--tc:var(--a-sim)}
+/* ══════════ ศูนย์ควบคุมแหล่งข้อมูล · ธีมห้องควบคุมดิจิทัล ══════════ */
+html,body{height:auto!important;overflow:auto!important;overflow-x:hidden!important}
+:root{--bg0:#04140f;--bg1:#06211a;--gl:rgba(255,255,255,.055);--gl2:rgba(255,255,255,.09);--ln:rgba(140,255,210,.14);
+  --tx:#e8f5ef;--tx2:#9fc1b3;--tx3:#6f8f83;--neo:#3cf0b0;--gold:#f0d79a;
+  --a-api:#3ce0a0;--a-link:#f0c45a;--a-avail:#6aa8ff;--a-gas:#b48cff;--a-file:#8fb5a8;--a-ext:#49d4e8;--a-sim:#ff7a6a}
+body{margin:0;background:var(--bg0);color:var(--tx);font-family:'Sarabun',sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:
+  radial-gradient(900px 500px at 85% -10%,rgba(60,240,176,.16),transparent 60%),
+  radial-gradient(700px 500px at -10% 30%,rgba(106,168,255,.10),transparent 60%),
+  linear-gradient(180deg,#05190f 0%,#04140f 60%,#030e0b 100%)}
+body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.35;
+  background-image:linear-gradient(rgba(140,255,210,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(140,255,210,.06) 1px,transparent 1px);
+  background-size:44px 44px;mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 75%)}
+a{color:inherit}
+.cc-wrap{max-width:1320px;margin:0 auto;padding:0 20px 70px}
+/* แถบบน */
+.cc-top{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(4,20,15,.72);border-bottom:1px solid var(--ln)}
+.cc-top .cc-in{max-width:1320px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:12px}
+.cc-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.cc-brand .cc-lg{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#0d6f52,#3cf0b0);box-shadow:0 0 22px -4px var(--neo)}
+.cc-brand .cc-lg svg{width:20px;height:20px;stroke:#04140f;fill:none;stroke-width:2}
+.cc-brand b{font-family:'Kanit',sans-serif;font-weight:600;font-size:15px;display:block;line-height:1.2}
+.cc-brand small{font-size:11px;color:var(--tx3)}
+.cc-live{display:inline-flex;align-items:center;gap:7px;font:600 11.5px 'Kanit',sans-serif;letter-spacing:1px;color:var(--neo);border:1px solid rgba(60,240,176,.35);
+  border-radius:999px;padding:4px 11px;background:rgba(60,240,176,.08);margin-left:6px}
+.cc-live i{width:8px;height:8px;border-radius:50%;background:var(--neo);box-shadow:0 0 10px var(--neo);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.25;transform:scale(.8)}}
+.cc-sp{flex:1}
+.cc-ib{font:inherit;font-size:13px;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--ln);background:var(--gl);color:var(--tx);
+  border-radius:12px;padding:8px 13px;cursor:pointer;text-decoration:none;transition:.2s}
+.cc-ib:hover{background:var(--gl2);border-color:rgba(60,240,176,.45);box-shadow:0 0 18px -8px var(--neo)}
+.cc-ib svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.cc-ib.cc-pri{background:linear-gradient(135deg,#f0d79a,#e8b84a);color:#2a1d02;border-color:transparent;font-weight:600}
+#btnBell{position:relative}
+#btnBell .bdg{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;border-radius:10px;background:#ff5a4a;color:#fff;font:700 10.5px/19px 'Kanit',sans-serif;
+  text-align:center;padding:0 5px;font-style:normal;display:none;box-shadow:0 0 12px #ff5a4a}
+#btnBell .bdg.on{display:block}
+#btnBell.ring svg{animation:bellr 2.4s ease-in-out infinite;transform-origin:50% 10%}
+/* hero */
+.cc-hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.9fr);gap:20px;align-items:stretch;margin:26px 0 20px}
+.cc-glass{background:linear-gradient(180deg,var(--gl2),var(--gl));border:1px solid var(--ln);border-radius:22px;backdrop-filter:blur(10px);
+  box-shadow:0 30px 60px -40px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.06)}
+.cc-h-l{padding:26px 28px;position:relative;overflow:hidden}
+.cc-h-l .cc-eyebrow{font:600 12px 'Kanit',sans-serif;letter-spacing:2px;color:var(--neo);text-transform:uppercase}
+.cc-h-l h1{font-family:'Kanit',sans-serif;font-weight:600;font-size:38px;line-height:1.15;margin:8px 0 10px;
+  background:linear-gradient(90deg,#fff,#b8ffe2 55%,#f0d79a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cc-h-l p{margin:0;color:var(--tx2);font-size:14.5px;line-height:1.7;max-width:640px}
+.cc-h-l .cc-acts{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+.cc-h-l .cc-chk{margin-top:14px;font-size:12.5px;color:var(--tx3);display:flex;align-items:center;gap:8px}
+.cc-h-l .cc-chk .cc-bar{flex:0 0 160px;height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+.cc-h-l .cc-chk .cc-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--neo),var(--gold));transition:width .3s}
+.cc-h-r{padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative;overflow:hidden}
+.cc-gauge{position:relative;width:220px;height:220px}
+.cc-gauge svg{width:100%;height:100%;transform:rotate(-90deg)}
+.cc-gauge .cc-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cc-gauge b{font:700 54px/1 'Kanit',sans-serif;color:#fff;text-shadow:0 0 30px rgba(60,240,176,.55)}
+.cc-gauge b small{font-size:24px;color:var(--neo)}
+.cc-gauge span{font-size:11.5px;color:var(--tx2);margin-top:4px;max-width:150px;text-align:center;line-height:1.35}
+.cc-h-r .cc-row{display:flex;gap:10px;width:100%}
+.cc-h-r .cc-row div{flex:1;text-align:center;background:rgba(0,0,0,.18);border:1px solid var(--ln);border-radius:14px;padding:9px 6px}
+.cc-h-r .cc-row b{display:block;font:600 22px 'Kanit',sans-serif}.cc-h-r .cc-row span{font-size:11px;color:var(--tx3)}
+/* ตัวเลข */
+.cc-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.cc-kp{padding:14px 16px;position:relative;overflow:hidden;cursor:pointer;transition:.2s}
+.cc-kp:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--c) 55%,transparent);box-shadow:0 18px 40px -26px var(--c)}
+.cc-kp::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);box-shadow:0 0 14px var(--c)}
+.cc-kp b{display:block;font:600 34px/1.1 'Kanit',sans-serif;color:#fff}
+.cc-kp span{font-size:12.5px;color:var(--tx2)}.cc-kp small{display:block;font-size:11px;color:var(--tx3);margin-top:3px}
+/* แถวกลาง: สัดส่วน + ฟีดสด */
+.cc-mid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.9fr);gap:20px;margin-bottom:22px}
+.cc-sec-h{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.cc-sec-h h3{margin:0;font:600 17px 'Kanit',sans-serif}.cc-sec-h small{color:var(--tx3);font-size:12px}
+.cc-mix{padding:18px 20px}
+.cc-mbar{display:flex;height:22px;border-radius:11px;overflow:hidden;background:rgba(255,255,255,.06);gap:2px}
+.cc-mbar i{display:block;height:100%;width:0;transition:width 1s cubic-bezier(.2,.8,.2,1);position:relative}
+.cc-mbar i::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.28),transparent 60%)}
+.cc-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.cc-chip2x{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;padding:6px 12px;border-radius:999px;border:1px solid var(--ln);background:var(--gl);cursor:pointer;color:var(--tx);transition:.15s}
+.cc-chip2x:hover,.cc-chip2x.cc-on{border-color:var(--tc);background:color-mix(in srgb,var(--tc) 16%,transparent);box-shadow:0 0 14px -6px var(--tc)}
+.cc-chip2x i{width:9px;height:9px;border-radius:50%;background:var(--tc);box-shadow:0 0 8px var(--tc)}
+.cc-chip2x b{font-family:'Kanit',sans-serif;font-weight:600}
+.cc-feed{padding:18px 18px 10px;display:flex;flex-direction:column;min-height:0}
+.cc-feed .cc-fl{display:flex;flex-direction:column;gap:2px;overflow:auto;max-height:230px;padding-right:4px}
+.cc-fi{display:grid;grid-template-columns:10px 1fr auto;gap:10px;align-items:start;padding:8px 6px;border-radius:10px}
+.cc-fi:hover{background:var(--gl)}
+.cc-fi i{width:8px;height:8px;border-radius:50%;margin-top:6px;background:var(--tx3)}
+.cc-fi.cc-new i{background:#ff5a4a;box-shadow:0 0 10px #ff5a4a}.cc-fi.cc-cat i{background:var(--neo);box-shadow:0 0 8px var(--neo)}
+.cc-fi b{font-size:13px;font-weight:600;display:block}.cc-fi small{font-size:11.5px;color:var(--tx3)}
+.cc-fi time{font-size:11px;color:var(--tx3);white-space:nowrap}
+/* แท็บ */
+.cc-tabs{position:sticky;top:57px;z-index:40;display:flex;gap:4px;padding:5px;margin:0 0 16px;border-radius:16px;width:max-content;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.cc-tabs::-webkit-scrollbar{display:none}
+.cc-tabs button{font:inherit;font-size:13.5px;border:0;background:transparent;color:var(--tx2);border-radius:12px;padding:9px 16px;cursor:pointer;white-space:nowrap;transition:.2s}
+.cc-tabs button:hover{color:#fff}
+.cc-tabs button.cc-on{background:linear-gradient(135deg,#0d6f52,#16a374);color:#fff;box-shadow:0 8px 22px -10px var(--neo)}
+.cc-tabs button b{font-family:'Kanit',sans-serif;margin-left:6px;font-size:12px;opacity:.75}
+.cc-pane{display:none;animation:fade .3s ease}.cc-pane.cc-on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}}
+.cc-tp{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap;color:var(--tc);
+  background:color-mix(in srgb,var(--tc) 14%,transparent);border:1px solid color-mix(in srgb,var(--tc) 38%,transparent)}
+.cc-tp i{width:6px;height:6px;border-radius:50%;background:var(--tc);box-shadow:0 0 6px var(--tc)}
+[data-t=api]{--tc:var(--a-api)}[data-t=link]{--tc:var(--a-link)}[data-t=avail]{--tc:var(--a-avail)}[data-t=gas]{--tc:var(--a-gas)}
+[data-t=file]{--tc:var(--a-file)}[data-t=ext]{--tc:var(--a-ext)}[data-t=sim]{--tc:var(--a-sim)}
 /* รายหน้า */
-.pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.pc{background:#fff;border:1px solid #e1ece4;border-radius:16px;padding:13px 14px;display:flex;flex-direction:column;gap:8px}
-.pc h4{margin:0;font-family:var(--fd);font-size:15.5px;display:flex;align-items:center;gap:8px}
-.pc h4 a{color:#0b3c32;text-decoration:none}.pc h4 small{margin-left:auto;font-family:var(--fn);font-size:12px;color:#80938c}
-.pc .bar{height:10px}
-.pc ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
-.pc li{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.45}
-.pc li .tp{margin-top:1px}
-.pc li span.n{flex:1;color:#3d5550}
-/* ตารางชุดข้อมูล */
-.flt{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
-.flt input,.flt select{font:inherit;font-size:13px;border:1px solid #d6e3db;border-radius:10px;padding:7px 11px;background:#fff}
-.flt input{flex:1;min-width:200px}
-.tbl{background:#fff;border:1px solid #e1ece4;border-radius:16px;overflow:auto}
-table.ds{width:100%;border-collapse:collapse;font-size:12.5px;min-width:900px}
-table.ds th{background:#f3f8f5;text-align:left;font-weight:600;color:#3d5550;font-size:11.5px;padding:9px 10px;border-bottom:1px solid #e1ece4;position:sticky;top:0}
-table.ds td{padding:9px 10px;border-bottom:1px solid #eef3f0;vertical-align:top}
-table.ds tr:hover td{background:#fafcfb}
-.dn{font-weight:600;color:#14231f}.du{font-size:11px;color:#80938c;margin-top:2px}
-.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap}
-.live i{width:9px;height:9px;border-radius:50%;background:#c6d2cd}
-.live.ok i{background:var(--a-api);box-shadow:0 0 0 3px rgba(13,138,95,.15)}.live.err i{background:var(--a-sim)}.live.wait i{background:var(--a-link);animation:pl 1s infinite}
-@keyframes pl{50%{opacity:.3}}
-.ab{font:inherit;font-size:11.5px;border:1px solid #d6e3db;background:#fff;border-radius:8px;padding:3px 9px;cursor:pointer;color:#0b6b4c;text-decoration:none;white-space:nowrap;display:inline-block;margin:1px 0}
-.ab:hover{border-color:#0b6b4c}
-.when{white-space:nowrap}.when small{display:block;color:#80938c;font-size:10.5px}
-.new{display:inline-block;font-size:10px;font-weight:700;color:#fff;background:var(--a-sim);border-radius:6px;padding:0 6px;margin-left:4px}
+.cc-pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.cc-pc{padding:16px;display:flex;flex-direction:column;gap:10px;transition:.2s}
+.cc-pc:hover{transform:translateY(-3px);border-color:rgba(60,240,176,.35)}
+.cc-pc .cc-ph{display:flex;align-items:center;gap:12px}
+.cc-ring{position:relative;width:54px;height:54px;flex:none}.cc-ring svg{width:54px;height:54px;transform:rotate(-90deg)}
+.cc-ring b{position:absolute;inset:0;display:grid;place-items:center;font:600 13px 'Kanit',sans-serif}
+.cc-pc h4{margin:0;font:600 16px 'Kanit',sans-serif}.cc-pc h4 a{text-decoration:none}.cc-pc h4 a:hover{color:var(--neo)}
+.cc-pc .cc-sub{font-size:12px;color:var(--tx3)}
+.cc-pc ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+.cc-pc li{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;line-height:1.45;color:var(--tx2)}
+.cc-pc li small{color:var(--tx3)}
+/* ทะเบียน */
+.cc-flt{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.cc-srch{flex:1;min-width:240px;display:flex;align-items:center;gap:8px;padding:0 13px;border-radius:13px;border:1px solid var(--ln);background:var(--gl)}
+.cc-srch svg{width:16px;height:16px;stroke:var(--tx3);fill:none;stroke-width:2}
+.cc-srch input{flex:1;font:inherit;font-size:13.5px;background:transparent;border:0;color:var(--tx);padding:10px 0;outline:none}
+.cc-srch kbd{font:11px 'Kanit',sans-serif;color:var(--tx3);border:1px solid var(--ln);border-radius:6px;padding:1px 6px}
+.cc-flt select{font:inherit;font-size:13px;border:1px solid var(--ln);background:var(--bg1);color:var(--tx);border-radius:12px;padding:9px 12px}
+.cc-reg{overflow:auto;border-radius:18px}
+table.ds{width:100%;border-collapse:collapse;font-size:12.8px;min-width:980px}
+table.ds th{text-align:left;font:500 11.5px 'Kanit',sans-serif;letter-spacing:.4px;color:var(--tx3);padding:12px;border-bottom:1px solid var(--ln);background:rgba(0,0,0,.18);position:sticky;top:0}
+table.ds td{padding:11px 12px;border-bottom:1px solid rgba(140,255,210,.07);vertical-align:top}
+table.ds tr{transition:background .15s}table.ds tbody tr:hover{background:rgba(60,240,176,.05)}
+.cc-dn{font-weight:600;color:#fff}.cc-du{font-size:11.5px;color:var(--tx3);margin-top:2px}
+.cc-lv{display:inline-flex;align-items:center;gap:7px;font-size:12px;white-space:nowrap;color:var(--tx2)}
+.cc-lv i{width:9px;height:9px;border-radius:50%;background:var(--tx3)}
+.cc-lv.cc-ok i{background:var(--a-api);box-shadow:0 0 10px var(--a-api)}.cc-lv.cc-err i{background:var(--a-sim);box-shadow:0 0 10px var(--a-sim)}
+.cc-lv.cc-wait i{background:var(--a-link);animation:pulse 1s infinite}
+.cc-when{white-space:nowrap;font-size:12.5px}.cc-when small{display:block;color:var(--tx3);font-size:11px}
+.cc-nw{display:inline-block;font:700 9.5px 'Kanit',sans-serif;letter-spacing:.5px;color:#fff;background:#ff5a4a;border-radius:6px;padding:1px 6px;margin-left:5px;box-shadow:0 0 10px #ff5a4a}
+.cc-ab{font:inherit;font-size:11.5px;border:1px solid var(--ln);background:var(--gl);border-radius:9px;padding:4px 10px;color:var(--neo);text-decoration:none;white-space:nowrap}
+.cc-ab:hover{border-color:var(--neo)}
 /* หน่วยงาน */
-.agrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.ag{background:#fff;border:1px solid #e1ece4;border-radius:16px;padding:13px 14px}
-.ag h4{margin:0 0 4px;font-family:var(--fd);font-size:15px;color:#0b3c32}
-.ag .ring{display:flex;align-items:center;gap:12px;margin:6px 0 8px}
-.ag .ring svg{width:58px;height:58px;flex:none}
-.ag .ring b{font-family:var(--fn);font-size:22px}.ag .ring span{font-size:12px;color:#4d635b}
-.ag ul{margin:0;padding-left:16px;font-size:12px;color:#3d5550;line-height:1.6}
-/* ประวัติ */
-.tl{background:#fff;border:1px solid #e1ece4;border-radius:16px;padding:6px 18px}
-.ev{display:grid;grid-template-columns:130px 26px 1fr;gap:10px;padding:11px 0;border-bottom:1px solid #eef3f0;align-items:start}
-.ev:last-child{border-bottom:0}
-.ev .t{font-size:12px;color:#4d635b;text-align:right}.ev .t b{display:block;color:#14231f;font-size:13px}
-.ev .d{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;color:#fff;background:var(--a-avail)}
-.ev .d.cat{background:#0b3c32}.ev .d.chg{background:var(--a-sim)}.ev .d.first{background:var(--a-api)}
-.ev .x{font-size:13px;line-height:1.55}.ev .x small{display:block;color:#80938c;font-size:11.5px}
-.empty{padding:20px;text-align:center;color:#80938c;font-size:13px}
-.qa{background:#fff;border:1px solid #f0c4bb;border-left:4px solid var(--a-sim);border-radius:12px;padding:11px 14px;margin-bottom:8px;font-size:13px;line-height:1.6}
-.qa.ok{border-color:#bfe3d0;border-left-color:var(--a-api)}
-.note2{font-size:12px;color:#80938c;line-height:1.6;margin-top:12px}
-@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.pgrid,.agrid{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.kpis{grid-template-columns:1fr 1fr}.pgrid,.agrid{grid-template-columns:1fr}.hero h1{font-size:22px}.ev{grid-template-columns:86px 22px 1fr}}
+.cc-agrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.cc-ag{padding:16px}.cc-ag .cc-ah{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.cc-ag h4{margin:0;font:600 15px 'Kanit',sans-serif}.cc-ag .cc-sub{font-size:12px;color:var(--tx3)}
+.cc-ag ul{margin:0;padding-left:16px;font-size:12.3px;color:var(--tx2);line-height:1.65;max-height:200px;overflow:auto}
+/* ไทม์ไลน์ */
+.cc-tl{padding:10px 22px;position:relative}
+.cc-tl::before{content:'';position:absolute;left:150px;top:18px;bottom:18px;width:2px;background:linear-gradient(var(--neo),transparent)}
+.cc-ev{display:grid;grid-template-columns:120px 26px 1fr;gap:16px;padding:12px 0;align-items:start}
+.cc-ev .cc-t{text-align:right;font-size:12px;color:var(--tx3)}.cc-ev .cc-t b{display:block;color:#fff;font:600 13.5px 'Kanit',sans-serif}
+.cc-ev .cc-d{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:#04140f;position:relative;z-index:1}
+.cc-ev .cc-d.cc-cat{background:var(--neo);box-shadow:0 0 16px var(--neo)}.cc-ev .cc-d.cc-chg{background:#ff5a4a;box-shadow:0 0 16px #ff5a4a;color:#fff}
+.cc-ev .cc-d.cc-first{background:var(--a-avail);box-shadow:0 0 14px var(--a-avail)}
+.cc-ev .cc-x{font-size:13.5px;line-height:1.55;background:var(--gl);border:1px solid var(--ln);border-radius:14px;padding:10px 14px}
+.cc-ev .cc-x small{display:block;color:var(--tx3);font-size:12px}
+.cc-empty{padding:30px;text-align:center;color:var(--tx3);font-size:13.5px}
+.cc-qa{padding:13px 16px;margin-bottom:10px;border-left:3px solid var(--a-sim);font-size:13.5px;line-height:1.6}
+.cc-qa.cc-ok{border-left-color:var(--a-api)}
+.cc-foot{margin-top:26px;font-size:12px;color:var(--tx3);line-height:1.7}
+/* แผงแจ้งเตือนในธีมมืด */
+#notiPanel{background:rgba(6,33,26,.96)!important;border-color:var(--ln)!important;color:var(--tx)}
+#notiPanel .np-h{border-color:var(--ln)}#notiPanel .np-h b{color:#fff}
+#notiPanel .np-h button,#notiPanel .np-f button{background:var(--gl);border-color:var(--ln);color:var(--neo)}
+#notiPanel .np-i{border-color:rgba(140,255,210,.07)}#notiPanel .np-i:hover{background:var(--gl)}
+#notiPanel .np-t b{color:#fff}#notiPanel .np-t small{color:var(--tx3)}#notiPanel .np-t em{color:var(--neo)}
+#notiPanel .np-f{background:rgba(0,0,0,.2);border-color:var(--ln)}#notiPanel .np-f a,#notiPanel .np-ok{color:var(--neo)}
+#tip{z-index:3000}
+@media(max-width:1100px){.cc-hero,.cc-mid{grid-template-columns:1fr}.cc-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.cc-pgrid,.cc-agrid{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.cc-wrap{padding:0 12px 60px}.cc-kpis{grid-template-columns:1fr 1fr}.cc-pgrid,.cc-agrid{grid-template-columns:1fr}
+  .cc-h-l h1{font-size:28px}.cc-top .cc-brand small,.cc-live{display:none}.cc-ib span{display:none}.cc-gauge{width:180px;height:180px}.cc-gauge b{font-size:44px}
+  .cc-tl::before{left:96px}.cc-ev{grid-template-columns:70px 22px 1fr;gap:10px}.cc-tabs{top:55px}}
+.cc-cov{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px}
+.cc-cv{display:grid;grid-template-columns:minmax(0,150px) 1fr 40px;gap:10px;align-items:center;font-size:12.5px;color:var(--tx2);text-decoration:none;padding:4px 6px;border-radius:8px}
+.cc-cv:hover{background:var(--gl)}.cc-cv span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-cvb{height:7px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}.cc-cvb i{display:block;height:100%;border-radius:4px;box-shadow:0 0 8px currentColor}
+.cc-cv b{font:600 12px 'Kanit',sans-serif;text-align:right;color:var(--tx)}
+@media(max-width:640px){.cc-cov{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div id="tip" class="tip"></div>
-<div class="wrap">
-  <div class="hero">
-    <h1>ศูนย์ควบคุมแหล่งข้อมูล</h1>
-    <p>ทุกชุดข้อมูลที่แดชบอร์ดใช้ มาจากไหน เชื่อมต่อได้หรือไม่ หน่วยงานปรับปรุงบนระบบบัญชีข้อมูลจังหวัดล่าสุดเมื่อไร
-      และแดชบอร์ดดึงมาใช้แล้วหรือยัง · ชุดที่ยังไม่ใช่ API ระบุไว้ว่ามาจากอะไร</p>
-    <div class="acts">
-      <a class="hb" href="index.html">‹ กลับแดชบอร์ด</a>
-      <button class="hb" id="btnRe">⟳ ตรวจใหม่ทั้งหมด</button>
-      <button class="hb" id="btnCsv">⬇ ส่งออกทะเบียน (CSV)</button>
-      <button class="hb pri" id="btnCopy">คัดลอกโครงสร้าง API</button>
+<div class="cc-top"><div class="cc-in">
+  <a class="cc-brand" href="index.html"><span class="cc-lg"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v6.5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V5.5M4.5 12v6.5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V12"/></svg></span>
+    <span><b>ศูนย์ควบคุมแหล่งข้อมูล</b><small>ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</small></span></a>
+  <span class="cc-live"><i></i>LIVE</span>
+  <span class="cc-sp"></span>
+  <button class="cc-ib" id="btnBell" aria-label="การแจ้งเตือน"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span>แจ้งเตือน</span><i class="bdg" id="bellN"></i></button>
+  <a class="cc-ib" href="index.html"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg><span>กลับแดชบอร์ด</span></a>
+</div></div>
+
+<div class="cc-wrap">
+  <div class="cc-hero">
+    <div class="cc-glass cc-h-l">
+      <div class="cc-eyebrow">Data Source Control Center</div>
+      <h1>ทุกตัวเลขบนแดชบอร์ด<br>มาจากไหน สดแค่ไหน</h1>
+      <p>เชื่อมกับระบบบัญชีข้อมูลจังหวัดหนองบัวลำภูแบบสด ตรวจการเชื่อมต่อทุกชุด ดูวันที่หน่วยงานปรับปรุงข้อมูล
+        และแจ้งเตือนทันทีเมื่อมีการอัปเดตชุดที่แดชบอร์ดใช้ ส่วนที่ยังไม่ใช่ API ระบุไว้ชัดว่ามาจากอะไร</p>
+      <div class="cc-acts">
+        <button class="cc-ib cc-pri" id="btnRe"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg>ตรวจทั้งหมดตอนนี้</button>
+        <button class="cc-ib" id="btnUpd"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/></svg>ตรวจหาอัปเดต</button>
+        <button class="cc-ib" id="btnCsv"><svg viewBox="0 0 24 24"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg>ส่งออก CSV</button>
+        <button class="cc-ib" id="btnCopy"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M5 16V5a1 1 0 0 1 1-1h9"/></svg>คัดลอกโครงสร้าง</button>
+      </div>
+      <div class="cc-chk"><span class="cc-bar"><i id="chkBar"></i></span><span id="chk">กำลังเริ่มตรวจ…</span></div>
     </div>
-    <div class="chk" id="chk">กำลังตรวจการเชื่อมต่อ…</div>
+    <div class="cc-glass cc-h-r">
+      <div class="cc-gauge"><svg viewBox="0 0 220 220"><defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#3cf0b0"/><stop offset="1" stop-color="#f0d79a"/></linearGradient></defs>
+        <circle cx="110" cy="110" r="92" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="16"/>
+        <circle id="gArc" cx="110" cy="110" r="92" fill="none" stroke="url(#gg)" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 600" style="transition:stroke-dasharray 1.4s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 10px rgba(60,240,176,.6))"/></svg>
+        <div class="cc-c"><b id="gPct">0<small>%</small></b><span>ข้อมูลบนแดชบอร์ดที่ดึงจาก API</span></div></div>
+      <div class="cc-row"><div><b id="gApi">0</b><span>ชุดดึงจาก API</span></div><div><b id="gOk">0</b><span>เชื่อมต่อได้ตอนนี้</span></div><div><b id="gUpd">0</b><span>อัปเดตใหม่</span></div></div>
+    </div>
   </div>
 
-  <div class="kpis" id="kpis"></div>
-  <div class="mix"><h3>สัดส่วนแหล่งข้อมูลของแดชบอร์ด</h3><div class="bar" id="mixBar"></div><div class="lg" id="mixLg"></div></div>
+  <div class="cc-kpis" id="kpis"></div>
 
-  <div class="tabs" id="tabs">
-    <button data-p="pages" class="on">รายหน้าแดชบอร์ด</button>
+  <div class="cc-mid">
+    <div class="cc-glass cc-mix"><div class="cc-sec-h"><h3>สัดส่วนแหล่งข้อมูล</h3><small>กดที่ป้ายเพื่อกรองในทะเบียน</small></div>
+      <div class="cc-mbar" id="mixBar"></div><div class="cc-chips" id="mixLg"></div>
+      <div class="cc-sec-h" style="margin:18px 0 8px"><h3 style="font-size:15px">ความครอบคลุม API รายหน้า</h3></div><div class="cc-cov" id="cov"></div></div>
+    <div class="cc-glass cc-feed"><div class="cc-sec-h"><h3>ความเคลื่อนไหวล่าสุด</h3><small id="feedSub"></small></div><div class="cc-fl" id="feed"></div></div>
+  </div>
+
+  <div class="cc-tabs cc-glass" id="tabs">
+    <button data-p="pages" class="cc-on">รายหน้าแดชบอร์ด</button>
     <button data-p="list">ทะเบียนชุดข้อมูล<b id="nList"></b></button>
     <button data-p="agency">หน่วยงาน<b id="nAg"></b></button>
     <button data-p="hist">ประวัติการอัปเดต<b id="nHist"></b></button>
     <button data-p="qa">คุณภาพข้อมูล<b id="nQa"></b></button>
   </div>
-  <div class="pane on" id="p-pages"><div class="pgrid" id="pgrid"></div></div>
-  <div class="pane" id="p-list">
-    <div class="flt"><input id="q" placeholder="ค้นหาชื่อชุดข้อมูล หน่วยงาน หรือรหัส resource">
+  <div class="cc-pane cc-on" id="p-pages"><div class="cc-pgrid" id="pgrid"></div></div>
+  <div class="cc-pane" id="p-list">
+    <div class="cc-flt"><label class="cc-srch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input id="q" placeholder="ค้นหาชื่อชุดข้อมูล หน่วยงาน หรือรหัส resource"><kbd>/</kbd></label>
       <select id="fType"><option value="">ทุกแหล่งข้อมูล</option></select>
       <select id="fPage"><option value="">ทุกหน้า</option></select>
       <select id="fAg"><option value="">ทุกหน่วยงาน</option></select></div>
-    <div class="tbl"><table class="ds" id="tbl"></table></div>
+    <div class="cc-glass cc-reg"><table class="ds" id="tbl"></table></div>
   </div>
-  <div class="pane" id="p-agency"><div class="agrid" id="agrid"></div></div>
-  <div class="pane" id="p-hist"><div class="tl" id="tl"></div>
-    <div class="note2">⬤ เขียวเข้ม = หน่วยงานปรับปรุงข้อมูลบนระบบบัญชีข้อมูลจังหวัด (จากเวลาที่ระบบบันทึก) ·
-      ⬤ แดง = แดชบอร์ดตรวจพบว่าข้อมูลเปลี่ยนและดึงฉบับใหม่มาใช้แล้ว · ⬤ เขียว = ดึงครั้งแรก ·
-      ประวัติการดึงเก็บไว้ในเครื่องนี้ ส่วนวันที่ปรับปรุงบนระบบบัญชีข้อมูลเป็นของจริงจากระบบ</div></div>
-  <div class="pane" id="p-qa"><div id="qaBox"></div></div>
+  <div class="cc-pane" id="p-agency"><div class="cc-agrid" id="agrid"></div></div>
+  <div class="cc-pane" id="p-hist"><div class="cc-glass cc-tl" id="tl"></div></div>
+  <div class="cc-pane" id="p-qa"><div id="qaBox"></div></div>
+  <div class="cc-foot">วันที่ปรับปรุงมาจากระบบบัญชีข้อมูลจังหวัดโดยตรง · ระบบตรวจหาอัปเดตทุก 15 นาทีขณะเปิดแดชบอร์ด และแจ้งที่กระดิ่ง ·
+    ประวัติการดึงมาใช้เก็บไว้ในเครื่องนี้ · ชุดที่เป็น "ข้อมูลจำลอง" ใช้แสดงรูปแบบเท่านั้น ห้ามนำไปอ้างอิง</div>
 </div>
 <script src="data1.js"></script>
 <script src="data2.js"></script>
@@ -143,145 +257,157 @@ const PAGES={index:'หน้าปกจังหวัด',overview:'ภาพ
   industry:'อุตสาหกรรมและการผลิต',trade:'การค้าและค่าครองชีพ',consume:'การบริโภคและพลังงาน',tourism:'ภาคการท่องเที่ยว',
   otop:'OTOP และเศรษฐกิจชุมชน',labor:'ตลาดแรงงาน',household:'ครัวเรือนและความเหลื่อมล้ำ',population:'ประชากรและโครงสร้างอายุ',area:'ข้อมูลเชิงพื้นที่'};
 const TORD=['api','link','avail','gas','file','ext','sim'];
-const TCOL={api:'var(--a-api)',link:'var(--a-link)',avail:'var(--a-avail)',gas:'var(--a-gas)',file:'var(--a-file)',ext:'var(--a-ext)',sim:'var(--a-sim)'};
-const INV=srcInventory();
-const APILIVE={}, APIMETA={};
+const TC={api:'#3ce0a0',link:'#f0c45a',avail:'#6aa8ff',gas:'#b48cff',file:'#8fb5a8',ext:'#49d4e8',sim:'#ff7a6a'};
+const INV=srcInventory(), APILIVE={}, APIMETA={};
 const esc=x=>String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const tp=t=>`<span class="tp ${t}"><i></i>${SRC_TYPE[t][0]}</span>`;
+const tp=t=>`<span class="cc-tp" data-t="${t}"><i></i>${SRC_TYPE[t][0]}</span>`;
 const agN=a=>GDC.AGENCY[a]||a||'—';
-const dt=x=>{if(!x)return '—';const d=new Date(/Z|[+-]\d\d:?\d\d$/.test(x)?x:x+'Z');return isNaN(d)?'—':d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'})};
-const tm=x=>{if(!x)return '';const d=new Date(/Z|[+-]\d\d:?\d\d$/.test(x)?x:x+'Z');return isNaN(d)?'':d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})};
-const ago=x=>{if(!x)return '';const d=new Date(/Z|[+-]\d\d:?\d\d$/.test(x)?x:x+'Z');const s=(Date.now()-d)/1000;
-  return s<3600?Math.max(1,Math.round(s/60))+' นาทีที่แล้ว':s<86400?Math.round(s/3600)+' ชั่วโมงที่แล้ว':Math.round(s/86400)+' วันที่แล้ว'};
-/* นับเฉพาะชุดที่แสดงบนแดชบอร์ด (ไม่รวม "มีใน API ยังไม่ได้แสดง") */
+const D8=x=>{if(!x)return null;const d=new Date(toISO(x));return isNaN(d)?null:d};
+const dt=x=>{const d=D8(x);return d?d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}):'—'};
+const tm=x=>{const d=D8(x);return d?d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}):''};
+const ago=x=>{const d=D8(x);if(!d)return '';const s=(Date.now()-d)/1000;return s<3600?Math.max(1,Math.round(s/60))+' นาทีที่แล้ว':s<86400?Math.round(s/3600)+' ชั่วโมงที่แล้ว':Math.round(s/86400)+' วันที่แล้ว'};
 const shown=()=>INV.filter(x=>x.type!=='avail');
-/* ป้ายของหน้าจากทะเบียนทั้งหมด (รวมชุดที่ใช้ API ร่วมกับหน้าอื่น) */
-function invBadge(p){const S=INV.filter(x=>x.page===p&&x.type!=='avail'),a=S.filter(x=>x.type==='api').length;
-  const st=!a?['file','ยังไม่มี API']:a===S.length?['api','ดึงจาก API ทั้งหมด']:['part','API บางส่วน · '+a+'/'+S.length];
-  return `<span class="gdcb ${st[0]}"><i></i>${st[1]}</span>`}
+/* ตัวเลขนับขึ้น */
+function countUp(el,to,suf){if(!el)return;const from=+el.dataset.v||0;el.dataset.v=to;const t0=performance.now(),d=900;
+  const step=t=>{const k=Math.min(1,(t-t0)/d),e=1-Math.pow(1-k,3);el.innerHTML=Math.round(from+(to-from)*e)+(suf||'');if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step)}
+function ring(p,col,size){const r=(size||54)/2-5,C=2*Math.PI*r;return `<svg viewBox="0 0 ${size||54} ${size||54}"><circle cx="${(size||54)/2}" cy="${(size||54)/2}" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/>
+  <circle cx="${(size||54)/2}" cy="${(size||54)/2}" r="${r}" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(C*p).toFixed(1)} ${C.toFixed(1)}" style="filter:drop-shadow(0 0 4px ${col})"/></svg>`}
 
 function drawTop(){
-  const S=shown(), c={}; TORD.forEach(t=>c[t]=INV.filter(x=>x.type===t).length);
-  const ok=Object.values(APILIVE).filter(x=>x.ok).length, er=Object.values(APILIVE).filter(x=>x.err).length;
-  const ags=new Set(INV.filter(x=>x.type==='api'||x.type==='avail').map(x=>x.agency));
-  const K=[[S.length,'ชุดข้อมูลบนแดชบอร์ด','#0b3c32',''],[c.api,'ดึงจาก API แล้ว','var(--a-api)',(c.api/S.length*100).toFixed(0)+'% ของที่แสดง'],
-    [c.link,'กำลังเชื่อมข้อมูล','var(--a-link)','มีบนระบบ รอเปิด API'],[c.gas+c.file+c.ext,'ไฟล์และระบบกรอก','var(--a-file)','ระบบกรอก '+c.gas+' · ไฟล์ '+(c.file+c.ext)],
-    [c.sim,'ข้อมูลจำลอง','var(--a-sim)','รอหน่วยงานส่งข้อมูลจริง'],[ags.size,'หน่วยงานที่มี API','var(--a-avail)',c.avail+' ชุดพร้อมใช้ ยังไม่แสดง']];
-  document.getElementById('kpis').innerHTML=K.map(k=>`<div class="kp" style="--c:${k[2]}"><b>${k[0]}</b><span>${k[1]}</span><small>${k[3]}</small></div>`).join('');
-  document.getElementById('mixBar').innerHTML=TORD.filter(t=>t!=='avail'&&c[t]).map(t=>`<i style="width:${c[t]/S.length*100}%;background:${TCOL[t]}" data-tip2="${SRC_TYPE[t][0]}|${c[t]} ชุด · ${(c[t]/S.length*100).toFixed(0)}%"></i>`).join('');
-  document.getElementById('mixLg').innerHTML=TORD.filter(t=>c[t]).map(t=>`<span><em style="background:${TCOL[t]}"></em>${SRC_TYPE[t][0]} <b>${c[t]}</b></span>`).join('');
-  const done=Object.keys(APILIVE).length, need=INV.filter(x=>x.id).length;
-  document.getElementById('chk').textContent=done<need?`กำลังตรวจการเชื่อมต่อ ${done}/${need} ชุด…`
-    :`ตรวจเมื่อ ${new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})} · เชื่อมต่อได้ ${ok} ชุด${er?' · เชื่อมต่อไม่ได้ '+er+' ชุด':''}`;
+  const S=shown(),c={};TORD.forEach(t=>c[t]=INV.filter(x=>x.type===t).length);
+  const ok=Object.values(APILIVE).filter(x=>x.ok).length, ids=[...new Set(INV.filter(x=>x.id).map(x=>x.id))];
+  const pct=S.length?Math.round(c.api/S.length*100):0;
+  countUp(document.getElementById('gPct'),pct,'<small>%</small>');
+  document.getElementById('gArc').setAttribute('stroke-dasharray',(2*Math.PI*92*pct/100).toFixed(1)+' 600');
+  countUp(document.getElementById('gApi'),c.api);countUp(document.getElementById('gOk'),ok);countUp(document.getElementById('gUpd'),GDC.unread());
+  const ags=new Set(INV.filter(x=>x.type==='api').map(x=>x.agency));
+  const K=[[S.length,'ชุดข้อมูลบนแดชบอร์ด','#ffffff','',''],[c.api,'ดึงจาก API','#3ce0a0',pct+'% ของที่แสดง','api'],
+    [c.link,'กำลังเชื่อมข้อมูล','#f0c45a','มีบนระบบ รอเปิด API','link'],[c.gas+c.file+c.ext,'ไฟล์และระบบกรอก','#b48cff','กรอก '+c.gas+' · ไฟล์ '+(c.file+c.ext),'gas'],
+    [c.sim,'ข้อมูลจำลอง','#ff7a6a','รอหน่วยงานส่งข้อมูลจริง','sim'],[ags.size,'หน่วยงานที่ส่ง API','#6aa8ff',ids.length+' resource ที่เฝ้าดู','']];
+  const box=document.getElementById('kpis');
+  if(!box.children.length)box.innerHTML=K.map((k,i)=>`<div class="cc-glass cc-kp" style="--c:${k[2]}" data-ft="${k[4]}"><b id="kv${i}">0</b><span>${k[1]}</span><small id="ks${i}"></small></div>`).join('');
+  K.forEach((k,i)=>{countUp(document.getElementById('kv'+i),k[0]);document.getElementById('ks'+i).textContent=k[3]});
+  const mb=document.getElementById('mixBar');
+  if(!mb.children.length){mb.innerHTML=TORD.filter(t=>t!=='avail'&&c[t]).map(t=>`<i style="background:${TC[t]};box-shadow:0 0 12px ${TC[t]}" data-w="${c[t]/S.length*100}" data-tip2="${SRC_TYPE[t][0]}|${c[t]} ชุด · ${(c[t]/S.length*100).toFixed(0)}% ของข้อมูลบนแดชบอร์ด"></i>`).join('');
+    requestAnimationFrame(()=>mb.querySelectorAll('i').forEach(x=>x.style.width=x.dataset.w+'%'))}
+  document.getElementById('mixLg').innerHTML=TORD.filter(t=>c[t]).map(t=>`<button class="cc-chip2x${fType.value===t?' on':''}" data-t="${t}" data-ft="${t}"><i></i>${SRC_TYPE[t][0]} <b>${c[t]}</b></button>`).join('');
+  /* ความครอบคลุมรายหน้า */
+  const g={};INV.filter(x=>x.type!=='avail').forEach(x=>(g[x.page]=g[x.page]||[]).push(x));
+  document.getElementById('cov').innerHTML=Object.keys(PAGES).filter(p=>g[p]).map(p=>{const a=g[p].filter(x=>x.type==='api').length,n=g[p].length,pc=a/n;
+    return `<a class="cc-cv" href="#${p}" data-pg="${p}"><span>${PAGES[p]}</span><span class="cc-cvb"><i style="width:${pc*100}%;background:${pc===1?'#3ce0a0':pc>0?'#f0c45a':'#8fb5a8'}"></i></span><b>${a}/${n}</b></a>`}).join('');
   document.getElementById('nList').textContent=INV.length;
   document.getElementById('nAg').textContent=new Set(INV.map(x=>x.agency)).size;
+}
+function drawFeed(){
+  const ev=[];
+  GDC.notifs().forEach(n=>ev.push({at:n.modified,kind:n.read?'cat':'new',t:n.n,s:agN(n.agency)+' ปรับปรุงบนระบบบัญชีข้อมูล'}));
+  Object.values(APIMETA).forEach(m=>{if(m.modified&&!ev.some(e=>e.t===(INV.find(x=>x.id===m.id)||{}).n&&e.at===toISO(m.modified)))
+    ev.push({at:toISO(m.modified),kind:'cat',t:(INV.find(x=>x.id===m.id)||{}).n||m.name,s:(m.org||'หน่วยงาน')+' ปรับปรุงบนระบบบัญชีข้อมูล'})});
+  ev.sort((a,b)=>D8(b.at)-D8(a.at));
+  document.getElementById('feedSub').textContent=GDC.unread()?GDC.unread()+' รายการใหม่':'อัปเดตจากระบบบัญชีข้อมูล';
+  document.getElementById('feed').innerHTML=ev.length?ev.slice(0,25).map(e=>`<div class="cc-fi cc-${e.kind}"><i></i><div><b>${esc(e.t)}</b><small>${esc(e.s)}</small></div><time>${ago(e.at)}</time></div>`).join('')
+    :'<div class="cc-empty">กำลังรอข้อมูลจากระบบบัญชีข้อมูล…</div>';
 }
 function drawPages(){
   const g={};INV.forEach(x=>(g[x.page]=g[x.page]||[]).push(x));
   document.getElementById('pgrid').innerHTML=Object.keys(PAGES).filter(p=>g[p]).map(p=>{
-    const L=g[p].slice().sort((a,b)=>TORD.indexOf(a.type)-TORD.indexOf(b.type)), S=L.filter(x=>x.type!=='avail');
-    return `<div class="pc" id="pg-${p}"><h4><a href="${p}.html">${PAGES[p]}</a>${invBadge(p)}<small>${S.length} ชุด</small></h4>
-      <div class="bar">${TORD.filter(t=>t!=='avail').map(t=>{const n=S.filter(x=>x.type===t).length;return n?`<i style="width:${n/S.length*100}%;background:${TCOL[t]}"></i>`:''}).join('')}</div>
-      <ul>${L.map(x=>`<li>${tp(x.type)}<span class="n">${esc(x.n)}${x.type!=='api'&&x.note?` <small style="color:#80938c">(${esc(x.note)})</small>`:''}</span></li>`).join('')}</ul></div>`;
-  }).join('');
+    const L=g[p].slice().sort((a,b)=>TORD.indexOf(a.type)-TORD.indexOf(b.type)),S=L.filter(x=>x.type!=='avail'),a=S.filter(x=>x.type==='api').length,pc=S.length?a/S.length:0;
+    const col=pc===1?'#3ce0a0':pc>0?'#f0c45a':'#8fb5a8';
+    return `<div class="cc-glass cc-pc" id="pg-${p}"><div class="cc-ph"><span class="cc-ring">${ring(pc,col)}<b>${Math.round(pc*100)}%</b></span>
+      <div><h4><a href="${p}.html">${PAGES[p]}</a></h4><div class="cc-sub">${a}/${S.length} ชุดดึงจาก API</div></div></div>
+      <ul>${L.map(x=>`<li>${tp(x.type)}<span>${esc(x.n)}${x.type!=='api'&&x.note?` <small>(${esc(x.note)})</small>`:''}</span></li>`).join('')}</ul></div>`}).join('');
 }
 function drawList(){
-  const q=document.getElementById('q').value.trim().toLowerCase(), ft=fType.value, fp=fPage.value, fa=fAg.value;
-  const seen=GDC.seen();
-  const L=INV.filter(x=>(!ft||x.type===ft)&&(!fp||x.page===fp)&&(!fa||x.agency===fa)&&
-    (!q||(x.n+' '+agN(x.agency)+' '+(x.id||'')+' '+(PAGES[x.page]||'')).toLowerCase().indexOf(q)>=0))
+  const q=document.getElementById('q').value.trim().toLowerCase(),ft=fType.value,fp=fPage.value,fa=fAg.value,seen=GDC.seen();
+  const newIds=new Set(GDC.notifs().filter(n=>!n.read).map(n=>n.id));
+  const L=INV.filter(x=>(!ft||x.type===ft)&&(!fp||x.page===fp)&&(!fa||x.agency===fa)&&(!q||(x.n+' '+agN(x.agency)+' '+(x.id||'')+' '+(PAGES[x.page]||'')).toLowerCase().indexOf(q)>=0))
     .sort((a,b)=>TORD.indexOf(a.type)-TORD.indexOf(b.type)||(PAGES[a.page]||'').localeCompare(PAGES[b.page]||''));
-  document.getElementById('tbl').innerHTML=`<thead><tr><th>ชุดข้อมูล</th><th>หน้า</th><th>หน่วยงาน</th><th>แหล่งข้อมูล</th><th>การเชื่อมต่อ</th>
-    <th>ปรับปรุงบนระบบบัญชีข้อมูล</th><th>แดชบอร์ดดึงล่าสุด</th><th></th></tr></thead><tbody>`+
+  document.getElementById('tbl').innerHTML=`<thead><tr><th>ชุดข้อมูล</th><th>หน้า</th><th>หน่วยงาน</th><th>แหล่งข้อมูล</th><th>การเชื่อมต่อ</th><th>ปรับปรุงบนระบบ</th><th>แดชบอร์ดดึงล่าสุด</th><th></th></tr></thead><tbody>`+
     (L.length?L.map(x=>{const lv=APILIVE[x.id],m=APIMETA[x.id],sn=seen[x.id];
-      const fresh=m&&m.modified&&(Date.now()-new Date(m.modified+(/Z$/.test(m.modified)?'':'Z')))<7*864e5;
-      return `<tr><td><div class="dn">${esc(x.n)}</div><div class="du">${x.use?esc(x.use):x.note?esc(x.note):x.id?'resource '+x.id.slice(0,8):x.ds?esc(x.ds):''}</div></td>
+      return `<tr><td><div class="cc-dn">${esc(x.n)}${newIds.has(x.id)?'<span class="cc-nw">อัปเดตใหม่</span>':''}</div><div class="cc-du">${x.use?esc(x.use):x.note?esc(x.note):x.id?'resource '+x.id.slice(0,8):''}</div></td>
         <td>${esc(PAGES[x.page]||x.page)}</td><td>${esc(m&&m.org||agN(x.agency))}</td><td>${tp(x.type)}</td>
-        <td>${!x.id?'<span class="live"><i></i>—</span>':!lv?'<span class="live wait"><i></i>กำลังตรวจ</span>'
-          :lv.ok?`<span class="live ok"><i></i>${f_num(lv.total)} แถว · ${lv.fields} คอลัมน์</span>`:`<span class="live err" title="${esc(lv.err)}"><i></i>เชื่อมต่อไม่ได้</span>`}</td>
-        <td class="when">${m&&m.modified?dt(m.modified)+(fresh?'<span class="new">ใหม่</span>':'')+`<small>${ago(m.modified)}</small>`:x.id?'<small>—</small>':''}</td>
-        <td class="when">${sn?dt(sn.at)+`<small>${tm(sn.at)} น.</small>`:x.id?'<small>ยังไม่เคยดึง</small>':''}</td>
-        <td>${x.id?`<a class="ab" href="${m&&m.url||GDC.base+'/dataset/?q='+x.id}" target="_blank" rel="noopener">เปิดในระบบ ›</a>`:''}</td></tr>`}).join('')
-      :'<tr><td colspan="8" class="empty">ไม่พบชุดข้อมูลตามเงื่อนไข</td></tr>')+'</tbody>';
+        <td>${!x.id?'<span class="cc-lv"><i></i>—</span>':!lv?'<span class="cc-lv cc-wait"><i></i>กำลังตรวจ</span>':lv.ok?`<span class="cc-lv cc-ok"><i></i>${f_num(lv.total)} แถว · ${lv.fields} คอลัมน์</span>`:`<span class="cc-lv cc-err" title="${esc(lv.err)}"><i></i>เชื่อมต่อไม่ได้</span>`}</td>
+        <td class="cc-when">${m&&m.modified?dt(m.modified)+`<small>${ago(m.modified)}</small>`:x.id?'<small>—</small>':''}</td>
+        <td class="cc-when">${sn?dt(sn.at)+`<small>${tm(sn.at)} น.</small>`:x.id?'<small>ยังไม่เคยดึง</small>':''}</td>
+        <td>${x.id?`<a class="cc-ab" href="${m&&m.url||GDC.base+'/dataset/?q='+x.id}" target="_blank" rel="noopener">เปิดในระบบ ↗</a>`:''}</td></tr>`}).join('')
+      :'<tr><td colspan="8" class="cc-empty">ไม่พบชุดข้อมูลตามเงื่อนไข</td></tr>')+'</tbody>';
 }
 function drawAgency(){
   const g={};INV.forEach(x=>(g[x.agency]=g[x.agency]||[]).push(x));
-  const keys=Object.keys(g).sort((a,b)=>g[b].filter(x=>x.type==='api').length-g[a].filter(x=>x.type==='api').length||g[b].length-g[a].length);
-  document.getElementById('agrid').innerHTML=keys.map(a=>{const L=g[a],api=L.filter(x=>x.type==='api').length,av=L.filter(x=>x.type==='avail').length,
-      S=L.filter(x=>x.type!=='avail'),p=S.length?api/S.length:0,C=2*Math.PI*24;
-    return `<div class="ag"><h4>${esc(agN(a))}</h4>
-      <div class="ring"><svg viewBox="0 0 58 58"><circle cx="29" cy="29" r="24" fill="none" stroke="#edf3ee" stroke-width="7"/>
-        <circle cx="29" cy="29" r="24" fill="none" stroke="#0d8a5f" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(C*p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 29 29)"/></svg>
-        <div><b>${api}/${S.length}</b><span> ชุดที่แสดงดึงจาก API${av?' · พร้อมใช้อีก '+av+' ชุด':''}</span></div></div>
-      <ul>${L.map(x=>`<li>${esc(x.n)} <span style="color:#80938c">(${SRC_TYPE[x.type][0]})</span></li>`).join('')}</ul></div>`}).join('');
+  const K=Object.keys(g).sort((a,b)=>g[b].filter(x=>x.type==='api').length-g[a].filter(x=>x.type==='api').length||g[b].length-g[a].length);
+  document.getElementById('agrid').innerHTML=K.map(a=>{const L=g[a],S=L.filter(x=>x.type!=='avail'),api=S.filter(x=>x.type==='api').length,p=S.length?api/S.length:0;
+    return `<div class="cc-glass cc-ag"><div class="cc-ah"><span class="cc-ring">${ring(p,p===1?'#3ce0a0':p>0?'#f0c45a':'#8fb5a8')}<b>${api}/${S.length}</b></span>
+      <div><h4>${esc(agN(a))}</h4><div class="cc-sub">${api} ชุดดึงจาก API</div></div></div>
+      <ul>${L.map(x=>`<li>${esc(x.n)} <span style="color:${TC[x.type]}">(${SRC_TYPE[x.type][0]})</span></li>`).join('')}</ul></div>`}).join('');
 }
 function drawHist(){
-  const ev=[];
-  Object.values(APIMETA).forEach(m=>{if(m.modified)ev.push({at:m.modified,kind:'cat',id:m.id,org:m.org})});
+  const ev=[],nm=id=>{const x=INV.find(y=>y.id===id);return x?x.n:id};
+  Object.values(APIMETA).forEach(m=>{if(m.modified)ev.push({at:toISO(m.modified),kind:'cat',id:m.id,org:m.org})});
+  GDC.notifs().forEach(n=>{if(!ev.some(e=>e.id===n.id&&e.at===n.modified))ev.push({at:n.modified,kind:'cat',id:n.id,org:agN(n.agency)})});
   GDC.history().forEach(h=>ev.push(h));
-  const nm=id=>{const x=INV.find(y=>y.id===id);return x?x.n:id};
-  ev.sort((a,b)=>new Date(b.at+(/Z|[+-]\d\d/.test(b.at)?'':'Z'))-new Date(a.at+(/Z|[+-]\d\d/.test(a.at)?'':'Z')));
+  ev.sort((a,b)=>D8(b.at)-D8(a.at));
   document.getElementById('nHist').textContent=ev.length||'';
-  document.getElementById('tl').innerHTML=ev.length?ev.slice(0,150).map(e=>{
-    const t=`<div class="t"><b>${dt(e.at)}</b>${tm(e.at)} น.</div>`;
-    if(e.kind==='cat')return `<div class="ev">${t}<span class="d cat">✎</span><div class="x"><b>${esc(e.org||'หน่วยงาน')}</b> ปรับปรุงชุดข้อมูลบนระบบบัญชีข้อมูลจังหวัด
-      <small>${esc(nm(e.id))}</small></div></div>`;
-    if(e.kind==='changed')return `<div class="ev">${t}<span class="d chg">↻</span><div class="x">แดชบอร์ดพบข้อมูลเปลี่ยน และดึงฉบับใหม่มาใช้แล้ว
-      <small>${esc(nm(e.id))} · ${e.prev!=null&&e.prev!==e.total?'จำนวนแถว '+f_num(e.prev)+' → '+f_num(e.total):'เนื้อหาเปลี่ยน จำนวนแถวเท่าเดิม '+f_num(e.total)}</small></div></div>`;
-    return `<div class="ev">${t}<span class="d first">↓</span><div class="x">แดชบอร์ดดึงข้อมูลมาใช้ครั้งแรก<small>${esc(nm(e.id))} · ${f_num(e.total)} แถว</small></div></div>`;
-  }).join(''):'<div class="empty">ยังไม่มีประวัติ · เปิดหน้าแดชบอร์ดที่ใช้ API แล้วกลับมาดูอีกครั้ง</div>';
+  document.getElementById('tl').innerHTML=ev.length?ev.slice(0,150).map(e=>{const t=`<div class="cc-t"><b>${dt(e.at)}</b>${tm(e.at)} น.</div>`;
+    if(e.kind==='cat')return `<div class="cc-ev">${t}<span class="cc-d cc-cat">✎</span><div class="cc-x"><b>${esc(e.org||'หน่วยงาน')}</b> ปรับปรุงชุดข้อมูลบนระบบบัญชีข้อมูลจังหวัด<small>${esc(nm(e.id))}</small></div></div>`;
+    if(e.kind==='changed')return `<div class="cc-ev">${t}<span class="cc-d cc-chg">↻</span><div class="cc-x">แดชบอร์ดพบข้อมูลเปลี่ยน และดึงฉบับใหม่มาใช้แล้ว<small>${esc(nm(e.id))} · ${e.prev!=null&&e.prev!==e.total?'จำนวนแถว '+f_num(e.prev)+' → '+f_num(e.total):'เนื้อหาเปลี่ยน '+f_num(e.total)+' แถว'}</small></div></div>`;
+    return `<div class="cc-ev">${t}<span class="cc-d cc-first">↓</span><div class="cc-x">แดชบอร์ดดึงข้อมูลมาใช้ครั้งแรก<small>${esc(nm(e.id))} · ${f_num(e.total)} แถว</small></div></div>`}).join('')
+    :'<div class="cc-empty">ยังไม่มีประวัติ · เปิดหน้าที่ใช้ API แล้วกลับมาดูอีกครั้ง</div>';
 }
 function drawQa(){
   const out=[];
-  ['labor','house','popgrowth'].forEach(j=>{try{const c=JSON.parse(localStorage.getItem('gdc-qa-'+j)||'null');if(c)(c.qa||[]).forEach(q=>out.push({t:'warn',m:q,at:c.at}))}catch(e){}});
-  try{const P=JSON.parse(localStorage.getItem('gdc-qa-panels')||'{}');Object.keys(P).forEach(k=>P[k].forEach(q=>out.push({t:'warn',m:k+': '+q})))}catch(e){}
-  Object.keys(APILIVE).forEach(id=>{const l=APILIVE[id];const x=INV.find(y=>y.id===id);
-    if(l.err)out.push({t:'err',m:'เชื่อมต่อไม่ได้: '+(x?x.n:id)+' — '+l.err});
-    else if(l.total===0)out.push({t:'warn',m:'ชุดข้อมูลว่าง ไม่มีแถว: '+(x?x.n:id)})});
+  ['labor','house','popgrowth'].forEach(j=>{const c=ld('gdc-qa-'+j,null);if(c)(c.qa||[]).forEach(q=>out.push({t:'warn',m:q}))});
+  const P=ld('gdc-qa-panels',{});Object.keys(P).forEach(k=>P[k].forEach(q=>out.push({t:'warn',m:k+': '+q})));
+  Object.keys(APILIVE).forEach(id=>{const l=APILIVE[id],x=INV.find(y=>y.id===id);
+    if(l.err)out.push({t:'err',m:'เชื่อมต่อไม่ได้: '+(x?x.n:id)+' — '+l.err});else if(l.total===0)out.push({t:'warn',m:'ชุดข้อมูลว่าง ไม่มีแถว: '+(x?x.n:id)})});
   document.getElementById('nQa').textContent=out.length||'';
-  document.getElementById('qaBox').innerHTML=out.length?out.map(o=>`<div class="qa">${o.t==='err'?'⚠ ':'△ '}${esc(o.m)}</div>`).join('')
-    :'<div class="qa ok">✓ ไม่พบปัญหาคุณภาพข้อมูลในชุดที่ตรวจ</div>';
+  document.getElementById('qaBox').innerHTML=out.length?out.map(o=>`<div class="cc-glass cc-qa">${o.t==='err'?'⚠ ':'△ '}${esc(o.m)}</div>`).join(''):'<div class="cc-glass cc-qa cc-ok">✓ ไม่พบปัญหาคุณภาพข้อมูลในชุดที่ตรวจ</div>';
 }
-function drawAll(){drawTop();drawPages();drawList();drawAgency();drawHist();drawQa()}
-/* ตัวกรอง */
+function drawAll(){drawTop();drawFeed();drawPages();drawList();drawAgency();drawHist();drawQa()}
 const fType=document.getElementById('fType'),fPage=document.getElementById('fPage'),fAg=document.getElementById('fAg');
 fType.innerHTML+=TORD.map(t=>`<option value="${t}">${SRC_TYPE[t][0]}</option>`).join('');
 fPage.innerHTML+=Object.keys(PAGES).filter(p=>INV.some(x=>x.page===p)).map(p=>`<option value="${p}">${PAGES[p]}</option>`).join('');
 fAg.innerHTML+=[...new Set(INV.map(x=>x.agency))].map(a=>`<option value="${a}">${esc(agN(a))}</option>`).join('');
-['q','fType','fPage','fAg'].forEach(id=>document.getElementById(id).addEventListener('input',drawList));
-document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;
-  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.p));
-  history.replaceState(null,'','#'+b.dataset.p)});
-/* ตรวจการเชื่อมต่อ และดึงวันที่ปรับปรุงจากระบบบัญชีข้อมูล */
+['q','fType','fPage','fAg'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{drawList();drawTop()}));
+function showTab(p){document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('cc-on',x.dataset.p===p));
+  document.querySelectorAll('.cc-pane').forEach(x=>x.classList.toggle('cc-on',x.id==='p-'+p));history.replaceState(null,'','#'+p)}
+document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(b)showTab(b.dataset.p)});
+document.addEventListener('click',e=>{const f=e.target.closest('[data-ft]');if(f&&f.dataset.ft!==undefined&&(f.classList.contains('cc-chip2x')||f.classList.contains('cc-kp'))){
+  fType.value=fType.value===f.dataset.ft?'':f.dataset.ft;showTab('list');drawList();drawTop();
+  document.getElementById('tabs').scrollIntoView({behavior:'smooth'})}});
+document.addEventListener('click',e=>{const c=e.target.closest('[data-pg]');if(c){e.preventDefault();showTab('pages');
+  setTimeout(()=>{const el=document.getElementById('pg-'+c.dataset.pg);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.animate([{boxShadow:'0 0 0 2px #3cf0b0,0 0 40px -6px #3cf0b0'},{boxShadow:'none'}],{duration:1800})}},60)}});
+document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement.tagName!=='INPUT'){e.preventDefault();showTab('list');document.getElementById('q').focus()}});
 async function check(fresh){
-  Object.keys(APILIVE).forEach(k=>delete APILIVE[k]); drawAll();
-  const ids=[...new Set(INV.filter(x=>x.id).map(x=>x.id))];
-  let i=0; const worker=async()=>{while(i<ids.length){const id=ids[i++];
-    try{const v=fresh?await GDC.all(id,{fresh:true}):await GDC.peek(id);APILIVE[id]={ok:true,total:v.total,fields:v.fields.length,sample:v.records,fl:v.fields}}
-    catch(e){APILIVE[id]={err:e.message}}
+  Object.keys(APILIVE).forEach(k=>delete APILIVE[k]);drawAll();
+  const ids=[...new Set(INV.filter(x=>x.id).map(x=>x.id))];let i=0,done=0;
+  const prog=()=>{done++;document.getElementById('chkBar').style.width=(done/ids.length*100)+'%';
+    document.getElementById('chk').textContent=done<ids.length?'กำลังตรวจ '+done+'/'+ids.length+' ชุด…':'ตรวจครบ '+ids.length+' ชุด เมื่อ '+new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})+' น.'};
+  const w=async()=>{while(i<ids.length){const id=ids[i++];
+    try{const v=fresh?await GDC.all(id,{fresh:true}):await GDC.peek(id);APILIVE[id]={ok:true,total:v.total,fields:v.fields.length,sample:v.records,fl:v.fields}}catch(e){APILIVE[id]={err:e.message}}
     try{APIMETA[id]=await GDC.meta(id,fresh)}catch(e){}
-    drawTop();drawList();}};
-  await Promise.all([worker(),worker(),worker(),worker()]);
+    prog();drawTop();drawList();}};
+  await Promise.all([w(),w(),w(),w(),w()]);
   drawAll();
 }
 document.getElementById('btnRe').onclick=()=>check(true);
+document.getElementById('btnUpd').onclick=async e=>{const b=e.currentTarget;b.disabled=true;const t=b.innerHTML;b.innerHTML='กำลังตรวจหาอัปเดต…';
+  const r=await GDC.watchUpdates(true);b.disabled=false;b.innerHTML=t;drawAll();toast(r.fresh?'พบข้อมูลอัปเดตใหม่ '+r.fresh+' ชุด':'ไม่มีการอัปเดตใหม่ · ตรวจ '+(r.checked||0)+' ชุด')};
 document.getElementById('btnCsv').onclick=()=>{
   const rows=[['หน้า','ชุดข้อมูล','หน่วยงาน','แหล่งข้อมูล','resource_id','หมายเหตุ','จำนวนแถว','ปรับปรุงบนระบบบัญชีข้อมูล']].concat(
     INV.map(x=>[PAGES[x.page]||x.page,x.n,agN(x.agency),SRC_TYPE[x.type][0],x.id||'',x.note||x.use||'',APILIVE[x.id]&&APILIVE[x.id].total!=null?APILIVE[x.id].total:'',APIMETA[x.id]&&APIMETA[x.id].modified||'']));
   const csv='\ufeff'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='ทะเบียนแหล่งข้อมูล-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
-};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='ทะเบียนแหล่งข้อมูล-'+new Date().toISOString().slice(0,10)+'.csv';a.click()};
 document.getElementById('btnCopy').onclick=async()=>{
   const out=INV.filter(x=>x.id).map(x=>({name:x.n,resource_id:x.id,state:x.type,ok:!!(APILIVE[x.id]&&APILIVE[x.id].ok),total:APILIVE[x.id]&&APILIVE[x.id].total,
     fields:APILIVE[x.id]&&APILIVE[x.id].fl?APILIVE[x.id].fl.map(f=>f.id+':'+f.type):undefined,sample:APILIVE[x.id]&&APILIVE[x.id].sample}));
-  const txt=JSON.stringify(out,null,1);
-  try{await navigator.clipboard.writeText(txt);toast('คัดลอกโครงสร้าง '+out.length+' ชุดแล้ว')}catch(e){const w=window.open('','_blank');w.document.write('<pre>'+esc(txt)+'</pre>')}
-};
-initTip&&initTip();
+  try{await navigator.clipboard.writeText(JSON.stringify(out,null,1));toast('คัดลอกโครงสร้าง '+out.length+' ชุดแล้ว')}catch(e){toast('คัดลอกไม่ได้ในเบราว์เซอร์นี้','err')}};
+initTip();
 drawAll();
-const h=location.hash.slice(1); if(h){const b=document.querySelector(`#tabs [data-p="${h}"]`); if(b)b.click(); else{const el=document.getElementById('pg-'+h); if(el)setTimeout(()=>el.scrollIntoView(),300)}}
-check(false);
+const h=location.hash.slice(1);
+if(['pages','list','agency','hist','qa'].indexOf(h)>=0)showTab(h);
+else if(h&&PAGES[h]){setTimeout(()=>{const el=document.getElementById('pg-'+h);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.boxShadow='0 0 0 2px #3cf0b0,0 0 40px -10px #3cf0b0'}},400)}
+check(false).then(()=>GDC.watchUpdates().then(()=>{updateBell();drawFeed();drawTop();drawHist()}));
+setInterval(()=>{drawFeed()},60e3);
 </script>
 </body>
 </html>
