@@ -135,7 +135,7 @@ function renderHouse(){
         <div id="cSize-table" class="hide"><div class="sc"><table class="t" id="tSize"></table></div></div>
         <div class="note">ครัวเรือนขนาดใหญ่มีค่าใช้จ่ายรวมสูงกว่า แต่เมื่อหารต่อคนแล้วมักต่ำกว่า เพราะแบ่งใช้ค่าที่อยู่อาศัยและสาธารณูปโภคร่วมกัน</div></div></div>
     <div class="c"><header><span class="hdico icow img">${icoImg('poverty',26)}</span><h3>การกระจายค่าใช้จ่ายของครัวเรือน</h3>
-      <span class="u">ร้อยละของครัวเรือน</span></header>
+      <span class="u" id="distU">จำนวนครัวเรือน</span></header>
       <div class="b"><div class="ch"><canvas id="cDist"></canvas></div>
         <div class="note" id="distNote"></div></div></div>
   </div>
@@ -319,18 +319,32 @@ function renderHouse(){
         <td class="r">${f(g('ค่าใช้จ่ายเพื่อการอุปโภคบริโภค'),0)}</td>
         <td class="r">${f(g('ค่าใช้จ่ายที่ไม่เกี่ยวกับการอุปโภคบริโภค'),0)}</td></tr>`}).join('')+'</tbody>';
 
-  /* ── การกระจายค่าใช้จ่าย ── */
-  const py=[...new Set(H.poverty.map(x=>x.y))].sort((a,b)=>b-a)[0];
+  /* ── การกระจายค่าใช้จ่าย ──
+     ชุด "ค่าใช้จ่ายเฉลี่ยต่อเดือนของครัวเรือน" (สสช.) ให้ "จำนวนครัวเรือน" ในแต่ละช่วงค่าใช้จ่ายทั้งสิ้นต่อเดือนต่อครัวเรือน
+     จึงแสดงเป็นจำนวนครัวเรือน และคำนวณสัดส่วนจากผลรวมของทุกช่วงในปีเดียวกัน */
+  const PVY=[...new Set(H.poverty.map(x=>x.y))].sort((a,b)=>a-b);
+  const py=PVY.filter(y=>y<=HY).pop()||PVY[PVY.length-1];
   const PV=H.poverty.filter(x=>x.y===py);
-  mk('cDist',{type:'bar',data:{labels:PV.map(x=>x.t),
-    datasets:[{label:'ร้อยละของครัวเรือน',data:PV.map(x=>x.v),
-      backgroundColor:PV.map((x,i)=>i<2?cv('--coral'):i<4?cv('--gold'):cv('--brand')),borderRadius:6,barPercentage:.72}]},
-    options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.toFixed(1)+'% ของครัวเรือน'}}},
-      scales:{x:ax({grid:{display:false},ticks:{font:{size:9.5},maxRotation:40}}),y:ax({ticks:{callback:v=>v+'%'}})}}});
-  const lowCnt=PV.slice(0,3).reduce((a,b)=>a+b.v,0);
+  const pvTot=PV.reduce((a,b)=>a+(b.v||0),0)||1;
+  const bandHi=t=>{const n=String(t).replace(/,/g,'').match(/\d+/g);if(!n)return Infinity;return /มากกว่า/.test(t)?Infinity:+n[n.length-1]};
+  const shortLbl=t=>String(t).replace(/ บาท/,'').replace(/ ถึง /,'–').replace(/^ต่ำกว่า /,'< ').replace(/^มากกว่า /,'> ');
+  mk('cDist',{type:'bar',data:{labels:PV.map(x=>shortLbl(x.t)),
+    datasets:[{label:'จำนวนครัวเรือน',data:PV.map(x=>x.v),
+      backgroundColor:PV.map(x=>bandHi(x.t)<=5000?cv('--coral'):bandHi(x.t)<=15000?cv('--gold'):cv('--brand')),borderRadius:6,barPercentage:.72}]},
+    options:{plugins:{legend:{display:false},tooltip:{callbacks:{
+        title:it=>'ค่าใช้จ่าย '+PV[it[0].dataIndex].t+' ต่อเดือนต่อครัวเรือน',
+        label:c=>f(c.raw,0)+' ครัวเรือน ('+(c.raw/pvTot*100).toFixed(1)+'% ของครัวเรือนทั้งหมด)'}}},
+      scales:{x:ax({grid:{display:false},ticks:{font:{size:9.5},maxRotation:40},title:{display:true,text:'ค่าใช้จ่ายทั้งสิ้นต่อเดือนต่อครัวเรือน (บาท)',font:{size:10}}}),
+        y:ax({ticks:{callback:v=>v>=1000?f(v/1000,0)+'K':f(v,0)},title:{display:true,text:'ครัวเรือน',font:{size:10}}})}}});
+  document.getElementById('distU').textContent='จำนวนครัวเรือน · ปี '+py;
+  const low=PV.filter(x=>bandHi(x.t)<=5000).reduce((a,b)=>a+b.v,0);
+  const top=PV.reduce((a,b)=>b.v>a.v?b:a,PV[0]);
+  let cum=0;const med=PV.find(x=>(cum+=x.v)>=pvTot/2);
   document.getElementById('distNote').innerHTML=
-    `ครัวเรือนที่มีค่าใช้จ่ายต่ำกว่า 5,000 บาทต่อเดือนมีราว <b>${lowCnt.toFixed(1)}%</b> (ข้อมูลปี ${py})
-     กลุ่มนี้คือครัวเรือนเปราะบางที่สุด มาตรการลดค่าครองชีพจะเห็นผลกับกลุ่มนี้มากที่สุด`;
+    `ปี ${py} มีครัวเรือนทั้งหมดราว <b>${f(pvTot,0)}</b> ครัวเรือน กลุ่มที่มากที่สุดใช้จ่าย <b>${top.t}</b> ต่อเดือน (${f(top.v,0)} ครัวเรือน · ${(top.v/pvTot*100).toFixed(1)}%)
+     และครัวเรือนครึ่งหนึ่งใช้จ่ายไม่เกินช่วง ${med?med.t:'—'} ต่อเดือน ·
+     ครัวเรือนที่ใช้จ่ายไม่เกิน 5,000 บาทต่อเดือนมี <b>${f(low,0)}</b> ครัวเรือน (${(low/pvTot*100).toFixed(1)}%) เป็นกลุ่มเปราะบางที่มาตรการลดค่าครองชีพจะเห็นผลมากที่สุด
+     ${py!==HY?'<br><small>ชุดนี้ไม่มีข้อมูลปี '+HY+' จึงแสดงปีล่าสุดที่มี</small>':''}`;
 }
 
 DS.init('household',function(){
