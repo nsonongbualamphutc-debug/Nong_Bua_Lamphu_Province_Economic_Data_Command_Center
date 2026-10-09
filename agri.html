@@ -217,7 +217,13 @@ function comboChart(id,o){
 /* ════════ ภาคเกษตร · ชุดข้อมูลจากระบบบัญชีข้อมูลจังหวัด ════════
    ปีที่เลือกได้มาจากข้อมูลใน API · เพิ่มปีใหม่ในระบบบัญชีข้อมูลจังหวัด ตัวเลือกปีจะเพิ่มเอง */
 const AG_RES={irr:'95537e06-3fbd-48ed-b64a-f7ff75b8a85b',small:'5d8b0bd9-9f5a-4385-a63e-16a300cd7a5e',
-  hh:'94c6b113-e8f7-4aca-bb8c-4fbea3454b70',benefit:'e7795256-a7e4-46d1-86d8-c58cd22023db'};
+  hh:'94c6b113-e8f7-4aca-bb8c-4fbea3454b70',benefit:'e7795256-a7e4-46d1-86d8-c58cd22023db',
+  /* เพิ่ม 9 ต.ค. 69 · ชุดที่เปิด DataStore แล้วบนระบบบัญชีข้อมูลจังหวัด */
+  bad:'64458d0f-5cb1-46b7-906b-e922e7743f0c',     /* บ่อบาดาล ประเภทเกษตรกรรม · ทสจ. */
+  store:'c7e7ee1b-24f5-4a61-8e80-2993a35b8081',   /* ปริมาณเก็บกักน้ำ · ชป. */
+  irrarea:'72f4f4bc-613c-4e08-883d-da3ffff0d19d', /* พื้นที่ชลประทาน · ชป. */
+  hhirr:'89b14f70-d482-4714-8a54-e003f4acbd19',   /* ครัวเรือนในเขตชลประทานที่ได้รับประโยชน์ · ชป. */
+  kaem:'ebd61f98-a03f-473d-9607-d26f3d17cbe9'};   /* โครงการแก้มลิง (ความจุ / พื้นที่รับประโยชน์ รายโครงการ) · ชป. */
 const AG_API={state:'idle',d:{},err:{}};
 let WATER_Y=null;
 function agriRows(rows,typeKey){
@@ -226,18 +232,20 @@ function agriRows(rows,typeKey){
 }
 function agriSync(){
   if(AG_API.state!=='idle')return; AG_API.state='loading';
-  Promise.all(Object.keys(AG_RES).map(k=>GDC.all(AG_RES[k]).then(v=>{AG_API.d[k]=agriRows(gdcRows(v),k==='irr'?'ประเภทแหล่งน้ำ':null)})
+  Promise.all(Object.keys(AG_RES).map(k=>GDC.all(AG_RES[k]).then(v=>{AG_API.d[k]=agriRows(gdcRows(v),k==='irr'?'ประเภทแหล่งน้ำ':k==='kaem'?'รายการข้อมูล':null)})
     .catch(e=>{AG_API.err[k]=e.message})))
   .then(()=>{AG_API.state='ok';try{renderAgri()}catch(e){console.error(e)}});
 }
 const agYears=k=>[...new Set((AG_API.d[k]||[]).map(r=>r.y))].sort((a,b)=>a-b);
 const agSum=(k,y,f)=>(AG_API.d[k]||[]).filter(r=>r.y===y&&(!f||f(r))).reduce((a,r)=>a+r.v,0);
 const agHas=k=>(AG_API.d[k]||[]).length>0;
+/* ค่าของปีที่เลือก · ถ้าชุดนั้นยังไม่มีปีนี้ ใช้ปีล่าสุดที่ไม่เกินปีที่เลือก (บอกปีไว้ในป้าย) */
+const agPick=(k,Y,f)=>{const ys=agYears(k);if(!ys.length)return null;const y=ys.indexOf(Y)>=0?Y:(ys.filter(x=>x<=Y).pop()||ys[ys.length-1]);return {y,v:agSum(k,y,f)}};
 /* การ์ดของชุดที่ยังไม่เปิดอ่านผ่าน API */
 function linkCard(label,img,color,unit,src,ds){
   return kpiCard({icon:'drop',img,color,label,value:'—',unit,
     chip:'<span class="chip mock">กำลังเชื่อมข้อมูล</span>',sub:'ที่มา: '+src,
-    tip:tipOf({t:label,d:'ชุดข้อมูลมีอยู่ในระบบบัญชีข้อมูลจังหวัดแล้ว แต่ระบบยังไม่เปิดให้อ่านผ่าน API'+(ds?' ('+ds+')':''),
+    tip:tipOf({t:label,d:'หน่วยงานอัปโหลดชุดข้อมูลนี้ในระบบบัญชีข้อมูลจังหวัดแล้ว'+(ds?' ('+ds+')':'')+' แต่เป็นไฟล์ที่ยังไม่ได้เปิด DataStore จึงอ่านผ่าน API ไม่ได้ · แจ้งหน่วยงาน/ผู้ดูแลระบบให้กด "Upload to DataStore" แล้วตัวเลขจะขึ้นเองอัตโนมัติ',
       calc:'เมื่อเปิดอ่านได้ ตัวเลขจะขึ้นเองโดยไม่ต้องแก้แดชบอร์ด',src:'',when:''})});
 }
 function renderWater(){
@@ -248,7 +256,7 @@ function renderWater(){
   const Y=WATER_Y, PY=ys[ys.indexOf(Y)-1]||null;
   /* ตัวเลือกปี */
   const yb=document.getElementById('waterYear');
-  if(yb)yb.innerHTML=ys.length?`<span class="sl-lab">ปีข้อมูล</span>`+ys.slice().reverse().map(y=>`<button class="${y===Y?'on':''}" data-wy="${y}">${y}</button>`).join('')
+  if(yb)yb.innerHTML=ys.length?`<span class="sl-lab">ปีข้อมูล</span>`+ys.map(y=>`<button class="${y===Y?'on':''}" data-wy="${y}">${y}</button>`).join('')
     :`<span class="sl-lab">${loading?'กำลังดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัด…':'ยังไม่มีข้อมูลจาก API'}</span>`;
   const yoy=(k,f)=>{if(!PY)return '';const a=agSum(k,Y,f),b=agSum(k,PY,f);if(!b)return '';const d=a-b;
     return `<span class="chip ${d>0?'up':d<0?'dn':'fl'}">${d>0?'▲ +':d<0?'▼ ':'▬ '}${f_num(d)} จากปี ${PY}</span>`};
@@ -283,8 +291,13 @@ function renderWater(){
       sub:'ที่มา: '+IRR,
       tip:tipOf({t:'แหล่งน้ำขนาดเล็ก ปี '+Y,d:'แหล่งน้ำขนาดเล็กในความรับผิดชอบของโครงการชลประทาน',
         calc:'ผลรวมทุกอำเภอ = '+f_num(agSum('small',Y))+' แห่ง · รายอำเภอ: '+ampTip('small','แห่ง'),src:'irrig',when:'ปี '+Y+' · ระบบบัญชีข้อมูลจังหวัด'})}),
-    linkCard('สระน้ำในไร่นานอกเขตชลประทาน','water',cv('--brand2'),'บ่อ','สถานีพัฒนาที่ดินหนองบัวลำภู','information-on'),
-    linkCard('บ่อบาดาล (ประเภทเกษตรกรรม)','water',cv('--plum'),'แห่ง','สนง.ทรัพยากรธรรมชาติและสิ่งแวดล้อมจังหวัดหนองบัวลำภู','dataset_02_05'),
+    linkCard('สระน้ำในไร่นานอกเขตชลประทาน','water',cv('--brand2'),'บ่อ','สถานีพัฒนาที่ดินหนองบัวลำภู','information-on-ponds-in-non-irrigated-farms'),
+    (function(){const b=agPick('bad',Y);return b?kpiCard({icon:'drop',img:'row-groundwell',bg:'water',color:cv('--plum'),label:'บ่อบาดาล (ประเภทเกษตรกรรม)',value:f(b.v,0),unit:'แห่ง',
+      chip:'<span class="chip real">API · ปี '+b.y+'</span>'+(b.y===Y?yoy('bad'):''),sub:'ที่มา: สนง.ทรัพยากรธรรมชาติและสิ่งแวดล้อมจังหวัดหนองบัวลำภู',
+      tip:tipOf({t:'บ่อบาดาล ประเภทเกษตรกรรม ปี '+b.y,d:'จำนวนบ่อบาดาลที่ขึ้นทะเบียนเพื่อใช้ในการเกษตร',
+        calc:'ผลรวมทุกอำเภอ = '+f_num(b.v)+' แห่ง · รายอำเภอ: '+ampTip('bad','แห่ง'),src:'env',when:'ปี '+b.y+' · ระบบบัญชีข้อมูลจังหวัด (dataset_02_05)'})})
+      :kpiCard({icon:'drop',img:'row-groundwell',bg:'water',color:cv('--plum'),label:'บ่อบาดาล (ประเภทเกษตรกรรม)',value:'—',unit:'แห่ง',
+        chip:'<span class="chip mock">'+(loading?'กำลังดึงข้อมูล…':'เชื่อมต่อ API ไม่ได้')+'</span>',sub:'ที่มา: สนง.ทรัพยากรธรรมชาติและสิ่งแวดล้อมจังหวัดหนองบัวลำภู'})})(),
     kpiCard({icon:'drop',img:'water',color:cv('--faint'),label:'บ่อขนาดเล็ก (เกษตรทฤษฎีใหม่)',value:'—',unit:'บ่อ',
       chip:'<span class="chip">รอสอบถามแหล่งข้อมูล</span>',sub:'ยังไม่ทราบหน่วยงานเจ้าของข้อมูล',
       tip:tipOf({t:'บ่อขนาดเล็ก (เกษตรทฤษฎีใหม่)',d:'อยู่ระหว่างสอบถามว่าหน่วยงานใดเป็นเจ้าของข้อมูล',calc:'',src:'',when:''})})
@@ -296,9 +309,11 @@ function renderWater(){
     ['แหล่งน้ำชลประทาน',agHas('irr')?f(irrT,0):'—','แห่ง',agHas('irr')?'api':'link'],
     ['แหล่งน้ำขนาดเล็ก',agHas('small')?f(agSum('small',Y),0):'—','แห่ง',agHas('small')?'api':'link'],
     ['สระน้ำไร่นานอกเขตชลประทาน','—','บ่อ','link'],
-    ['บ่อบาดาล ประเภทเกษตรกรรม','—','แห่ง','link'],
+    (function(){const b=agPick('bad',Y);return ['บ่อบาดาล ประเภทเกษตรกรรม',b?f(b.v,0):'—','แห่ง',b?'api':'link']})(),
     ['บ่อขนาดเล็ก (เกษตรทฤษฎีใหม่)','—','บ่อ','ask'],
-    ['โครงการแก้มลิง','—','แห่ง','link']];
+    (function(){const k=agPick('kaem',Y,r=>/ความจุ/.test(r.t));if(!k)return ['โครงการแก้มลิง','—','แห่ง','link'];
+      const n=(AG_API.d.kaem||[]).filter(r=>r.y===k.y&&/ความจุ/.test(r.t)).length;
+      return ['โครงการแก้มลิง',f(n,0)+' <small style="color:var(--faint)">(ความจุ '+f(k.v,2)+' ล้าน ลบ.ม.)</small>','แห่ง','api']})()];
   $('#tWater').innerHTML=`<thead><tr><th>ประเภทแหล่งน้ำ</th><th class="r">จำนวน</th><th>หน่วย</th><th style="width:130px">สถานะ</th></tr></thead><tbody>`+
     TR.map(r=>`<tr><td>${rowIco(r[0])}${r[0]}</td><td class="r">${r[1]}</td><td>${r[2]}</td><td>${ST[r[3]]}</td></tr>`).join('')+
     `</tbody><tfoot><tr><td colspan="4" style="font-family:var(--fb);font-weight:400;color:var(--faint);font-size:10.5px">
@@ -316,11 +331,11 @@ function renderWater(){
         <span class="nm">${t}</span><span class="tr"><i style="width:${(byT[t]/mx*100).toFixed(0)}%;background:${PAL()[i%7]}"></i></span>
         <span class="vv">${f(byT[t],0)}</span></div>`).join(''):`<div class="note">${loading?'กำลังดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัด…':'เชื่อมต่อ API ไม่ได้'}</div>`)+
       `<div class="grid g2" style="gap:9px;margin-top:11px">
-        ${mini('ปริมาณเก็บกักน้ำ',null,'ล้าน ลบ.ม.',tipOf({t:'ปริมาณเก็บกักน้ำ',d:'ชุดข้อมูล dataset_04_03 อยู่ในระบบบัญชีข้อมูลจังหวัดแล้ว รอเปิดอ่านผ่าน API',calc:'',src:'irrig',when:''}))}
-        ${mini('พื้นที่ชลประทาน',null,'ไร่',tipOf({t:'พื้นที่ชลประทาน',d:'ชุดข้อมูล dataset_04_04 อยู่ในระบบบัญชีข้อมูลจังหวัดแล้ว รอเปิดอ่านผ่าน API',calc:'',src:'irrig',when:''}))}
+        ${(function(){const x=agPick('store',Y);return mini('ปริมาณเก็บกักน้ำ',x?f(x.v,2)+(x.y!==Y?' <small>(ปี '+x.y+')</small>':''):null,'ล้าน ลบ.ม.',x?tipOf({t:'ปริมาณเก็บกักน้ำ ปี '+x.y,d:'ปริมาณน้ำที่อ่างและแหล่งเก็บกักของโครงการชลประทานเก็บได้ · ดึงจากระบบบัญชีข้อมูลจังหวัด',calc:'ผลรวมทุกอำเภอ = '+f_num(x.v)+' ล้าน ลบ.ม. · รายอำเภอ: '+ampTip('store','ล้าน ลบ.ม.'),src:'irrig',when:'ปี '+x.y+' · dataset_04_03'}):tipOf({t:'ปริมาณเก็บกักน้ำ',d:loading?'กำลังดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัด…':'เชื่อมต่อ API ไม่ได้ ระบบจะลองใหม่เมื่อเปิดหน้าอีกครั้ง',calc:'',src:'irrig',when:''}))})()}
+        ${(function(){const x=agPick('irrarea',Y);return mini('พื้นที่ชลประทาน',x?f(x.v,0)+(x.y!==Y?' <small>(ปี '+x.y+')</small>':''):null,'ไร่',x?tipOf({t:'พื้นที่ชลประทาน ปี '+x.y,d:'พื้นที่ที่อยู่ในเขตโครงการชลประทาน · ดึงจากระบบบัญชีข้อมูลจังหวัด',calc:'ผลรวมทุกอำเภอ = '+f_num(x.v)+' ไร่ · รายอำเภอ: '+ampTip('irrarea','ไร่'),src:'irrig',when:'ปี '+x.y+' · dataset_04_04'}):tipOf({t:'พื้นที่ชลประทาน',d:loading?'กำลังดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัด…':'เชื่อมต่อ API ไม่ได้ ระบบจะลองใหม่เมื่อเปิดหน้าอีกครั้ง',calc:'',src:'irrig',when:''}))})()}
         ${mini('พื้นที่ที่ได้รับประโยชน์ในเขตชลประทาน',agHas('benefit')?f(agSum('benefit',Y),0):null,'ไร่',
            tipOf({t:'พื้นที่ที่ได้รับประโยชน์ในเขตชลประทาน ปี '+Y,d:'ดึงจากระบบบัญชีข้อมูลจังหวัด',calc:'รายอำเภอ: '+ampTip('benefit','ไร่'),src:'irrig',when:'ปี '+Y}))}
-        ${mini('ครัวเรือนในเขตชลประทานที่ได้รับประโยชน์',null,'ครัวเรือน',tipOf({t:'ครัวเรือนในเขตชลประทานที่ได้รับประโยชน์',d:'ชุดข้อมูล dataset_04_06 อยู่ในระบบบัญชีข้อมูลจังหวัดแล้ว รอเปิดอ่านผ่าน API',calc:'',src:'irrig',when:''}))}
+        ${(function(){const x=agPick('hhirr',Y);return mini('ครัวเรือนในเขตชลประทานที่ได้รับประโยชน์',x?f(x.v,0)+(x.y!==Y?' <small>(ปี '+x.y+')</small>':''):null,'ครัวเรือน',x?tipOf({t:'ครัวเรือนในเขตชลประทานที่ได้รับประโยชน์ ปี '+x.y,d:'ครัวเรือนที่ได้รับน้ำจากระบบชลประทาน · ดึงจากระบบบัญชีข้อมูลจังหวัด',calc:'ผลรวมทุกอำเภอ = '+f_num(x.v)+' ครัวเรือน · รายอำเภอ: '+ampTip('hhirr','ครัวเรือน'),src:'irrig',when:'ปี '+x.y+' · dataset_04_06'}):tipOf({t:'ครัวเรือนในเขตชลประทานที่ได้รับประโยชน์',d:loading?'กำลังดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัด…':'เชื่อมต่อ API ไม่ได้ ระบบจะลองใหม่เมื่อเปิดหน้าอีกครั้ง',calc:'',src:'irrig',when:''}))})()}
       </div>`;
   }
 }
