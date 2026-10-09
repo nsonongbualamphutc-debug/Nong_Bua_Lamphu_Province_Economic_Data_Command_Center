@@ -2338,3 +2338,36 @@ body.tour .topbar,body.tour header.top{position:relative;z-index:800}
 }
 body.kiosk #bot,body.tour #bot{display:none}
 @media print{#bot{display:none}}
+/* มาสคอตผู้ช่วยข้อมูล */
+.bt-fab{padding-left:64px;overflow:visible}
+.bt-masc{position:absolute;left:-8px;bottom:-4px;height:84px;width:auto;pointer-events:none;filter:drop-shadow(0 8px 10px rgba(0,0,0,.25));
+  transform-origin:50% 100%;animation:btFloat 3.2s ease-in-out infinite}
+.bt-fab .bt-masc+svg{display:none}
+.bt-fab.hop .bt-masc{animation:btHop .9s cubic-bezier(.3,.7,.4,1) 1,btFloat 3.2s ease-in-out .9s infinite}
+@keyframes btFloat{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(-2deg)}}
+@keyframes btHop{0%{transform:scale(1,1)}15%{transform:scale(1.08,.88)}35%{transform:translateY(-22px) scale(.95,1.07)}55%{transform:translateY(-26px) scale(1,1)}75%{transform:translateY(0) scale(1.07,.9)}90%{transform:scale(.98,1.03)}100%{transform:none}}
+.bt-hint{position:absolute;right:6px;bottom:72px;width:230px;padding:11px 30px 11px 13px;border-radius:16px 16px 4px 16px;background:var(--card);color:var(--ink);
+  border:1px solid color-mix(in srgb,var(--brand) 35%,var(--line));box-shadow:0 18px 40px -18px rgba(6,35,29,.55);font-size:12.5px;line-height:1.55;cursor:pointer;
+  opacity:0;transform:translateY(8px) scale(.96);pointer-events:none;transition:.3s}
+.bt-hint.on{opacity:1;transform:none;pointer-events:auto}
+.bt-hint b{color:var(--brand)}
+.bt-hint button{position:absolute;right:6px;top:5px;border:0;background:none;color:var(--faint);font-size:16px;cursor:pointer}
+#bot.on .bt-hint{display:none}
+.bt-panel header .bt-av{background:#fff6cd;padding:0}
+.bt-m.ai.think{display:flex;align-items:center;gap:8px}
+.bt-mini{width:30px;height:30px;border-radius:50%;animation:btThink 1.2s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes btThink{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+@media (max-width:767px){.bt-fab{padding-left:56px}.bt-masc{height:72px}.bt-hint{bottom:62px}}
+@media (prefers-reduced-motion:reduce){.bt-masc,.bt-mini,.bt-ring{animation:none!important}}
+@media (max-width:767px){.bt-fab .bt-masc+svg{display:block}.bt-fab{padding:0 14px 0 58px}}
+
+/* ── มาสคอตน้องบัว (ดอกบัวหนองบัวลำภู) ── */
+.bt-fab{padding-left:74px}
+.bt-masc{left:-14px;bottom:-6px;height:86px}
+.bt-masc[data-st=think]{animation:btThink 1.4s ease-in-out infinite!important;transform-origin:50% 92%}
+.bt-masc[data-st=talk]{animation:btTalk .5s ease-in-out 6!important;transform-origin:50% 95%}
+@keyframes btTalk{0%,100%{transform:scale(1)}50%{transform:scale(1.05,.96)}}
+.bt-mini{width:38px;height:38px;border-radius:0;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.18))}
+.bt-panel header .bt-av{background:#fff6d6;box-shadow:0 0 0 2px rgba(212,160,23,.55)}
+.bt-panel header .bt-av.talk{animation:btTalk .5s ease-in-out 4}
+@media (max-width:767px){.bt-fab{padding:0 14px 0 64px}.bt-masc{height:74px;left:-12px}}

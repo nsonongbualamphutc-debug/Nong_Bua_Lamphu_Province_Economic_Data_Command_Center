@@ -348,6 +348,27 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .gp-lt span{display:block;font-size:12.5px;color:#9fd9c3;margin-top:2px}
 @media(max-width:640px){.gp-logo{width:64px;height:64px;flex-basis:64px;border-radius:18px}.gp-logo img{width:52px;height:52px}.gp-x{font-size:20px}.gp-lt{flex-basis:100%}.cc-brand .cc-logos img{height:30px}}
 .cc-ah img.cc-agl{background:#fff;border-radius:50%;padding:5px;box-shadow:0 0 0 2px rgba(255,255,255,.15),0 8px 18px rgba(0,0,0,.35);object-fit:contain}
+
+/* ── สำเนาข้อมูลสำหรับทุกอุปกรณ์ ── */
+.sn-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+.sn-card{padding:20px 22px}
+.sn-st{display:flex;gap:14px;align-items:center;margin:6px 0 14px}
+.sn-dot{width:14px;height:14px;border-radius:50%;flex:none;background:var(--c);box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 22%,transparent),0 0 18px var(--c)}
+.sn-st b{font:600 18px 'Kanit',sans-serif;display:block}.sn-st span{color:var(--tx2);font-size:13px}
+.sn-kv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0 16px}
+.sn-kv div{background:var(--gl);border:1px solid var(--ln);border-radius:14px;padding:10px 12px}
+.sn-kv b{display:block;font:600 20px 'Kanit',sans-serif;color:var(--neo)}.sn-kv span{font-size:12px;color:var(--tx3)}
+.sn-act{display:flex;flex-wrap:wrap;gap:8px}
+.sn-bar{height:8px;border-radius:9px;background:var(--gl);overflow:hidden;margin:14px 0 6px;display:none}
+.sn-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#12a36f,#3cf0b0);transition:width .3s}
+.sn-msg{font-size:13px;color:var(--tx2);min-height:20px}
+.sn-tok{display:flex;gap:8px;margin-top:10px}.sn-tok input{flex:1;min-width:0;font:inherit;font-size:13px;padding:9px 12px;border-radius:12px;border:1px solid var(--ln);background:rgba(0,0,0,.25);color:var(--tx)}
+.sn-steps{margin:6px 0 0;padding-left:20px;color:var(--tx2);font-size:13.5px;line-height:1.75}.sn-steps b{color:var(--tx)}
+.sn-steps code{background:rgba(0,0,0,.3);padding:1px 6px;border-radius:6px;font-size:12px;color:var(--gold)}
+.sn-how{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.sn-how div{border:1px solid var(--ln);border-radius:14px;padding:12px;background:var(--gl);font-size:12.5px;color:var(--tx2)}
+.sn-how b{display:block;color:var(--tx);font-size:13.5px;margin-bottom:3px}
+@media(max-width:900px){.sn-grid,.sn-how{grid-template-columns:1fr}.sn-kv{grid-template-columns:1fr 1fr 1fr}}
 </style>
 </head>
 <body>
@@ -444,6 +465,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <button data-p="agency"><img src="assets/icons/ic-institution.png" alt="" onerror="this.remove()">หน่วยงาน<b id="nAg"></b></button>
     <button data-p="hist"><img src="assets/icons/ic-history.png" alt="" onerror="this.remove()">ประวัติการอัปเดต<b id="nHist"></b></button>
     <button data-p="qa"><img src="assets/icons/ic-datastatus.png" alt="" onerror="this.remove()">คุณภาพข้อมูล<b id="nQa"></b></button>
+    <button data-p="snap"><img src="assets/icons/ic-database.png" alt="" onerror="this.remove()">สำเนาสำหรับทุกอุปกรณ์</button>
   </div>
   <div class="cc-pane cc-on" id="p-pages"><div class="cc-pgrid" id="pgrid"></div></div>
   <div class="cc-pane" id="p-find">
@@ -466,6 +488,35 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   <div class="cc-pane" id="p-agency"><div class="cc-agrid" id="agrid"></div></div>
   <div class="cc-pane" id="p-hist"><div class="cc-glass cc-tl" id="tl"></div></div>
   <div class="cc-pane" id="p-qa"><div id="qaBox"></div></div>
+  <div class="cc-pane" id="p-snap">
+    <div class="sn-grid">
+      <div class="cc-glass sn-card">
+        <div class="cc-sec-h"><h3>สำเนาข้อมูล API สำหรับ iPad · มือถือ · ทุกอุปกรณ์</h3></div>
+        <div class="sn-st" id="snSt"></div>
+        <div class="sn-kv" id="snKv"></div>
+        <div class="sn-act">
+          <button class="cc-ib cc-pri" id="snRun">สร้างสำเนาใหม่และส่งขึ้นเว็บ</button>
+          <button class="cc-ib" id="snDl">ดาวน์โหลดสำเนา (.json)</button>
+        </div>
+        <div class="sn-bar" id="snBar"><i></i></div><div class="sn-msg" id="snMsg"></div>
+        <div class="sn-how">
+          <div><b>1 · เครื่องเข้า API ได้</b>คอมพิวเตอร์ในสำนักงานดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัดตามปกติ</div>
+          <div><b>2 · บันทึกเป็นสำเนา</b>ระบบส่งไฟล์ data/gdc-snapshot.json ขึ้นเว็บเมื่อข้อมูลเปลี่ยน</div>
+          <div><b>3 · ทุกอุปกรณ์ใช้ได้</b>iPad/มือถือที่เข้า API ไม่ได้ จะแสดงสำเนานี้แทนอัตโนมัติ</div>
+        </div>
+      </div>
+      <div class="cc-glass sn-card">
+        <div class="cc-sec-h"><h3>ตั้งค่าให้อัปเดตอัตโนมัติ</h3></div>
+        <ol class="sn-steps">
+          <li><b>แบบเปิดแดชบอร์ด</b> · ใส่โทเคน GitHub ด้านล่างบนคอมพิวเตอร์ในสำนักงาน เครื่องนี้จะตรวจทุก 3 ชั่วโมงขณะเปิดแดชบอร์ด และส่งสำเนาใหม่เมื่อหน่วยงานปรับปรุงข้อมูล</li>
+          <li><b>แบบตั้งเวลา (แนะนำ)</b> · ดับเบิลคลิก <code>tools/install-auto-update.bat</code> บนคอมพิวเตอร์ในสำนักงาน ระบบจะดึงข้อมูลวันละ 4 ครั้งแม้ไม่ได้เปิดแดชบอร์ด</li>
+          <li>โทเคน: GitHub › Settings › Developer settings › Fine-grained tokens › เลือกเฉพาะ repo นี้ › สิทธิ์ <b>Contents: Read and write</b> เท่านั้น</li>
+        </ol>
+        <div class="sn-tok"><input type="password" id="snTok" placeholder="github_pat_… (เก็บในเครื่องนี้เท่านั้น)" autocomplete="off"><button class="cc-ib" id="snSave">บันทึก</button></div>
+        <div class="sn-msg" id="snTokMsg" style="margin-top:6px"></div>
+      </div>
+    </div>
+  </div>
   <div class="cc-foot">วันที่ปรับปรุงมาจากระบบบัญชีข้อมูลจังหวัดโดยตรง · ระบบตรวจหาอัปเดตทุก 15 นาทีขณะเปิดแดชบอร์ด และแจ้งที่กระดิ่ง ·
     ประวัติการดึงมาใช้เก็บไว้ในเครื่องนี้ · ชุดที่เป็น "ข้อมูลจำลอง" ใช้แสดงรูปแบบเท่านั้น ห้ามนำไปอ้างอิง</div>
 </div>
@@ -655,7 +706,7 @@ async function check(fresh){
   const prog=()=>{done++;document.getElementById('chkBar').style.width=(done/ids.length*100)+'%';
     document.getElementById('chk').textContent=done<ids.length?'กำลังตรวจ '+done+'/'+ids.length+' ชุด…':'ตรวจครบ '+ids.length+' ชุด เมื่อ '+new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})+' น.'};
   const w=async()=>{while(i<ids.length){const id=ids[i++];
-    try{const v=fresh?await GDC.all(id,{fresh:true}):await GDC.peek(id);APILIVE[id]={ok:true,total:v.total,fields:v.fields.length,sample:v.records,fl:v.fields}}catch(e){APILIVE[id]={err:e.message}}
+    try{const v=fresh?await GDC.all(id,{fresh:true}):await GDC.peek(id);APILIVE[id]={ok:!v.snap,snap:v.snap,err:v.snap?'อุปกรณ์นี้เข้า API ไม่ได้ · ใช้สำเนา':undefined,total:v.total,fields:v.fields.length,sample:v.records,fl:v.fields}}catch(e){APILIVE[id]={err:e.message}}
     try{APIMETA[id]=await GDC.meta(id,fresh)}catch(e){}
     prog();drawTop();drawList();}};
   await Promise.all([w(),w(),w(),w(),w()]);
@@ -727,10 +778,38 @@ drawAll();
     requestAnimationFrame(loop)})();
 })();
 const h=location.hash.slice(1);
-if(['pages','find','list','agency','hist','qa'].indexOf(h)>=0)showTab(h);
+if(['pages','find','list','agency','hist','qa','snap'].indexOf(h)>=0)showTab(h);
 else if(h&&PAGES[h]){setTimeout(()=>{const el=document.getElementById('pg-'+h);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.boxShadow='0 0 0 2px #3cf0b0,0 0 40px -10px #3cf0b0'}},400)}
 check(false).then(()=>GDC.watchUpdates().then(()=>{updateBell();drawFeed();drawTop();drawHist()}));
 setInterval(()=>{drawFeed()},60e3);
+
+/* ── สำเนาข้อมูลสำหรับทุกอุปกรณ์ ── */
+(function(){
+  const $=id=>document.getElementById(id);let last=null;
+  async function draw(){
+    const s=await GDC.snap();const ok=await GDC.call('resource_show',{id:GDC.snapIds()[0]},0).then(()=>true).catch(()=>false);
+    const age=s?(Date.now()-new Date(s.at))/3600e3:null;
+    const c=!s?'#e0523e':age<30?'#12a36f':'#d4a017';
+    $('snSt').innerHTML=`<i class="sn-dot" style="--c:${c}"></i><div><b>${!s?'ยังไม่มีสำเนาบนเว็บ':age<30?'สำเนาเป็นปัจจุบัน':'สำเนาเก่ากว่า 1 วัน'}</b>
+      <span>${s?'บันทึกเมื่อ '+thDT(s.at)+' '+new Date(s.at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})+' น. · '+(s.by==='browser'?'จากแดชบอร์ด':'จากสคริปต์ตั้งเวลา'):'อุปกรณ์ที่เข้า API ไม่ได้จะใช้ข้อมูลสำรองจากไฟล์ไปก่อน'}</span></div>`;
+    $('snKv').innerHTML=`<div><b>${s?s.n:0}</b><span>ชุดข้อมูลในสำเนา</span></div><div><b>${GDC.snapIds().length}</b><span>ชุดที่ลงทะเบียนไว้</span></div>
+      <div><b style="color:${ok?'#3cf0b0':'#ff8a7a'}">${ok?'ได้':'ไม่ได้'}</b><span>เครื่องนี้เข้า API</span></div>`;
+    $('snRun').disabled=!ok;$('snRun').style.opacity=ok?1:.45;
+    if(!ok)$('snMsg').textContent='เครื่องนี้เข้าระบบบัญชีข้อมูลไม่ได้ จึงสร้างสำเนาไม่ได้ · ใช้คอมพิวเตอร์ในสำนักงานแทน';
+    $('snTokMsg').textContent=GDC.ghToken()?'บันทึกโทเคนไว้ในเครื่องนี้แล้ว · อัปเดตอัตโนมัติทำงาน':'ยังไม่ได้ใส่โทเคน · สร้างสำเนาได้แต่ต้องอัปโหลดเอง';
+  }
+  const prog=(n,t)=>{$('snBar').style.display='block';$('snBar').firstChild.style.width=(n/t*100)+'%';$('snMsg').textContent='กำลังดึงข้อมูล '+n+'/'+t+' ชุด…'};
+  $('snRun').onclick=async()=>{const b=$('snRun');b.disabled=true;
+    try{const r=await GDC.refreshSnapshot({prog,force:true});last=r.snap;
+      $('snMsg').textContent=r.pushed?'ส่งสำเนาใหม่แล้ว '+r.snap.n+' ชุด · iPad/มือถือจะเห็นข้อมูลใหม่ภายในไม่กี่นาที'
+        :'สร้างสำเนาแล้ว '+r.snap.n+' ชุด · ยังไม่มีโทเคน จึงดาวน์โหลดให้แทน (อัปโหลดไฟล์นี้ไปที่ data/gdc-snapshot.json)';
+      if(!r.pushed)dl(r.snap);GDC._snapP=null;draw()}
+    catch(e){$('snMsg').textContent='ไม่สำเร็จ: '+e.message}b.disabled=false};
+  function dl(s){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(s)],{type:'application/json'}));a.download='gdc-snapshot.json';a.click()}
+  $('snDl').onclick=async()=>{if(last)return dl(last);const s=await GDC.snap();if(s)dl(s);else $('snMsg').textContent='ยังไม่มีสำเนา · กดสร้างสำเนาใหม่ก่อน'};
+  $('snSave').onclick=()=>{const v=$('snTok').value.trim();try{v?localStorage.setItem('gdc-gh-token',v):localStorage.removeItem('gdc-gh-token')}catch(e){}$('snTok').value='';draw()};
+  draw();
+})();
 </script>
 </body>
 </html>

@@ -2620,11 +2620,17 @@ const GDC={
       const m=GDC._mem[id]; if(m&&Date.now()-m.t<GDC.ttl)return m.v;
       try{const c=JSON.parse(sessionStorage.getItem(key)||'null'); if(c&&Date.now()-c.t<GDC.ttl){GDC._mem[id]=c;return c.v}}catch(e){}
     }
+    /* เครื่องนี้เข้า API ไม่ได้ (เช่น iPad ที่เปิด Private Relay) → ใช้สำเนาข้อมูล API ทันที ไม่ต้องรอ */
+    if(GDC.down&&!opt.fresh){const sv=await GDC.fromSnap(id);if(sv)return sv}
     let off=0, rec=[], fields=null, total=0;
+    try{
     do{
       const r=await GDC._jsonp({resource_id:id,limit:1000,offset:off});
       fields=fields||r.fields; total=r.total||0; rec=rec.concat(r.records||[]); off+=1000;
     }while(rec.length<total&&off<20000);
+    }catch(e){
+      if(!GDC.building&&/เชื่อมต่อ|หมดเวลา/.test(e.message))GDC.down=true;
+      const sv=await GDC.fromSnap(id);if(sv)return sv;throw e}
     const v={id,fields:(fields||[]).filter(f=>f.id!=='_id'),records:rec,total,at:new Date().toISOString()};
     try{GDC.logPull(id,v)}catch(e){}
     const c={t:Date.now(),v}; GDC._mem[id]=c;
@@ -2648,6 +2654,7 @@ function gdcBadge(page){
     if(FISCAL_API.state==='err')return `<a class="gdcb file" href="apistatus.html#fiscal" data-tip2="${tipOf({t:'เชื่อมต่อระบบบัญชีข้อมูลจังหวัดไม่ได้',
       d:'แสดงตัวเลขชุดล่าสุดที่บันทึกไว้ในแดชบอร์ดไปก่อน '+(FISCAL_API.err||''),calc:'ระบบจะลองใหม่เมื่อเปิดหน้าอีกครั้ง · กดเพื่อดูสถานะรายชุด',src:'',when:''})}"><i></i>API ไม่ตอบสนอง · ใช้ข้อมูลสำรอง</a>`;
     if(FISCAL_API.state==='loading')return '<span class="gdcb map"><i></i>กำลังดึงจากระบบบัญชีข้อมูลจังหวัด…</span>';
+    if(FISCAL_API.state==='ok'&&GDC.snapAt)return gdcSnapBadge();
   }
   const T={api:['api','ดึงจากระบบบัญชีข้อมูลจังหวัด (API)'],part:['part','ดึงจาก API บางส่วน'],
            map:['map','กำลังย้ายไปใช้ API'],file:['file','ใช้ไฟล์ข้อมูล']}[st];
@@ -2928,13 +2935,15 @@ GDC.SYNC={
 };
 const SYNC_STATE={};          /* สถานะรายชุดของหน้านี้ · ใช้ติดป้ายและหน้าสถานะ */
 /* ป้ายสถานะ API ที่หัวหน้า (เหมือนหน้าการคลัง) · วาดใหม่ทุกครั้งที่หน้า render เพื่อไม่ให้หาย */
+function gdcSnapBadge(){return '<a class="gdcb api" href="apistatus.html#snap" data-tip2="ข้อมูล API · สำเนาสำหรับอุปกรณ์นี้|อุปกรณ์นี้เข้าระบบบัญชีข้อมูลจังหวัดโดยตรงไม่ได้ (มักเป็น iPad/iPhone ที่เปิด iCloud Private Relay หรือใช้ DNS ต่างประเทศ) แดชบอร์ดจึงแสดงสำเนาข้อมูล API ชุดเดียวกันที่ระบบบันทึกไว้|สำเนาล่าสุด '+thDT(GDC.snapAt)+' · ปรับปรุงอัตโนมัติเมื่อหน่วยงานแก้ข้อมูลบนระบบบัญชีข้อมูล"><i></i>ข้อมูล API · สำเนา '+thDate(GDC.snapAt)+'</a>'}
 function gdcSyncBadge(pageId){
   try{gdcLive(pageId)}catch(e){}
   const st=Object.values(SYNC_STATE); if(!st.length)return;
   let gs=document.getElementById('gdcPageBadge');
   if(!gs||!document.body.contains(gs)){const r=document.querySelector('.view.on .ph .r, .ph .r'); if(!r)return; gs=document.createElement('span');gs.id='gdcPageBadge';r.appendChild(gs)}
   gs.innerHTML=st.some(x=>x.state==='loading')?'<span class="gdcb map"><i></i>กำลังดึงจากระบบบัญชีข้อมูลจังหวัด…</span>'
-    :st.every(x=>x.state==='err')?'<a class="gdcb file" href="apistatus.html#'+pageId+'"><i></i>API ไม่ตอบสนอง · ใช้ข้อมูลสำรอง</a>'
+    :st.every(x=>x.state==='err')?'<a class="gdcb file" href="apistatus.html#'+pageId+'" data-tip2="อุปกรณ์นี้เชื่อมต่อระบบบัญชีข้อมูลจังหวัดไม่ได้|หน้าจึงแสดงข้อมูลสำรองจากไฟล์ล่าสุดแทน · ส่วนใหญ่เกิดกับ iPad/iPhone ที่เปิด iCloud Private Relay หรือ \'จำกัดการติดตามที่อยู่ IP\' และเครื่องที่ตั้ง DNS เป็น 8.8.8.8 / 1.1.1.1 เพราะเซิร์ฟเวอร์ชื่อโดเมนของ gdcatalog.go.th ตอบเฉพาะเครือข่ายในประเทศ|วิธีแก้: ตั้งค่า › Apple ID › iCloud › ปิด Private Relay หรือ ตั้งค่า › Wi-Fi › (i) › ปิด จำกัดการติดตามที่อยู่ IP แล้วโหลดหน้าใหม่"><i></i>API ไม่ตอบสนอง · ใช้ข้อมูลสำรอง</a>'
+    :(GDC.snapAt&&!st.some(x=>x.state==='err'))?gdcSnapBadge()
     :(function(){const S=srcInventory().filter(x=>x.page===pageId&&x.type!=='avail'),a=S.filter(x=>x.type==='api').length;
        return a<S.length?'<a class="gdcb part" href="apistatus.html#'+pageId+'"><i></i>ดึงจาก API บางส่วน · '+a+'/'+S.length+' ชุด</a>'
          :'<a class="gdcb api" href="apistatus.html#'+pageId+'"><i></i>ดึงจากระบบบัญชีข้อมูลจังหวัด (API)</a>'})();
@@ -3097,7 +3106,7 @@ function provCard(pageId,id,title){
   const rows=p.items.map(x=>`<div class="pv-i" style="--ic:${PV_COL[x.t||p.t]}"><b>${x.n}<u>${TAG[x.t||p.t]||''}</u></b>${(x._ag||agN(x.ag))?`<span class="pv-ag">${x._ag||agN(x.ag)}</span>`:''}
       ${x.note?`<span class="pv-note">${x.note}</span>`:''}
       ${x.m?`<span class="pv-m">${p.t==='api'||p.t==='fallback'?'ปรับปรุงบนระบบบัญชีข้อมูล':'ปรับปรุงล่าสุด'} <em>${thDT(x.m)}</em></span>`:''}</div>`).join('');
-  const foot=p.t==='part'?'ส่วนที่มาจาก API อัปเดตอัตโนมัติ ส่วนที่เป็นไฟล์รอหน่วยงานเผยแพร่บนระบบบัญชีข้อมูล':p.t==='api'?`ดึงข้อมูลล่าสุดเมื่อ ${p.at?new Date(p.at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})+' น.':'เปิดหน้านี้'} · ระบบตรวจการอัปเดตทุก 15 นาที`
+  const foot=p.t==='part'?'ส่วนที่มาจาก API อัปเดตอัตโนมัติ ส่วนที่เป็นไฟล์รอหน่วยงานเผยแพร่บนระบบบัญชีข้อมูล':p.t==='api'&&GDC.snapAt?`อุปกรณ์นี้เข้าระบบบัญชีข้อมูลโดยตรงไม่ได้ จึงใช้สำเนาข้อมูล API ณ ${thDT(GDC.snapAt)} · สำเนาปรับปรุงอัตโนมัติเมื่อหน่วยงานแก้ข้อมูล`:p.t==='api'?`ดึงข้อมูลล่าสุดเมื่อ ${p.at?new Date(p.at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})+' น.':'เปิดหน้านี้'} · ระบบตรวจการอัปเดตทุก 15 นาที`
     :p.t==='gas'?'หน่วยงานกรอกและแก้ไขเองผ่านระบบกรอกข้อมูล · รอเปลี่ยนเป็น API'
     :p.t==='sim'?'ใช้ทดสอบการแสดงผลเท่านั้น จนกว่าหน่วยงานจะส่งข้อมูลจริง'
     :p.t==='fallback'?'ระบบจะลองดึงจาก API ใหม่อัตโนมัติเมื่อเปิดหน้าครั้งถัดไป'
@@ -3192,6 +3201,7 @@ GDC.seen=()=>{try{return JSON.parse(localStorage.getItem('gdc-seen')||'{}')}catc
 /* เรียก action อื่นของ CKAN แบบ JSONP (resource_show, package_show) */
 GDC.call=function(action,params,tries){
   tries=tries==null?1:tries;
+  if(GDC.down&&GDC._snap&&!GDC.building)return Promise.reject(new Error('เชื่อมต่อไม่ได้'));
   return GDC._slot(()=>GDC._call1(action,params)).catch(e=>{
     if(tries>0&&!/ไม่สำเร็จ$/.test(e.message))return new Promise(r=>setTimeout(r,1200)).then(()=>GDC.call(action,params,tries-1));throw e});
 };
@@ -3211,7 +3221,9 @@ GDC._call1=function(action,params){
 GDC.meta=async function(id,fresh){
   const K='gdc-meta:'+id;
   if(!fresh){try{const c=JSON.parse(sessionStorage.getItem(K)||'null');if(c&&Date.now()-c.t<3600e3)return c.v}catch(e){}}
-  const r=await GDC.call('resource_show',{id});
+  let r;
+  try{if(GDC.down&&!fresh&&!GDC.building)throw new Error('เชื่อมต่อไม่ได้');r=await GDC.call('resource_show',{id})}
+  catch(e){const s=await GDC.snap();const m=s&&s.meta&&s.meta[id];if(m)return Object.assign({},m,{snap:s.at});throw e}
   let pk=null;try{pk=await GDC.call('package_show',{id:r.package_id})}catch(e){}
   const v={id,name:r.name,modified:r.last_modified||r.metadata_modified||r.created,created:r.created,format:r.format,
     pkg:pk?pk.name:r.package_id,pkgTitle:pk?pk.title:'',org:pk&&pk.organization?pk.organization.title:'',
@@ -3219,8 +3231,81 @@ GDC.meta=async function(id,fresh){
   try{sessionStorage.setItem(K,JSON.stringify({t:Date.now(),v}))}catch(e){}
   return v;
 };
+/* ════════════ สำเนาข้อมูล API สำหรับทุกอุปกรณ์ (snapshot) ════════════
+   iPad/iPhone/มือถือบางเครื่อง (iCloud Private Relay, DNS 8.8.8.8/1.1.1.1, เครือข่ายต่างประเทศ)
+   หาโดเมน nongbualamphu.gdcatalog.go.th ไม่เจอ เพราะเซิร์ฟเวอร์ชื่อโดเมนตอบเฉพาะเครือข่ายในประเทศ
+   → แดชบอร์ดอ่าน data/gdc-snapshot.json (อยู่บน GitHub Pages เดียวกับเว็บ ทุกอุปกรณ์เข้าถึงได้) แทน
+   สำเนานี้เป็นข้อมูลจาก API ชุดเดียวกัน · ปรับปรุงอัตโนมัติจากเครื่องในสำนักงานที่เข้า API ได้
+   (เปิดแดชบอร์ดบนเครื่องที่ตั้งค่าโทเคน GitHub ไว้ หรือสคริปต์ตั้งเวลา tools/gdc-snapshot.ps1) */
+GDC.SNAP_URL='data/gdc-snapshot.json';
+GDC.REPO={owner:'nsonongbualamphutc-debug',repo:'Nong_Bua_Lamphu_Province_Economic_Data_Command_Center',branch:'Patch-1.2',path:'data/gdc-snapshot.json'};
+GDC.AG_IDS=['95537e06-3fbd-48ed-b64a-f7ff75b8a85b','5d8b0bd9-9f5a-4385-a63e-16a300cd7a5e','94c6b113-e8f7-4aca-bb8c-4fbea3454b70','e7795256-a7e4-46d1-86d8-c58cd22023db'];
+GDC.snap=function(){
+  if(!GDC._snapP)GDC._snapP=fetch(GDC.SNAP_URL+'?v='+Math.floor(Date.now()/600e3),{cache:'no-cache'})
+    .then(r=>r.ok?r.json():null).then(s=>{GDC._snap=s;return s}).catch(()=>null);
+  return GDC._snapP};
+GDC.fromSnap=async function(id){
+  const s=await GDC.snap();const x=s&&s.res&&s.res[id];if(!x)return null;
+  GDC.snapAt=s.at;(GDC.snapUsed=GDC.snapUsed||{})[id]=x.m||s.at;
+  const v={id,fields:x.fields||[],records:x.records||[],total:x.total||(x.records||[]).length,at:s.at,snap:s.at};
+  GDC._mem[id]={t:Date.now(),v};return v};
+/* รายการชุดข้อมูลทั้งหมดที่แดชบอร์ดใช้ */
+GDC.snapIds=function(){
+  const S=new Set();
+  GDC.RES.forEach(r=>{if(r.id)S.add(r.id)});
+  Object.values(GDC.SYNC||{}).forEach(j=>Object.values(j.res||{}).forEach(id=>S.add(id)));
+  Object.values(GDC.FIS||{}).forEach(id=>S.add(id));GDC.AG_IDS.forEach(id=>S.add(id));
+  return [...S].filter(id=>/^[0-9a-f-]{36}$/.test(id))};
+/* ลายเซ็นของสำเนา = รหัสชุด + จำนวนแถว + วันที่ปรับปรุง + แฮชข้อมูล · คำนวณแบบเดียวกับสคริปต์ตั้งเวลา */
+const snapSig=R=>Object.keys(R).sort().map(id=>id+':'+R[id].total+':'+(R[id].m||'')).join('|');
+const gdcHash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)};
+/* สร้างสำเนาใหม่ (ต้องเปิดจากเครื่องที่เข้า API ได้) */
+GDC.buildSnapshot=async function(prog){
+  /* ใช้รายการเดียวกับสคริปต์ตั้งเวลา: ทุกรหัสใน ds.js (ชุดที่ไม่ใช่ตารางข้อมูลจะถูกข้าม) */
+  let ids=GDC.snapIds();
+  try{const t=await fetch('ds.js?t='+Date.now(),{cache:'no-store'}).then(r=>r.text());
+    ids=[...new Set((t.match(/'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'/g)||[]).map(x=>x.slice(1,-1)))].sort()}catch(e){}
+  const res={},meta={},miss=[];let n=0;GDC.building=true;
+  await Promise.all(ids.map(async id=>{
+    try{const v=await GDC.all(id,{fresh:true});if(v.snap)throw new Error('เครื่องนี้เข้า API ไม่ได้');
+      res[id]={fields:v.fields,total:v.total,records:v.records.map(r=>{const o=Object.assign({},r);delete o._id;return o})};
+      try{const m=await GDC.meta(id,true);if(!m.snap){meta[id]=m;res[id].m=m.modified}}catch(e){}
+    }catch(e){miss.push(id)}
+    n++;if(prog)prog(n,ids.length)}));
+  GDC.building=false;
+  if(!Object.keys(res).length)throw new Error('ดึงข้อมูลจาก API ไม่ได้เลย · เครื่องนี้อาจเข้าระบบบัญชีข้อมูลไม่ได้');
+  const ord=o=>Object.keys(o).sort().reduce((a,k)=>(a[k]=o[k],a),{});
+  const R=ord(res);
+  return {v:1,at:new Date().toISOString(),by:'browser',sig:snapSig(R),n:Object.keys(R).length,miss,res:R,meta:ord(meta)}};
+/* ส่งสำเนาขึ้น GitHub (สาขาที่ GitHub Pages ใช้) · โทเคนเก็บในเครื่องนี้เท่านั้น ไม่อยู่ในโค้ด */
+GDC.ghToken=()=>{try{return localStorage.getItem('gdc-gh-token')||''}catch(e){return''}};
+GDC.ghPush=async function(snap,token){
+  const R=GDC.REPO,u=`https://api.github.com/repos/${R.owner}/${R.repo}/contents/${R.path}`;
+  const H={Authorization:'Bearer '+token,Accept:'application/vnd.github+json'};
+  let sha;const g=await fetch(u+'?ref='+encodeURIComponent(R.branch),{headers:H,cache:'no-store'});
+  if(g.ok)sha=(await g.json()).sha;else if(g.status!==404)throw new Error('GitHub ตอบ '+g.status+(g.status===401?' · โทเคนไม่ถูกต้องหรือหมดอายุ':''));
+  const by=new TextEncoder().encode(JSON.stringify(snap));let b='';for(let i=0;i<by.length;i+=0x8000)b+=String.fromCharCode.apply(null,by.subarray(i,i+0x8000));
+  const p=await fetch(u,{method:'PUT',headers:H,body:JSON.stringify({message:'อัปเดตสำเนาข้อมูล API '+snap.at.slice(0,16).replace('T',' '),content:btoa(b),branch:R.branch,sha})});
+  if(!p.ok)throw new Error('อัปโหลดไม่สำเร็จ ('+p.status+')');return true};
+/* ตรวจว่าควรส่งสำเนาใหม่ไหม · ส่งเมื่อข้อมูลเปลี่ยน หรือสำเนาเดิมเก่ากว่า 24 ชม. */
+GDC.refreshSnapshot=async function(opt){
+  opt=opt||{};const tok=opt.token||GDC.ghToken();
+  const s=await GDC.buildSnapshot(opt.prog);
+  let cur=null;try{cur=await fetch(GDC.SNAP_URL+'?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null)}catch(e){}
+  const same=cur&&cur.sig===s.sig&&Date.now()-new Date(cur.at)<24*3600e3;
+  if(!tok)return {snap:s,pushed:false,same,reason:'ไม่มีโทเคน'};
+  if(same&&!opt.force)return {snap:s,pushed:false,same:true};
+  await GDC.ghPush(s,tok);try{localStorage.setItem('gdc-snap-push',s.at)}catch(e){}
+  return {snap:s,pushed:true,same:false}};
+/* อัตโนมัติ: เครื่องที่ตั้งโทเคนไว้และเข้า API ได้ จะตรวจทุก 3 ชม. ขณะเปิดแดชบอร์ด */
+setTimeout(function snapAuto(){
+  try{if(!GDC.ghToken()||GDC.down)return;const k='gdc-snap-try',l=+localStorage.getItem(k)||0;
+    if(Date.now()-l<3*3600e3)return;localStorage.setItem(k,Date.now());
+    GDC.refreshSnapshot().then(r=>console.info('[snapshot]',r.pushed?'ส่งสำเนาใหม่แล้ว':'ข้อมูลไม่เปลี่ยน',r.snap.n+' ชุด'))
+      .catch(e=>console.warn('[snapshot]',e.message))}catch(e){}
+  setTimeout(snapAuto,3*3600e3)},25000);
 /* ดูจำนวนแถวและคอลัมน์แบบเบา (1 แถว) */
-GDC.peek=async function(id){const r=await GDC._jsonp({resource_id:id,limit:3});return {total:r.total,fields:(r.fields||[]).filter(f=>f.id!=='_id'),records:r.records||[]}};
+GDC.peek=async function(id){let r;try{r=await GDC._jsonp({resource_id:id,limit:3})}catch(e){const v=await GDC.fromSnap(id);if(!v)throw e;r={total:v.total,fields:v.fields,records:v.records.slice(0,3),snap:v.snap}}return {total:r.total,fields:(r.fields||[]).filter(f=>f.id!=='_id'),records:r.records||[],snap:r.snap}};
 
 /* ════════════ ทะเบียนแหล่งข้อมูลของทุกหน้า (รวมส่วนที่ยังไม่ใช่ API) ════════════
    type: api = ดึงจากระบบบัญชีข้อมูลจังหวัด · link = มีบนระบบบัญชีข้อมูลแล้ว รอเปิดอ่านผ่าน API
@@ -3641,7 +3726,7 @@ function bSrc(t,txt,page){return `<div class="bt-src" style="--c:${PV_COL[t]||'#
 function bStat(rows){return `<div class="bt-stats">${rows.map(r=>`<div><span>${r[0]}</span><b>${r[1]}</b>${r[2]?`<small>${r[2]}</small>`:''}</div>`).join('')}</div>`}
 /* ── ความสามารถ: แต่ละข้อมีคำค้นและวิธีตอบ ── */
 const BOT_SKILLS=[
- {id:'help',k:/^(สวัสดี|หวัดดี|hello|hi|ช่วย|ทำอะไรได้|เมนู|เริ่ม)/,run:async()=>({html:`สวัสดีครับ ผมช่วยตอบตัวเลขเศรษฐกิจจังหวัดหนองบัวลำภูจากข้อมูลจริงบนแดชบอร์ดและระบบบัญชีข้อมูลจังหวัด ลองถามได้เลย เช่น
+ {id:'help',k:/^(สวัสดี|หวัดดี|hello|hi|ช่วย|ทำอะไรได้|เมนู|เริ่ม)/,run:async()=>({html:`สวัสดีครับ ผมน้องบัว ช่วยตอบตัวเลขเศรษฐกิจจังหวัดหนองบัวลำภูจากข้อมูลจริงบนแดชบอร์ดและระบบบัญชีข้อมูลจังหวัด ลองถามได้เลย เช่น
    <ul><li>ภาวะเศรษฐกิจเดือนล่าสุดเป็นอย่างไร</li><li>เบิกจ่ายงบประมาณไปกี่เปอร์เซ็นต์</li><li>อัตราการว่างงานล่าสุด</li><li>ประชากรอำเภอนากลาง</li><li>นักท่องเที่ยวปีล่าสุด</li><li>มีชุดข้อมูลจำนวนโรงเรียนไหม</li></ul>`})},
  {id:'econ',k:/ภาวะเศรษฐกิจ|เศรษฐกิจ(เดือน|ล่าสุด|ตอนนี้|เป็นอย่างไร|ดีไหม)|ขยายตัว|หดตัว|เครื่องชี้/,run:async()=>{
    const R=((typeof DX!=='undefined'&&DX.macro&&DX.macro.rows)||[]).slice().sort((a,b)=>(a.y-b.y)||(a.m-b.m));const c=R[R.length-1];if(!c)return null;
@@ -3750,11 +3835,13 @@ async function botAnswer(raw){
 function botBuild(){
   if(document.getElementById('bot')||!document.querySelector('link[href*="ds.css"]'))return;
   const w=document.createElement('div');w.id='bot';
-  w.innerHTML=`<button class="bt-fab" id="btFab" aria-label="ผู้ช่วยข้อมูล"><span class="bt-ring"></span>
+  w.innerHTML=`<div class="bt-hint" id="btHint"><b>สวัสดีครับ ผมน้องบัว!</b> อยากรู้ตัวเลขเศรษฐกิจอะไร ถามได้เลย<button aria-label="ปิด">×</button></div>
+    <button class="bt-fab" id="btFab" aria-label="ผู้ช่วยข้อมูล"><span class="bt-ring"></span>
+      <img class="bt-masc" src="assets/mascot.webp" alt="" onerror="this.remove()">
       <svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4h0A2.5 2.5 0 0 1 4 13.5z"/><path d="M8.5 9.5h.01M12 9.5h.01M15.5 9.5h.01"/></svg>
       <em>ถามข้อมูล</em></button>
     <section class="bt-panel" id="btPanel" aria-label="ผู้ช่วยข้อมูล">
-      <header><img src="assets/logo-nbl.png" alt="" onerror="this.remove()"><div><b>ผู้ช่วยข้อมูลเศรษฐกิจ</b><span><i></i>One Stop Service · ตอบจากข้อมูลจริง</span></div>
+      <header><img class="bt-av" src="assets/mascot-avatar.png" alt="" onerror="this.src='assets/logo-nbl.png'"><div><b>น้องบัว · ผู้ช่วยข้อมูลเศรษฐกิจ</b><span><i></i>One Stop Service · ตอบจากข้อมูลจริง</span></div>
         <button id="btClose" aria-label="ปิด">×</button></header>
       <div class="bt-body" id="btBody"></div>
       <div class="bt-chips" id="btChips">${['ภาวะเศรษฐกิจล่าสุด','การเบิกจ่ายงบประมาณ','อัตราการว่างงาน','นักท่องเที่ยวปีล่าสุด','ประชากรทั้งจังหวัด','รายได้ครัวเรือน','OTOP','มีชุดข้อมูลโรงเรียนไหม','ติดต่อหน่วยงาน'].map(x=>`<button>${x}</button>`).join('')}</div>
@@ -3762,13 +3849,28 @@ function botBuild(){
     </section>`;
   document.body.appendChild(w);
   const body=w.querySelector('#btBody');
+  /* มาสคอตน้องบัว 3 ท่า: ทักทาย · กำลังคิด · ตอบ (โหลดล่วงหน้าเพื่อสลับได้ทันที) */
+  const MASC={hello:'assets/mascot.webp',think:'assets/mascot-think.webp',talk:'assets/mascot-talk.webp'};
+  Object.values(MASC).forEach(u=>{const i=new Image();i.src=u});
+  const masc=k=>{const m=w.querySelector('.bt-masc');if(m&&MASC[k]&&!m.src.endsWith(MASC[k])){m.src=MASC[k];m.dataset.st=k}
+    const a=w.querySelector('.bt-panel header .bt-av');if(a)a.classList.toggle('talk',k!=='hello')};
   const add=(who,html)=>{const d=document.createElement('div');d.className='bt-m '+who;d.innerHTML=html;body.appendChild(d);body.scrollTop=body.scrollHeight;return d};
   const ask=async q=>{if(BOT.busy||!q.trim())return;BOT.busy=true;add('me',q.replace(/</g,'&lt;'));
-    const t=add('ai','<span class="bt-typing"><i></i><i></i><i></i></span>');
+    masc('think');
+    const t=add('ai think','<img class="bt-mini" src="assets/mascot-think.webp" alt="" onerror="this.remove()"><span class="bt-typing"><i></i><i></i><i></i></span>');
     let r=null;try{r=await botAnswer(q)}catch(e){}
-    t.innerHTML=(r&&r.html)||'ขอโทษครับ เกิดข้อผิดพลาด ลองอีกครั้ง';body.scrollTop=body.scrollHeight;BOT.busy=false};
+    t.classList.remove('think');t.innerHTML=(r&&r.html)||'ขอโทษครับ เกิดข้อผิดพลาด ลองอีกครั้ง';body.scrollTop=body.scrollHeight;BOT.busy=false;
+    masc('talk');clearTimeout(BOT._mt);BOT._mt=setTimeout(()=>masc('hello'),4000);
+    const fab=w.querySelector('.bt-fab');fab.classList.remove('hop');void fab.offsetWidth;fab.classList.add('hop')};
   const open=on=>{BOT.open=on;w.classList.toggle('on',on);if(on){if(!body.children.length)BOT_SKILLS[0].run().then(r=>add('ai',r.html));setTimeout(()=>w.querySelector('#btQ').focus(),200)}};
-  w.querySelector('#btFab').onclick=()=>open(!BOT.open);
+  w.querySelector('#btFab').onclick=()=>{hint(false);open(!BOT.open)};
+  /* ทักทายครั้งแรกของการเปิดเบราว์เซอร์ · กระโดดเรียกความสนใจเป็นระยะ */
+  const hint=on=>{const h=w.querySelector('#btHint');if(h)h.classList.toggle('on',on);if(!on)try{sessionStorage.setItem('bt-hint','1')}catch(e){}};
+  w.querySelector('#btHint button').onclick=e=>{e.stopPropagation();hint(false)};
+  w.querySelector('#btHint').onclick=()=>{hint(false);open(true)};
+  let seen=false;try{seen=!!sessionStorage.getItem('bt-hint')}catch(e){}
+  if(!seen)setTimeout(()=>{if(!BOT.open)hint(true)},3500),setTimeout(()=>hint(false),14000);
+  setInterval(()=>{if(BOT.open||document.hidden)return;const f=w.querySelector('.bt-fab');f.classList.remove('hop');void f.offsetWidth;f.classList.add('hop')},12000);
   w.querySelector('#btClose').onclick=()=>open(false);
   w.querySelector('#btChips').onclick=e=>{const b=e.target.closest('button');if(b)ask(b.textContent)};
   w.querySelector('#btForm').onsubmit=e=>{e.preventDefault();const i=w.querySelector('#btQ');const v=i.value;i.value='';ask(v)};
