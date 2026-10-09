@@ -2627,7 +2627,7 @@ const GDC={
     do{
       const r=await GDC._jsonp({resource_id:id,limit:1000,offset:off});
       fields=fields||r.fields; total=r.total||0; rec=rec.concat(r.records||[]); off+=1000;
-    }while(rec.length<total&&off<20000);
+    }while(rec.length<total&&off<200000);
     }catch(e){
       if(!GDC.building&&/เชื่อมต่อ|หมดเวลา/.test(e.message))GDC.down=true;
       const sv=await GDC.fromSnap(id);if(sv)return sv;throw e}
@@ -3232,76 +3232,105 @@ GDC.meta=async function(id,fresh){
   return v;
 };
 /* ════════════ สำเนาข้อมูล API สำหรับทุกอุปกรณ์ (snapshot) ════════════
-   iPad/iPhone/มือถือบางเครื่อง (iCloud Private Relay, DNS 8.8.8.8/1.1.1.1, เครือข่ายต่างประเทศ)
+   iPad/iPhone/มือถือหลายเครื่อง (iCloud Private Relay, DNS 8.8.8.8/1.1.1.1, เครือข่ายต่างประเทศ)
    หาโดเมน nongbualamphu.gdcatalog.go.th ไม่เจอ เพราะเซิร์ฟเวอร์ชื่อโดเมนตอบเฉพาะเครือข่ายในประเทศ
-   → แดชบอร์ดอ่าน data/gdc-snapshot.json (อยู่บน GitHub Pages เดียวกับเว็บ ทุกอุปกรณ์เข้าถึงได้) แทน
-   สำเนานี้เป็นข้อมูลจาก API ชุดเดียวกัน · ปรับปรุงอัตโนมัติจากเครื่องในสำนักงานที่เข้า API ได้
-   (เปิดแดชบอร์ดบนเครื่องที่ตั้งค่าโทเคน GitHub ไว้ หรือสคริปต์ตั้งเวลา tools/gdc-snapshot.ps1) */
-GDC.SNAP_URL='data/gdc-snapshot.json';
-GDC.REPO={owner:'nsonongbualamphutc-debug',repo:'Nong_Bua_Lamphu_Province_Economic_Data_Command_Center',branch:'Patch-1.2',path:'data/gdc-snapshot.json'};
+   → แดชบอร์ดอ่านสำเนาบน GitHub Pages (ทุกอุปกรณ์เข้าถึงได้) แทน
+   โครงสร้าง: data/gdc/index.json (วันที่ + ข้อมูลเมตา) และ data/gdc/<resource_id>.json (1 ไฟล์ต่อชุด)
+   อุปกรณ์โหลดเฉพาะชุดที่หน้านั้นใช้ · แถวเก็บเป็นอาร์เรย์ตามลำดับคอลัมน์เพื่อลดขนาด
+   ปรับปรุงอัตโนมัติจากเครื่องในสำนักงานที่เข้า API ได้ (ตั้งโทเคนในหน้า API หรือสคริปต์ตั้งเวลา tools/gdc-snapshot.ps1) */
+GDC.SNAP_DIR='data/gdc/';
+GDC.REPO={owner:'nsonongbualamphutc-debug',repo:'Nong_Bua_Lamphu_Province_Economic_Data_Command_Center',branch:'Patch-1.2'};
 GDC.AG_IDS=['95537e06-3fbd-48ed-b64a-f7ff75b8a85b','5d8b0bd9-9f5a-4385-a63e-16a300cd7a5e','94c6b113-e8f7-4aca-bb8c-4fbea3454b70','e7795256-a7e4-46d1-86d8-c58cd22023db'];
 GDC.snap=function(){
-  if(!GDC._snapP)GDC._snapP=fetch(GDC.SNAP_URL+'?v='+Math.floor(Date.now()/600e3),{cache:'no-cache'})
+  if(!GDC._snapP)GDC._snapP=fetch(GDC.SNAP_DIR+'index.json?v='+Math.floor(Date.now()/600e3),{cache:'no-cache'})
     .then(r=>r.ok?r.json():null).then(s=>{GDC._snap=s;return s}).catch(()=>null);
   return GDC._snapP};
+GDC._snapF={};
 GDC.fromSnap=async function(id){
   const s=await GDC.snap();const x=s&&s.res&&s.res[id];if(!x)return null;
+  if(!GDC._snapF[id])GDC._snapF[id]=fetch(GDC.SNAP_DIR+id+'.json?v='+encodeURIComponent(x.m||s.at),{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null);
+  const f=await GDC._snapF[id];if(!f)return null;
+  const cols=(f.fields||[]).map(c=>c.id),records=(f.rows||[]).map(r=>{const o={};cols.forEach((c,i)=>{o[c]=r[i]});return o});
   GDC.snapAt=s.at;(GDC.snapUsed=GDC.snapUsed||{})[id]=x.m||s.at;
-  const v={id,fields:x.fields||[],records:x.records||[],total:x.total||(x.records||[]).length,at:s.at,snap:s.at};
+  const v={id,fields:f.fields||[],records,total:x.total||records.length,at:s.at,snap:s.at};
   GDC._mem[id]={t:Date.now(),v};return v};
-/* รายการชุดข้อมูลทั้งหมดที่แดชบอร์ดใช้ */
+/* รายการชุดข้อมูลที่ลงทะเบียนในแดชบอร์ด */
 GDC.snapIds=function(){
   const S=new Set();
   GDC.RES.forEach(r=>{if(r.id)S.add(r.id)});
   Object.values(GDC.SYNC||{}).forEach(j=>Object.values(j.res||{}).forEach(id=>S.add(id)));
   Object.values(GDC.FIS||{}).forEach(id=>S.add(id));GDC.AG_IDS.forEach(id=>S.add(id));
   return [...S].filter(id=>/^[0-9a-f-]{36}$/.test(id))};
-/* ลายเซ็นของสำเนา = รหัสชุด + จำนวนแถว + วันที่ปรับปรุง + แฮชข้อมูล · คำนวณแบบเดียวกับสคริปต์ตั้งเวลา */
-const snapSig=R=>Object.keys(R).sort().map(id=>id+':'+R[id].total+':'+(R[id].m||'')).join('|');
-const gdcHash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)};
-/* สร้างสำเนาใหม่ (ต้องเปิดจากเครื่องที่เข้า API ได้) */
+/* ลายเซ็น = รหัสชุด + จำนวนแถว + วันที่ปรับปรุง · คำนวณแบบเดียวกับสคริปต์ตั้งเวลา */
+const snapKey=x=>x.total+':'+(x.m||'');
+const snapSig=R=>Object.keys(R).sort().map(id=>id+':'+snapKey(R[id])).join('|');
+/* สร้างสำเนาใหม่ (ต้องเปิดจากเครื่องที่เข้า API ได้) → {index, files:{path:text}} */
 GDC.buildSnapshot=async function(prog){
-  /* ใช้รายการเดียวกับสคริปต์ตั้งเวลา: ทุกรหัสใน ds.js (ชุดที่ไม่ใช่ตารางข้อมูลจะถูกข้าม) */
-  let ids=GDC.snapIds();
+  let ids=GDC.snapIds().filter(id=>{const r=GDC.RES.find(z=>z.id===id);return !r||r.state!=='avail'});
   try{const t=await fetch('ds.js?t='+Date.now(),{cache:'no-store'}).then(r=>r.text());
-    ids=[...new Set((t.match(/'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'/g)||[]).map(x=>x.slice(1,-1)))].sort()}catch(e){}
-  const res={},meta={},miss=[];let n=0;GDC.building=true;
-  await Promise.all(ids.map(async id=>{
-    try{const v=await GDC.all(id,{fresh:true});if(v.snap)throw new Error('เครื่องนี้เข้า API ไม่ได้');
-      res[id]={fields:v.fields,total:v.total,records:v.records.map(r=>{const o=Object.assign({},r);delete o._id;return o})};
-      try{const m=await GDC.meta(id,true);if(!m.snap){meta[id]=m;res[id].m=m.modified}}catch(e){}
-    }catch(e){miss.push(id)}
-    n++;if(prog)prog(n,ids.length)}));
-  GDC.building=false;
+    /* ข้ามชุดที่แค่ลงทะเบียนไว้ (state:'avail') · ใช้กติกาเดียวกับสคริปต์ตั้งเวลา */
+    const L=t.split('\n').filter(l=>l.indexOf("state:'avail'")<0).join('\n');
+    ids=[...new Set((L.match(/'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'/g)||[]).map(x=>x.slice(1,-1)))].sort()}catch(e){}
+  const res={},meta={},files={},miss=[];let n=0;GDC.building=true;
+  try{
+    await Promise.all(ids.map(async id=>{
+      try{const v=await GDC.all(id,{fresh:true});if(v.snap)throw new Error('เครื่องนี้เข้า API ไม่ได้');
+        const cols=v.fields.map(f=>f.id);
+        files[GDC.SNAP_DIR+id+'.json']=JSON.stringify({id,fields:v.fields,rows:v.records.map(r=>cols.map(c=>r[c]===undefined?null:r[c]))});
+        res[id]={total:v.total};
+        try{const m=await GDC.meta(id,true);if(!m.snap){meta[id]=m;res[id].m=m.modified}}catch(e){}
+      }catch(e){miss.push(id)}
+      n++;if(prog)prog(n,ids.length)}));
+  }finally{GDC.building=false}
   if(!Object.keys(res).length)throw new Error('ดึงข้อมูลจาก API ไม่ได้เลย · เครื่องนี้อาจเข้าระบบบัญชีข้อมูลไม่ได้');
   const ord=o=>Object.keys(o).sort().reduce((a,k)=>(a[k]=o[k],a),{});
   const R=ord(res);
-  return {v:1,at:new Date().toISOString(),by:'browser',sig:snapSig(R),n:Object.keys(R).length,miss,res:R,meta:ord(meta)}};
-/* ส่งสำเนาขึ้น GitHub (สาขาที่ GitHub Pages ใช้) · โทเคนเก็บในเครื่องนี้เท่านั้น ไม่อยู่ในโค้ด */
+  const index={v:2,at:new Date().toISOString(),by:'browser',sig:snapSig(R),n:Object.keys(R).length,miss:miss.sort(),res:R,meta:ord(meta)};
+  files[GDC.SNAP_DIR+'index.json']=JSON.stringify(index);
+  return {index,files}};
+/* ส่งหลายไฟล์ขึ้น GitHub ในคอมมิตเดียว (Git Data API) · โทเคนเก็บในเครื่องนี้เท่านั้น ไม่อยู่ในโค้ด */
 GDC.ghToken=()=>{try{return localStorage.getItem('gdc-gh-token')||''}catch(e){return''}};
-GDC.ghPush=async function(snap,token){
-  const R=GDC.REPO,u=`https://api.github.com/repos/${R.owner}/${R.repo}/contents/${R.path}`;
-  const H={Authorization:'Bearer '+token,Accept:'application/vnd.github+json'};
-  let sha;const g=await fetch(u+'?ref='+encodeURIComponent(R.branch),{headers:H,cache:'no-store'});
-  if(g.ok)sha=(await g.json()).sha;else if(g.status!==404)throw new Error('GitHub ตอบ '+g.status+(g.status===401?' · โทเคนไม่ถูกต้องหรือหมดอายุ':''));
-  const by=new TextEncoder().encode(JSON.stringify(snap));let b='';for(let i=0;i<by.length;i+=0x8000)b+=String.fromCharCode.apply(null,by.subarray(i,i+0x8000));
-  const p=await fetch(u,{method:'PUT',headers:H,body:JSON.stringify({message:'อัปเดตสำเนาข้อมูล API '+snap.at.slice(0,16).replace('T',' '),content:btoa(b),branch:R.branch,sha})});
-  if(!p.ok)throw new Error('อัปโหลดไม่สำเร็จ ('+p.status+')');return true};
-/* ตรวจว่าควรส่งสำเนาใหม่ไหม · ส่งเมื่อข้อมูลเปลี่ยน หรือสำเนาเดิมเก่ากว่า 24 ชม. */
+GDC.ghPush=async function(files,msg,token){
+  const R=GDC.REPO,A=`https://api.github.com/repos/${R.owner}/${R.repo}`,H={Authorization:'Bearer '+token,Accept:'application/vnd.github+json','Content-Type':'application/json'};
+  const j=async(u,o)=>{const r=await fetch(A+u,Object.assign({headers:H,cache:'no-store'},o||{}));
+    if(!r.ok)throw new Error('GitHub '+r.status+(r.status===401?' · โทเคนไม่ถูกต้องหรือหมดอายุ':(r.status===403||r.status===404)?' · โทเคนไม่มีสิทธิ์เขียน repo นี้':''));return r.json()};
+  const ref=await j('/git/ref/heads/'+R.branch),base=ref.object.sha,bc=await j('/git/commits/'+base);
+  const tree=[];for(const p of Object.keys(files)){const b=await j('/git/blobs',{method:'POST',body:JSON.stringify({content:files[p],encoding:'utf-8'})});tree.push({path:p,mode:'100644',type:'blob',sha:b.sha})}
+  const t=await j('/git/trees',{method:'POST',body:JSON.stringify({base_tree:bc.tree.sha,tree})});
+  const c=await j('/git/commits',{method:'POST',body:JSON.stringify({message:msg,tree:t.sha,parents:[base]})});
+  await j('/git/refs/heads/'+R.branch,{method:'PATCH',body:JSON.stringify({sha:c.sha})});return c.sha};
+/* ส่งเฉพาะชุดที่เปลี่ยน + index · ไม่มีอะไรเปลี่ยนและสำเนาไม่เกิน 24 ชม. → ไม่ส่ง */
 GDC.refreshSnapshot=async function(opt){
   opt=opt||{};const tok=opt.token||GDC.ghToken();
-  const s=await GDC.buildSnapshot(opt.prog);
-  let cur=null;try{cur=await fetch(GDC.SNAP_URL+'?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null)}catch(e){}
-  const same=cur&&cur.sig===s.sig&&Date.now()-new Date(cur.at)<24*3600e3;
-  if(!tok)return {snap:s,pushed:false,same,reason:'ไม่มีโทเคน'};
-  if(same&&!opt.force)return {snap:s,pushed:false,same:true};
-  await GDC.ghPush(s,tok);try{localStorage.setItem('gdc-snap-push',s.at)}catch(e){}
-  return {snap:s,pushed:true,same:false}};
+  const B=await GDC.buildSnapshot(opt.prog),I=B.index;
+  let cur=null;try{cur=await fetch(GDC.SNAP_DIR+'index.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null)}catch(e){}
+  const changed=Object.keys(I.res).filter(id=>!cur||!cur.res||!cur.res[id]||snapKey(cur.res[id])!==snapKey(I.res[id]));
+  const fresh=cur&&Date.now()-new Date(cur.at)<24*3600e3;
+  const out={build:B,changed,pushed:false};
+  if(!tok)return Object.assign(out,{reason:'ไม่มีโทเคน'});
+  if(!changed.length&&fresh&&!opt.force)return Object.assign(out,{same:true});
+  const ids=opt.force&&!cur?Object.keys(I.res):changed;
+  const F={};ids.forEach(id=>{F[GDC.SNAP_DIR+id+'.json']=B.files[GDC.SNAP_DIR+id+'.json']});F[GDC.SNAP_DIR+'index.json']=B.files[GDC.SNAP_DIR+'index.json'];
+  await GDC.ghPush(F,'อัปเดตสำเนาข้อมูล API '+I.at.slice(0,16).replace('T',' ')+' · '+ids.length+' ชุด',tok);
+  try{localStorage.setItem('gdc-snap-push',I.at)}catch(e){}
+  return Object.assign(out,{pushed:true,sent:ids.length})};
+/* zip แบบไม่บีบอัด (สำหรับดาวน์โหลดไปอัปโหลดเองเมื่อไม่มีโทเคน) */
+GDC.zip=function(files){
+  const T=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;T[n]=c>>>0}
+  const crc=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=T[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0};
+  const te=new TextEncoder(),parts=[],cd=[];let off=0;
+  const u16=v=>[v&255,(v>>8)&255],u32=v=>[v&255,(v>>8)&255,(v>>16)&255,(v>>>24)&255];
+  for(const p of Object.keys(files)){const nm=te.encode(p),d=te.encode(files[p]),c=crc(d);
+    const h=new Uint8Array([...u32(0x04034b50),...u16(20),...u16(0x800),...u16(0),...u16(0),...u16(0),...u32(c),...u32(d.length),...u32(d.length),...u16(nm.length),...u16(0)]);
+    parts.push(h,nm,d);cd.push(new Uint8Array([...u32(0x02014b50),...u16(20),...u16(20),...u16(0x800),...u16(0),...u16(0),...u16(0),...u32(c),...u32(d.length),...u32(d.length),...u16(nm.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)]),nm);
+    off+=h.length+nm.length+d.length}
+  const cdl=cd.reduce((a,b)=>a+b.length,0),n=Object.keys(files).length;
+  return new Blob([...parts,...cd,new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(n),...u16(n),...u32(cdl),...u32(off),...u16(0)])],{type:'application/zip'})};
 /* อัตโนมัติ: เครื่องที่ตั้งโทเคนไว้และเข้า API ได้ จะตรวจทุก 3 ชม. ขณะเปิดแดชบอร์ด */
 setTimeout(function snapAuto(){
   try{if(!GDC.ghToken()||GDC.down)return;const k='gdc-snap-try',l=+localStorage.getItem(k)||0;
     if(Date.now()-l<3*3600e3)return;localStorage.setItem(k,Date.now());
-    GDC.refreshSnapshot().then(r=>console.info('[snapshot]',r.pushed?'ส่งสำเนาใหม่แล้ว':'ข้อมูลไม่เปลี่ยน',r.snap.n+' ชุด'))
+    GDC.refreshSnapshot().then(r=>console.info('[snapshot]',r.pushed?'ส่งสำเนาใหม่ '+r.sent+' ชุด':'ข้อมูลไม่เปลี่ยน',r.build.index.n+' ชุด'))
       .catch(e=>console.warn('[snapshot]',e.message))}catch(e){}
   setTimeout(snapAuto,3*3600e3)},25000);
 /* ดูจำนวนแถวและคอลัมน์แบบเบา (1 แถว) */
@@ -3835,7 +3864,7 @@ async function botAnswer(raw){
 function botBuild(){
   if(document.getElementById('bot')||!document.querySelector('link[href*="ds.css"]'))return;
   const w=document.createElement('div');w.id='bot';
-  w.innerHTML=`<div class="bt-hint" id="btHint"><b>สวัสดีครับ ผมน้องลุ่มภู!</b> อยากรู้ตัวเลขเศรษฐกิจอะไร ถามได้เลย<button aria-label="ปิด">×</button></div>
+  w.innerHTML=`<div class="bt-hint" id="btHint" role="status"><button aria-label="ปิดข้อความ">×</button><b>สวัสดีครับ! ผมน้อง"ลุ่มภู" 🙏</b><span>มีข้อมูลสถิติให้ผมช่วยค้นหาไหมครับ?</span></div>
     <button class="bt-fab" id="btFab" aria-label="ถามน้องลุ่มภู ผู้ช่วยข้อมูล" title="ถามน้องลุ่มภู"><span class="bt-ring"></span>
       <img class="bt-masc" src="assets/mascot.webp" alt="น้องลุ่มภู" onerror="this.parentNode.classList.add('noimg');this.remove()">
       <svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4h0A2.5 2.5 0 0 1 4 13.5z"/><path d="M8.5 9.5h.01M12 9.5h.01M15.5 9.5h.01"/></svg></button>
@@ -3868,7 +3897,7 @@ function botBuild(){
   w.querySelector('#btHint button').onclick=e=>{e.stopPropagation();hint(false)};
   w.querySelector('#btHint').onclick=()=>{hint(false);open(true)};
   let seen=false;try{seen=!!sessionStorage.getItem('bt-hint')}catch(e){}
-  if(!seen)setTimeout(()=>{if(!BOT.open)hint(true)},3500),setTimeout(()=>hint(false),14000);
+  if(!seen)setTimeout(()=>{if(!BOT.open)hint(true)},1500);
   setInterval(()=>{if(BOT.open||document.hidden)return;const f=w.querySelector('.bt-fab');f.classList.remove('hop');void f.offsetWidth;f.classList.add('hop')},12000);
   w.querySelector('#btClose').onclick=()=>open(false);
   w.querySelector('#btChips').onclick=e=>{const b=e.target.closest('button');if(b)ask(b.textContent)};

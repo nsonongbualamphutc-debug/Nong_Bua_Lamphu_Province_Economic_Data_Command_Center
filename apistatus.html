@@ -496,12 +496,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <div class="sn-kv" id="snKv"></div>
         <div class="sn-act">
           <button class="cc-ib cc-pri" id="snRun">สร้างสำเนาใหม่และส่งขึ้นเว็บ</button>
-          <button class="cc-ib" id="snDl">ดาวน์โหลดสำเนา (.json)</button>
+          <button class="cc-ib" id="snDl">ดาวน์โหลดสำเนา (.zip)</button>
         </div>
         <div class="sn-bar" id="snBar"><i></i></div><div class="sn-msg" id="snMsg"></div>
         <div class="sn-how">
           <div><b>1 · เครื่องเข้า API ได้</b>คอมพิวเตอร์ในสำนักงานดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัดตามปกติ</div>
-          <div><b>2 · บันทึกเป็นสำเนา</b>ระบบส่งไฟล์ data/gdc-snapshot.json ขึ้นเว็บเมื่อข้อมูลเปลี่ยน</div>
+          <div><b>2 · บันทึกเป็นสำเนา</b>ระบบส่งไฟล์ในโฟลเดอร์ data/gdc/ ขึ้นเว็บ เฉพาะชุดที่หน่วยงานปรับปรุง</div>
           <div><b>3 · ทุกอุปกรณ์ใช้ได้</b>iPad/มือถือที่เข้า API ไม่ได้ จะแสดงสำเนานี้แทนอัตโนมัติ</div>
         </div>
       </div>
@@ -800,13 +800,14 @@ setInterval(()=>{drawFeed()},60e3);
   }
   const prog=(n,t)=>{$('snBar').style.display='block';$('snBar').firstChild.style.width=(n/t*100)+'%';$('snMsg').textContent='กำลังดึงข้อมูล '+n+'/'+t+' ชุด…'};
   $('snRun').onclick=async()=>{const b=$('snRun');b.disabled=true;
-    try{const r=await GDC.refreshSnapshot({prog,force:true});last=r.snap;
-      $('snMsg').textContent=r.pushed?'ส่งสำเนาใหม่แล้ว '+r.snap.n+' ชุด · iPad/มือถือจะเห็นข้อมูลใหม่ภายในไม่กี่นาที'
-        :'สร้างสำเนาแล้ว '+r.snap.n+' ชุด · ยังไม่มีโทเคน จึงดาวน์โหลดให้แทน (อัปโหลดไฟล์นี้ไปที่ data/gdc-snapshot.json)';
-      if(!r.pushed)dl(r.snap);GDC._snapP=null;draw()}
+    try{const r=await GDC.refreshSnapshot({prog,force:true});last=r.build;const I=r.build.index;
+      $('snMsg').textContent=r.pushed?'ส่งสำเนาใหม่แล้ว '+r.sent+' ชุด (ทั้งหมด '+I.n+' ชุด) · iPad/มือถือเห็นข้อมูลใหม่ภายในไม่กี่นาที'
+        :r.same?'ข้อมูลตรงกับสำเนาบนเว็บแล้ว ('+I.n+' ชุด) · ไม่ต้องส่ง'
+        :'สร้างสำเนาแล้ว '+I.n+' ชุด · ยังไม่มีโทเคน จึงดาวน์โหลดเป็น zip ให้ (แตกไฟล์แล้วอัปโหลดโฟลเดอร์ data ขึ้น GitHub)';
+      if(!r.pushed&&!r.same)dl(r.build);GDC._snapP=null;draw()}
     catch(e){$('snMsg').textContent='ไม่สำเร็จ: '+e.message}b.disabled=false};
-  function dl(s){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(s)],{type:'application/json'}));a.download='gdc-snapshot.json';a.click()}
-  $('snDl').onclick=async()=>{if(last)return dl(last);const s=await GDC.snap();if(s)dl(s);else $('snMsg').textContent='ยังไม่มีสำเนา · กดสร้างสำเนาใหม่ก่อน'};
+  function dl(B){const a=document.createElement('a');a.href=URL.createObjectURL(GDC.zip(B.files));a.download='gdc-snapshot-'+B.index.at.slice(0,10)+'.zip';a.click()}
+  $('snDl').onclick=async()=>{if(last)return dl(last);$('snMsg').textContent='กด "สร้างสำเนาใหม่" ก่อน แล้วจึงดาวน์โหลด'};
   $('snSave').onclick=()=>{const v=$('snTok').value.trim();try{v?localStorage.setItem('gdc-gh-token',v):localStorage.removeItem('gdc-gh-token')}catch(e){}$('snTok').value='';draw()};
   draw();
 })();
