@@ -3764,7 +3764,7 @@ function bStat(rows){return `<div class="bt-stats">${rows.map(r=>`<div><span>${r
           per=คอลัมน์ไตรมาส (เฉลี่ยทั้งปี) agg=sum|avg|none fy=ใช้ปีงบประมาณ u=หน่วย sc=คูณ d=ทศนิยม ag=หน่วยงาน pg=หน้า econ=ใช้สรุปภาพรวม */
 const BK=[
  {k:'pop',n:'ประชากร',re:/ประชากร|จำนวนคน|คนในจังหวัด|มีกี่คน|ประชาชน/,id:'03b88975-36e5-46e1-b0fa-0456f0a37193',v:'ค่าข้อมูล',amp:'อำเภอ',sex:'เพศ',u:'คน',ag:'ที่ทำการปกครองจังหวัด (ทะเบียนราษฎร)',pg:'population',econ:1,good:0},
- {k:'birth',n:'การเกิด',re:/เกิด|ทารก/,id:'b1d4dba9-98ce-4c6a-ad70-88e045eb16af',v:'จำนวน',amp:'อำเภอ',sex:'เพศ',u:'คน',ag:'ที่ทำการปกครองจังหวัด',pg:'population'},
+ {k:'birth',n:'การเกิด',re:/การเกิด|(คน|เด็ก|ทารก)เกิด|เกิดใหม่|เกิด(กี่|ปี|ย้อน|ราย|มาก|น้อย)|ทารก|^เกิด/,id:'b1d4dba9-98ce-4c6a-ad70-88e045eb16af',v:'จำนวน',amp:'อำเภอ',sex:'เพศ',u:'คน',ag:'ที่ทำการปกครองจังหวัด',pg:'population'},
  {k:'death',n:'การตาย',re:/ตาย|เสียชีวิต/,id:'7fde384d-d5cf-4300-b9cc-d578dd80d723',v:'จำนวน',amp:'อำเภอ',sex:'เพศ',u:'คน',ag:'ที่ทำการปกครองจังหวัด',pg:'population',good:-1},
  {k:'movein',n:'การย้ายเข้า',re:/ย้ายเข้า/,id:'2a80f2c7-5397-4dc7-91ee-cc449106e9d0',f:{'ประเภท':'ย้ายเข้า'},v:'จำนวน',amp:'อำเภอ',sex:'เพศ',u:'คน',ag:'ที่ทำการปกครองจังหวัด',pg:'population'},
  {k:'moveout',n:'การย้ายออก',re:/ย้ายออก/,id:'2a80f2c7-5397-4dc7-91ee-cc449106e9d0',f:{'ประเภท':'ย้ายออก'},v:'จำนวน',amp:'อำเภอ',sex:'เพศ',u:'คน',ag:'ที่ทำการปกครองจังหวัด',pg:'population',good:-1},
@@ -3831,6 +3831,7 @@ function bkVal(m,rows,o){
   let v,nq=0;
   if(m.per&&!o.q){const G={};R.forEach(r=>{const q=bkQ(r[m.per]);(G[q]=G[q]||[]).push(r)});
     const qs=Object.keys(G).map(q=>sum(G[q])).filter(x=>x!=null);nq=qs.length;v=qs.length?qs.reduce((a,b)=>a+b,0)/qs.length:null}
+  else if(m.agg==='count')v=R.length?R.length:null;
   else if(m.agg==='avg'){const a=R.map(num).filter(x=>x!=null);v=a.length?a.reduce((p,c)=>p+c,0)/a.length:null}
   else if(m.agg==='none'&&!o.amp)v=null;
   else v=sum(R);
@@ -3861,7 +3862,7 @@ function bkSpark(pts,m){
   const X=i=>6+i*(W-12)/(pts.length-1),Y=v=>H-14-(v-mn)/rg*(H-26);
   const d=pts.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.v).toFixed(1)).join(' ');
   return `<svg class="bt-spark" viewBox="0 0 ${W} ${H}"><path d="${d} L ${X(pts.length-1)} ${H-12} L 6 ${H-12}Z" fill="rgba(18,163,111,.10)"/><path d="${d}" fill="none" stroke="#12a36f" stroke-width="2"/>
-    ${pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p.v)}" r="2.6" fill="#12a36f"/><text x="${X(i)}" y="${H-1}" text-anchor="middle">${String(p.y).slice(-2)}</text>`).join('')}</svg>`}
+    ${pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p.v)}" r="2.6" fill="#12a36f"/><text x="${X(i)}" y="${H-1}" text-anchor="middle">${typeof p.y==='number'?String(p.y).slice(-2):String(p.y).replace(/\.$/,'')}</text>`).join('')}</svg>`}
 function bkTable(head,rows){return `<table class="bt-tb"><thead><tr>${head.map((h,i)=>`<th${i?' class="r"':''}>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td${i?' class="r"':''}>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
 function bkBars(L,m){const mx=Math.max(...L.map(x=>x.v||0))||1;
   return `<div class="bt-bars">${L.map(x=>`<div><span>${x.l}</span><i style="width:${Math.max(2,(x.v||0)/mx*100).toFixed(0)}%"></i><b>${bkF(m,x.v)}</b></div>`).join('')}</div>`}
@@ -3882,7 +3883,7 @@ function bkParse(q){
   if(P.rank&&!P.amps.length)P.byAmp=true;
   const qq=q.match(/ไตรมาส(?:ที่)?\s*([1-4])/);if(qq)P.q=+qq[1];
   P.cmp=/เทียบ|เปรียบเทียบ|ต่างกัน|กับ/.test(q);
-  P.follow=/^(แล้ว|และ|ส่วน)|ล่ะ|ละ$|หละ|เทียบ|ด้วย$/.test(q);
+  P.follow=/^(แล้ว|และ|ส่วน)|ล่ะ|ละ$|หละ|เทียบ|ด้วย$/.test(q);P.q0=q;
   return P;
 }
 function bkMatch(q){
@@ -3922,25 +3923,30 @@ async function bkAnswer(m,P){
     return {ctx,sug,html:`<b>${m.n}${amp?' อำเภอ'+amp:''}${sexL}${qL}</b> ${fyL}${a.y}–${b.y}
       ${bkSpark(pts,m)}
       ${bkTable([fyL.trim(),m.u||'ค่า','เปลี่ยนแปลง'],pts.map((p,i)=>[p.y+flag(p),bkF(m,p.v),i?(()=>{const pc=bkPct(p.v,pts[i-1].v);return pc==null?'':(pc>0?'+':'')+bN(pc,1)+'%'})():'']))}
-      <p class="bt-p">ช่วง ${pts.length} ปี ${b.v>a.v?'เพิ่มขึ้น':b.v<a.v?'ลดลง':'คงที่'} ${bkF(m,Math.abs(b.v-a.v))}${bkU(m)}${ch!=null&&m.u!=='%'?` (${ch>0?'+':''}${bN(ch,1)}%)`:''} · สูงสุด${fyL}${hi.y} (${bkF(m,hi.v)}) · ต่ำสุด${fyL}${lo.y} (${bkF(m,lo.v)})</p>
+      <p class="bt-p">${(()=>{const d=pts.slice(1).map((p,i)=>p.v-pts[i].v);const sg=d.filter(x=>x>0).length,sn=d.filter(x=>x<0).length;
+        const t=!d.length?'':(sg===0&&sn===0)?'<b>คงที่</b>ทุกปี':sn===0?'แนวโน้ม<b>ขาขึ้น</b>ต่อเนื่อง':sg===0?'แนวโน้ม<b>ขาลง</b>ต่อเนื่อง':(Math.min(sg,sn)>=Math.max(2,d.length/3)?'แนวโน้ม<b>ผันผวน</b>':'โดยรวม'+(b.v>=a.v?'<b>ขาขึ้น</b>':'<b>ขาลง</b>')+'แต่ไม่ต่อเนื่อง');
+        return t+' · ค่าเฉลี่ย '+bkF(m,pts.reduce((s,p)=>s+p.v,0)/pts.length)+bkU(m)+'<br>'})()}ช่วง ${pts.length} ปี ${b.v>a.v?'เพิ่มขึ้น':b.v<a.v?'ลดลง':'คงที่'} ${bkF(m,Math.abs(b.v-a.v))}${bkU(m)}${ch!=null&&m.u!=='%'?` (${ch>0?'+':''}${bN(ch,1)}%)`:''} · สูงสุด${fyL}${hi.y} (${bkF(m,hi.v)}) · ต่ำสุด${fyL}${lo.y} (${bkF(m,lo.v)})</p>
       ${notes.map(n=>`<small>${n}</small>`).join('')}${src}`};
   }
   /* รายอำเภอ / อันดับ */
   if(m.amp&&(P.byAmp||P.amps.length>1)){
     const list=(P.amps.length>1?P.amps:BOT_AMPS).map(a=>({l:a,...bkVal(m,rows,{y,amp:a,sex:P.sex,q:P.q}),p:py?bkVal(m,rows,{y:py,amp:a,sex:P.sex,q:P.q}).v:null})).filter(x=>x.v!=null);
     if(!list.length)return null;
-    list.sort((a,b)=>P.rank==='min'?a.v-b.v:b.v-a.v);
+    if(P.byChg){const dl=x=>x.p==null?-1e18:x.v-x.p;list.sort((a,b)=>/ลดลง/.test(P.q0||'')?dl(a)-dl(b):Math.abs(dl(b))-Math.abs(dl(a)))}
+    else list.sort((a,b)=>P.rank==='min'?a.v-b.v:b.v-a.v);
     const tot=m.agg==='none'||m.agg==='avg'||P.amps.length>1?null:list.reduce((s,x)=>s+x.v,0);
     const top=list[0],bot=list[list.length-1];
     sug.push(m.n+' อำเภอ'+top.l+' ย้อนหลัง',m.n+' ทั้งจังหวัด ปี '+y);
     return {ctx,sug,html:`<b>${m.n}${sexL} รายอำเภอ</b> ${fyL}${y}${qL}
       ${bkBars(list,m)}
       ${bkTable(['อำเภอ',m.u||'ค่า',tot?'สัดส่วน':'',py?'เทียบปี '+py:''].filter((h,i)=>i<2||h),list.map(x=>[x.l,bkF(m,x.v)].concat(tot?[bN(x.v/tot*100,1)+'%']:[]).concat(py?[x.p!=null?((x.v-x.p)>0?'+':'')+bkF(m,x.v-x.p):'—']:[])))}
+      ${P.byChg&&list[0].p!=null?`<p class="bt-p">อำเภอที่เปลี่ยนแปลงจากปี ${py} มากที่สุดคือ <b>อำเภอ${list[0].l}</b> ${(list[0].v-list[0].p)>0?'+':''}${bkF(m,list[0].v-list[0].p)}${bkU(m)}${list[0].p?` (${bN((list[0].v-list[0].p)/Math.abs(list[0].p)*100,1)}%)`:''}</p>`:''}
       ${list.length===2?`<p class="bt-p"><b>อำเภอ${list[0].l}</b> สูงกว่าอำเภอ${list[1].l} ${bkF(m,list[0].v-list[1].v)}${bkU(m)}${list[1].v?` (${bN((list[0].v-list[1].v)/Math.abs(list[1].v)*100,1)}%)`:''}</p>`:`<p class="bt-p">${P.rank==='min'?'น้อยที่สุด':'มากที่สุด'}คือ <b>อำเภอ${top.l}</b> ${bkF(m,top.v)}${bkU(m)}${list.length>1?` · ${P.rank==='min'?'มากที่สุด':'น้อยที่สุด'}คือ อำเภอ${bot.l} ${bkF(m,bot.v)}${bkU(m)}`:''}${tot&&P.amps.length<2?` · รวมทั้งจังหวัด ${bkF(m,tot)}${bkU(m)}`:''}</p>`}
       ${notes.map(n=>`<small>${n}</small>`).join('')}${src}`};
   }
   /* อำเภอเดียว */
   const amp=P.amps[0]||null;
+  if(!amp&&!m.amp&&(P.byAmp||P.rank))notes.push(`ชุดข้อมูล${m.n}เป็นระดับจังหวัด ยังไม่แยกรายอำเภอ จึงจัดอันดับรายอำเภอไม่ได้`);
   if(amp&&!m.amp)notes.push(`ชุดข้อมูล${m.n}เป็นระดับจังหวัด ยังไม่แยกรายอำเภอ จึงแสดงภาพรวมจังหวัด`);
   const A=amp&&m.amp?amp:null;
   const cur=bkVal(m,rows,{y,amp:A,sex:P.sex,q:P.q});if(cur.v==null)return null;
@@ -3981,7 +3987,8 @@ async function bkOverview(){
   if(c){const TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
     const parts=[['ภาคเกษตร',c.agri],['ภาคอุตสาหกรรม',c.indus],['ภาคบริการ',c.serv],['การบริโภคภาคเอกชน',c.cons],['การลงทุนภาคเอกชน',c.invest],['การใช้จ่ายภาครัฐ',c.gov]].filter(x=>x[1]!=null);
     const g=parts.filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]),d=parts.filter(x=>x[1]<0).sort((a,b)=>a[1]-b[1]);
-    mac=`<p class="bt-p"><b>เครื่องชี้รายเดือน ${TM[c.m-1]} ${c.y}</b> เศรษฐกิจโดยรวม${c.overall>=0?'ขยายตัว':'หดตัว'} ${bN(Math.abs(c.overall),1)}% เทียบเดือนเดียวกันปีก่อน
+    const pv=MR[MR.length-2];
+    mac=(pv?`<p class="bt-p"><b>เทียบเดือนก่อน</b> (อัตราขยายตัวเทียบปีก่อน · ${TM[pv.m-1]} → ${TM[c.m-1]})</p>`+bkTable(['ภาค',TM[pv.m-1],TM[c.m-1],'เปลี่ยน'],parts.map(x=>{const k={'ภาคเกษตร':'agri','ภาคอุตสาหกรรม':'indus','ภาคบริการ':'serv','การบริโภคภาคเอกชน':'cons','การลงทุนภาคเอกชน':'invest','การใช้จ่ายภาครัฐ':'gov'}[x[0]];const a=pv[k],b=x[1];return [x[0],a==null?'—':bN(a,1)+'%',bN(b,1)+'%',a==null?'—':((b-a)>0?'+':'')+bN(b-a,1)+' จุด']})):'')+`<p class="bt-p"><b>เครื่องชี้รายเดือน ${TM[c.m-1]} ${c.y}</b> เศรษฐกิจโดยรวม${c.overall>=0?'ขยายตัว':'หดตัว'} ${bN(Math.abs(c.overall),1)}% เทียบเดือนเดียวกันปีก่อน
       ${g.length?`<br>▲ ขยายตัว: ${g.map(x=>x[0]+' +'+bN(x[1],1)+'%').join(' · ')}`:''}${d.length?`<br>▼ หดตัว: ${d.map(x=>x[0]+' '+bN(x[1],1)+'%').join(' · ')}`:''}</p>`}
   return {ctx:null,sug:['ภาคไหนลดลงมากที่สุด','ประชากรรายอำเภอ','รายได้ OTOP ย้อนหลัง 5 ปี','ผู้เยี่ยมเยือนย้อนหลัง'],html:`<b>ภาพรวมเศรษฐกิจจังหวัดหนองบัวลำภู</b>
     ${mac}
@@ -3994,25 +4001,322 @@ async function bkOverview(){
 async function bkAnswerQ(q){
   const P=bkParse(q);let ms=bkMatch(q);
   /* ถามต่อจากคำตอบก่อน: "แล้วปี 2565 ล่ะ" "อำเภอนาวังล่ะ" "รายอำเภอ" "ย้อนหลัง" */
-  if(!ms.length&&BOT.ctx&&BOT.ctx.k&&(P.years.length||P.amps.length||P.byAmp||P.trend||P.sex||P.bySex||P.rank||P.follow||P.relPrev)){
+  if(!ms.length&&BOT.ctx&&BOT.ctx.k&&!BOT_SKILLS.some(s=>s.id!=='help'&&s.k.test(q))&&(P.years.length||P.amps.length||P.byAmp||P.trend||P.sex||P.bySex||P.rank||P.follow||P.relPrev)){
     ms=[BK.find(m=>m.k===BOT.ctx.k)];
     if(!P.years.length&&!P.trend&&!P.relPrev&&BOT.ctx.y)P.years=[BOT.ctx.y];
     if(!P.amps.length&&!P.byAmp&&BOT.ctx.amps&&BOT.ctx.amps.length&&!/จังหวัด|ทั้งหมด/.test(q))P.amps=BOT.ctx.amps.slice();
   }
   if(!ms.length)return null;
+  const causal=/ทำไม|สาเหตุ|เพราะอะไร|เพราะเหตุใด|ปัจจัย/.test(q);
+  const CAUSE=m=>`<div class="bt-note"><b>ข้อเท็จจริง</b> ตัวเลขข้างต้นบอกได้ว่าเปลี่ยนแปลงเท่าใด · <b>ข้อสันนิษฐาน</b> ชุดข้อมูลนี้ไม่ได้บันทึกสาเหตุ การเคลื่อนไหวพร้อมกับตัวชี้วัดอื่นไม่ได้แปลว่าเป็นเหตุและผล ควรสอบถาม${m.ag}เพื่อยืนยันสาเหตุ</div>`;
+  let m0=ms[0];
+  if(/เดือน(ก่อน|ล่าสุด|นี้|เดียวกัน)|รายเดือน/.test(q)&&BK_SIB[m0.k]){m0=BK.find(b=>b.k===BK_SIB[m0.k]);ms=[m0]}
+  if(BOT_META.test(q)&&!/ย้อนหลัง|รายอำเภอ/.test(q)){const r=await bkMeta(m0);if(r){BOT.ctx={k:m0.k};return r}}
+  if(/3 ประโยค|สามประโยค|เข้าใจง่าย|ไม่ใช้ศัพท์|สไลด์|bullet/i.test(q)){const r=await bkPlain(m0,/สไลด์|bullet/i.test(q)?'slide':'');if(r)return r}
+  if(m0.mon&&(/เดือน/.test(q)||m0.k!=='tourrev')){const r=await bkMonthly(m0,P);if(r)return causal?Object.assign(r,{html:r.html+CAUSE(m0)}):r}
+  if((P.years.length===2&&P.cmp)||/ค่าเดิม|ส่วนต่าง|สูตร/.test(q)){const r=await bkCompare(m0,P);if(r)return r}
+  P.byChg=/เปลี่ยนแปลง|เพิ่มขึ้น|ลดลง/.test(q)&&(P.byAmp||/อำเภอ(ไหน|ใด)/.test(q));if(P.byChg)P.byAmp=true;
   /* คำกว้าง ๆ ที่ไม่ระบุปี/อำเภอ ให้ความสามารถเดิมของหมวดนั้นตอบก่อน (สรุปหลายตัวเลข) */
   if(ms.topic&&!(P.years.length||P.amps.length||P.trend||P.byAmp||P.rank||P.sex))return null;
   const out=[];let ctx=null,sug=[];
-  for(const m of ms){const r=await bkAnswer(m,P);if(r){out.push(r.html);ctx=ctx||r.ctx;sug=sug.concat(r.sug||[])}}
+  for(const m of ms){const r=await bkAnswer(m,P);if(r){out.push(r.html+(causal?CAUSE(m):''));ctx=ctx||r.ctx;sug=sug.concat(r.sug||[])}}
   if(!out.length)return null;
   if(ctx)BOT.ctx=ctx;
   return {html:out.join('<hr class="bt-hr">'),sug:[...new Set(sug)].slice(0,4)};
 }
-const BOT_OVERVIEW=/เศรษฐกิจ.{0,20}(เป็น(ยัง|อย่าง)ไง|ภาพรวม|โต|เติบโต|ขยาย|ลด|หด|ดีไหม|ดีขึ้น|แย่|สรุป|ไหน|อะไร)|ภาค(ไหน|อะไร|ใด).{0,12}(โต|เติบโต|ขยาย|ลด|หด|ดี|แย่)|อะไร(เพิ่ม|ลด|โต|ดีขึ้น|แย่ลง)|สรุปภาพรวม|ภาพรวม(จังหวัด|เศรษฐกิจ)|ตัวชี้วัดไหน/;
+/* ── ส่วนขยายตามคลังคำถามมาตรฐานแชตบอท (ฉบับทดสอบ) ──────────────────────
+   รายเดือน · ความสดของข้อมูล · ที่มา/นิยาม/ข้อจำกัด · สรุปผู้บริหารและข้อเสนอ (แยกข้อเท็จจริง/ข้อเสนอแนะ)
+   ตัวชี้วัดที่ดีขึ้นต่อเนื่อง · ค่าผิดปกติ · การจ้างงานรายภาค · ราคาสินค้าเกษตร · คำถามกำกวม · ข้อมูลที่ยังไม่มีในระบบ */
+BK.push(
+ {k:'visM',n:'ผู้เยี่ยมเยือนรายเดือน',re:/(ผู้เยี่ยมเยือน|นักท่องเที่ยว).{0,25}(รายเดือน|เดือน)|เดือน.{0,12}(ผู้เยี่ยมเยือน|นักท่องเที่ยว)/,id:'42694bb9-6870-4d50-bbae-27859db9d06c',v:'จำนวน',fy:1,mon:1,u:'คน',ag:'สนง.การท่องเที่ยวและกีฬาจังหวัด',pg:'tourism'},
+ {k:'occM',n:'อัตราการเข้าพักรายเดือน',re:/เข้าพัก.{0,12}(รายเดือน|เดือน)|เดือน.{0,12}เข้าพัก/,id:'ce3fd380-daef-4e3e-b6ef-eca62e45c137',v:'จำนวน',fy:1,mon:1,agg:'avg',u:'%',d:2,ag:'สนง.การท่องเที่ยวและกีฬาจังหวัด',pg:'tourism'},
+ {k:'otopM',n:'รายได้ OTOP รายเดือน',re:/(otop|โอทอป).{0,14}(รายเดือน|เดือน)|เดือน.{0,12}(otop|โอทอป)/i,id:'b11c718d-fa12-4d60-aa83-37d56fbf4cef',v:'จำนวน',fy:1,mon:1,amp:'อำเภอ',u:'ล้านบาท',sc:1e-6,d:2,ag:'สนง.พัฒนาชุมชนจังหวัด',pg:'otop'}
+);
+BK.find(b=>b.k==='tourrev').mon=1;
+/* นิยามสั้น ๆ และข้อควรระวังของตัวชี้วัดหลัก */
+Object.assign(BK.find(b=>b.k==='pop'),{def:'ประชากรตามทะเบียนราษฎร (มีชื่อในทะเบียนบ้านในจังหวัด) อาจต่างจากผู้ที่อาศัยอยู่จริง',kind:'ทะเบียน'});
+Object.assign(BK.find(b=>b.k==='visitor'),{def:'ผู้เยี่ยมเยือน = นักท่องเที่ยว (ค้างคืน) + นักทัศนาจร (ไปเช้า-เย็นกลับ)',kind:'ประมาณการจากการสำรวจ'});
+Object.assign(BK.find(b=>b.k==='emp'),{def:'ผู้มีอายุ 15 ปีขึ้นไปที่ทำงานอย่างน้อย 1 ชั่วโมงในสัปดาห์สำรวจ',kind:'สำรวจตัวอย่าง'});
+Object.assign(BK.find(b=>b.k==='unemp'),{def:'ผู้ไม่มีงานทำแต่พร้อมทำงานและหางานในสัปดาห์สำรวจ',kind:'สำรวจตัวอย่าง'});
+Object.assign(BK.find(b=>b.k==='gppind'),{def:'มูลค่าเพิ่มของภาคอุตสาหกรรมใน GPP จังหวัด · p = ตัวเลขเบื้องต้น r = ปรับปรุง',kind:'บัญชีประชาชาติ (สศช.) ล่าช้าประมาณ 2 ปี'});
+['hhinc','hhexp','hhdebt','gini'].forEach(k=>Object.assign(BK.find(b=>b.k===k),{kind:'สำรวจตัวอย่าง ทำปีเว้นปี'}));
+['otoprev','otopM'].forEach(k=>Object.assign(BK.find(b=>b.k===k),{def:'ยอดจำหน่ายผลิตภัณฑ์ OTOP ที่ผู้ประกอบการรายงาน',kind:'ทะเบียน/รายงานหน่วยงาน'}));
+const BK_FREQ=m=>m.mon?'รายเดือน':m.per?'รายไตรมาส':/ปีเว้นปี/.test(m.kind||m.ag)?'ปีเว้นปี':'รายปี';
+/* ── ข้อมูลที่ยังไม่มีในระบบ · ตอบตรงไปตรงมาพร้อมหน่วยงานที่ควรตรวจสอบ ── */
+const BOT_GAPS=[
+ [/ภาษี|รายได้.{0,6}(การคลัง|รัฐ)|รายรับ.{0,6}(คลัง|รัฐ)|จัดเก็บรายได้/,'ข้อมูลการจัดเก็บภาษีและรายได้ภาครัฐ','สำนักงานสรรพากรพื้นที่ / สำนักงานคลังจังหวัด (มีข้อมูลการเบิกจ่ายงบประมาณ ถามว่า "การเบิกจ่ายงบประมาณ")'],
+ [/จดทะเบียน.{0,10}(ธุรกิจ|นิติบุคคล|บริษัท)|นิติบุคคล|เลิกกิจการ|ธุรกิจ(ใหม่|ตั้งใหม่)|จัดตั้งใหม่/,'ข้อมูลธุรกิจจดทะเบียนใหม่/เลิกกิจการ','สำนักงานพาณิชย์จังหวัด (ข้อมูลกรมพัฒนาธุรกิจการค้า)'],
+ [/ค่าจ้าง|ค่าแรง|เงินเดือน|รายได้.{0,6}แรงงาน/,'ข้อมูลค่าจ้างและรายได้แรงงาน','สำนักงานแรงงานจังหวัด / สำนักงานสวัสดิการและคุ้มครองแรงงานจังหวัด'],
+ [/ตำแหน่งงานว่าง|ความต้องการแรงงาน|บรรจุงาน|หางาน/,'ข้อมูลตำแหน่งงานว่างและการบรรจุงาน','สำนักงานจัดหางานจังหวัด'],
+ [/แรงงานนอกระบบ/,'ข้อมูลแรงงานนอกระบบ','สำนักงานสถิติจังหวัด (การสำรวจแรงงานนอกระบบ)'],
+ [/ต้นทุน(การ)?ผลิต|รายได้เกษตรกร|รายได้.{0,6}ครัวเรือนเกษตร/,'ข้อมูลต้นทุนการผลิตและรายได้เกษตรกร','สำนักงานเศรษฐกิจการเกษตรเขต / สำนักงานเกษตรจังหวัด'],
+ [/ปศุสัตว์|จำนวน(โค|วัว|กระบือ|ควาย|สุกร|หมู|ไก่|เป็ด)|เลี้ยง(โค|วัว|ควาย|หมู|ไก่)/,'ข้อมูลจำนวนปศุสัตว์','สำนักงานปศุสัตว์จังหวัด (มีราคาเนื้อสัตว์ ถามว่า "ราคาสินค้าเกษตร")'],
+ [/ประมง|เพาะเลี้ยงสัตว์น้ำ/,'ข้อมูลการประมง','สำนักงานประมงจังหวัด'],
+ [/การค้าชายแดน|ส่งออก|นำเข้า/,'ข้อมูลการค้าชายแดน/ส่งออก-นำเข้า','สำนักงานพาณิชย์จังหวัด (หนองบัวลำภูไม่มีด่านชายแดน)'],
+ [/ค้าปลีก|ค้าส่ง|ยอดขาย(ห้าง|สินค้า)|มูลค่าการค้า/,'ข้อมูลมูลค่าการค้าปลีก/ค้าส่ง','สำนักงานพาณิชย์จังหวัด / สำนักงานคลังจังหวัด (เครื่องชี้การบริโภค)'],
+ [/เทศกาล|กิจกรรม.{0,8}ท่องเที่ยว|อีเว้นท์/,'ข้อมูลเทศกาลและกิจกรรมท่องเที่ยว','สำนักงานการท่องเที่ยวและกีฬาจังหวัด / ททท.'],
+ [/อุตสาหกรรมประเภท|ประเภทอุตสาหกรรม|ธุรกิจประเภท|ประเภทโรงงาน|กำลังการผลิต|เงินลงทุน.{0,8}โรงงาน|ขยายกิจการ/,'ข้อมูลโรงงานแยกประเภท/เงินลงทุน/กำลังการผลิต','สำนักงานอุตสาหกรรมจังหวัด (แดชบอร์ดมีจำนวนสถานประกอบการรายอำเภอ)'],
+ [/(พืช|ข้าว|อ้อย|มัน).{0,10}รายอำเภอ|อำเภอ.{0,18}(ปลูก|เพาะปลูก|ผลผลิต)/,'ข้อมูลพื้นที่เพาะปลูกรายอำเภอ','สำนักงานเกษตรจังหวัด (แดชบอร์ดมีข้อมูลระดับจังหวัด)']
+];
+function botGap(q){for(const [re,what,ag] of BOT_GAPS)if(re.test(q))return {html:`<b>ไม่พบ${what}</b> ในชุดข้อมูลที่แดชบอร์ดเชื่อมต่ออยู่ตอนนี้ ผมจึงไม่ใส่ตัวเลขให้เพื่อไม่ให้คลาดเคลื่อน
+  ${bStat([['หน่วยงานที่ควรตรวจสอบ','',ag]])}
+  <small>หากหน่วยงานเผยแพร่ชุดข้อมูลนี้บนระบบบัญชีข้อมูลจังหวัด แดชบอร์ดเชื่อมได้ทันที · ลองค้นในระบบ: พิมพ์ "มีชุดข้อมูล … ไหม"</small>`,sug:['มีชุดข้อมูล'+what.replace(/^ข้อมูล/,'')+'ไหม','เศรษฐกิจภาพรวม ภาคไหนโต']};return null}
+/* ── รายเดือน ── */
+async function bkMonthly(m,P){
+  const D0=await bkRows(m);if(!D0)return null;
+  const key=r=>({fy:bkYear(m,r).y,o:+r['ลำดับตามปีงบประมาณ'],l:String(r['ช่วงเวลา']||'').trim()});
+  const G={};D0.rows.forEach(r=>{if(m.amp&&P.amps[0]&&bkAmp(r[m.amp])!==P.amps[0])return;const k=key(r);if(!k.fy||!k.o)return;const id=k.fy*100+k.o;
+    const v=gdcNum(r[m.v]);if(v==null)return;(G[id]=G[id]||{fy:k.fy,o:k.o,l:k.l,a:[]}).a.push(v)});
+  const S=Object.values(G).map(g=>({fy:g.fy,o:g.o,l:g.l,v:(m.agg==='avg'?g.a.reduce((p,c)=>p+c,0)/g.a.length:g.a.reduce((p,c)=>p+c,0))*(m.sc||1)})).sort((a,b)=>a.fy-b.fy||a.o-b.o);
+  if(!S.length)return null;
+  const c=S[S.length-1],pm=S[S.length-2],ly=S.find(x=>x.fy===c.fy-1&&x.o===c.o);
+  const pc=(a,b)=>b&&b.v?((a.v-b.v)/Math.abs(b.v)*100):null;
+  const row=(lab,b)=>b?[lab+' ('+b.l+')',bkF(m,b.v),((c.v-b.v)>0?'+':'')+bkF(m,c.v-b.v),pc(c,b)==null?'—':(pc(c,b)>0?'+':'')+bN(pc(c,b),1)+'%']:null;
+  const last=S.slice(-(P.trend?36:12));const hi=last.reduce((p,x)=>x.v>p.v?x:p),lo=last.reduce((p,x)=>x.v<p.v?x:p);
+  const src=bSrc('api',(D0.snap?'สำเนาข้อมูล API · ':'ระบบบัญชีข้อมูลจังหวัด (API) · ')+m.ag,m.pg);
+  BOT.ctx={k:m.k,y:c.fy,amps:P.amps.slice()};
+  return {sug:[m.n.replace('รายเดือน','')+'ย้อนหลัง 3 ปี',m.n+' ย้อนหลัง'],html:`<b>${m.n}${P.amps[0]?' อำเภอ'+P.amps[0]:''}</b> เดือนล่าสุดที่มีข้อมูล <b>${c.l}</b> (ปีงบ ${c.fy})
+    <div class="bt-big">${bkF(m,c.v)}<small>${m.u}</small></div>
+    ${bkTable(['เทียบกับ','ค่าเดิม','ส่วนต่าง','ร้อยละ'],[row('เดือนก่อน',pm),row('เดือนเดียวกันปีก่อน',ly)].filter(Boolean))}
+    ${bkSpark(last.map(x=>({y:x.l.replace(/\.?-\d+$/,''),v:x.v})),m)}
+    <p class="bt-p">ช่วง ${last.length} เดือนล่าสุด สูงสุด ${hi.l} (${bkF(m,hi.v)}) · ต่ำสุด ${lo.l} (${bkF(m,lo.v)}) · ค่าเฉลี่ย ${bkF(m,last.reduce((p,x)=>p+x.v,0)/last.length)}${bkU(m)}/เดือน</p>
+    <small>ร้อยละการเปลี่ยนแปลง = (ค่าใหม่ − ค่าเดิม) ÷ ค่าเดิม × 100 · วันที่ในคำตอบคือเดือนของข้อมูลจริง ไม่ใช่วันที่วันนี้</small>${src}`};
+}
+/* ── ที่มา นิยาม ความถี่ ข้อจำกัด ของตัวชี้วัดที่คุยอยู่ ── */
+const BOT_META=/มาจาก(หน่วยงาน|ไหน|ที่ไหน)|ที่มา(ของ)?(ตัวเลข|ข้อมูล)?|แหล่ง(ข้อมูล|ที่มา)|นิยาม|หมายถึงอะไร|หน่วยเป็น|ความถี่|อัปเดต.{0,6}(เมื่อ|ล่าสุด)|ปรับปรุงล่าสุด|เผยแพร่.{0,6}เมื่อ|ประมาณการ|คาดการณ์|ข้อมูลจริงไหม|ข้อจำกัด|เทียบ.{0,10}ได้(โดยตรง)?(ไหม|หรือไม่)|ระดับตำบล|ลงลึก|ลิงก์|รายงานต้นทาง|ตรวจสอบ(ตัวเลข|ได้)ที่|ไม่ตรงกับรายงาน|บอกอะไรไม่ได้|สนับสนุนข้อสรุป|สำรวจหรือ|ทะเบียนหรือ|ข้อควรระวัง|แตกต่างกันอย่างไร|ต่างกันอย่างไร|ช่วงเวลาเดียวกัน|หน่วยเดียวกัน|ปรับปรุงย้อนหลัง|เปลี่ยนวิธี|วิธีคำนวณ|เหมาะสมหรือไม่/;
+async function bkMeta(m){
+  const D0=await bkRows(m);if(!D0)return null;const ys=bkYears(m,D0.rows);
+  let meta=null;try{meta=await GDC.meta(m.id)}catch(e){}
+  const tamb=D0.rows.some(r=>r['ตำบล']!=null||r['ตำบล/เขต']!=null);
+  const flags=[...new Set(D0.rows.map(r=>bkYear(m,r).flag).filter(Boolean))];
+  return {sug:[m.n+' ย้อนหลัง 5 ปี',m.amp?m.n+' รายอำเภอ':'ข้อมูลล่าสุดของแต่ละภาคเป็นของช่วงไหน'],html:`<b>ที่มาและข้อจำกัด: ${m.n}</b>
+    ${bStat([['หน่วยงานเจ้าของข้อมูล','',m.ag],['ชุดข้อมูล','',(meta&&(meta.pkgTitle||meta.name))||m.n],['หน่วย','',m.u||'ไม่มีหน่วย (ดัชนี/สัมประสิทธิ์)'],['ความถี่','',BK_FREQ(m)+(m.fy?' · ตามปีงบประมาณ (ต.ค.–ก.ย.)':'')],
+      ['ช่วงข้อมูลที่มี','',ys.length?(m.fy?'ปีงบ ':'ปี ')+ys[0]+'–'+ys[ys.length-1]:'—'],['ปรับปรุงบนระบบล่าสุด','',meta&&meta.modified?thDT(meta.modified):'—'],
+      ['การจัดอันดับ/เทียบรายอำเภอ','',m.amp?'ใช้ปีเดียวกัน หน่วยเดียวกัน จากชุดข้อมูลเดียวกันทุกอำเภอ':'ไม่มีข้อมูลรายอำเภอ'],['ระดับพื้นที่','',tamb?'ลงถึงระดับตำบล':m.amp?'ระดับอำเภอ':'ระดับจังหวัด'],['ประเภทข้อมูล','',(m.kind||'ข้อมูลจริงจากหน่วยงาน')+(flags.length?' · มีตัวเลขเบื้องต้น (p)/ปรับปรุง (r)':'')]])}
+    ${m.def?`<p class="bt-p"><b>นิยาม</b> ${m.def}</p>`:''}
+    ${flags.length?`<p class="bt-p"><b>การปรับปรุงย้อนหลัง</b> ชุดนี้มีปีที่ระบุ p (ตัวเลขเบื้องต้น) และ r (ปรับปรุงแล้ว) ค่าปีล่าสุดอาจถูกแก้ไขภายหลัง</p>`:'<p class="bt-p"><b>การปรับปรุงย้อนหลัง</b> ชุดข้อมูลไม่ได้ระบุการปรับปรุงย้อนหลังหรือการเปลี่ยนวิธีคำนวณ หากหน่วยงานแก้ไขบนระบบ แดชบอร์ดจะใช้ค่าล่าสุดอัตโนมัติ</p>'}
+    <p class="bt-p"><b>ข้อควรระวัง</b> ${/สำรวจ/.test(m.kind||'')?'เป็นข้อมูลจากการสำรวจตัวอย่าง ค่าที่ต่างกันเล็กน้อยระหว่างช่วงเวลาอาจอยู่ในช่วงความคลาดเคลื่อน ':''}${m.per?'ปีที่ยังไม่ครบ 4 ไตรมาสเทียบได้เฉพาะไตรมาสเดียวกัน ':''}${m.fy?'ปีงบที่ยังไม่ครบ 12 เดือนเทียบได้เฉพาะเดือนเดียวกัน ':''}ตัวเลขบอก "ขนาดและทิศทาง" แต่ไม่ได้บอกสาเหตุของการเปลี่ยนแปลง</p>
+    <small>ถ้าตัวเลขบนแดชบอร์ดไม่ตรงกับรายงานต้นทาง ให้ตรวจที่ชุดข้อมูลบนระบบบัญชีข้อมูลจังหวัดก่อน (แดชบอร์ดดึงจากที่นั่นโดยตรง) แล้วแจ้งหน่วยงานเจ้าของข้อมูล</small>
+    ${meta&&meta.url?`<div class="bt-src" style="--c:${PV_COL.api}"><i></i><a href="${meta.url}" target="_blank" rel="noopener">เปิดชุดข้อมูลต้นทางบนระบบบัญชีข้อมูลจังหวัด ↗</a></div>`:bSrc('api',m.ag,m.pg)}`};
+}
+/* ── ความสดของข้อมูลทุกภาค ── */
+const BOT_FRESH=/ข้อมูล(ล่าสุด)?.{0,20}(เดือนไหน|ปีไหน|ช่วงไหน|เป็นของ|ถึงเมื่อ)|ยังไม่อัปเดต|ไม่อัปเดต|ล่าสุดไม่ตรงกัน|ช่วงเวลา(ต่างกัน|ไม่ตรงกัน)|ความสดของข้อมูล|ข้อมูลเก่า|มีข้อมูลอะไรบ้าง|ความถี่.{0,10}(ไม่ตรง|ต่างกัน|เท่ากัน)|ความถี่และช่วงเวลา|ข้อมูลฐาน/;
+async function bkFresh(){
+  const L=BK.filter(m=>!m.mon||m.k!=='tourrev');const nowBE=new Date().getFullYear()+543;
+  const rows=await Promise.all(L.map(async m=>{try{const D0=await bkRows(m);if(!D0)return null;const ys=bkYears(m,D0.rows);if(!ys.length)return null;
+    let lab=(m.fy?'ปีงบ ':'ปี ')+ys[ys.length-1];
+    if(m.mon){const S=D0.rows.filter(r=>bkYear(m,r).y===ys[ys.length-1]&&gdcNum(r[m.v])!=null).sort((a,b)=>+b['ลำดับตามปีงบประมาณ']-+a['ลำดับตามปีงบประมาณ']);if(S[0])lab=String(S[0]['ช่วงเวลา']).trim()}
+    if(m.per){const y=ys[ys.length-1];const q=[4,3,2,1].find(q=>bkVal(m,D0.rows,{y,q}).v!=null);if(q)lab='Q'+q+'/'+y}
+    const lag=nowBE-ys[ys.length-1];return {m,lab,lag,f:BK_FREQ(m)}}catch(e){return null}}));
+  const R=rows.filter(Boolean).sort((a,b)=>b.lag-a.lag);
+  const st=x=>/ล่าช้าประมาณ/.test(x.m.kind||'')&&x.lag<=3?'ตามรอบ (ล่าช้า 2 ปีโดยปกติ)':x.lag>=2&&!/ปีเว้นปี/.test(x.f)?'⚠ ล่าช้า':x.lag>=3?'⚠ ล่าช้า':'ปกติ';
+  return {sug:['เศรษฐกิจภาพรวม ภาคไหนโต','ช่วยสรุปผู้บริหาร'],html:`<b>ข้อมูลล่าสุดของแต่ละตัวชี้วัด</b> (ปีปัจจุบัน ${nowBE})
+    ${bkTable(['ตัวชี้วัด','ข้อมูลถึง','ความถี่','สถานะ'],R.map(x=>[x.m.n,x.lab,x.f,st(x)]))}
+    <p class="bt-p">ข้อมูลแต่ละภาคมีรอบเผยแพร่ต่างกัน (รายเดือน/รายไตรมาส/รายปี/ปีเว้นปี) และหน่วยงานเผยแพร่ล่าช้าไม่เท่ากัน จึง<b>ไม่ควรนำตัวเลขต่างช่วงเวลามาเทียบกันโดยตรง</b> เช่น รายได้ครัวเรือน (สำรวจปีเว้นปี) กับผู้มีงานทำ (รายไตรมาส)</p>
+    ${bSrc('api','ระบบบัญชีข้อมูลจังหวัด · ศูนย์ควบคุมแหล่งข้อมูล','apistatus')}`};
+}
+/* ── สแกนทุกตัวชี้วัดรายปี ── */
+async function bkScan(){
+  const L=BK.filter(m=>!m.mon&&m.agg!=='none');
+  const R=await Promise.all(L.map(async m=>{try{const D0=await bkRows(m);if(!D0)return null;const ys=bkYears(m,D0.rows);if(ys.length<2)return null;
+    const pts=ys.map(y=>({y,v:bkVal(m,D0.rows,{y}).v})).filter(p=>p.v!=null);const y=ys[ys.length-1],py=ys[ys.length-2];const PR=bkPair(m,D0.rows,y,py);
+    return {m,pts,y,py,a:pts[pts.length-1].v,p:bkPct(PR.a.v,PR.b.v),part:!!(PR.o.qs||PR.o.ms)}}catch(e){return null}}));
+  return R.filter(Boolean);
+}
+const bkGood=x=>x.p==null||Math.abs(x.p)<0.05?null:x.m.good===-1?x.p<0:x.m.good===0?null:x.p>0;
+async function bkStreak(){
+  const R=await bkScan();const out=[];
+  R.forEach(x=>{const p=x.pts.slice(-4);if(p.length<4)return;const d=p.slice(1).map((v,i)=>v.v-p[i].v);
+    const up=d.every(v=>v>0),dn=d.every(v=>v<0);if(!up&&!dn)return;const good=x.m.good===-1?dn:x.m.good===0?null:up;
+    out.push({x,up,good,ch:bkPct(p[3].v,p[0].v),from:p[0].y,to:p[3].y})});
+  const G=out.filter(o=>o.good===true),B=out.filter(o=>o.good===false),N=out.filter(o=>o.good==null);
+  const li=o=>`<li><b>${o.x.m.n}</b> ${o.up?'เพิ่มขึ้น':'ลดลง'}ต่อเนื่อง 3 ปี (${o.from}→${o.to}) รวม ${o.ch>0?'+':''}${bN(o.ch,1)}%</li>`;
+  return {sug:['ตัวชี้วัดไหนเปลี่ยนแปลงผิดปกติ','ช่วยสรุปผู้บริหาร'],html:`<b>ตัวชี้วัดที่เคลื่อนไหวทิศทางเดียวต่อเนื่อง 3 ปีล่าสุด</b>
+    ${G.length?`<p class="bt-p"><b class="up">ดีขึ้นต่อเนื่อง</b></p><ul class="bt-ul">${G.map(li).join('')}</ul>`:'<p class="bt-p">ไม่มีตัวชี้วัดที่ดีขึ้นต่อเนื่องครบ 3 ปี</p>'}
+    ${B.length?`<p class="bt-p"><b class="dn">แย่ลงต่อเนื่อง (ควรเฝ้าระวัง)</b></p><ul class="bt-ul">${B.map(li).join('')}</ul>`:''}
+    ${N.length?`<small>ทิศทางต่อเนื่องแต่ไม่ระบุดี/แย่: ${N.map(o=>o.x.m.n+(o.up?' ↑':' ↓')).join(' · ')}</small>`:''}
+    <small>ใช้ 4 จุดข้อมูลล่าสุดของแต่ละชุด (เปลี่ยนแปลง 3 ช่วง) · ชุดที่มีข้อมูลไม่ถึง 4 ปีไม่นำมาคำนวณ</small>${bSrc('api','ชุดข้อมูล API '+R.length+' ชุด','apistatus')}`};
+}
+async function bkAnomaly(){
+  const R=await bkScan();const out=[];
+  R.forEach(x=>{const p=x.part?x.pts.slice(0,-1):x.pts;if(p.length<5)return;const df=p.slice(1).map((v,i)=>v.v-p[i].v);
+    const last=df[df.length-1],hist=df.slice(0,-1);const mu=hist.reduce((a,b)=>a+b,0)/hist.length;const sd=Math.sqrt(hist.reduce((a,b)=>a+(b-mu)**2,0)/hist.length);if(!sd)return;
+    const z=(last-mu)/sd;const base=p[p.length-2].v;if(Math.abs(z)>=2)out.push({x:Object.assign({},x,{y:p[p.length-1].y}),last:base?last/Math.abs(base)*100:0,mu:base?mu/Math.abs(base)*100:0,z})});
+  out.sort((a,b)=>Math.abs(b.z)-Math.abs(a.z));
+  return {sug:['ตัวชี้วัดใดดีขึ้นต่อเนื่อง 3 ปี','ข้อมูลล่าสุดของแต่ละภาคเป็นของช่วงไหน'],html:`<b>ตัวชี้วัดที่เปลี่ยนแปลงผิดจากแนวโน้มเดิม</b>
+    ${out.length?`<ul class="bt-ul">${out.map(o=>`<li><b>${o.x.m.n}</b> ปี ${o.x.y} เปลี่ยน ${o.last>0?'+':''}${bN(o.last,1)}% ขณะที่ปกติเปลี่ยนเฉลี่ยปีละ ${o.mu>0?'+':''}${bN(o.mu,1)}% <small class="bt-inl">(ห่างจากค่าปกติ ${bN(Math.abs(o.z),1)} เท่าของส่วนเบี่ยงเบน)</small></li>`).join('')}</ul>`:'<p class="bt-p">ไม่พบตัวชี้วัดที่การเปลี่ยนแปลงปีล่าสุดต่างจากค่าปกติเกิน 2 เท่าของส่วนเบี่ยงเบนมาตรฐาน</p>'}
+    <small>เกณฑ์: เทียบร้อยละการเปลี่ยนแปลงปีล่าสุดกับค่าเฉลี่ยและส่วนเบี่ยงเบนของปีก่อน ๆ (ต้องมีข้อมูลอย่างน้อย 5 ปี) · ค่าที่ผิดปกติอาจเกิดจากเหตุการณ์จริง การเปลี่ยนวิธีเก็บข้อมูล หรือการแก้ไขข้อมูล ควรสอบถามหน่วยงานเจ้าของข้อมูลก่อนสรุป</small>${bSrc('api','ชุดข้อมูล API '+R.length+' ชุด','apistatus')}`};
+}
+/* ── สรุปผู้บริหาร / ข้อเสนอเชิงนโยบาย: แยกข้อเท็จจริง การตีความ และข้อเสนอแนะ ── */
+const BOT_BRIEF=/ผู้บริหาร|executive|brief|1 นาที|หนึ่งนาที|ข้อเสนอ|ควรติดตาม|ลำดับแรก|เฝ้าระวัง|จุดแข็ง|จุดอ่อน|ประชุม|ตัวเลขสำคัญ|ตัวชี้วัด(เศรษฐกิจ)?สำคัญ|ประเด็น(สำคัญ|ที่ควร)|วางแผน|นโยบาย|สนับสนุนเป็นพิเศษ|ข้อมูลที่ยังขาด|ควรเพิ่มข้อมูล|ควรเก็บข้อมูล/i;
+async function bkBrief(q){
+  const R=(await bkScan()).filter(x=>x.m.econ||['occ','tourrev','unemp'].indexOf(x.m.k)>=0);const G=R.filter(x=>bkGood(x)===true).sort((a,b)=>Math.abs(b.p)-Math.abs(a.p)),B=R.filter(x=>bkGood(x)===false).sort((a,b)=>Math.abs(b.p)-Math.abs(a.p));
+  const KEY=['pop','emp','visitor','otoprev','gppind','depo','hhinc'].map(k=>R.find(x=>x.m.k===k)).filter(Boolean);
+  const MR=((typeof DX!=='undefined'&&DX.macro&&DX.macro.rows)||[]).slice().sort((a,b)=>(a.y-b.y)||(a.m-b.m));const c=MR[MR.length-1];
+  const TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const F=x=>`${x.m.n} ${bkF(x.m,x.a)}${bkU(x.m)} (${x.m.fy?'ปีงบ':'ปี'} ${x.y}${x.p!=null?`, ${x.p>0?'+':''}${bN(x.p,1)}% จาก${x.part?'ช่วงเดียวกันของ':''}ปี ${x.py}`:''}) · ${x.m.ag}`;
+  const miss=(GDC.RES||[]).filter(r=>r.state==='link').map(r=>r.n);
+  const gapList=['ภาษีและรายได้ภาครัฐ','ธุรกิจจดทะเบียนใหม่/เลิกกิจการ','ค่าจ้างแรงงาน','ตำแหน่งงานว่าง','ต้นทุนการผลิตและรายได้เกษตรกร','จำนวนปศุสัตว์'];
+  const pol=/ข้อเสนอ|นโยบาย|วางแผน/.test(q);
+  return {sug:['ตัวชี้วัดใดดีขึ้นต่อเนื่อง 3 ปี','ตัวชี้วัดไหนเปลี่ยนแปลงผิดปกติ','ข้อมูลล่าสุดของแต่ละภาคเป็นของช่วงไหน'],html:`<b>สรุปสำหรับผู้บริหาร · เศรษฐกิจจังหวัดหนองบัวลำภู</b>
+    <p class="bt-p"><b>1. ข้อเท็จจริงจากข้อมูล</b></p>
+    <ul class="bt-ul">${c?`<li>เครื่องชี้เศรษฐกิจ ${TM[c.m-1]} ${c.y}: โดยรวม${c.overall>=0?'ขยายตัว':'หดตัว'} ${bN(Math.abs(c.overall),1)}% (YoY) · สนง.คลังจังหวัด</li>`:''}${KEY.slice(0,5).map(x=>`<li>${F(x)}</li>`).join('')}</ul>
+    <p class="bt-p"><b>2. จุดแข็ง</b> (ตัวชี้วัดที่ดีขึ้นมากที่สุด)</p><ul class="bt-ul">${G.slice(0,3).map(x=>`<li>${F(x)}</li>`).join('')||'<li>—</li>'}</ul>
+    <p class="bt-p"><b>3. จุดที่ควรเฝ้าระวัง</b></p><ul class="bt-ul">${B.slice(0,3).map(x=>`<li>${F(x)}</li>`).join('')||'<li>—</li>'}${c?[['ภาคเกษตร',c.agri],['การลงทุนภาคเอกชน',c.invest],['การใช้จ่ายภาครัฐ',c.gov]].filter(z=>z[1]<0).map(z=>`<li>${z[0]} หดตัว ${bN(z[1],1)}% (${TM[c.m-1]} ${c.y})</li>`).join(''):''}</ul>
+    <p class="bt-p"><b>4. ข้อมูลที่ยังขาด</b></p><ul class="bt-ul"><li>ยังไม่มีในระบบ: ${gapList.join(' · ')}</li>${miss.length?`<li>มีบนระบบแต่ยังอ่านผ่าน API ไม่ได้: ${miss.join(' · ')}</li>`:''}</ul>
+    ${pol||/ติดตาม|ลำดับแรก|ประชุม|วางแผน/.test(q)?`<div class="bt-note"><b>5. ข้อเสนอแนะ</b> <small class="bt-inl">(การตีความของระบบ ไม่ใช่ข้อเท็จจริง ต้องให้หน่วยงานพิจารณา)</small><ul class="bt-ul">
+      ${B.slice(0,3).map(x=>`<li>ติดตาม<b>${x.m.n}</b>${x.m.amp?'รายอำเภอ':''}เป็นลำดับแรก และหารือ${x.m.ag}ถึงสาเหตุ · <i>หลักฐาน:</i> ${x.p>0?'+':''}${bN(x.p,1)}% · <i>ข้อสมมติ:</i> การเปลี่ยนแปลงไม่ได้เกิดจากการเปลี่ยนวิธีเก็บข้อมูล · <i>วัดผลด้วย:</i> ${x.m.n} ${BK_FREQ(x.m)}</li>`).join('')}
+      <li>ผลักดันให้หน่วยงานเผยแพร่ชุดข้อมูลที่ยังขาดบนระบบบัญชีข้อมูลจังหวัด เพื่อใช้เป็นข้อมูลฐานก่อนดำเนินโครงการและติดตามผล</li></ul></div>`:''}
+    <small>ทุกตัวเลขเป็นปีล่าสุดที่มีของแต่ละชุด ช่วงเวลาไม่เท่ากัน จึงไม่ควรนำมารวมหรือเทียบข้ามชุดโดยตรง · การเคลื่อนไหวพร้อมกันไม่ได้แปลว่าเป็นเหตุและผล</small>
+    ${bSrc('api','เครื่องชี้รายเดือน สนง.คลังจังหวัด + ชุดข้อมูล API '+R.length+' ชุด','overview')}`};
+}
+/* ── การจ้างงานรายภาค ── */
+async function bkEmpSector(P){
+  const id=(GDC.RES.find(r=>r.id&&r.id.indexOf('501555c3')===0)||{}).id;if(!id)return null;
+  const m={id,v:'จำนวน',per:'ช่วงเวลา',sex:'เพศ'};const D0=await bkRows(m);if(!D0)return null;const rows=D0.rows;
+  const per=r=>bkYear({},r).y*10+bkQ(r['ช่วงเวลา']);const lastP=Math.max(...rows.map(per));
+  const y=P.years[0]||Math.floor(lastP/10),q=P.q||(P.years[0]?Math.max(...rows.filter(r=>bkYear({},r).y===y).map(r=>bkQ(r['ช่วงเวลา']))):lastP%10);
+  const R=rows.filter(r=>bkYear({},r).y===y&&bkQ(r['ช่วงเวลา'])===q);if(!R.length)return null;
+  const sum=f=>R.filter(r=>f(String(r['อุตสาหกรรม']).trim())).reduce((a,r)=>a+(gdcNum(r['จำนวน'])||0),0);
+  const ag=sum(x=>x==='ภาคเกษตรกรรม'),non=sum(x=>x==='นอกภาคเกษตรกรรม'),ind=sum(x=>/^(การผลิต|การทำเหมืองแร่|ไฟฟ้า|การจัดหาน้ำ|การก่อสร้าง)/.test(x)),srv=non-ind,tot=ag+non;
+  const top=[...new Set(R.map(r=>String(r['อุตสาหกรรม']).trim()))].filter(x=>!/^(ภาคเกษตรกรรม|นอกภาคเกษตรกรรม|รวมยอด|ไม่ทราบ)$/.test(x)).map(x=>({l:x,v:sum(z=>z===x)})).sort((a,b)=>b.v-a.v).slice(0,6);
+  return {sug:['ผู้มีงานทำย้อนหลัง 5 ปี','อัตราการว่างงาน'],html:`<b>ผู้มีงานทำแยกตามภาคเศรษฐกิจ</b> ไตรมาส ${q}/${y}
+    ${bStat([['ภาคเกษตร',bN(ag),'คน · '+bN(ag/tot*100,1)+'%'],['ภาคอุตสาหกรรม',bN(ind),'คน · '+bN(ind/tot*100,1)+'%'],['ภาคบริการและอื่น ๆ',bN(srv),'คน · '+bN(srv/tot*100,1)+'%'],['รวม',bN(tot),'คน']])}
+    <p class="bt-p">สาขาที่มีผู้ทำงานมากที่สุด</p>${bkBars(top.map(x=>({l:x.l.replace(/ และ.*$/,''),v:x.v})),{d:0})}
+    <small>ภาคอุตสาหกรรม = การผลิต + เหมืองแร่ + ไฟฟ้า/ก๊าซ + ประปา/บำบัดน้ำ + ก่อสร้าง · ภาคบริการ = นอกภาคเกษตรที่เหลือ · ข้อมูลสำรวจตัวอย่างรายไตรมาส</small>
+    ${bSrc(D0.snap?'api':'api','การสำรวจภาวะการทำงานของประชากร · สนง.สถิติจังหวัด','labor')}`};
+}
+/* ── ราคาสินค้าเกษตรและพืชเศรษฐกิจ ── */
+function bkPrice(q){
+  const P=(typeof D!=='undefined'&&D.price)||null;if(!P)return null;const num=s=>{const a=String(s||'').split(/[–-]/).map(gdcNum).filter(v=>v!=null);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null};
+  const L=[];P.groups.forEach(g=>g.rows.forEach(r=>{const now=num(r.now),prev=num(r.prev),mo=num(r.mo),yr=num(r.yr);if(now==null)return;L.push({g:g.g,u:r.sub&&/^บาท/.test(r.sub)?r.sub:g.unit,n:r.n+(r.sub&&!/^บาท/.test(r.sub)?' ('+r.sub+')':''),now:r.now,dp:prev?(now-prev)/prev*100:null,dy:mo&&yr?(mo-yr)/yr*100:null})}));
+  const f=L.filter(x=>q.indexOf(x.n.split(' ')[0].replace(/[()]/g,''))>=0);const S=f.length?f:L;
+  const up=L.filter(x=>x.dy!=null).sort((a,b)=>b.dy-a.dy);
+  return {sug:['พืชเศรษฐกิจสำคัญมีอะไรบ้าง','เศรษฐกิจภาพรวม ภาคไหนโต'],html:`<b>ราคาสินค้าเกษตรและอุปโภคบริโภค</b> ณ ${P.asof}
+    ${bkTable(['สินค้า','ราคาล่าสุด','เทียบ '+P.prevLabel,'เทียบ '+P.yearLabel],S.slice(0,12).map(x=>[x.n+'<br><small class="bt-inl">'+x.u+'</small>',x.now,x.dp==null?'—':(x.dp>0?'+':'')+bN(x.dp,1)+'%',x.dy==null?'—':(x.dy>0?'+':'')+bN(x.dy,1)+'%']))}
+    ${!f.length&&up.length?`<p class="bt-p">เทียบปีก่อน ราคาขึ้นมากที่สุด <b>${up[0].n}</b> (${up[0].dy>0?'+':''}${bN(up[0].dy,1)}%) · ลดลงมากที่สุด <b>${up[up.length-1].n}</b> (${bN(up[up.length-1].dy,1)}%)</p>`:''}
+    <small>เทียบปีก่อนใช้ราคาเฉลี่ยของเดือน · ช่วงราคาใช้ค่ากลางในการคำนวณ · ${P.contact||''}</small>${bSrc('gas','สนง.พาณิชย์จังหวัด (ระบบกรอกข้อมูล)','trade')}`};
+}
+function bkCrops(){
+  const C=(typeof D!=='undefined'&&D.crop)||null;if(!C||!C.rows)return null;const R=C.rows.slice().sort((a,b)=>b.area-a.area);
+  return {sug:['ราคาสินค้าเกษตร','ครัวเรือนเกษตรกรรายอำเภอ'],html:`<b>พืชเศรษฐกิจสำคัญของจังหวัด</b> เรียงตามเนื้อที่ปลูก
+    ${bkTable(['พืช','เนื้อที่ (ไร่)','ผลผลิต (ตัน)','ครัวเรือน'],R.map(r=>[r.n,bN(r.area),r.y?bN(r.y/1000):'รอเก็บเกี่ยว',bN(r.hh)]))}
+    <p class="bt-p">พืชหลัก 3 อันดับแรกตามเนื้อที่ปลูก: ${R.slice(0,3).map(r=>r.n+' '+bN(r.area/C.area*100,1)+'%').join(' · ')} ของเนื้อที่ปลูกพืชอายุสั้นทั้งจังหวัด</p>
+    <small>ข้อมูลระดับจังหวัด ยังไม่แยกรายอำเภอ · ราคาในตารางผลผลิตเป็นราคาที่เกษตรกรขายได้</small>${bSrc('gas','ภาวะการผลิตพืช · สนง.เกษตรจังหวัด (ระบบกรอกข้อมูล)','agri')}`};
+}
+/* ── อธิบายง่าย / 3 ประโยค / หัวข้อสไลด์ จากตัวชี้วัดที่คุยอยู่ ── */
+async function bkPlain(m,mode){
+  const D0=await bkRows(m);if(!D0)return null;const ys=bkYears(m,D0.rows);const y=ys[ys.length-1],py=ys[ys.length-2];
+  const PR=bkPair(m,D0.rows,y,py),cur=bkVal(m,D0.rows,{y}).v,p=bkPct(PR.a.v,PR.b.v);
+  const s1=`${m.n}ล่าสุด${m.fy?'ปีงบ':'ปี'} ${y} อยู่ที่ ${bkF(m,cur)}${bkU(m)}`;
+  const s2=p==null?'ยังไม่มีข้อมูลปีก่อนให้เทียบ':`${p>0?'เพิ่มขึ้น':p<0?'ลดลง':'เท่าเดิม'} ${bN(Math.abs(p),1)}% เมื่อเทียบกับ${PR.note?'ช่วงเดียวกันของ':''}ปี ${py}`;
+  const s3=`ข้อมูลจาก${m.ag}${m.kind?' ('+m.kind+')':''} บอกขนาดและทิศทางได้ แต่ไม่ได้บอกสาเหตุ`;
+  return {html:mode==='slide'?`<b>${m.n}</b><ul class="bt-ul"><li>${s1}</li><li>${s2}</li><li>${s3}</li></ul>`:`<p class="bt-p">${s1} ${s2} ${s3}</p>`};
+}
+/* ── ตารางค่าเดิม/ค่าใหม่/ส่วนต่าง/ร้อยละ พร้อมสูตร ── */
+async function bkCompare(m,P){
+  const D0=await bkRows(m);if(!D0)return null;const ys=bkYears(m,D0.rows);
+  let [a,b]=P.years.length>=2?[P.years[0],P.years[1]].sort():[ys[ys.length-2],ys[ys.length-1]];
+  if(ys.indexOf(a)<0||ys.indexOf(b)<0)return null;
+  const amp=P.amps[0]&&m.amp?P.amps[0]:null;const PR=bkPair(m,D0.rows,b,a,{amp,sex:P.sex});
+  const A=PR.b.v,B=PR.a.v;if(A==null||B==null)return null;const d=B-A,p=A?d/Math.abs(A)*100:null;
+  BOT.ctx={k:m.k,y:b,amps:P.amps.slice()};
+  return {sug:[m.n+' ย้อนหลัง 5 ปี'],html:`<b>เปรียบเทียบ${m.n}${amp?' อำเภอ'+amp:''}</b> ${m.fy?'ปีงบ':'ปี'} ${a} กับ ${b}
+    ${bkTable(['รายการ','ค่าเดิม ('+a+')','ค่าใหม่ ('+b+')','ส่วนต่าง','ร้อยละ'],[[m.u||'ค่า',bkF(m,A),bkF(m,B),(d>0?'+':'')+bkF(m,d),p==null?'—':(p>0?'+':'')+bN(p,2)+'%']])}
+    <small>สูตร: ส่วนต่าง = ค่าใหม่ − ค่าเดิม = ${bkF(m,B)} − ${bkF(m,A)} = ${bkF(m,d)} · ร้อยละ = ส่วนต่าง ÷ ค่าเดิม × 100 = ${p==null?'—':bN(p,2)+'%'}${PR.note?' · '+PR.note:''}</small>
+    ${bSrc('api',m.ag,m.pg)}`};
+}
+const BOT_AMBIG=/^(รายได้|ราคา|ตัวเลข|ข้อมูล)?.{0,6}(เพิ่ม|ลด|ขึ้น|ลง)(ขึ้น|ลง)?(ไหม|มั้ย|หรือเปล่า|ยัง)/;
+
+/* ── ส่วนขยายรอบ 2 (จากผลทดสอบคลังคำถามมาตรฐาน) ── */
+BK.push(
+ {k:'rooms',n:'ห้องพักโรงแรมที่ขึ้นทะเบียน',re:/ห้องพัก(?!.*เข้าพัก)|จำนวนห้อง/,id:'03463b5e-c71f-41e8-80d5-bf7794def331',v:'จำนวนห้องพัก',amp:'อำเภอ',u:'ห้อง',ag:'สนง.การท่องเที่ยวและกีฬาจังหวัด',pg:'tourism'},
+ {k:'hotels',n:'สถานที่พักที่ขึ้นทะเบียนตาม พ.ร.บ.โรงแรม',re:/โรงแรม|ที่พัก(?!.*ห้อง)|รีสอร์ท/,id:'03463b5e-c71f-41e8-80d5-bf7794def331',v:'จำนวนห้องพัก',agg:'count',amp:'อำเภอ',u:'แห่ง',ag:'สนง.การท่องเที่ยวและกีฬาจังหวัด',pg:'tourism'},
+ {k:'otopent',n:'ผู้ประกอบการร้านค้า OTOP',re:/ผู้ประกอบการ/,id:'700584d7-29bc-4749-82ee-dba82098ca0d',v:'ชื่อผู้ประกอบการ',agg:'count',amp:'อำเภอ',u:'ราย',ag:'สนง.พัฒนาชุมชนจังหวัด',pg:'otop'}
+);
+const BK_SIB={visitor:'visM',occ:'occM',otoprev:'otopM'};
+/* มีข้อมูลเรื่องนี้ไหม → ตอบจากคลังตัวชี้วัด + รายการที่ยังไม่มี */
+async function bkHave(q){
+  const hits=BK.filter(m=>m.re.test(q));const gaps=BOT_GAPS.filter(g=>g[0].test(q));
+  /* หมวดที่ตอบด้วยความสามารถเฉพาะ (ไม่ได้อยู่ในคลังตัวชี้วัดรายปี) */
+  const OTH=[[/งบ|เบิกจ่าย|การคลัง/,'การเบิกจ่ายงบประมาณ (API)','ปีงบปัจจุบัน · รายสัปดาห์/รายเดือน','แยกรายจ่ายประจำ/ลงทุน · งบจังหวัด/งบส่วนราชการ · อันดับประเทศ/ภาค/เขต · เงินกันเหลื่อมปี'],
+    [/ราคา/,'ราคาสินค้าเกษตรและอุปโภคบริโภค','รายสัปดาห์/รายเดือน','สนง.พาณิชย์จังหวัด'],[/พืช|ผลผลิต|เพาะปลูก/,'ภาวะการผลิตพืช','รายฤดูการผลิต','ระดับจังหวัด · สนง.เกษตรจังหวัด'],
+    [/เครื่องชี้|เศรษฐกิจรายเดือน/,'เครื่องชี้เศรษฐกิจจังหวัด','รายเดือน','สนง.คลังจังหวัด']].filter(o=>o[0].test(q));
+  if(!hits.length&&!gaps.length&&!OTH.length)return null;
+  if(!hits.length&&!gaps.length)return {html:`<b>มีข้อมูลในแดชบอร์ด</b>${bkTable(['ข้อมูล','ความถี่','รายละเอียด'],OTH.map(o=>o.slice(1)))}`};
+  const rows=await Promise.all(hits.slice(0,8).map(async m=>{try{const D0=await bkRows(m);const ys=D0?bkYears(m,D0.rows):[];return [m.n,ys.length?(m.fy?'ปีงบ ':'ปี ')+ys[0]+'–'+ys[ys.length-1]:'—',BK_FREQ(m)+(m.amp?' · รายอำเภอ':'')]}catch(e){return [m.n,'—','']}}));
+  return {sug:hits.slice(0,3).map(m=>m.n+' ล่าสุด'),html:`${hits.length?`<b>มีข้อมูลในแดชบอร์ด</b>${bkTable(['ตัวชี้วัด','ช่วงข้อมูล','ความถี่/ระดับ'],rows)}`:''}
+    ${gaps.length?`<p class="bt-p"><b>ยังไม่มีในชุดข้อมูลที่เชื่อมต่อ</b></p><ul class="bt-ul">${gaps.map(g=>`<li>${g[1]} · ตรวจสอบที่ ${g[2]}</li>`).join('')}</ul>`:''}
+    <small>ถามต่อได้ เช่น "${hits[0]?hits[0].n:'ประชากร'} ย้อนหลัง 3 ปี"</small>`};
+}
+/* อำเภอที่ไม่มีข้อมูล/ข้อมูลไม่ครบ */
+async function bkComplete(m){
+  const D0=await bkRows(m);if(!D0)return null;const ys=bkYears(m,D0.rows);
+  if(!m.amp){return {html:`<b>${m.n}</b> เป็นข้อมูลระดับจังหวัด ไม่ได้แยกรายอำเภอ · มีข้อมูล${m.fy?'ปีงบ':'ปี'} ${ys.join(', ')}${(()=>{const all=[];for(let y=ys[0];y<=ys[ys.length-1];y++)all.push(y);const miss=all.filter(y=>ys.indexOf(y)<0);return miss.length?` · <b>ขาดปี ${miss.join(', ')}</b>${/ปีเว้นปี/.test(BK_FREQ(m))?' (สำรวจปีเว้นปีตามรอบปกติ)':''}`:' · ไม่มีปีที่ขาด'})()}`}}
+  const R=ys.map(y=>{const miss=BOT_AMPS.filter(a=>bkVal(m,D0.rows,{y,amp:a}).v==null);return [String(y),miss.length?miss.join(', '):'ครบ 6 อำเภอ']});
+  return {html:`<b>ความครบถ้วนรายอำเภอ: ${m.n}</b>${bkTable([m.fy?'ปีงบ':'ปี','อำเภอที่ไม่มีข้อมูล'],R)}<small>"ไม่มีข้อมูล" หมายถึงไม่มีแถวหรือค่าว่างในชุดข้อมูลต้นทาง ไม่ใช่ค่าเป็นศูนย์</small>${bSrc('api',m.ag,m.pg)}`};
+}
+/* อำเภอที่ดีขึ้นต่อเนื่อง 3 ปีของตัวชี้วัดที่คุยอยู่ */
+async function bkAmpStreak(m){
+  const D0=await bkRows(m);if(!D0||!m.amp)return null;const ys=bkYears(m,D0.rows).slice(-4);if(ys.length<3)return null;
+  const R=BOT_AMPS.map(a=>{const v=ys.map(y=>bkVal(m,D0.rows,{y,amp:a}).v);if(v.some(x=>x==null))return null;const d=v.slice(1).map((x,i)=>x-v[i]);
+    return {a,v,up:d.every(x=>x>0),dn:d.every(x=>x<0),ch:bkPct(v[v.length-1],v[0])}}).filter(Boolean);
+  const good=x=>m.good===-1?x.dn:x.up;
+  return {html:`<b>${m.n}: อำเภอที่${m.good===-1?'ลดลง':'เพิ่มขึ้น'}ต่อเนื่อง</b> ${m.fy?'ปีงบ':'ปี'} ${ys[0]}–${ys[ys.length-1]}
+    ${bkTable(['อำเภอ',...ys.map(String),'ทิศทาง'],R.map(x=>[x.a,...x.v.map(v=>bkF(m,v)),good(x)?'✔ ต่อเนื่อง':x.up?'↑ ขึ้นต่อเนื่อง':x.dn?'↓ ลงต่อเนื่อง':'ไม่ต่อเนื่อง']))}
+    <p class="bt-p">${R.filter(good).length?'ดีขึ้นต่อเนื่อง: <b>'+R.filter(good).map(x=>'อ.'+x.a).join(', ')+'</b>':'ไม่มีอำเภอที่ดีขึ้นต่อเนื่องครบทุกปี'}</p>${bSrc('api',m.ag,m.pg)}`};
+}
+/* ความสัมพันธ์ระหว่าง 2 ตัวชี้วัด · แสดงปีที่ทับกัน ค่าสหสัมพันธ์ และคำเตือนเรื่องเหตุและผล */
+async function bkRelate(a,b){
+  const [A,B]=await Promise.all([bkRows(a),bkRows(b)]);if(!A||!B)return null;
+  const ya=bkYears(a,A.rows),yb=bkYears(b,B.rows),ys=ya.filter(y=>yb.indexOf(y)>=0);if(ys.length<3)return {html:`${a.n}และ${b.n}มีปีข้อมูลที่ทับกันเพียง ${ys.length} ปี (${a.n}: ${ya[0]}–${ya[ya.length-1]} · ${b.n}: ${yb[0]}–${yb[yb.length-1]}) จึงไม่พอสำหรับดูความสัมพันธ์`};
+  const P=ys.map(y=>({y,a:bkVal(a,A.rows,{y}).v,b:bkVal(b,B.rows,{y}).v})).filter(p=>p.a!=null&&p.b!=null);
+  const n=P.length,ma=P.reduce((s,p)=>s+p.a,0)/n,mb=P.reduce((s,p)=>s+p.b,0)/n;
+  const r=P.reduce((s,p)=>s+(p.a-ma)*(p.b-mb),0)/Math.sqrt(P.reduce((s,p)=>s+(p.a-ma)**2,0)*P.reduce((s,p)=>s+(p.b-mb)**2,0)||1);
+  const lab=Math.abs(r)>=0.7?(r>0?'เคลื่อนไหวทิศทางเดียวกันค่อนข้างชัด':'เคลื่อนไหวสวนทางกันค่อนข้างชัด'):Math.abs(r)>=0.4?(r>0?'ไปทางเดียวกันเล็กน้อย':'สวนทางกันเล็กน้อย'):'ไม่เห็นความสัมพันธ์ที่ชัดเจน';
+  return {html:`<b>${a.n} กับ ${b.n}</b> ปีที่มีข้อมูลทั้งคู่ ${P[0].y}–${P[n-1].y} (${n} ปี)
+    ${bkTable(['ปี',a.n+' ('+a.u+')',b.n+' ('+b.u+')'],P.map(p=>[p.y,bkF(a,p.a),bkF(b,p.b)]))}
+    <p class="bt-p"><b>ข้อเท็จจริง</b> ค่าสหสัมพันธ์ (r) = ${bN(r,2)} → ${lab}</p>
+    <div class="bt-note"><b>ข้อควรระวัง</b> ข้อมูลรายปี ${n} จุดน้อยเกินกว่าจะสรุปได้มั่นใจ และความสัมพันธ์ร่วมกันไม่ได้พิสูจน์ว่าตัวหนึ่งเป็นสาเหตุของอีกตัว อาจมีปัจจัยอื่น (เช่น โควิด-19 ปี 2563–2564) ส่งผลพร้อมกัน</div>
+    ${bSrc('api',a.ag+' · '+b.ag,a.pg)}`};
+}
+function bkCausalGeneric(){return {html:`<b>หลักการตีความข้อมูลในแดชบอร์ด</b>
+  <ul class="bt-ul"><li><b>ข้อเท็จจริง</b> = ตัวเลขและการเปลี่ยนแปลงที่อ่านได้จากชุดข้อมูลโดยตรง (เพิ่ม/ลดเท่าใด ช่วงเวลาใด)</li>
+  <li><b>การตีความ</b> = คำอธิบายว่าทำไมเปลี่ยน ซึ่งชุดข้อมูลส่วนใหญ่ไม่ได้บันทึกไว้ ต้องยืนยันกับหน่วยงานเจ้าของข้อมูล</li>
+  <li>ตัวชี้วัดที่เคลื่อนไหวพร้อมกันเป็นเพียง<b>ความสัมพันธ์ร่วมกัน</b> ไม่ใช่หลักฐานเหตุและผล โดยเฉพาะข้อมูลรายปีที่มีจุดข้อมูลน้อย และช่วงโควิด-19 (2563–2564) ที่กระทบหลายภาคพร้อมกัน</li>
+  <li>ข้อมูลสำรวจตัวอย่าง (แรงงาน ครัวเรือน) มีความคลาดเคลื่อนจากการสุ่ม ความต่างเล็กน้อยอาจไม่มีนัยสำคัญ</li></ul>
+  <small>ลองถามความสัมพันธ์ของ 2 ตัวชี้วัด เช่น "ผู้มีงานทำสัมพันธ์กับสถานประกอบการอุตสาหกรรมไหม"</small>`,sug:['ผู้มีงานทำสัมพันธ์กับสถานประกอบการอุตสาหกรรมไหม','ผู้เยี่ยมเยือนสัมพันธ์กับอัตราการเข้าพักไหม']}}
+function bkMissing(){
+  const miss=(GDC.RES||[]).filter(r=>r.state==='link').map(r=>r.n);
+  return {html:`<b>ข้อมูลที่ยังขาดสำหรับวิเคราะห์เศรษฐกิจจังหวัด</b>
+    <p class="bt-p">ยังไม่มีในชุดข้อมูลที่เชื่อมต่อ</p><ul class="bt-ul">${BOT_GAPS.map(g=>`<li>${g[1]} · <small class="bt-inl">${g[2]}</small></li>`).join('')}</ul>
+    ${miss.length?`<p class="bt-p">มีบนระบบบัญชีข้อมูลแล้ว แต่ยังอ่านผ่าน API ไม่ได้ (ยังไม่เปิด DataStore)</p><ul class="bt-ul">${miss.map(n=>`<li>${n}</li>`).join('')}</ul>`:''}
+    <small>การมีข้อมูลฐานย้อนหลังอย่างน้อย 3–5 ปีก่อนเริ่มโครงการ ช่วยให้ติดตามผลได้ ดูช่วงข้อมูลที่มีของแต่ละตัวชี้วัดได้ด้วยคำถาม "ข้อมูลล่าสุดของแต่ละภาคเป็นของช่วงไหน"</small>`,sug:['ข้อมูลล่าสุดของแต่ละภาคเป็นของช่วงไหน','ช่วยสรุปผู้บริหาร']}}
+function bkMonthlyList(){
+  const L=BK.filter(m=>m.mon);
+  return {html:`<b>ตัวชี้วัดที่ติดตามได้รายเดือน</b>
+    <ul class="bt-ul"><li><b>เครื่องชี้เศรษฐกิจจังหวัด</b> (สนง.คลังจังหวัด): ภาคเกษตร อุตสาหกรรม บริการ การบริโภค การลงทุน การใช้จ่ายภาครัฐ เงินฝาก สินเชื่อ</li>
+    <li><b>การเบิกจ่ายงบประมาณ</b> (สนง.คลังจังหวัด, API) อัปเดตรายสัปดาห์/รายเดือน</li>
+    ${L.map(m=>`<li><b>${m.n}</b> (${m.ag}, API)</li>`).join('')}
+    <li><b>ราคาสินค้าเกษตรและอุปโภคบริโภค</b> (สนง.พาณิชย์จังหวัด)</li></ul>
+    <small>ข้อมูลแรงงานเป็นรายไตรมาส · ประชากร OTOP อุตสาหกรรม ครัวเรือน เป็นรายปีหรือปีเว้นปี เหมาะใช้ประเมินผลระยะยาวมากกว่าติดตามรายเดือน</small>`,sug:['รายได้จากการท่องเที่ยวรายเดือน','การเบิกจ่ายงบประมาณ','ภาวะเศรษฐกิจเดือนล่าสุด']}}
+function bkOwners(q){
+  const sec=/เกษตร|น้ำ|ชลประทาน/.test(q)?'agri':/ท่องเที่ยว/.test(q)?'tourism':/แรงงาน/.test(q)?'labor':/otop|โอทอป/i.test(q)?'otop':/ประชากร/.test(q)?'population':/ครัวเรือน/.test(q)?'household':null;
+  const L=BK.filter(m=>!sec||m.pg===sec);const extra=sec==='agri'?[['พืชเศรษฐกิจ/ผลผลิต/ราคาที่เกษตรกรขายได้','สนง.เกษตรจังหวัด (ระบบกรอกข้อมูล)']]:[];
+  return {html:`<b>หน่วยงานเจ้าของข้อมูล${sec?'':'ทุกตัวชี้วัด'}</b>${bkTable(['ตัวชี้วัด','หน่วยงาน'],L.map(m=>[m.n,m.ag]).concat(extra))}`}}
+
+
+function bkProxy(){return {html:`<b>ตัวชี้วัดที่สะท้อนกิจกรรมทางธุรกิจ (ใช้แทนได้บางส่วน)</b>
+  ${bkTable(['ตัวชี้วัด','วัดอะไรโดยตรง','ความถี่'],[['ผู้ประกอบการร้านค้า OTOP','จำนวนผู้ประกอบการที่ขึ้นทะเบียน OTOP (ไม่ใช่ธุรกิจทั้งหมด)','รายปี'],['รายได้ OTOP','ยอดจำหน่ายผลิตภัณฑ์ชุมชนที่รายงาน','รายปี/รายเดือน'],['สถานประกอบการอุตสาหกรรม','โรงงานที่ขึ้นทะเบียนกับกรมโรงงาน','รายปี'],['ผู้ประกันตนมาตรา 33','ลูกจ้างในระบบประกันสังคม สะท้อนการจ้างงานของสถานประกอบการ','รายปี'],['เงินฝาก/สินเชื่อธนาคารพาณิชย์','สภาพคล่องและการกู้ยืมในจังหวัด','รายปี (และรายเดือนในเครื่องชี้คลังจังหวัด)'],['ผู้เยี่ยมเยือน/อัตราการเข้าพัก','กิจกรรมภาคบริการท่องเที่ยว','รายปี/รายเดือน']])}
+  <small>ยังไม่มีข้อมูลธุรกิจจดทะเบียนใหม่/เลิกกิจการ และมูลค่าการค้า · ตรวจสอบที่สำนักงานพาณิชย์จังหวัด</small>`,sug:['ผู้ประกอบการร้านค้า OTOP ย้อนหลัง','ผู้ประกันตนมาตรา 33 ย้อนหลัง','สินเชื่อย้อนหลัง']}}
+function bkCropPrice(){const P=(typeof D!=='undefined'&&D.price)||{};return {html:`<b>ผลผลิตกับราคา เทียบกันโดยตรงไม่ได้</b>
+  ${bkTable(['','ผลผลิต/พื้นที่ปลูก','ราคา'],[['ช่วงเวลา','ฤดูการผลิต (ข้อมูลภาวะการผลิตพืช)','ราคา ณ วันที่ '+(P.asof||'—')+' เทียบเดือนก่อน/ปีก่อน'],['หน่วย','กิโลกรัม · ไร่ · ครัวเรือน','บาท/ตัน หรือ บาท/กก. (ตามชนิดสินค้า)'],['หน่วยงาน','สนง.เกษตรจังหวัด','สนง.พาณิชย์จังหวัด']])}
+  <p class="bt-p">ช่วงเวลาและหน่วยต่างกัน จึงไม่ควรสรุปว่าผลผลิตกับราคาเคลื่อนไหวทางเดียวกันหรือไม่จากข้อมูลชุดนี้ ต้องมีราคาเฉลี่ยรายฤดูการผลิตของพืชชนิดเดียวกันก่อน</p>`}}
+const BOT_OVERVIEW=/เศรษฐกิจ.{0,20}(เป็น(ยัง|อย่าง)(ไง|ไร)|เพิ่ม|ภาพรวม|โต|เติบโต|ขยาย|ลด|หด|ดีไหม|ดีขึ้น|แย่|สรุป|ไหน|อะไร)|ภาค(ไหน|อะไร|ใด).{0,12}(โต|เติบโต|ขยาย|ลด|หด|ดี|แย่)|อะไร(เพิ่ม|ลด|โต|ดีขึ้น|แย่ลง)|สรุปภาพรวม|ภาพรวม(จังหวัด|เศรษฐกิจ)|ตัวชี้วัดไหน/;
 
 /* ── ความสามารถ: แต่ละข้อมีคำค้นและวิธีตอบ ── */
 const BOT_SKILLS=[
- {id:'help',k:/^(สวัสดี|หวัดดี|hello|hi|ช่วย|ทำอะไรได้|เมนู|เริ่ม)/,run:async()=>({html:`สวัสดีครับ ผมน้องลุ่มภู ช่วยตอบตัวเลขเศรษฐกิจจังหวัดหนองบัวลำภูจากข้อมูลจริงบนแดชบอร์ดและระบบบัญชีข้อมูลจังหวัด ลองถามได้เลย เช่น
+ {id:'help',k:/^(สวัสดี|หวัดดี|hello|hi|ช่วยอะไรได้|ทำอะไรได้|เมนู|เริ่ม)/,run:async()=>({html:`สวัสดีครับ ผมน้องลุ่มภู ช่วยตอบตัวเลขเศรษฐกิจจังหวัดหนองบัวลำภูจากข้อมูลจริงบนแดชบอร์ดและระบบบัญชีข้อมูลจังหวัด ลองถามได้เลย เช่น
    <ul><li>เศรษฐกิจหนองบัวลำภูเป็นยังไงบ้าง ภาคไหนโต ภาคไหนลด</li><li>ประชากรปี 2566 · ประชากรรายอำเภอ · ประชากรผู้หญิงอำเภอนาวัง</li><li>การเกิดย้อนหลัง 5 ปี · อำเภอไหนมีคนย้ายออกมากที่สุด</li><li>รายได้ OTOP รายอำเภอ ปี 2567 · เทียบนากลางกับโนนสัง</li><li>ผู้มีงานทำไตรมาส 2 ปี 2568 · เบิกจ่ายงบประมาณ</li><li>มีชุดข้อมูลจำนวนโรงเรียนไหม</li></ul>
    <small>ถามต่อได้เลย เช่น "แล้วปี 2565 ล่ะ" "อำเภอสุวรรณคูหาล่ะ" "ดูรายอำเภอ" "ย้อนหลัง"</small>`})},
  {id:'econ',k:/ภาวะเศรษฐกิจ|เศรษฐกิจ(เดือน|ล่าสุด|ตอนนี้|เป็นอย่างไร|ดีไหม)|ขยายตัว|หดตัว|เครื่องชี้/,run:async()=>{
@@ -4022,7 +4326,7 @@ const BOT_SKILLS=[
    return {html:`เศรษฐกิจจังหวัดเดือน ${TM[c.m-1]} ${c.y} <b>${c.overall>=0?'ขยายตัว':'หดตัว'} ${bN(Math.abs(c.overall),1)}%</b> เทียบเดือนเดียวกันปีก่อน
      ${bStat([['แรงหนุนหลัก',parts[0][0],(parts[0][1]>0?'+':'')+bN(parts[0][1],1)+'%'],['ตัวฉุด',parts[parts.length-1][0],bN(parts[parts.length-1][1],1)+'%'],['เงินฝาก',bN(c.depo),'ล้านบาท'],['สินเชื่อ',bN(c.cred),'ล้านบาท']])}
      ${bSrc('gas','เครื่องชี้เศรษฐกิจรายเดือน · สนง.คลังจังหวัด (ระบบกรอกข้อมูล)','overview')}`}}},
- {id:'fiscal',k:/งบ|เบิกจ่าย|การคลัง|ใช้จ่ายภาครัฐ|เงินกัน/,run:async()=>{
+ {id:'fiscal',k:/งบ|เบิกจ่าย|การคลัง|ใช้จ่ายภาครัฐ|รายจ่าย(ภาครัฐ|รัฐ)|รายได้หรือรายจ่าย|รายจ่าย(ใด|ไหน)|เงินกัน/,run:async()=>{
    const ok=await ensureFiscal();const F=D.fiscal;if(!F||!F.fn)return null;const d=F.fn.dis,ca=F.carry||{};
    return {html:`การเบิกจ่ายงบประมาณ${F.fy?' ปีงบ '+F.fy:''} ${F.asof?'ข้อมูล ณ '+F.asof:''}
      ${bStat([['ภาพรวม',bN(d[0].pct,2)+'%',d[0].rank?'อันดับ '+d[0].rank+' ของประเทศ':''],['รายจ่ายประจำ',bN(d[1].pct,2)+'%',d[1].rank?'อันดับ '+d[1].rank:''],['รายจ่ายลงทุน',bN(d[2].pct,2)+'%',d[2].rank?'อันดับ '+d[2].rank:''],['เบิกแล้ว',bN(d[0].val,2),'จาก '+bN(d[0].alloc,2)+' ล้านบาท']])}
@@ -4030,7 +4334,9 @@ const BOT_SKILLS=[
      ${bSrc(ok?'api':'fallback',(ok?'ระบบบัญชีข้อมูลจังหวัด (API)':'ข้อมูลสำรองจากไฟล์')+' · สนง.คลังจังหวัด','fiscal')}`}}},
  {id:'labor',k:/ว่างงาน|แรงงาน|มีงานทำ|การจ้างงาน|ประกันสังคม/,run:async()=>{
    const ok=await GDC.ensure('labor');const L=D.labor||{};const q=(L.quarters||[]).slice(-1)[0];if(!q)return null;
+   const pq=(L.quarters||[]).find(x=>x.y===q.y-1&&x.n===q.n);
    return {html:`ตลาดแรงงาน ไตรมาส ${q.n}/${q.y}
+     ${pq&&q.ur!=null&&pq.ur!=null?`<p class="bt-p">อัตราการว่างงาน <b>${bN(q.ur,2)}%</b> ${q.ur>pq.ur?'สูงขึ้น':q.ur<pq.ur?'ลดลง':'เท่าเดิม'} ${bN(Math.abs(q.ur-pq.ur),2)} จุด จากไตรมาสเดียวกันปีก่อน (${bN(pq.ur,2)}% ไตรมาส ${pq.n}/${pq.y}) · ผู้มีงานทำ ${q.emp>=pq.emp?'+':''}${bN(q.emp-pq.emp)} คน</p>`:''}
      ${bStat([['ผู้ว่างงาน',bN(q.ue),'คน'],['อัตราการว่างงาน',q.ur==null?'—':bN(q.ur,2)+'%',''],['ผู้มีงานทำ',bN(q.emp),'คน'],['กำลังแรงงาน',bN(q.force),'คน · อัตราการมีส่วนร่วม '+bN(q.lfpr,1)+'%']])}
      ${bSrc(ok?'api':'fallback','การสำรวจภาวะการทำงานของประชากร · สนง.สถิติจังหวัด','labor')}`}}},
  {id:'tour',k:/ท่องเที่ยว|ผู้เยี่ยมเยือน|นักท่อง|นักทัศนาจร|เข้าพัก|โรงแรม|ที่พัก/,run:async()=>{
@@ -4106,21 +4412,57 @@ async function botSearch(q){
   catch(e){return {html:'ตอนนี้เชื่อมต่อระบบบัญชีข้อมูลจังหวัดไม่ได้ ลองใหม่อีกครั้งในอีกสักครู่',miss:true}}
 }
 /* ไปหน้า */
-function botNav(q){const n=NAVI.find(x=>x.id&&x.label&&(q.indexOf(x.label)>=0||(x.label.split(/และ|\s/)[0].length>2&&q.indexOf(x.label.split(/และ|\s/)[0])>=0)));
+function botNav(q){if(!/^(ไป|เปิด)|ไปที่|ไปหน้า|เปิดหน้า|ดูหน้า|หน้า(แดชบอร์ด)?(ไหน|ที่)/.test(q))return null;const n=NAVI.find(x=>x.id&&x.label&&(q.indexOf(x.label)>=0||(x.label.split(/และ|\s/)[0].length>2&&q.indexOf(x.label.split(/และ|\s/)[0])>=0)));
   return n&&/ไป|เปิด|หน้า|ดู/.test(q)?{html:`เปิดหน้า <a href="${n.file}"><b>${n.label}</b> ›</a>`}:null}
 async function botAnswer(raw){
   const q=String(raw||'').trim().toLowerCase();if(!q)return null;
   const nav=botNav(q);if(nav)return nav;
-  if(/มี.*(ชุดข้อมูล|ข้อมูล).*(ไหม|มั้ย|หรือ)|ค้นหา|ชุดข้อมูล/.test(q)){const s=await botSearch(q);if(s)return s}
-  if(/^(สวัสดี|หวัดดี|hello|hi|ช่วย|ทำอะไรได้|เมนู|เริ่ม)/.test(q))return BOT_SKILLS[0].run(q);
+  const askHave=/^มี.{0,6}(ชุดข้อมูล|ข้อมูล).{0,70}(ไหม|มั้ย|หรือไม่|หรือเปล่า)|มีข้อมูล.{0,70}(ไหม|มั้ย|หรือไม่)|ค้นหาชุดข้อมูล/.test(q);
+  if(askHave&&!/ผิดปกติ|ไม่ครบ|ไม่มีข้อมูล|สูญหาย|เพียงพอ|ฐานก่อน/.test(q)){try{const h=await bkHave(q);if(h)return h}catch(e){}const s=await botSearch(q);if(s)return s}
+  if(/^(สวัสดี|หวัดดี|hello|hi|ทำอะไรได้|ช่วยอะไรได้|เมนู|เริ่ม|help)/.test(q))return BOT_SKILLS[0].run(q);
+  const bm=bkMatch(q),explicit=bm.length&&!bm.topic,skillHit=BOT_SKILLS.some(s=>s.id!=='help'&&s.k.test(q));
+  const ctxM=BOT.ctx&&BOT.ctx.k?BK.find(b=>b.k===BOT.ctx.k):null;
+  const metaM=explicit?bm[0]:(bm.length?bm[0]:ctxM);
+  try{
+    if(/เหตุและผล|ความสัมพันธ์|สัมพันธ์กัน|สอดคล้อง|ทิศทางเดียวกัน/.test(q)){if(bm.length>=2&&!bm.topic){const r=await bkRelate(bm[0],bm[1]);if(r)return r}
+      const H=BK.filter(m=>m.re.test(q));if(H.length>=2){const r=await bkRelate(H[0],H[1]);if(r)return r}if(!bm.length)return bkCausalGeneric()}
+    if(/ไม่ควรนำไปสรุป|สาเหตุของการเปลี่ยนแปลง|อธิบายสาเหตุ/.test(q)&&!explicit)return bkCausalGeneric();
+    if(/ขาดข้อมูล|ข้อมูลที่ยังขาด|ไม่เพียงพอ|ต้องใช้ข้อมูลอะไรเพิ่ม|ข้อมูลเพิ่มเติม|ควรเพิ่มข้อมูล|ควรเก็บข้อมูล/.test(q)&&!explicit)return bkMissing();
+    if(/ติดตาม.{0,45}รายเดือน|ตัวชี้วัด.{0,10}รายเดือน/.test(q)&&!explicit)return bkMonthlyList();
+    if(/เจ้าของข้อมูล|หน่วยงาน(ใด|ไหน).{0,10}(เป็นเจ้าของ|ดูแล)/.test(q)&&!explicit&&!ctxM)return bkOwners(q);
+    if(/ไม่มีข้อมูล|ข้อมูลไม่ครบ|สูญหาย|ไม่มีการรายงาน|ข้อมูลหาย/.test(q)&&metaM){const r=await bkComplete(metaM);if(r)return r}
+    if(/อำเภอ(ใด|ไหน).{0,20}ต่อเนื่อง/.test(q)&&metaM&&metaM.amp){const r=await bkAmpStreak(metaM);if(r)return r}
+    if(/สวนทาง/.test(q)&&!explicit){const o=await bkOverview();o.html=o.html.replace('ตัวชี้วัดที่<b class="dn">','ตัวชี้วัดที่สวนทาง · <b class="dn">');return o}
+    if(BOT_FRESH.test(q)&&!explicit)return await bkFresh();
+    if(/กิจกรรมทางธุรกิจ|สะท้อน.{0,15}(ธุรกิจ|เศรษฐกิจ|การค้า)/.test(q))return bkProxy();
+    if(/ผลผลิต.{0,12}ราคา|ราคา.{0,12}ผลผลิต/.test(q)&&/ช่วงเวลา|หน่วย|เทียบ/.test(q))return bkCropPrice();
+    if(BOT_META.test(q)&&metaM&&(!/ย้อนหลัง|รายอำเภอ/.test(q)||/ปรับปรุงย้อนหลัง/.test(q))&&!/^(สถานการณ์|ภาพรวม)/.test(q)){const r=await bkMeta(metaM);if(r){BOT.ctx={k:metaM.k};return r}}
+    /* ถามต่อจากตัวชี้วัดที่คุยอยู่ (รายอำเภอ / ย้อนหลัง / เดือนก่อน / ตารางค่าเดิม) ก่อนตีความเป็นคำถามภาพรวม */
+    if(!bm.length&&!skillHit&&ctxM&&(/ตัวชี้วัดนี้|ตัวเลขนี้|ข้อมูลนี้|เดือนก่อน|เดือนเดียวกัน|ปีก่อน|เพิ่มขึ้นหรือลดลง|ค่าเฉลี่ย|สูงสุด|ต่ำสุด|ขาขึ้น|ขาลง|ผันผวน|ค่าเดิม|ส่วนต่าง|ย้อนหลัง|รายอำเภอ|แต่ละอำเภอ|อำเภอ(ใด|ไหน)/.test(q))){
+      const yy=BOT.ctx.y&&!/25[5-7]\d|ย้อนหลัง|แนวโน้ม|ล่าสุด|เดือน|ผันผวน|ขาขึ้น|ขาลง|ค่าเฉลี่ย|สูงสุด|ต่ำสุด/.test(q)?' ปี '+BOT.ctx.y:'';
+      const kb=await bkAnswerQ(ctxM.n+' '+q+yy);if(kb)return kb}
+    if(!explicit&&BOT_META.test(q)&&BOT.ctx&&BOT.ctx.k){const m=BK.find(b=>b.k===BOT.ctx.k);const r=m&&await bkMeta(m);if(r)return r}
+    if(!explicit&&/3 ประโยค|สามประโยค|เข้าใจง่าย|ไม่ใช้ศัพท์|สไลด์|bullet/i.test(q)&&BOT.ctx&&BOT.ctx.k){const r=await bkPlain(BK.find(b=>b.k===BOT.ctx.k),/สไลด์|bullet/i.test(q)?'slide':'');if(r)return r}
+    const topical=bm.length||skillHit;
+    if(!explicit&&BOT_FRESH.test(q))return await bkFresh();
+    if(!explicit&&/ผิดปกติ|ผิดแนวโน้ม|สวนทาง|ผิดสังเกต|แก้ไขข้อมูล/.test(q))return await bkAnomaly();
+    if(!explicit&&/(ดีขึ้น|เพิ่มขึ้น|ลดลง|แย่ลง)ต่อเนื่อง|แนวโน้มดีขึ้น/.test(q))return await bkStreak();
+    if(!topical&&BOT_BRIEF.test(q))return await bkBrief(q);
+    if(/การค้า|ค่าครองชีพ|เงินเฟ้อ|ราคาสินค้า/.test(q)&&!explicit){const r=bkPrice(q);if(r){if(/การค้า|ธุรกิจ/.test(q))r.html+=`<small>มูลค่าการค้าปลีก/ค้าส่ง และธุรกิจจดทะเบียนยังไม่มีในชุดข้อมูลที่เชื่อมต่อ · ตรวจสอบที่สำนักงานพาณิชย์จังหวัด</small>`;return r}}
+    if(/จ้างงาน.{0,12}(ภาค|แยก|สาขา)|มีงานทำ.{0,12}(ภาค|สาขา|อุตสาหกรรม|แยก)|แรงงาน.{0,10}ภาค(เกษตร|อุตสาหกรรม|บริการ)|ทำงาน(ภาค|สาขา)ไหน/.test(q)){const r=await bkEmpSector(bkParse(q));if(r)return r}
+    if(/ราคา/.test(q)&&/เกษตร|ข้าว|ยาง|มัน|ปาล์ม|ไข่|สุกร|หมู|ไก่|ปลา|สินค้า|พืช|อ้อย|ข้าวโพด/.test(q)){const r=bkPrice(q);if(r)return r}
+    if(/พืชเศรษฐกิจ|พืช(สำคัญ|หลัก)|ผลผลิต.{0,12}(แต่ละ|ทุก|ล่าสุด|เกษตร)|พื้นที่เพาะปลูก(?!.*ชลประทาน)/.test(q)&&!/อำเภอ/.test(q)){const r=bkCrops();if(r)return r}
+    if(!explicit&&BOT_AMBIG.test(q))return {html:'คำถามนี้หมายถึงตัวเลขเรื่องใดครับ เลือกได้เลย หรือพิมพ์ชื่อตัวชี้วัด',sug:['รายได้ OTOP เพิ่มขึ้นไหม','รายได้ครัวเรือนเพิ่มขึ้นไหม','รายได้จากการท่องเที่ยวรายเดือน','รายได้ภาคอุตสาหกรรม (GPP)','ราคาสินค้าเกษตร']};
+  }catch(e){console.warn('bot ext',e)}
   if(BOT_OVERVIEW.test(q)){try{const o=await bkOverview();if(o)return o}catch(e){console.warn('bot overview',e)}}
+  {const g=botGap(q);if(g)return g}
   try{const kb=await bkAnswerQ(q);if(kb)return kb}catch(e){console.warn('bot kb',e)}
   const hits=BOT_SKILLS.filter(s=>s.k.test(q));
   for(const s of hits){try{const r=await s.run(q);if(r)return r}catch(e){console.warn('bot',s.id,e)}}
   const s=await botSearch(q);
   if(s&&!s.miss)return {html:'ยังไม่มีตัวเลขเรื่องนี้บนแดชบอร์ด แต่ค้นในระบบบัญชีข้อมูลจังหวัดให้แล้ว<br>'+s.html};
   try{const L=JSON.parse(localStorage.getItem('bot-miss')||'[]');L.unshift({q:raw,at:Date.now()});localStorage.setItem('bot-miss',JSON.stringify(L.slice(0,50)))}catch(e){}
-  return {html:`ขอโทษครับ ยังตอบเรื่องนี้ไม่ได้ ลองถามเรื่อง เศรษฐกิจ งบประมาณ แรงงาน ท่องเที่ยว ประชากร ครัวเรือน OTOP อุตสาหกรรม เกษตร หรือพิมพ์ "มีชุดข้อมูล … ไหม" เพื่อค้นในระบบบัญชีข้อมูลจังหวัด`};
+  return {html:`ขอโทษครับ ไม่พบข้อมูลเรื่องนี้ในชุดข้อมูลที่แดชบอร์ดเชื่อมต่อ ผมจะไม่เดาตัวเลขให้ ลองถามเรื่อง เศรษฐกิจ งบประมาณ แรงงาน ท่องเที่ยว ประชากร ครัวเรือน OTOP อุตสาหกรรม เกษตร หรือพิมพ์ "มีชุดข้อมูล … ไหม" เพื่อค้นในระบบบัญชีข้อมูลจังหวัด`};
 }
 function botBuild(){
   if(document.getElementById('bot')||!document.querySelector('link[href*="ds.css"]'))return;

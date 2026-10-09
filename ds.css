@@ -2436,3 +2436,5 @@ body.kiosk .totop,body.tour .totop{right:16px;bottom:18px}
 #bot .bt-sug{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 #bot .bt-sug button{font:inherit;font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid color-mix(in srgb,var(--brand) 40%,var(--line));background:color-mix(in srgb,var(--brand) 7%,var(--card));color:var(--brand);cursor:pointer}
 #bot .bt-sug button:hover{background:var(--brand);color:#fff}
+
+#bot .bt-note{margin:8px 0;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,#d4a017 9%,var(--card));border:1px dashed color-mix(in srgb,#d4a017 45%,var(--line));font-size:12px;line-height:1.6}
