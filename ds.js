@@ -3864,7 +3864,7 @@ async function botAnswer(raw){
 function botBuild(){
   if(document.getElementById('bot')||!document.querySelector('link[href*="ds.css"]'))return;
   const w=document.createElement('div');w.id='bot';
-  w.innerHTML=`<div class="bt-hint" id="btHint" role="status"><button aria-label="ปิดข้อความ">×</button><b>สวัสดีครับ! ผมน้อง"ลุ่มภู" 🙏</b><span>มีข้อมูลสถิติให้ผมช่วยค้นหาไหมครับ?</span></div>
+  w.innerHTML=`<div class="bt-hint" id="btHint" role="status"><button aria-label="ปิดข้อความ">×</button><b>สวัสดีครับ! ผมน้อง"ลุ่มภู" 🙏</b><span>มีข้อมูลเศรษฐกิจให้ผมช่วยค้นหาไหมครับ?</span></div>
     <button class="bt-fab" id="btFab" aria-label="ถามน้องลุ่มภู ผู้ช่วยข้อมูล" title="ถามน้องลุ่มภู"><span class="bt-ring"></span>
       <img class="bt-masc" src="assets/mascot.webp" alt="น้องลุ่มภู" onerror="this.parentNode.classList.add('noimg');this.remove()">
       <svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4h0A2.5 2.5 0 0 1 4 13.5z"/><path d="M8.5 9.5h.01M12 9.5h.01M15.5 9.5h.01"/></svg></button>
