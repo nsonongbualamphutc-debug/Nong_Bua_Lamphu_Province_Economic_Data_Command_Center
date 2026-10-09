@@ -2077,6 +2077,8 @@ function showBootErr(ev,extra){
        API ใช้เฉพาะดึงค่าที่หน่วยงานแก้ผ่านระบบกรอกข้อมูล และมักหลุดเพราะ Apps Script ตื่นช้าหรือโควตาเต็ม
        จึงแจ้งเป็นหมายเหตุเบา ๆ ไม่ขึ้นกล่องแดงว่าโหลดหน้าไม่สมบูรณ์ */
     if(/script\.google\.com/.test(u)){BOOT.api=true;bootPaint();return}
+    /* ระบบบัญชีข้อมูลจังหวัดตอบไม่ทัน · หน้ายังแสดงข้อมูลสำรองจากไฟล์ได้ และระบบลองใหม่เองแล้ว จึงไม่ถือเป็นหน้าพัง */
+    if(/gdcatalog\.go\.th/.test(u)||(t.dataset&&t.dataset.gdc)){BOOT.gdc=(BOOT.gdc||0)+1;return}
     const name=u.split('/').pop().split('?')[0];
     /* ตรวจซ้ำอีกครั้งก่อนแจ้งว่าไฟล์หาย · ภาพที่โหลดไม่ทันเพราะหน้าวาดการ์ดใหม่ระหว่างดึง API จะไม่ถูกนับผิด */
     if(/\.(png|jpg|jpeg|webp|gif|svg)$/i.test(name)){const pr=new Image();pr.onerror=()=>{BOOT.miss.push(name);bootPaint()};pr.src=u.split('?')[0]+'?chk='+Date.now();return}
@@ -2585,11 +2587,23 @@ const GDC={
   ],
   _mem:{},
   /* เรียก API แบบ JSONP (CKAN รองรับพารามิเตอร์ callback) จึงข้ามโดเมนได้โดยไม่ติด CORS */
-  _jsonp(params){
+  /* คิวเรียก API · ไม่ยิงพร้อมกันเกิน 4 คำขอ (Safari บน iPad/iPhone ตัดคำขอที่ยิงพร้อมกันจำนวนมาก)
+     และลองใหม่อัตโนมัติ 2 ครั้งเมื่อเชื่อมต่อไม่สำเร็จ */
+  _q:[],_run:0,
+  _slot(fn){return new Promise((res,rej)=>{GDC._q.push({fn,res,rej});GDC._pump()})},
+  _pump(){while(GDC._run<4&&GDC._q.length){const j=GDC._q.shift();GDC._run++;
+    j.fn().then(j.res,j.rej).finally(()=>{GDC._run--;GDC._pump()})}},
+  _jsonp(params,tries){
+    tries=tries==null?2:tries;
+    return GDC._slot(()=>GDC._jsonp1(params)).catch(e=>{
+      if(tries>0&&!/ระบบตอบกลับไม่สำเร็จ/.test(e.message))return new Promise(r=>setTimeout(r,900*(3-tries))).then(()=>GDC._jsonp(params,tries-1));
+      GDC.fail=(GDC.fail||0)+1;throw e});
+  },
+  _jsonp1(params){
     return new Promise((res,rej)=>{
       const cb='gdc_'+Math.random().toString(36).slice(2);
       const q=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
-      const s=document.createElement('script'); let done=false;
+      const s=document.createElement('script'); let done=false; s.dataset.gdc='1';
       const end=()=>{done=true;try{delete window[cb]}catch(e){window[cb]=undefined}s.remove();clearTimeout(t)};
       const t=setTimeout(()=>{if(!done){end();rej(new Error('หมดเวลารอระบบบัญชีข้อมูลจังหวัด'))}},15000);
       window[cb]=d=>{end(); (d&&d.success)?res(d.result):rej(new Error((d&&d.error&&(d.error.message||d.error.__type))||'ระบบตอบกลับไม่สำเร็จ'))};
@@ -3121,11 +3135,16 @@ GDC.logPull=function(id,v){
 GDC.history=()=>{try{return JSON.parse(localStorage.getItem('gdc-hist')||'[]')}catch(e){return[]}};
 GDC.seen=()=>{try{return JSON.parse(localStorage.getItem('gdc-seen')||'{}')}catch(e){return{}}};
 /* เรียก action อื่นของ CKAN แบบ JSONP (resource_show, package_show) */
-GDC.call=function(action,params){
+GDC.call=function(action,params,tries){
+  tries=tries==null?1:tries;
+  return GDC._slot(()=>GDC._call1(action,params)).catch(e=>{
+    if(tries>0&&!/ไม่สำเร็จ$/.test(e.message))return new Promise(r=>setTimeout(r,1200)).then(()=>GDC.call(action,params,tries-1));throw e});
+};
+GDC._call1=function(action,params){
   return new Promise((res,rej)=>{
     const cb='gdcm_'+Math.random().toString(36).slice(2);
     const q=Object.keys(params).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
-    const s=document.createElement('script');let done=false;
+    const s=document.createElement('script');let done=false;s.dataset.gdc='1';
     const end=()=>{done=true;try{delete window[cb]}catch(e){}s.remove();clearTimeout(t)};
     const t=setTimeout(()=>{if(!done){end();rej(new Error('หมดเวลา'))}},12000);
     window[cb]=d=>{end();(d&&d.success)?res(d.result):rej(new Error((d&&d.error&&d.error.message)||'ไม่สำเร็จ'))};
