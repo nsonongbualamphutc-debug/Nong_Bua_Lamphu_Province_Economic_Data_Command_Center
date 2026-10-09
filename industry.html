@@ -136,7 +136,7 @@ function renderInd(){
     <div class="c"><header><span class="hdico icow img" data-hdico="district"></span><h3>รายอำเภอ</h3><span class="u">ปี <b>${y}</b></span></header>
       <div class="b"><div class="sc"><table class="t ind-amp" id="tAmp"></table></div>
         <div class="note" id="ampNote"></div></div></div>
-    <div class="c"><header><span class="hdico icow img" data-hdico="natural"></span><h3>เหมืองแร่</h3><span class="u">แห่ง · คน · เมตริกตัน</span></header>
+    <div class="c"><header><span class="hdico icow img" data-hdico="landuse"></span><h3>เหมืองแร่</h3><span class="u">แห่ง · คน · เมตริกตัน</span></header>
       <div class="b"><div class="ch"><canvas id="cMine"></canvas></div>
         <div class="note" id="mineNote"></div></div></div>
   </div>
@@ -168,7 +168,7 @@ function renderInd(){
       sub:g?('ปี '+g.y+(g.st?' · '+GSTAT[g.st]:'')+(g.y!==y?' · ล่าสุดที่มี':'')):'กำลังดึงจากระบบบัญชีข้อมูล',
       tip:tipOf({t:'รายได้ภาคอุตสาหกรรม (GPP)',d:'มูลค่าเพิ่มของสาขาอุตสาหกรรมในผลิตภัณฑ์มวลรวมจังหวัด เผยแพร่โดย สศช. ช้ากว่าปีปัจจุบันราว 2 ปี',
         calc:g&&gP?'เทียบปี '+gP.y+' = ('+f_num(g.v)+' − '+f_num(gP.v)+') ÷ '+f_num(gP.v)+' × 100':'',src:'gpp',when:g?'ปี '+g.y:''})}),
-    kpiCard({sim:false,icon:'brief',img:'natural',bg:'natural',color:cv('--plum'),label:'เหมืองแร่',
+    kpiCard({sim:false,icon:'brief',img:'landuse',bg:'natural',color:cv('--plum'),label:'เหมืองแร่',
       value:mn==null?'—':f(mn,0),unit:'แห่ง',chip:dchip(mn!=null&&mnPrev!=null?mn-mnPrev:null,'แห่ง'),
       sub:mn!=null?'คนงาน '+f(X.mine.work[y],0)+' คน · ผลิตแร่ '+f(X.mine.prod[y]/1e6,2)+' ล้านตัน':'',
       tip:tipOf({t:'เหมืองแร่',d:'ประทานบัตรเหมืองแร่ที่ดำเนินการในจังหวัด ส่วนใหญ่เป็นหินอุตสาหกรรมสำหรับก่อสร้าง',

@@ -2219,3 +2219,59 @@ body.tour .topbar,body.tour header.top{position:relative;z-index:800}
 @media (min-width:768px) and (max-width:1150px){
   .grid.g2>*:last-child:nth-child(odd),.grid.g3>*:last-child:nth-child(odd),.grid.g4>*:last-child:nth-child(odd){grid-column:1/-1}
 }
+
+/* ═══ tooltip ชุดใหม่ · ทิศทางเดียวกันทั้งระบบ ═══ */
+#tip{max-width:320px;padding:0;overflow:hidden;border-radius:14px;border-color:color-mix(in srgb,var(--brand) 22%,var(--line));
+  box-shadow:0 24px 54px -22px rgba(6,35,29,.6),0 2px 8px rgba(6,35,29,.08);backdrop-filter:blur(10px)}
+#tip>.tt{padding:11px 14px 0;margin:0 0 4px;font-size:13.5px}
+#tip>.tt::before{content:"";width:4px;height:15px;border-radius:2px;background:var(--brand);flex:none}
+#tip>.td{padding:0 14px 11px;font-size:12px;line-height:1.65}
+#tip>.tt:last-child{padding-bottom:11px}
+#tip .tms{background:var(--card2);border-top:1px solid var(--line);padding:8px 14px 9px;display:grid;gap:5px}
+#tip .tms .tm{margin:0;padding:0;border:0;display:grid;grid-template-columns:15px 62px 1fr;gap:6px;align-items:start;font-size:11px;color:var(--dim)}
+#tip .tms .tm svg{width:14px;height:14px;stroke:var(--brand);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;margin-top:1px}
+#tip .tms .tm span{color:var(--faint);font-weight:500;min-width:0}
+#tip .tms .tm em{font-style:normal;color:var(--ink);line-height:1.5}
+#tip .tpv{padding:7px 14px 9px;border-top:1px solid var(--line);background:color-mix(in srgb,var(--card2) 70%,transparent)}
+#tip.wide{max-width:340px}
+/* การ์ดที่มาของข้อมูล */
+.pv{min-width:250px}
+.pv-h{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:12px;font-weight:600;color:#fff;
+  background:linear-gradient(100deg,var(--c),color-mix(in srgb,var(--c) 70%,#000))}
+.pv-h i{width:9px;height:9px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.3)}
+.pv-t{padding:10px 14px 2px;font-family:var(--fd);font-size:13.5px;font-weight:600}
+.pv-i{display:flex;flex-direction:column;gap:2px;margin:8px 14px 0;padding:8px 10px;border-radius:10px;background:var(--card2);border:1px solid var(--line);border-left:3px solid var(--c)}
+.pv-i b{font-size:12px;font-weight:600;line-height:1.45}
+.pv-ag{font-size:11px;color:var(--dim)}
+.pv-note{font-size:10.5px;color:var(--faint);line-height:1.5}
+.pv-m{font-size:10.5px;color:var(--faint)}.pv-m em{font-style:normal;color:var(--ink);font-weight:600}
+.pv-f{margin-top:9px;padding:8px 14px 10px;border-top:1px solid var(--line);font-size:10.5px;color:var(--faint);line-height:1.55}
+/* จุดสีที่หัวการ์ด (แทนป้าย LIVE) */
+.pdot{position:relative;display:inline-block;width:11px;height:11px;margin-left:9px;border-radius:50%;vertical-align:middle;cursor:help;
+  background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 20%,transparent);flex:none}
+.pdot.live::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 0 var(--c);animation:pvp 2s infinite}
+@keyframes pvp{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 60%,transparent)}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.pv-ln{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:10.5px;color:var(--faint);line-height:1.45}
+.pv-ln i{width:8px;height:8px;border-radius:50%;background:var(--c);flex:none;box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 22%,transparent)}
+.pv-ln b{color:var(--c);font-weight:600}
+#chtip .cht-src{margin-top:7px;padding-top:6px;border-top:1px solid var(--line)}
+.pv-cap{margin-top:8px;padding-top:7px;border-top:1px dashed var(--line)}
+.livedot{display:none!important}
+/* แถบเลือกปี (เล่นอัตโนมัติ) ไม่ตัดขึ้นบรรทัดใหม่ */
+.player{flex-wrap:nowrap!important;min-width:0}
+.pl-track{flex-wrap:nowrap!important;overflow-x:auto;min-width:0;scrollbar-width:none}
+.pl-track::-webkit-scrollbar{display:none}
+.pl-dot{flex:1 0 auto;padding:5px 9px;text-align:center}
+@media (max-width:767px){.pl-btn .pl-txt{display:none}.pl-btn{padding:0 11px}}
+.kpi,.bigkpi{position:relative}
+.pdot.kdot{position:absolute;top:13px;right:13px;margin:0;z-index:4;width:10px;height:10px}
+.bigkpi>.pdot.kdot{top:auto;bottom:14px;right:16px}
+.pv-i{border-left-color:var(--ic,var(--c))}
+.pv-i b{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.pv-i b u{text-decoration:none;flex:none;font-size:9.5px;font-weight:700;letter-spacing:.3px;color:#fff;background:var(--ic,var(--c));padding:1px 7px;border-radius:999px;margin-top:1px}
+.kpi>.pdot.kdot,.kpi.hasbg>.pdot.kdot{position:absolute!important;top:13px;right:13px;bottom:auto;left:auto;z-index:4}
+.bigkpi>.pdot.kdot,.bigkpi.hasbg>.pdot.kdot{position:absolute!important;top:auto;bottom:14px;right:16px;left:auto;z-index:4}
+.pv-lg{display:flex;flex-wrap:wrap;gap:4px 10px;padding:7px 14px 10px;border-top:1px solid var(--line);background:var(--card2)}
+.pv-lg span{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:var(--faint);opacity:.75}
+.pv-lg span i{width:7px;height:7px;border-radius:50%;background:var(--c)}
+.pv-lg span.on{opacity:1;color:var(--ink);font-weight:600}

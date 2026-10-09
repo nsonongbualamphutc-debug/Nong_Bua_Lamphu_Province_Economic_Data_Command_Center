@@ -822,12 +822,15 @@ function renderYoY(){
   const cur=FY[FY.length-1], prv=FY[FY.length-2];
   const at=(fy,i)=>{const r=D.find(x=>x.fy===fy&&x.i===i);return r?+r.v:null};
   const n=Math.max(...D.filter(x=>x.fy===cur).map(x=>x.i));
-  const COL=['#9fb8ae','#c98a1b',cv('--brand')];
-  mk('cYoY',{data:{labels:MON.map((m,i)=>m+(FEST[i+1]?' ★':'')),datasets:FY.map((fy,k)=>({type:fy===cur?'bar':'line',
-      label:'ปีงบ '+fy,data:MON.map((_,i)=>at(fy,i+1)),
-      backgroundColor:fy===cur?cv('--brand')+'cc':undefined,borderRadius:6,order:fy===cur?2:1,
-      borderColor:COL[(k+COL.length-FY.length)%COL.length]||COL[0],borderWidth:fy===cur?0:2.4,
-      borderDash:fy===FY[0]&&FY.length>2?[5,4]:undefined,pointRadius:3,tension:.3,spanGaps:false}))},
+  /* ทุกปีเป็นข้อมูลชนิดเดียวกัน จึงแสดงเป็นเส้นทั้งหมด · ปีล่าสุดเส้นหนาสีหลัก ปีก่อนหน้าเส้นบางและจางลงตามความเก่า */
+  const COL=['#b9c7c1','#c98a1b',cv('--brand')];
+  const colOf=k=>COL[(k+COL.length-FY.length)%COL.length]||COL[0];
+  mk('cYoY',{type:'line',data:{labels:MON.map((m,i)=>m+(FEST[i+1]?' ★':'')),datasets:FY.map((fy,k)=>{const last=fy===cur,c=colOf(k);return {
+      label:'ปีงบ '+fy,data:MON.map((_,i)=>at(fy,i+1)),order:last?0:1,
+      borderColor:c,backgroundColor:last?c+'22':c,fill:last?'origin':false,
+      borderWidth:last?3.2:2,borderDash:last?undefined:(fy===prv?[6,4]:[2,4]),
+      pointRadius:last?4:2.5,pointHoverRadius:6,pointBackgroundColor:last?'#fff':c,pointBorderColor:c,pointBorderWidth:last?2.2:1,
+      tension:.32,spanGaps:false}})},
     options:{interaction:{mode:'index',intersect:false},
       plugins:{legend:{position:'bottom',labels:{padding:11}},
         tooltip:{callbacks:{label:c=>c.raw==null?null:c.dataset.label+' '+f(c.raw,cfg.dec)+' '+cfg.u,

@@ -558,7 +558,7 @@ function renderAreaKpi(){
     · มี ${above.length} อำเภอที่สูงกว่าค่าเฉลี่ย (${above.join(' ')})`;
 }
 const _refreshSide=refreshSide;
-refreshSide=function(){_refreshSide();try{renderAreaKpi();trustBar()}catch(e){console.error(e)}};
+refreshSide=function(){_refreshSide();try{renderAreaKpi();trustBar();gdcLive('area')}catch(e){console.error(e)}};
 DS.init('area',renderArea);
 </script>
 </body>

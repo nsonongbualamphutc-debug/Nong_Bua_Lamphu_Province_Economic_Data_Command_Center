@@ -673,9 +673,17 @@ function ec(path,val,dec,cls){
 
 /* ─────────────── 6) tooltip ─────────────── */
 const TIP=()=>document.getElementById('tip');
+const TM_IC={'ที่มา':'<path d="M4 5.5A2 2 0 0 1 6 3.5h9l5 5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14.5 3.6V9h5.2"/>',
+  'วิธีคำนวณ':'<rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M8.5 7.5h7M8.5 12h2M13.5 12h2M8.5 16h2M13.5 16h2"/>',
+  'งวดข้อมูล':'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8.5 3v4M15.5 3v4"/>',
+  'เกณฑ์':'<path d="M12 3v18M5 7h14M7 7l-3 7h6zM17 7l-3 7h6z"/>'};
 function initTip(){
   document.addEventListener('mouseover',e=>{
-    const el=e.target.closest('[data-tip2]');if(!el)return;
+    const pv=e.target.closest('[data-prov]');
+    if(pv){const [pg,id]=pv.dataset.prov.split('|');const h=pv.closest('h3');const kp=pv.closest('.kpi,.bigkpi');
+      const tt=h?[...h.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim():kp?((kp.querySelector('.h span:last-child,.bk-l')||{}).textContent||'').trim():'';
+      const html=provCard(pg,id,tt);if(!html)return;TIP().innerHTML=html;TIP().classList.add('on','wide');moveTip(e);return}
+    const el=e.target.closest('[data-tip2]');if(!el)return;TIP().classList.remove('wide');
     const parts=String(el.dataset.tip2).split('|').filter(x=>x!=='');
     let html=`<div class="tt">${parts[0]}</div>`;
     const desc=[],meta=[];
@@ -683,15 +691,21 @@ function initTip(){
       if(/^(ที่มา|วิธีคำนวณ|งวดข้อมูล|เกณฑ์)/.test(p))meta.push(p); else desc.push(p);
     });
     if(desc.length)html+=`<div class="td">${desc.join('<br>')}</div>`;
-    meta.forEach(m=>{
-      const i=m.indexOf(':');
-      const k=i>0?m.slice(0,i):'', v=i>0?m.slice(i+1).trim():m;
-      html+=`<div class="tm"><span>${k}</span>${v}</div>`;
-    });
+    if(meta.length){html+='<div class="tms">';
+      meta.forEach(m=>{
+        const i=m.indexOf(':');
+        const k=i>0?m.slice(0,i):'', v=i>0?m.slice(i+1).trim():m;
+        html+=`<div class="tm"><svg viewBox="0 0 24 24">${TM_IC[k]||TM_IC['ที่มา']}</svg><span>${k}</span><em>${v}</em></div>`;
+      });html+='</div>'}
+    /* การ์ดนี้อยู่ในการ์ดที่มีที่มาของข้อมูล → แสดงสถานะการเชื่อมต่อใต้ tooltip */
+    try{let key=null;const kk=el.closest('.kpi,.bigkpi');
+      if(kk){const d=kk.querySelector(':scope>.kdot');if(d)key=d.dataset.prov}
+      if(!key){const card=el.closest('.c');const d=card&&card.querySelector('header .pdot');if(d&&!el.closest('header'))key=d.dataset.prov}
+      if(key){const [pg,id]=key.split('|');const pl=provLine(pg,id);if(pl)html+=`<div class="tpv">${pl}</div>`}}catch(x){}
     TIP().innerHTML=html;
     TIP().classList.add('on');moveTip(e)});
   document.addEventListener('mousemove',e=>{if(TIP().classList.contains('on'))moveTip(e)});
-  document.addEventListener('mouseout',e=>{if(e.target.closest('[data-tip2]'))TIP().classList.remove('on')});
+  document.addEventListener('mouseout',e=>{if(e.target.closest('[data-tip2],[data-prov]'))TIP().classList.remove('on')});
 }
 function moveTip(e){
   const t=TIP(),w=t.offsetWidth,h=t.offsetHeight;
@@ -1199,6 +1213,7 @@ function externalTip(ctx){
   }).join('');
   const foot=(tt.footer||[]).join(' ');
   if(foot)html+=`<div class="cht-f">${foot}</div>`;
+  try{const cid=ctx.chart.canvas.id,pl=PAGE&&cid?provLine(PAGE.id,cid):'';if(pl)html+=`<div class="cht-src">${pl}</div>`}catch(e){}
   el.innerHTML=html;
   el.classList.add('on');
   const r=ctx.chart.canvas.getBoundingClientRect();
@@ -2063,7 +2078,8 @@ function showBootErr(ev,extra){
        จึงแจ้งเป็นหมายเหตุเบา ๆ ไม่ขึ้นกล่องแดงว่าโหลดหน้าไม่สมบูรณ์ */
     if(/script\.google\.com/.test(u)){BOOT.api=true;bootPaint();return}
     const name=u.split('/').pop().split('?')[0];
-    if(/\.(png|jpg|jpeg|webp|gif|svg)$/i.test(name)){BOOT.miss.push(name);bootPaint();return}
+    /* ตรวจซ้ำอีกครั้งก่อนแจ้งว่าไฟล์หาย · ภาพที่โหลดไม่ทันเพราะหน้าวาดการ์ดใหม่ระหว่างดึง API จะไม่ถูกนับผิด */
+    if(/\.(png|jpg|jpeg|webp|gif|svg)$/i.test(name)){const pr=new Image();pr.onerror=()=>{BOOT.miss.push(name);bootPaint()};pr.src=u.split('?')[0]+'?chk='+Date.now();return}
     BOOT.hard.push('โหลดไฟล์ไม่สำเร็จ: '+u.replace(location.origin,''));bootPaint();return;
   }
   const where=ev&&ev.filename?(String(ev.filename).replace(location.origin,'')+' บรรทัด '+ev.lineno):'ไม่ทราบไฟล์';
@@ -2701,7 +2717,7 @@ function fiscalSync(after){
   FISCAL_API.state='loading';
   GDC.fiscal().then(M=>{
     if(!M.latest)throw new Error('ไม่พบงวดข้อมูลใน API');
-    FISCAL_API.model=M; FISCAL_API.state='ok';
+    FISCAL_API.model=M; FISCAL_API.state='ok'; SYNC_AT.fis=Date.now();
     D.fiscal=Object.assign({},D.fiscal,M.latest);
     if(after)after(M); else if(PAGE&&PAGE.render)try{PAGE.render()}catch(e){console.error(e)}
     try{gdcLive(PAGE.id)}catch(x){}
@@ -2917,6 +2933,7 @@ function gdcSyncPage(pageId){
     const R={},keys=Object.keys(S.res);
     Promise.all(keys.map(k=>GDC.all(S.res[k]).then(v=>{R[k]=gdcRows(v)}).catch(e=>{R[k]=null;(SYNC_STATE[j].err=SYNC_STATE[j].err||{})[k]=e.message})))
       .then(()=>{
+        SYNC_AT[j]=Date.now();
         try{const o=S.build(R); SYNC_STATE[j].qa=o._qa||[]; delete o._qa; S.apply(o); SYNC_STATE[j].state=keys.every(k=>R[k])?'ok':(keys.some(k=>R[k])?'part':'err');
           try{localStorage.setItem('gdc-qa-'+j,JSON.stringify({at:Date.now(),qa:SYNC_STATE[j].qa}))}catch(e){}}
         catch(e){SYNC_STATE[j].state='err';console.error('sync '+j,e)}
@@ -2944,25 +2961,137 @@ function liveState(key){const j=key.split('.')[0];
   const st=SYNC_STATE[j];if(!st)return'';if(st.state==='loading')return'loading';
   const k=key.split('.')[1];return st.state==='err'||(st.err&&st.err[k])?'err':'ok'}
 const thDate=x=>{try{return new Date(x).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'})}catch(e){return''}};
+/* ════════════ ที่มาของข้อมูลรายการ์ด (provenance) ════════════
+   ทุกการ์ดกราฟ/ตารางมีจุดสีที่หัวการ์ด · สีเดียวกับหน้าศูนย์ควบคุมแหล่งข้อมูล
+   เขียว = ดึงจาก API · ทอง = กำลังเชื่อม · ม่วง = ระบบกรอกข้อมูล · เทาเขียว = ไฟล์ · ฟ้า = ไฟล์หน่วยงานภายนอก · แดง = ข้อมูลจำลอง
+   ชี้ที่จุด → การ์ดรายละเอียด · ชี้ที่กราฟ → บรรทัดที่มาท้าย tooltip · สลับเป็นตาราง → บรรทัดที่มาใต้ตาราง */
+const PV_COL={part:'#3e9c8a',api:'#12a36f',link:'#d4a017',gas:'#8b5cf6',file:'#6f9488',ext:'#0fa5c0',sim:'#e0523e',fallback:'#6f9488',loading:'#9aa7a2'};
+const PV_LBL={part:'ดึงจาก API บางส่วน',api:'เชื่อม API แล้ว · อัปเดตอัตโนมัติ',link:'กำลังเชื่อม API',gas:'ระบบกรอกข้อมูลของหน่วยงาน',file:'ข้อมูลไฟล์ · ยังไม่เชื่อม API',
+  ext:'ไฟล์หน่วยงานภายนอก · ยังไม่เชื่อม API',sim:'ข้อมูลจำลอง · ห้ามนำไปอ้างอิง',fallback:'API ไม่ตอบสนอง · ใช้ข้อมูลสำรองจากไฟล์',loading:'กำลังดึงข้อมูลจาก API…'};
+/* การ์ดที่ไม่ได้มาจาก API · t=ประเภท ag=หน่วยงาน n=ชุดข้อมูล note=รายละเอียด tbl=ตารางในระบบกรอกข้อมูล */
+const PROV_MAP={
+  overview:{cMac:{t:'gas',ag:'spend',n:'เครื่องชี้เศรษฐกิจรายเดือน',note:'ไฟล์ Excel ของคลังจังหวัด แก้ไขผ่านระบบกรอกข้อมูล',tbl:'macro'}},
+  gpp:{cGrow:{t:'gas',ag:'spend',n:'อัตราการขยายตัว GPP จังหวัดและ GDP ประเทศ',note:'ระบบกรอกข้อมูล ตาราง gppgrow',tbl:'gppgrow'},
+       cNe:{t:'ext',ag:'nesdc',n:'GPP เทียบจังหวัดภาคตะวันออกเฉียงเหนือ',note:'แฟ้ม GPP ของ สศช. แผ่น NE และ CLUSTERS'},
+       cGpp:{t:'ext',ag:'nesdc',n:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) 19 สาขา',note:'แฟ้ม GPP ของ สศช. ฉบับ พ.ศ. 2567'}},
+  agri:Object.fromEntries(['cCropArea','cCropValue','cCropYield','cFruit','cFruitYield','cMainCrop','cMainYield','cAgeBand']
+       .map(k=>[k,{t:'gas',ag:'crop',n:'ภาวะการผลิตพืช (พืชอายุสั้น ไม้ผล พืชเศรษฐกิจหลัก)',note:'รายงานภาวะการผลิตพืชของสำนักงานเกษตรจังหวัด กรอกผ่านระบบกรอกข้อมูล',tbl:'crop'}])),
+  industry:{cCap:{t:'file',ag:'ind',n:'เงินทุนและคนงานในสถานประกอบการอุตสาหกรรม',note:'ไฟล์รายงานสถิติจังหวัด ตาราง 12.4'},
+       cType:{t:'file',ag:'ind',n:'สถานประกอบการจำแนกตามประเภทอุตสาหกรรม',note:'ไฟล์รายงานสถิติจังหวัด ตาราง 12.3'},
+       cMine:{t:'file',ag:'ind',n:'เหมืองแร่ คนงานเหมือง และปริมาณแร่ที่ผลิตได้',note:'ไฟล์รายงานสถิติจังหวัด ตาราง 12.5'}},
+  trade:{cPrice:{t:'gas',ag:'moc',n:'ราคาสินค้าเกษตรรายสัปดาห์',note:'ระบบกรอกข้อมูล ตาราง price',tbl:'price'}},
+  area:{cAreaShare:()=>areaProv(),cAreaDev:()=>areaProv(),ampList:()=>areaProv(),tArea:()=>areaProv()}
+};
+function areaProv(){try{const o=curOpt();return o.real?{t:'file',ag:'crop',n:o.label,note:'ทะเบียนแหล่งท่องเที่ยวเชิงเกษตรของสำนักงานเกษตรจังหวัด'}
+  :{t:'sim',ag:'',n:o.label,note:'ค่ารายอำเภอยังเป็นข้อมูลจำลอง รอหน่วยงานส่งข้อมูลจริงผ่านระบบกรอกข้อมูล'}}catch(e){return null}}
+/* สถานะจริงของการ์ด ณ ตอนนี้ */
+/* การ์ดตัวเลข (KPI) ใช้ที่มาเดียวกับกราฟที่ระบุ · 'res:งาน.ชุด' = ระบุชุด API ตรง ๆ */
+const KPI_PROV={
+  labor:{lbKpi:['cUe','cUe','cUe','cUe']},
+  industry:{iKpi:['res:ind.est','cCap','cCap','res:ind.gpp','cMine']},
+  otop:{oKpi:['cRev','res:otop.ent','cType','res:otop.star','res:otop.shop']},
+  household:{hKpi:['cIE','cIE','cIE','cDebt','cGini']},
+  population:{pKpi:['cPop','cPop','cPop','cBD','cBD','cDep']},
+  tourism:{tBig:['res:tour.visy','res:tour.visy','res:tour.visy']},
+  fiscal:{fiscalKpi:['cFiscalMix','cFiscalMix','cFiscalMix','cFiscalMix','cFiscalMix','cFiscalMix']},
+  overview:{macroKpi:Array(12).fill('cMac')},
+  gpp:{gppKpi:Array(8).fill('cGpp')}
+};
+/* การ์ดที่มีทั้งส่วน API และส่วนไฟล์ */
+const PROV_EXTRA={industry:{cEst:{t:'file',ag:'ind',n:'จำนวนคนงานในสถานประกอบการ (เส้น)',note:'ไฟล์รายงานสถิติจังหวัด ตาราง 12.4'}}};
+function provOf(pageId,id){
+  if(id&&id.indexOf('res:')===0){const keys=id.slice(4).split(',');const tmp={};tmp[id]=keys;return provOfL(keys)}
+  const L=(LIVE_MAP[pageId]||{})[id];
+  if(L){const p=provOfL(L);const X=(PROV_EXTRA[pageId]||{})[id];
+    if(X&&p.t==='api'){p.items.push({n:X.n,ag:X.ag,note:X.note,t:X.t});p.t='part'}return p}
+  return provOfP(pageId,id);
+}
+function provOfL(L){
+  const sts=L.map(liveState),mod=ld(NOTI.K,{})||{};
+  const items=L.map((k,i)=>{const rid=liveRes(k),r=GDC.RES.find(z=>z.id===rid)||{};return {n:r.n||k,ag:r.agency||'',m:mod[rid],t:sts[i]==='ok'?'api':sts[i]==='loading'?'loading':'fallback',rid}});
+  const t=sts.some(x=>x==='loading')?'loading':sts.some(x=>x==='ok')?'api':'fallback';
+  return {t,items,at:SYNC_AT[(L[0]||'').split('.')[0]]};
+}
+function provOfP(pageId,id){
+  let P=(PROV_MAP[pageId]||{})[id];if(typeof P==='function')P=P();
+  if(!P)return null;
+  const up=P.tbl&&typeof TBL_META!=='undefined'&&TBL_META[P.tbl];
+  return {t:P.t,items:[{n:P.n,ag:P.ag,note:P.note,m:up||null,t:P.t}]};
+}
+function provOfOld(pageId,id){
+  const L=(LIVE_MAP[pageId]||{})[id];
+  if(L){const sts=L.map(liveState),mod=ld(NOTI.K,{})||{};
+    const items=L.map((k,i)=>{const rid=liveRes(k),r=GDC.RES.find(z=>z.id===rid)||{};return {n:r.n||k,ag:r.agency||'',m:mod[rid],ok:sts[i]==='ok',rid}});
+    const t=sts.some(x=>x==='loading')?'loading':sts.some(x=>x==='ok')?'api':'fallback';
+    return {t,items,at:SYNC_AT[(L[0]||'').split('.')[0]]};}
+  let P=(PROV_MAP[pageId]||{})[id];if(typeof P==='function')P=P();
+  if(!P)return null;
+  const up=P.tbl&&typeof TBL_META!=='undefined'&&TBL_META[P.tbl];
+  return {t:P.t,items:[{n:P.n,ag:P.ag,note:P.note,m:up||null}]};
+}
+const SYNC_AT={};
+const thDT=x=>{try{const d=new Date(x);return isNaN(d)?String(x):d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'})}catch(e){return''}};
+/* การ์ดรายละเอียดเมื่อชี้ที่จุด */
+function provCard(pageId,id,title){
+  const p=provOf(pageId,id);if(!p)return '';
+  const c=PV_COL[p.t]||'#999',agN=a=>(GDC.AGENCY&&GDC.AGENCY[a])||'';
+  const TAG={api:'API',fallback:'ข้อมูลสำรอง',loading:'กำลังดึง',gas:'ระบบกรอกข้อมูล',file:'ไฟล์',ext:'ไฟล์ภายนอก',sim:'จำลอง',link:'กำลังเชื่อม'};
+  const rows=p.items.map(x=>`<div class="pv-i" style="--ic:${PV_COL[x.t||p.t]}"><b>${x.n}<u>${TAG[x.t||p.t]||''}</u></b>${agN(x.ag)?`<span class="pv-ag">${agN(x.ag)}</span>`:''}
+      ${x.note?`<span class="pv-note">${x.note}</span>`:''}
+      ${x.m?`<span class="pv-m">${p.t==='api'||p.t==='fallback'?'ปรับปรุงบนระบบบัญชีข้อมูล':'ปรับปรุงล่าสุด'} <em>${thDT(x.m)}</em></span>`:''}</div>`).join('');
+  const foot=p.t==='part'?'ส่วนที่มาจาก API อัปเดตอัตโนมัติ ส่วนที่เป็นไฟล์รอหน่วยงานเผยแพร่บนระบบบัญชีข้อมูล':p.t==='api'?`ดึงข้อมูลล่าสุดเมื่อ ${p.at?new Date(p.at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})+' น.':'เปิดหน้านี้'} · ระบบตรวจการอัปเดตทุก 15 นาที`
+    :p.t==='gas'?'หน่วยงานกรอกและแก้ไขเองผ่านระบบกรอกข้อมูล · รอเปลี่ยนเป็น API'
+    :p.t==='sim'?'ใช้ทดสอบการแสดงผลเท่านั้น จนกว่าหน่วยงานจะส่งข้อมูลจริง'
+    :p.t==='fallback'?'ระบบจะลองดึงจาก API ใหม่อัตโนมัติเมื่อเปิดหน้าครั้งถัดไป'
+    :p.t==='loading'?'ตัวเลขบนการ์ดจะเปลี่ยนเป็นค่าล่าสุดเมื่อดึงเสร็จ':'ยังไม่มีชุดข้อมูลนี้บนระบบบัญชีข้อมูลจังหวัด';
+  const lg=[['api','API'],['link','กำลังเชื่อม'],['gas','ระบบกรอก'],['file','ไฟล์'],['ext','ไฟล์ภายนอก'],['sim','จำลอง']]
+    .map(([k,t])=>`<span style="--c:${PV_COL[k]}"${k===p.t||(p.t==='fallback'&&k==='file')?' class="on"':''}><i></i>${t}</span>`).join('');
+  return `<div class="pv" style="--c:${c}"><div class="pv-h"><i></i><span>${PV_LBL[p.t]}</span></div>
+    ${title?`<div class="pv-t">${title}</div>`:''}${rows}<div class="pv-f">${foot}</div><div class="pv-lg">${lg}</div></div>`;
+}
+/* บรรทัดสั้นสำหรับท้าย tooltip กราฟ และใต้ตาราง */
+function provLine(pageId,id){
+  const p=provOf(pageId,id);if(!p)return '';
+  const x=p.items[0]||{},agN=(GDC.AGENCY&&GDC.AGENCY[x.ag])||'';
+  const m=p.items.map(i=>i.m).filter(Boolean).sort().pop();
+  return `<span class="pv-ln" style="--c:${PV_COL[p.t]}"><i></i><b>${{part:'API บางส่วน',api:'API',link:'กำลังเชื่อม',gas:'ระบบกรอกข้อมูล',file:'ไฟล์',ext:'ไฟล์ภายนอก',sim:'ข้อมูลจำลอง',fallback:'ข้อมูลสำรอง',loading:'กำลังดึง'}[p.t]}</b>${agN?' · '+agN.replace('สำนักงาน','สนง.').replace('จังหวัดหนองบัวลำภู','จ.นภ.'):''}${m?' · ปรับปรุง '+thDT(m):''}</span>`;
+}
+function kpiProvKey(el){
+  const pg=PAGE&&PAGE.id,M=KPI_PROV[pg];if(!M)return null;
+  for(const cid of Object.keys(M)){const box=document.getElementById(cid);if(!box||!box.contains(el))continue;
+    const cards=[...box.querySelectorAll(':scope>.kpi, :scope>.bigkpi')];const i=cards.indexOf(el.closest('.kpi,.bigkpi'));
+    if(i>=0&&M[cid][i])return pg+'|'+M[cid][i]}
+  return null;
+}
 function gdcLive(pageId){
-  const M=LIVE_MAP[pageId];if(!M)return;
-  const mod=ld(NOTI.K,{})||{};
-  Object.keys(M).forEach(id=>{
+  /* จุดที่มาบนการ์ดตัวเลข */
+  Object.keys(KPI_PROV[pageId]||{}).forEach(cid=>{const box=document.getElementById(cid);if(!box)return;
+    [...box.querySelectorAll(':scope>.kpi, :scope>.bigkpi')].forEach((k,i)=>{const key=KPI_PROV[pageId][cid][i];if(!key)return;
+      const p=provOf(pageId,key);let d=k.querySelector(':scope>.kdot');
+      if(!p){if(d)d.remove();return}
+      if(!d){d=document.createElement('span');d.className='pdot kdot';k.appendChild(d)}
+      d.dataset.prov=pageId+'|'+key;d.style.setProperty('--c',PV_COL[p.t]);d.classList.toggle('live',p.t==='api')})});
+  const ids=new Set([...Object.keys(LIVE_MAP[pageId]||{}),...Object.keys(PROV_MAP[pageId]||{})]);
+  ids.forEach(id=>{
     const el=document.getElementById(id);if(!el)return;
     const card=el.closest('.c');if(!card)return;
-    const keys=M[id],sts=keys.map(liveState);
-    card.classList.toggle('gdc-shim',sts.some(x=>x==='loading'));
-    const ok=keys.filter((k,i)=>sts[i]==='ok');
+    const p=provOf(pageId,id);
+    card.classList.toggle('gdc-shim',!!p&&p.t==='loading');
     const h=card.querySelector(':scope>header h3, header h3');if(!h)return;
-    let dot=h.querySelector('.livedot');
-    if(!ok.length){if(dot)dot.remove();return}
-    const names=ok.map(k=>{const rid=liveRes(k),r=GDC.RES.find(z=>z.id===rid);return {n:r?r.n:k,m:mod[rid]}});
-    const last=names.map(x=>x.m).filter(Boolean).sort().pop();
-    const tip='ข้อมูลสดจาก API|'+[...new Set(names.map(x=>x.n))].join(' · ')+(last?' — ปรับปรุงบนระบบบัญชีข้อมูลล่าสุด '+thDate(last):' — ดึงจากระบบบัญชีข้อมูลจังหวัดเมื่อเปิดหน้านี้');
-    if(!dot){dot=document.createElement('a');dot.className='livedot';dot.href='apistatus.html#'+pageId;dot.innerHTML='<i></i><span>LIVE</span>';h.appendChild(dot)}
-    dot.setAttribute('data-tip2',tip.replace(/"/g,'&quot;'));
+    let dot=h.querySelector('.pdot');const old=h.querySelector('.livedot');if(old)old.remove();
+    if(!p){if(dot)dot.remove();return}
+    if(!dot){dot=document.createElement('a');dot.className='pdot';dot.href='apistatus.html#'+pageId;dot.setAttribute('aria-label','ที่มาของข้อมูล');h.appendChild(dot)}
+    dot.dataset.prov=pageId+'|'+id;dot.style.setProperty('--c',PV_COL[p.t]);dot.classList.toggle('live',p.t==='api');
+    /* ใต้ตาราง (มุมมองตาราง) */
+    const tb=document.getElementById(id+'-table');
+    if(tb){let cap=tb.querySelector('.pv-cap');if(!cap){cap=document.createElement('div');cap.className='pv-cap';tb.appendChild(cap)}cap.innerHTML=provLine(pageId,id)}
   });
 }
+document.addEventListener('click',e=>{const d=e.target.closest('.pdot');if(!d)return;
+  if(d.tagName!=='A'){e.preventDefault();return}
+  if(matchMedia('(pointer:coarse)').matches&&!d.classList.contains('tapped')){e.preventDefault();
+    document.querySelectorAll('.pdot.tapped').forEach(x=>x.classList.remove('tapped'));d.classList.add('tapped');
+    d.dispatchEvent(new MouseEvent('mouseover',{bubbles:true,clientX:e.clientX,clientY:e.clientY}))}},true);
 /* ป้ายท้ายเมนู: วันที่ล่าสุดที่หน่วยงานปรับปรุงชุดข้อมูลที่แดชบอร์ดใช้ */
 function sgdcDate(){
   const el=document.getElementById('sgdcT');if(!el)return;

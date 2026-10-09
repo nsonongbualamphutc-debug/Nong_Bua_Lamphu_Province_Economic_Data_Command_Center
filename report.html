@@ -174,7 +174,7 @@ function renderReport(){
     kpiCard({sim:false,img:'cropvalue',color:'#c98a1b',label:'มูลค่าผลผลิตพืชอายุสั้น',value:f(val,0),unit:'ล้านบาท',sub:'ครัวเรือนเกษตรกร '+f(D.crop.hh,0)+' ครัวเรือน'}),
     kpiCard({sim:false,img:'network',color:'#8b5cf6',label:'ตัวเลขที่ดึงจาก API',value:apiN+'/'+AV.length,unit:'ชุด',sub:'อัปเดตอัตโนมัติจากระบบบัญชีข้อมูล'})].join('');
   const TC={};AV.forEach(x=>TC[x.type]=(TC[x.type]||0)+1);
-  const COL={api:'#0d9268',link:'#2f7fd1',gas:'#c98a1b',file:'#7a8a99',ext:'#8b5cf6',sim:'#d9534f'};
+  const COL={api:'#12a36f',link:'#d4a017',gas:'#8b5cf6',file:'#6f9488',ext:'#0fa5c0',sim:'#e0523e'};
   document.getElementById('rpSrc').innerHTML=`<div class="rp-stack">${Object.keys(COL).filter(k=>TC[k]).map(k=>`<i style="flex:${TC[k]};background:${COL[k]}" title="${SRC_TYPE[k][0]} ${TC[k]}"></i>`).join('')}</div>`+
     Object.keys(COL).filter(k=>TC[k]).map(k=>`<div class="rp-sl"><i style="background:${COL[k]}"></i><span>${SRC_TYPE[k][0]}</span><b>${TC[k]}</b></div>`).join('');
 }
