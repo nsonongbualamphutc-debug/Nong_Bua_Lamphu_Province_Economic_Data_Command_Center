@@ -1838,19 +1838,21 @@ function buildShell(active){
     <button class="tb hamb" id="hamb" aria-label="เมนู"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     <div class="seal"><img src="${SEAL}" alt="ตราประจำจังหวัดหนองบัวลำภู"></div>
     <a class="gdtop" href="apistatus.html" data-tip2="เชื่อมข้อมูลกับ GD Catalog|แดชบอร์ดดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู (nongbualamphu.gdcatalog.go.th) ผ่าน API โดยอัตโนมัติ · คลิกเพื่อดูสถานะการเชื่อมต่อ"><img src="assets/logo-gd.png" alt="GD Catalog" onerror="this.parentNode.remove()"></a>
-    <div class="brand"><h1>ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</h1>
+    <div class="brand"><h1><span class="bl">ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</span><span class="bs">ศูนย์ข้อมูลเศรษฐกิจ<small>จังหวัดหนองบัวลำภู</small></span></h1>
       <p>Nong Bua Lam Phu Economic Data Command Center</p></div>
     <div class="sp"></div>
     <div class="asof"><b id="asof">ข้อมูล ณ ${CFG.asof}</b><span>ปีงบประมาณ 2569 · build ${CFG.build}</span></div>
-    <button class="tb" id="btnEdit" data-tip2="โหมดแก้ไขตาราง|คลิกที่ตัวเลขในตารางเพื่อแก้ไขได้ทันที บันทึกลงเครื่องนี้"><svg viewBox="0 0 24 24"><path d="M4 20h4.5L19 9.5a2.1 2.1 0 0 0-3-3L5.5 17z"/><path d="M14.5 6.5l3 3"/></svg></button>
-    <button class="tb" id="btnTheme"><svg viewBox="0 0 24 24"><path d="M12 3v2M12 19v2M5 12H3M21 12h-2M6.3 6.3 4.9 4.9M19.1 19.1l-1.4-1.4M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/><circle cx="12" cy="12" r="3.6"/></svg></button>
-    <button class="tb kioskbtn" id="btnKiosk"><svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>จอนำเสนอ</span></button>
-    <button class="tb" id="btnTour" data-tip2="นำเสนอทีละการ์ด|เดินทีละการ์ดแบบสไลด์ เต็มจอ · ใช้ลูกศรซ้ายขวาหรือรีโมตพรีเซนต์ · กด Q เปิด QR ให้ผู้ฟังสแกน · Esc ออก"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg><span>นำเสนอ</span></button>
     <a class="tb tb-api" id="btnApi" href="apistatus.html" data-tip2="ศูนย์ควบคุมแหล่งข้อมูล (API)|ดูว่าแต่ละหน้าดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัดแล้วหรือยัง สถานะการเชื่อมต่อ และประวัติการอัปเดต"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v6.5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V5.5M4.5 12v6.5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V12"/></svg><span>API</span></a>
     <button class="tb tb-bell" id="btnBell" aria-label="การแจ้งเตือนข้อมูลอัปเดต" data-tip2="แจ้งเตือนข้อมูลอัปเดต|เมื่อหน่วยงานปรับปรุงชุดข้อมูลที่แดชบอร์ดใช้บนระบบบัญชีข้อมูลจังหวัด จะแจ้งที่นี่"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><i class="bdg" id="bellN"></i></button>
-    <button class="tb" id="btnShare" data-tip2="คัดลอกลิงก์หน้านี้|ลิงก์จำหน้า ปี เดือน และแท็บที่กำลังดูอยู่ ส่งใน LINE แล้วผู้รับจะเปิดมาตรงจุดเดียวกัน"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
-    <button class="tb" id="btnPrint"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z"/></svg></button>
-    <a class="tb" href="input.html"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></svg><span>กรอกข้อมูล</span></a>`;
+<div class="tbgrp" id="tbMore">
+    <button class="tb" id="btnEdit" data-tip2="โหมดแก้ไขตาราง|คลิกที่ตัวเลขในตารางเพื่อแก้ไขได้ทันที บันทึกลงเครื่องนี้"><svg viewBox="0 0 24 24"><path d="M4 20h4.5L19 9.5a2.1 2.1 0 0 0-3-3L5.5 17z"/><path d="M14.5 6.5l3 3"/></svg><span class="lbm">แก้ไขตาราง</span></button>
+    <button class="tb" id="btnTheme"><svg viewBox="0 0 24 24"><path d="M12 3v2M12 19v2M5 12H3M21 12h-2M6.3 6.3 4.9 4.9M19.1 19.1l-1.4-1.4M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/><circle cx="12" cy="12" r="3.6"/></svg><span class="lbm">สลับโหมดสว่าง / มืด</span></button>
+    <button class="tb kioskbtn" id="btnKiosk"><svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>จอนำเสนอ</span></button>
+    <button class="tb" id="btnTour" data-tip2="นำเสนอทีละการ์ด|เดินทีละการ์ดแบบสไลด์ เต็มจอ · ใช้ลูกศรซ้ายขวาหรือรีโมตพรีเซนต์ · กด Q เปิด QR ให้ผู้ฟังสแกน · Esc ออก"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg><span>นำเสนอ</span></button>
+    <button class="tb" id="btnShare" data-tip2="คัดลอกลิงก์หน้านี้|ลิงก์จำหน้า ปี เดือน และแท็บที่กำลังดูอยู่ ส่งใน LINE แล้วผู้รับจะเปิดมาตรงจุดเดียวกัน"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span class="lbm">คัดลอกลิงก์หน้านี้</span></button>
+    <button class="tb" id="btnPrint"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z"/></svg><span class="lbm">พิมพ์ / บันทึก PDF</span></button>
+    <a class="tb" id="btnInput" href="input.html"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></svg><span>กรอกข้อมูล</span></a></div>
+    <button class="tb tb-more" id="btnMore" aria-label="เมนูเพิ่มเติม" aria-expanded="false"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg></button>`;
   const side=document.getElementById('sidebar');
   if(side)side.innerHTML=
      `<button class="railbtn" id="btnRail" data-tip="ขยายเมนู" aria-label="พับเมนู">
@@ -1940,6 +1942,11 @@ const DS={
       if(e.key==='Enter'&&e.target.matches&&e.target.matches('td[data-path][contenteditable]')){e.preventDefault();e.target.blur()}
       if(e.key==='Escape'&&EDIT)toggleEdit()});
 
+    /* มือถือ: ปุ่มรองรวมอยู่ในเมนู ⋯ */
+    const bm=document.getElementById('btnMore');
+    if(bm)bm.onclick=e=>{e.stopPropagation();const on=!document.body.classList.contains('moreopen');document.body.classList.toggle('moreopen',on);bm.setAttribute('aria-expanded',on)};
+    document.addEventListener('click',e=>{if(document.body.classList.contains('moreopen')&&!e.target.closest('#btnMore'))
+      {document.body.classList.remove('moreopen');if(bm)bm.setAttribute('aria-expanded','false')}});
     const hb=document.getElementById('hamb');
     if(hb)hb.onclick=()=>document.body.classList.toggle('navopen');
     const app=document.getElementById('app');
