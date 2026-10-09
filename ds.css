@@ -2361,7 +2361,7 @@ body.kiosk #bot,body.tour #bot{display:none}
 @media (prefers-reduced-motion:reduce){.bt-masc,.bt-mini,.bt-ring{animation:none!important}}
 @media (max-width:767px){.bt-fab .bt-masc+svg{display:block}.bt-fab{padding:0 14px 0 58px}}
 
-/* ── มาสคอตน้องบัว (ดอกบัวหนองบัวลำภู) ── */
+/* ── มาสคอตน้องลุ่มภู (ดอกบัวหนองบัวลำภู) ── */
 .bt-fab{padding-left:74px}
 .bt-masc{left:-14px;bottom:-6px;height:86px}
 .bt-masc[data-st=think]{animation:btThink 1.4s ease-in-out infinite!important;transform-origin:50% 92%}
@@ -2371,3 +2371,14 @@ body.kiosk #bot,body.tour #bot{display:none}
 .bt-panel header .bt-av{background:#fff6d6;box-shadow:0 0 0 2px rgba(212,160,23,.55)}
 .bt-panel header .bt-av.talk{animation:btTalk .5s ease-in-out 4}
 @media (max-width:767px){.bt-fab{padding:0 14px 0 64px}.bt-masc{height:74px;left:-12px}}
+
+/* ── น้องลุ่มภู: ปุ่มเป็นตัวมาสคอตล้วน ไม่มีแคปซูลซ้อน ── */
+.bt-fab:not(.noimg){width:92px;height:96px;padding:0!important;background:none;box-shadow:none;border-radius:0;justify-content:center;align-items:flex-end}
+.bt-fab:not(.noimg):hover{transform:translateY(-3px);box-shadow:none}
+.bt-fab:not(.noimg) .bt-ring,.bt-fab:not(.noimg) svg{display:none!important}
+.bt-fab:not(.noimg)::after{content:"";position:absolute;left:50%;bottom:-2px;width:58px;height:10px;margin-left:-29px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(11,60,50,.32),transparent);z-index:-1}
+.bt-fab:not(.noimg) .bt-masc{position:relative;left:auto;bottom:auto;height:96px;filter:drop-shadow(0 6px 10px rgba(11,60,50,.28))}
+.bt-fab:focus-visible{outline:3px solid #d4a017;outline-offset:4px;border-radius:16px}
+.bt-hint{bottom:104px}
+@media (max-width:767px){.bt-fab:not(.noimg){width:76px;height:80px}.bt-fab:not(.noimg) .bt-masc{height:80px}.bt-hint{bottom:88px}}

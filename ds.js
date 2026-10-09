@@ -3726,7 +3726,7 @@ function bSrc(t,txt,page){return `<div class="bt-src" style="--c:${PV_COL[t]||'#
 function bStat(rows){return `<div class="bt-stats">${rows.map(r=>`<div><span>${r[0]}</span><b>${r[1]}</b>${r[2]?`<small>${r[2]}</small>`:''}</div>`).join('')}</div>`}
 /* ── ความสามารถ: แต่ละข้อมีคำค้นและวิธีตอบ ── */
 const BOT_SKILLS=[
- {id:'help',k:/^(สวัสดี|หวัดดี|hello|hi|ช่วย|ทำอะไรได้|เมนู|เริ่ม)/,run:async()=>({html:`สวัสดีครับ ผมน้องบัว ช่วยตอบตัวเลขเศรษฐกิจจังหวัดหนองบัวลำภูจากข้อมูลจริงบนแดชบอร์ดและระบบบัญชีข้อมูลจังหวัด ลองถามได้เลย เช่น
+ {id:'help',k:/^(สวัสดี|หวัดดี|hello|hi|ช่วย|ทำอะไรได้|เมนู|เริ่ม)/,run:async()=>({html:`สวัสดีครับ ผมน้องลุ่มภู ช่วยตอบตัวเลขเศรษฐกิจจังหวัดหนองบัวลำภูจากข้อมูลจริงบนแดชบอร์ดและระบบบัญชีข้อมูลจังหวัด ลองถามได้เลย เช่น
    <ul><li>ภาวะเศรษฐกิจเดือนล่าสุดเป็นอย่างไร</li><li>เบิกจ่ายงบประมาณไปกี่เปอร์เซ็นต์</li><li>อัตราการว่างงานล่าสุด</li><li>ประชากรอำเภอนากลาง</li><li>นักท่องเที่ยวปีล่าสุด</li><li>มีชุดข้อมูลจำนวนโรงเรียนไหม</li></ul>`})},
  {id:'econ',k:/ภาวะเศรษฐกิจ|เศรษฐกิจ(เดือน|ล่าสุด|ตอนนี้|เป็นอย่างไร|ดีไหม)|ขยายตัว|หดตัว|เครื่องชี้/,run:async()=>{
    const R=((typeof DX!=='undefined'&&DX.macro&&DX.macro.rows)||[]).slice().sort((a,b)=>(a.y-b.y)||(a.m-b.m));const c=R[R.length-1];if(!c)return null;
@@ -3835,13 +3835,12 @@ async function botAnswer(raw){
 function botBuild(){
   if(document.getElementById('bot')||!document.querySelector('link[href*="ds.css"]'))return;
   const w=document.createElement('div');w.id='bot';
-  w.innerHTML=`<div class="bt-hint" id="btHint"><b>สวัสดีครับ ผมน้องบัว!</b> อยากรู้ตัวเลขเศรษฐกิจอะไร ถามได้เลย<button aria-label="ปิด">×</button></div>
-    <button class="bt-fab" id="btFab" aria-label="ผู้ช่วยข้อมูล"><span class="bt-ring"></span>
-      <img class="bt-masc" src="assets/mascot.webp" alt="" onerror="this.remove()">
-      <svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4h0A2.5 2.5 0 0 1 4 13.5z"/><path d="M8.5 9.5h.01M12 9.5h.01M15.5 9.5h.01"/></svg>
-      <em>ถามข้อมูล</em></button>
+  w.innerHTML=`<div class="bt-hint" id="btHint"><b>สวัสดีครับ ผมน้องลุ่มภู!</b> อยากรู้ตัวเลขเศรษฐกิจอะไร ถามได้เลย<button aria-label="ปิด">×</button></div>
+    <button class="bt-fab" id="btFab" aria-label="ถามน้องลุ่มภู ผู้ช่วยข้อมูล" title="ถามน้องลุ่มภู"><span class="bt-ring"></span>
+      <img class="bt-masc" src="assets/mascot.webp" alt="น้องลุ่มภู" onerror="this.parentNode.classList.add('noimg');this.remove()">
+      <svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4h0A2.5 2.5 0 0 1 4 13.5z"/><path d="M8.5 9.5h.01M12 9.5h.01M15.5 9.5h.01"/></svg></button>
     <section class="bt-panel" id="btPanel" aria-label="ผู้ช่วยข้อมูล">
-      <header><img class="bt-av" src="assets/mascot-avatar.png" alt="" onerror="this.src='assets/logo-nbl.png'"><div><b>น้องบัว · ผู้ช่วยข้อมูลเศรษฐกิจ</b><span><i></i>One Stop Service · ตอบจากข้อมูลจริง</span></div>
+      <header><img class="bt-av" src="assets/mascot-avatar.png" alt="" onerror="this.src='assets/logo-nbl.png'"><div><b>น้องลุ่มภู · ผู้ช่วยข้อมูลเศรษฐกิจ</b><span><i></i>One Stop Service · ตอบจากข้อมูลจริง</span></div>
         <button id="btClose" aria-label="ปิด">×</button></header>
       <div class="bt-body" id="btBody"></div>
       <div class="bt-chips" id="btChips">${['ภาวะเศรษฐกิจล่าสุด','การเบิกจ่ายงบประมาณ','อัตราการว่างงาน','นักท่องเที่ยวปีล่าสุด','ประชากรทั้งจังหวัด','รายได้ครัวเรือน','OTOP','มีชุดข้อมูลโรงเรียนไหม','ติดต่อหน่วยงาน'].map(x=>`<button>${x}</button>`).join('')}</div>
@@ -3849,7 +3848,7 @@ function botBuild(){
     </section>`;
   document.body.appendChild(w);
   const body=w.querySelector('#btBody');
-  /* มาสคอตน้องบัว 3 ท่า: ทักทาย · กำลังคิด · ตอบ (โหลดล่วงหน้าเพื่อสลับได้ทันที) */
+  /* มาสคอตน้องลุ่มภู 3 ท่า: ทักทาย · กำลังคิด · ตอบ (โหลดล่วงหน้าเพื่อสลับได้ทันที) */
   const MASC={hello:'assets/mascot.webp',think:'assets/mascot-think.webp',talk:'assets/mascot-talk.webp'};
   Object.values(MASC).forEach(u=>{const i=new Image();i.src=u});
   const masc=k=>{const m=w.querySelector('.bt-masc');if(m&&MASC[k]&&!m.src.endsWith(MASC[k])){m.src=MASC[k];m.dataset.st=k}
