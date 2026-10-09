@@ -2400,3 +2400,7 @@ body.kiosk #bot,body.tour #bot{display:none}
 @media (prefers-reduced-motion:reduce){#bot .bt-hint.on{animation:none}}
 #bot .bt-hint{max-width:none}#bot .bt-hint span{white-space:nowrap}
 @media (max-width:380px){#bot .bt-hint span{white-space:normal}#bot .bt-hint{max-width:200px}}
+/* ปุ่มกลับขึ้นบน: ย้ายไปซ้ายของน้องลุ่มภู ไม่ซ่อนหลังมาสคอต */
+body:has(#bot) .totop{right:134px;bottom:28px}
+@media (max-width:767px){body:has(#bot) .totop{right:102px;bottom:22px}}
+body.kiosk .totop,body.tour .totop{right:16px;bottom:18px}
