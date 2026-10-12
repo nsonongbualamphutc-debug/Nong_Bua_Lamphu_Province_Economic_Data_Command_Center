@@ -1350,7 +1350,9 @@ const AGENCY_FULL={
   popreg :{n:'ที่ทำการปกครองจังหวัดหนองบัวลำภู',dept:'กรมการปกครอง กระทรวงมหาดไทย',tel:'',doc:'ข้อมูลทะเบียนราษฎร จำนวนประชากร การเกิด การตาย และการย้ายถิ่น'},
   irrig  :{n:'โครงการชลประทานหนองบัวลำภู',dept:'สำนักงานชลประทานที่ 5 กรมชลประทาน กระทรวงเกษตรและสหกรณ์',tel:'',doc:'ข้อมูลแหล่งน้ำชลประทาน พื้นที่รับประโยชน์ และสถานีสูบน้ำด้วยไฟฟ้า'},
   house  :{n:'สำนักงานสถิติจังหวัดหนองบัวลำภู',dept:'สำนักงานสถิติแห่งชาติ กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม',tel:'0 4231 6736',doc:'โครงการสำรวจภาวะเศรษฐกิจและสังคมของครัวเรือน (Household Socio-Economic Survey)'},
-  gpp    :{n:'สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ',dept:'',tel:'',doc:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) ฉบับ พ.ศ. 2567'}
+  gpp    :{n:'สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ',dept:'',tel:'',doc:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) ฉบับ พ.ศ. 2567'},
+  tpso   :{n:'สำนักงานนโยบายและยุทธศาสตร์การค้า',dept:'กระทรวงพาณิชย์',tel:'',doc:'ดัชนีราคาผู้บริโภคทั่วไประดับจังหวัด (ปีฐาน 2566 = 100)'},
+  bot    :{n:'ธนาคารแห่งประเทศไทย',dept:'',tel:'',doc:'สินเชื่อของธนาคารพาณิชย์รายจังหวัด'}
 };
 function srcBar(keys,extra){
   const list=(Array.isArray(keys)?keys:[keys]).map(k=>AGENCY_FULL[k]).filter(Boolean);
@@ -2155,7 +2157,7 @@ function fillIcons(root){
 /* หน้าภาพรวมและหน้า GPP ใช้ข้อมูลจริงจากแฟ้มของหน่วยงานแล้ว ไม่ต้องมีแถบเตือนข้อมูลจำลอง */
 /* หน้าการคลังใช้เฉพาะข้อมูลจริงแล้ว (รายงานผลการเบิกจ่าย + ยอดที่คลังจังหวัดกรอก) จึงไม่อยู่ในรายการนี้ */
 /* หน้าอุตสาหกรรมใช้ข้อมูลรายปีจาก API และไฟล์รายงานสถิติแล้ว ไม่มีชุดรายเดือนจำลอง */
-const TRUST_PAGES={trade:['cpi','credit'],
+const TRUST_PAGES={
   consume:['fuel','car'],area:null};
 function trustBar(){
   if(typeof PAGE==='undefined'||!TRUST_PAGES.hasOwnProperty(PAGE.id))return;
@@ -2513,7 +2515,7 @@ const GDC={
     /* การเงิน · ธนาคารแห่งประเทศไทย */
     {id:'ec2ae427-8a15-44e0-8be3-692e07393f2b',page:'trade',agency:'bot',n:'จำนวนธนาคารพาณิชย์',state:'avail'},
     {id:'f73d6b1a-b890-43d4-b9a1-0f4d6ed873e4',page:'trade',agency:'bot',n:'เงินฝากของธนาคารพาณิชย์',state:'avail'},
-    {id:'b519ce91-d7b1-4719-96d8-795b5307b6ba',page:'trade',agency:'bot',n:'จำนวนสินเชื่อของธนาคารพาณิชย์',state:'avail'},
+    {id:'b519ce91-d7b1-4719-96d8-795b5307b6ba',page:'trade',agency:'bot',n:'จำนวนสินเชื่อของธนาคารพาณิชย์',state:'api',use:'การ์ดและกราฟสินเชื่อธนาคารพาณิชย์'},
     /* ค่าเป้าหมาย */
     {id:'85640650-a585-476c-af0e-733309d50161',page:'tourism',agency:'mots',n:'ค่าเป้าหมายตัวชี้วัดท่องเที่ยว',state:'avail'},
     {id:'64467029-96c0-4558-996f-a96ce0f4763f',page:'otop',agency:'cdd',n:'ค่าเป้าหมายตัวชี้วัด OTOP',state:'avail'}
@@ -3008,7 +3010,10 @@ const PROV_MAP={
   industry:{cCap:{t:'file',ag:'ind',n:'เงินทุนและคนงานในสถานประกอบการอุตสาหกรรม',note:'ไฟล์รายงานสถิติจังหวัด ตาราง 12.4'},
        cType:{t:'file',ag:'ind',n:'สถานประกอบการจำแนกตามประเภทอุตสาหกรรม',note:'ไฟล์รายงานสถิติจังหวัด ตาราง 12.3'},
        cMine:{t:'file',ag:'ind',n:'เหมืองแร่ คนงานเหมือง และปริมาณแร่ที่ผลิตได้',note:'ไฟล์รายงานสถิติจังหวัด ตาราง 12.5'}},
-  trade:{cPrice:{t:'gas',ag:'moc',n:'ราคาสินค้าเกษตรรายสัปดาห์',note:'ระบบกรอกข้อมูล ตาราง price',tbl:'price'}},
+  trade:{cCpi:{t:'file',ag:'tpso',n:'ดัชนีราคาผู้บริโภคทั่วไปและอัตราเงินเฟ้อ (ปีฐาน 2566 = 100)',note:'ไฟล์รายงานสถิติจังหวัด ตาราง 14.7'},
+       cCredit:()=>{const s=typeof TR!=='undefined'?TR.cs:'loading';return {t:s,items:[{n:'จำนวนสินเชื่อของธนาคารพาณิชย์',ag:'bot',t:s,rid:'b519ce91-d7b1-4719-96d8-795b5307b6ba',
+         note:s==='fallback'?'เชื่อมต่อ API ไม่ได้ ใช้ข้อมูลสำรองจากไฟล์ ธปท. (รายงานสถิติจังหวัด ตาราง 18.1)':'ระบบบัญชีข้อมูลจังหวัด ชุดข้อมูล dataset_11_15'}]}},
+       cWeek:{t:'file',ag:'moc',n:'ราคาสินค้าเกษตรและสินค้าอุปโภคบริโภครายสัปดาห์',note:'ไฟล์รายงานราคาของสำนักงานพาณิชย์จังหวัด เก็บข้อมูลทุกวันอังคาร'}},
   area:{cAreaShare:()=>areaProv(),cAreaDev:()=>areaProv(),ampList:()=>areaProv(),tArea:()=>areaProv(),mapWrapA:()=>areaProv(),
        areaAdmin:{t:'file',ag:'dopa',n:'ข้อมูลพื้นฐานการปกครองและประชากร',note:'ทะเบียนราษฎรและข้อมูลพื้นฐานของจังหวัด'}}
 };
@@ -3024,14 +3029,14 @@ Object.assign(PROV_MAP.agri,{tCrop:'cCropArea',tFruit:'cCropArea',tMainCrop:'cCr
   wl2:{t:'link',ag:'ldd',n:'สระน้ำในไร่นานอกเขตชลประทาน',note:'หน่วยงานอัปโหลดเป็นไฟล์แล้ว แต่ยังไม่เปิด DataStore จึงอ่านผ่าน API ไม่ได้'},
   wl3:{t:'link',ag:'env',n:'บ่อบาดาล ประเภทเกษตรกรรม',note:'หน่วยงานอัปโหลดเป็นไฟล์แล้ว แต่ยังไม่เปิด DataStore จึงอ่านผ่าน API ไม่ได้'},
   wask:{t:'file',ag:'',n:'บ่อขนาดเล็ก (เกษตรทฤษฎีใหม่)',note:'รอสอบถามหน่วยงานเจ้าของข้อมูล'}});
-Object.assign(PROV_MAP.trade,{'c-trade':()=>secProv('trade'),'cy-trade':()=>secProv('trade'),'td-trade':()=>secProv('trade'),sec:()=>secProv('trade')});
+Object.assign(PROV_MAP.trade,{'cTp-agri':'cWeek','cTp-cons':'cWeek'});
 PROV_MAP.consume={'c-consume':()=>secProv('consume'),'cy-consume':()=>secProv('consume'),'td-consume':()=>secProv('consume'),sec:()=>secProv('consume')};
 PROV_MAP.tourism={spotQ:'res:tour.spots',gapBox2:'res:tour.acc,tour.internal,tour.occ'};
 PROV_MAP.otop={otopPlayer:'cRev',entBox:'res:otop.ent'};
 PROV_MAP.household={dbox:'cDebt'};
 PROV_MAP.population={popMap:'cPop'};
 /* การ์ดที่ไม่มีรหัส · จับคู่จากชื่อหัวการ์ด */
-const PROV_TITLE={gpp:[[/^เสถียรภาพการคลัง/,'res:fis.dis,fis.alloc']],trade:[[/^(พืชเศรษฐกิจ|พืชไร่|ปศุสัตว์|สินค้าอุปโภค)/,'cPrice']]};
+const PROV_TITLE={gpp:[[/^เสถียรภาพการคลัง/,'res:fis.dis,fis.alloc']],trade:[[/^(ราคาสินค้าเกษตรที่สำคัญ|ราคาสินค้าอุปโภคบริโภค|เปรียบเทียบย้อนหลัง)/,'cWeek']]};
 /* หน้าภาคส่วนรายเดือน (การค้า การบริโภค) · ข้อมูลจริงหรือจำลองดูจากชุดรายเดือนของหน้านั้นจริง ๆ */
 function secProv(pg){
   const ids=(typeof TRUST_PAGES!=='undefined'&&TRUST_PAGES[pg])||[];
@@ -3059,12 +3064,12 @@ const KPI_PROV={
   area:{arKpi:Array(4).fill('cAreaShare')},
   agri:{agriKpi:['res:ag.hh','cropFile','cCropArea','cFruit'],agriKpi2:['cCropValue','cropFile'],
     waterKpi:['res:ag.irr','res:ag.benefit','wl1','solar','res:ag.small','wl2','res:ag.bad','wask'],baseKpi:['baseInfo','cropFile','cropFile','baseInfo'],fruitCards:Array(12).fill('cFruit')},
-  trade:{'k-trade':Array(8).fill('sec')},consume:{'k-consume':Array(8).fill('sec')}
+  trade:{tKpi:['cCpi','cCpi','cCredit'],tpKpi:['cWeek','cWeek','cWeek']},consume:{'k-consume':Array(8).fill('sec')}
 };
 Object.assign(KPI_PROV.overview,{homeKpi:Array(20).fill('cMac')});
 Object.assign(KPI_PROV.fiscal,{fiscalPick:['cFiscalTrend','cFiscalTrend']});
 /* การ์ดตัวเลขที่ไม่อยู่ในกล่องที่ระบุ ใช้ที่มาตั้งต้นของหน้า */
-const KPI_DEFAULT={trade:'cPrice'};
+const KPI_DEFAULT={};
 /* การ์ดที่มีทั้งส่วน API และส่วนไฟล์ */
 const PROV_EXTRA={industry:{cEst:{t:'file',ag:'ind',n:'จำนวนคนงานในสถานประกอบการ (เส้น)',note:'ไฟล์รายงานสถิติจังหวัด ตาราง 12.4'}}};
 function provOf(pageId,id){
@@ -3187,7 +3192,7 @@ GDC.AGENCY={nso:'สำนักงานสถิติจังหวัดห
   crop:'สำนักงานเกษตรจังหวัดหนองบัวลำภู',ldd:'สถานีพัฒนาที่ดินหนองบัวลำภู',env:'สำนักงานทรัพยากรธรรมชาติและสิ่งแวดล้อมจังหวัด',
   bot:'ธนาคารแห่งประเทศไทย',mots:'สำนักงานการท่องเที่ยวและกีฬาจังหวัด',cdd:'สำนักงานพัฒนาชุมชนจังหวัด',energy:'สำนักงานพลังงานจังหวัด',
   dopa:'ที่ทำการปกครองจังหวัด',nesdc:'สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ',ind:'สำนักงานอุตสาหกรรมจังหวัด',
-  pea:'การไฟฟ้าส่วนภูมิภาคจังหวัด',moc:'สำนักงานพาณิชย์จังหวัด',dlt:'สำนักงานขนส่งจังหวัด',sso:'สำนักงานประกันสังคมจังหวัด',sme:'ธนาคาร SME D Bank'};
+  pea:'การไฟฟ้าส่วนภูมิภาคจังหวัด',moc:'สำนักงานพาณิชย์จังหวัด',tpso:'สำนักงานนโยบายและยุทธศาสตร์การค้า กระทรวงพาณิชย์',dlt:'สำนักงานขนส่งจังหวัด',sso:'สำนักงานประกันสังคมจังหวัด',sme:'ธนาคาร SME D Bank'};
 /* ลายเซ็นของชุดข้อมูล · เปลี่ยนเมื่อจำนวนแถวหรือเนื้อหาเปลี่ยน */
 function gdcSig(v){let h=0;const t=JSON.stringify(v.records);for(let i=0;i<t.length;i+=7)h=(h*31+t.charCodeAt(i))|0;return v.total+':'+t.length+':'+h}
 GDC.logPull=function(id,v){
@@ -4187,15 +4192,38 @@ async function bkEmpSector(P){
     ${bSrc(D0.snap?'api':'api','การสำรวจภาวะการทำงานของประชากร · สนง.สถิติจังหวัด','labor')}`};
 }
 /* ── ราคาสินค้าเกษตรและพืชเศรษฐกิจ ── */
-function bkPrice(q){
-  const P=(typeof D!=='undefined'&&D.price)||null;if(!P)return null;const num=s=>{const a=String(s||'').split(/[–-]/).map(gdcNum).filter(v=>v!=null);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null};
-  const L=[];P.groups.forEach(g=>g.rows.forEach(r=>{const now=num(r.now),prev=num(r.prev),mo=num(r.mo),yr=num(r.yr);if(now==null)return;L.push({g:g.g,u:r.sub&&/^บาท/.test(r.sub)?r.sub:g.unit,n:r.n+(r.sub&&!/^บาท/.test(r.sub)?' ('+r.sub+')':''),now:r.now,dp:prev?(now-prev)/prev*100:null,dy:mo&&yr?(mo-yr)/yr*100:null})}));
-  const f=L.filter(x=>q.indexOf(x.n.split(' ')[0].replace(/[()]/g,''))>=0);const S=f.length?f:L;
+/* ราคาสินค้ารายสัปดาห์ · อ่านชุดเดียวกับหน้าการค้า (data/trade.json) ให้ตัวเลขตรงกัน */
+let BK_TRADE=null;
+function bkTradeData(){if(!BK_TRADE)BK_TRADE=fetch('data/trade.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null);return BK_TRADE}
+async function bkPrice(q){
+  const T=await bkTradeData();if(!T||!T.weekly||!T.weekly.length)return null;
+  if(/เงินเฟ้อ|CPI|ดัชนีราคา/i.test(q)&&T.cpi){const I={};(T.infl||[]).forEach(x=>I[x.y]=x.v);const c=T.cpi,l=c[c.length-1];
+    return {sug:['ราคาสินค้าเกษตร','สินเชื่อธนาคารพาณิชย์'],html:`<b>ดัชนีราคาผู้บริโภคทั่วไป (CPI) และอัตราเงินเฟ้อ</b> ปีฐาน 2566 = 100
+      ${bkTable(['ปี','CPI','เงินเฟ้อ (%)'],c.map(x=>[x.y,bN(x.v,1),I[x.y]==null?'—':bN(I[x.y],1)]))}
+      <p class="bt-p">ปี ${l.y} CPI อยู่ที่ <b>${bN(l.v,1)}</b> เงินเฟ้อ <b>${I[l.y]==null?'—':bN(I[l.y],1)+'%'}</b></p>${bSrc('file','สนค. กระทรวงพาณิชย์ (รายงานสถิติจังหวัด ตาราง 14.7)','trade')}`}}
+  const R=T.weekly[T.weekly.length-1];
+  const num=s=>{if(s==null)return null;if(typeof s==='number')return s;const a=String(s).split(/[–-]/).map(gdcNum).filter(v=>v!=null);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null};
+  const sn=n=>String(n).replace(/\s*\(.*\)/,'').replace('ไก่เนื้อไก่สด','ไก่เนื้อ ').replace('ชำแหละ','').replace(/^มันสำปะหลัง หัวมันสด/,'มันสำปะหลัง');
+  const txt=v=>v==null?'—':typeof v==='number'?bN(v,Number.isInteger(v)?0:2):v;
+  const L=[];[['agri','สินค้าเกษตร'],['cons','สินค้าอุปโภคบริโภค']].forEach(([g,gt])=>R[g].forEach(r=>{const now=num(r.now);if(now==null)return;
+    const prev=num(r.prev),yr=num(r.yr);L.push({g:gt,full:r.n,n:sn(r.n),u:r.u,now:r.now,dp:prev?(now-prev)/prev*100:null,dy:yr?(now-yr)/yr*100:null})}));
+  const key=x=>x.n.replace(/\s+/g,'').slice(0,6);
+  let F=L.filter(x=>q.replace(/\s+/g,'').indexOf(key(x))>=0||q.indexOf(x.n.split(' ')[0])>=0);
+  if(!F.length&&/หมู|สุกร/.test(q))F=L.filter(x=>/สุกร/.test(x.full));
+  if(!F.length&&/ไข่/.test(q))F=L.filter(x=>/ไข่/.test(x.full));
+  if(!F.length&&/มัน/.test(q))F=L.filter(x=>/มันสำปะหลัง/.test(x.full));
+  if(!F.length&&/ยาง/.test(q))F=L.filter(x=>/ยาง/.test(x.full));
+  if(!F.length&&/ไก่/.test(q))F=L.filter(x=>/ไก่/.test(x.full));
+  if(!F.length&&/ข้าว/.test(q))F=L.filter(x=>/^ข้าว/.test(x.full));
+  if(!F.length&&/เกษตร/.test(q)&&!/อุปโภค/.test(q))F=L.filter(x=>x.g==='สินค้าเกษตร');
+  if(!F.length&&/อุปโภค|บริโภค/.test(q))F=L.filter(x=>x.g==='สินค้าอุปโภคบริโภค');
+  const S=F.length?F:L;
   const up=L.filter(x=>x.dy!=null).sort((a,b)=>b.dy-a.dy);
-  return {sug:['พืชเศรษฐกิจสำคัญมีอะไรบ้าง','เศรษฐกิจภาพรวม ภาคไหนโต'],html:`<b>ราคาสินค้าเกษตรและอุปโภคบริโภค</b> ณ ${P.asof}
-    ${bkTable(['สินค้า','ราคาล่าสุด','เทียบ '+P.prevLabel,'เทียบ '+P.yearLabel],S.slice(0,12).map(x=>[x.n+'<br><small class="bt-inl">'+x.u+'</small>',x.now,x.dp==null?'—':(x.dp>0?'+':'')+bN(x.dp,1)+'%',x.dy==null?'—':(x.dy>0?'+':'')+bN(x.dy,1)+'%']))}
-    ${!f.length&&up.length?`<p class="bt-p">เทียบปีก่อน ราคาขึ้นมากที่สุด <b>${up[0].n}</b> (${up[0].dy>0?'+':''}${bN(up[0].dy,1)}%) · ลดลงมากที่สุด <b>${up[up.length-1].n}</b> (${bN(up[up.length-1].dy,1)}%)</p>`:''}
-    <small>เทียบปีก่อนใช้ราคาเฉลี่ยของเดือน · ช่วงราคาใช้ค่ากลางในการคำนวณ · ${P.contact||''}</small>${bSrc('gas','สนง.พาณิชย์จังหวัด (ระบบกรอกข้อมูล)','trade')}`};
+  const nu=L.filter(x=>x.dp>0).length,nd=L.filter(x=>x.dp<0).length;
+  return {sug:['ราคาไข่ไก่','ราคายางพารา','อัตราเงินเฟ้อ'],html:`<b>ราคาสินค้าเกษตรและอุปโภคบริโภค</b> ณ ${R.label}
+    ${bkTable(['สินค้า','ราคาล่าสุด','เทียบสัปดาห์ก่อน','เทียบปีก่อน'],S.slice(0,12).map(x=>[x.n+'<br><small class="bt-inl">'+x.u+'</small>',txt(x.now),x.dp==null?'—':(x.dp>0?'+':'')+bN(x.dp,1)+'%',x.dy==null?'—':(x.dy>0?'+':'')+bN(x.dy,1)+'%']))}
+    ${!F.length?`<p class="bt-p">สัปดาห์นี้ราคาสูงขึ้น ${nu} รายการ ลดลง ${nd} รายการ จาก ${L.length} รายการ${up.length?` · เทียบปีก่อน ขึ้นมากที่สุด <b>${up[0].n}</b> (${up[0].dy>0?'+':''}${bN(up[0].dy,1)}%) ลดลงมากที่สุด <b>${up[up.length-1].n}</b> (${bN(up[up.length-1].dy,1)}%)`:''}</p>`:''}
+    <small>เก็บข้อมูลทุกวันอังคาร · ราคาที่เป็นช่วงใช้ค่ากลางในการคำนวณ · เทียบปีก่อนใช้ราคาเฉลี่ยเดือนเดียวกันของปีก่อน</small>${bSrc('file','สนง.พาณิชย์จังหวัด (ไฟล์รายงานราคารายสัปดาห์)','trade')}`};
 }
 function bkCrops(){
   const C=(typeof D!=='undefined'&&D.crop)||null;if(!C||!C.rows)return null;const R=C.rows.slice().sort((a,b)=>b.area-a.area);
@@ -4448,9 +4476,9 @@ async function botAnswer(raw){
     if(!explicit&&/ผิดปกติ|ผิดแนวโน้ม|สวนทาง|ผิดสังเกต|แก้ไขข้อมูล/.test(q))return await bkAnomaly();
     if(!explicit&&/(ดีขึ้น|เพิ่มขึ้น|ลดลง|แย่ลง)ต่อเนื่อง|แนวโน้มดีขึ้น/.test(q))return await bkStreak();
     if(!topical&&BOT_BRIEF.test(q))return await bkBrief(q);
-    if(/การค้า|ค่าครองชีพ|เงินเฟ้อ|ราคาสินค้า/.test(q)&&!explicit){const r=bkPrice(q);if(r){if(/การค้า|ธุรกิจ/.test(q))r.html+=`<small>มูลค่าการค้าปลีก/ค้าส่ง และธุรกิจจดทะเบียนยังไม่มีในชุดข้อมูลที่เชื่อมต่อ · ตรวจสอบที่สำนักงานพาณิชย์จังหวัด</small>`;return r}}
+    if(/การค้า|ค่าครองชีพ|เงินเฟ้อ|ราคาสินค้า/.test(q)&&!explicit){const r=await bkPrice(q);if(r){if(/การค้า|ธุรกิจ/.test(q))r.html+=`<small>มูลค่าการค้าปลีก/ค้าส่ง และธุรกิจจดทะเบียนยังไม่มีในชุดข้อมูลที่เชื่อมต่อ · ตรวจสอบที่สำนักงานพาณิชย์จังหวัด</small>`;return r}}
     if(/จ้างงาน.{0,12}(ภาค|แยก|สาขา)|มีงานทำ.{0,12}(ภาค|สาขา|อุตสาหกรรม|แยก)|แรงงาน.{0,10}ภาค(เกษตร|อุตสาหกรรม|บริการ)|ทำงาน(ภาค|สาขา)ไหน/.test(q)){const r=await bkEmpSector(bkParse(q));if(r)return r}
-    if(/ราคา/.test(q)&&/เกษตร|ข้าว|ยาง|มัน|ปาล์ม|ไข่|สุกร|หมู|ไก่|ปลา|สินค้า|พืช|อ้อย|ข้าวโพด/.test(q)){const r=bkPrice(q);if(r)return r}
+    if(/ราคา/.test(q)&&/เกษตร|ข้าว|ยาง|มัน|ปาล์ม|ไข่|สุกร|หมู|ไก่|ปลา|สินค้า|พืช|อ้อย|ข้าวโพด/.test(q)){const r=await bkPrice(q);if(r)return r}
     if(/พืชเศรษฐกิจ|พืช(สำคัญ|หลัก)|ผลผลิต.{0,12}(แต่ละ|ทุก|ล่าสุด|เกษตร)|พื้นที่เพาะปลูก(?!.*ชลประทาน)/.test(q)&&!/อำเภอ/.test(q)){const r=bkCrops();if(r)return r}
     if(!explicit&&BOT_AMBIG.test(q))return {html:'คำถามนี้หมายถึงตัวเลขเรื่องใดครับ เลือกได้เลย หรือพิมพ์ชื่อตัวชี้วัด',sug:['รายได้ OTOP เพิ่มขึ้นไหม','รายได้ครัวเรือนเพิ่มขึ้นไหม','รายได้จากการท่องเที่ยวรายเดือน','รายได้ภาคอุตสาหกรรม (GPP)','ราคาสินค้าเกษตร']};
   }catch(e){console.warn('bot ext',e)}
