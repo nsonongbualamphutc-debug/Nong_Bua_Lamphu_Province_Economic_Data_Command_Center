@@ -4194,7 +4194,7 @@ async function bkEmpSector(P){
 /* ── ราคาสินค้าเกษตรและพืชเศรษฐกิจ ── */
 /* ราคาสินค้ารายสัปดาห์ · อ่านชุดเดียวกับหน้าการค้า (data/trade.json) ให้ตัวเลขตรงกัน */
 let BK_TRADE=null;
-function bkTradeData(){if(!BK_TRADE)BK_TRADE=fetch('data/trade.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null);return BK_TRADE}
+function bkTradeData(){if(!BK_TRADE)BK_TRADE=fetch('data/trade.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null).then(d=>d||(typeof TRADE_EMBED!=='undefined'?TRADE_EMBED:null));return BK_TRADE}
 async function bkPrice(q){
   const T=await bkTradeData();if(!T||!T.weekly||!T.weekly.length)return null;
   if(/เงินเฟ้อ|CPI|ดัชนีราคา/i.test(q)&&T.cpi){const I={};(T.infl||[]).forEach(x=>I[x.y]=x.v);const c=T.cpi,l=c[c.length-1];
