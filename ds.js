@@ -1352,7 +1352,11 @@ const AGENCY_FULL={
   house  :{n:'สำนักงานสถิติจังหวัดหนองบัวลำภู',dept:'สำนักงานสถิติแห่งชาติ กระทรวงดิจิทัลเพื่อเศรษฐกิจและสังคม',tel:'0 4231 6736',doc:'โครงการสำรวจภาวะเศรษฐกิจและสังคมของครัวเรือน (Household Socio-Economic Survey)'},
   gpp    :{n:'สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ',dept:'',tel:'',doc:'ผลิตภัณฑ์มวลรวมจังหวัด (GPP) ฉบับ พ.ศ. 2567'},
   tpso   :{n:'สำนักงานนโยบายและยุทธศาสตร์การค้า',dept:'กระทรวงพาณิชย์',tel:'',doc:'ดัชนีราคาผู้บริโภคทั่วไประดับจังหวัด (ปีฐาน 2566 = 100)'},
-  bot    :{n:'ธนาคารแห่งประเทศไทย',dept:'',tel:'',doc:'สินเชื่อของธนาคารพาณิชย์รายจังหวัด'}
+  bot    :{n:'ธนาคารแห่งประเทศไทย',dept:'',tel:'',doc:'สินเชื่อของธนาคารพาณิชย์รายจังหวัด'},
+  pwa    :{n:'การประปาส่วนภูมิภาคสาขาหนองบัวลำภู',dept:'การประปาส่วนภูมิภาคเขต 7',tel:'',doc:'ปริมาณน้ำที่จำหน่าย ผู้ใช้น้ำ และอัตราการใช้น้ำ รายอำเภอ'},
+  pea    :{n:'การไฟฟ้าส่วนภูมิภาคจังหวัดหนองบัวลำภู',dept:'การไฟฟ้าส่วนภูมิภาค',tel:'',doc:'การจำหน่ายกระแสไฟฟ้าและจำนวนผู้ใช้ไฟฟ้า รายอำเภอ'},
+  dlt    :{n:'สำนักงานขนส่งจังหวัดหนองบัวลำภู',dept:'กรมการขนส่งทางบก กระทรวงคมนาคม',tel:'',doc:'รถจดทะเบียนสะสมและรถจดทะเบียนใหม่ ตาม พ.ร.บ.รถยนต์ พ.ศ. 2522'},
+  doeb   :{n:'กรมธุรกิจพลังงาน',dept:'กระทรวงพลังงาน',tel:'',doc:'ปริมาณการจำหน่ายน้ำมันเชื้อเพลิงรายจังหวัด (รายงานสถิติจังหวัด ตาราง 13.2)'}
 };
 function srcBar(keys,extra){
   const list=(Array.isArray(keys)?keys:[keys]).map(k=>AGENCY_FULL[k]).filter(Boolean);
@@ -2157,8 +2161,7 @@ function fillIcons(root){
 /* หน้าภาพรวมและหน้า GPP ใช้ข้อมูลจริงจากแฟ้มของหน่วยงานแล้ว ไม่ต้องมีแถบเตือนข้อมูลจำลอง */
 /* หน้าการคลังใช้เฉพาะข้อมูลจริงแล้ว (รายงานผลการเบิกจ่าย + ยอดที่คลังจังหวัดกรอก) จึงไม่อยู่ในรายการนี้ */
 /* หน้าอุตสาหกรรมใช้ข้อมูลรายปีจาก API และไฟล์รายงานสถิติแล้ว ไม่มีชุดรายเดือนจำลอง */
-const TRUST_PAGES={
-  consume:['fuel','car'],area:null};
+const TRUST_PAGES={area:null};
 function trustBar(){
   if(typeof PAGE==='undefined'||!TRUST_PAGES.hasOwnProperty(PAGE.id))return;
   const v=document.querySelector('.view.on'); if(!v)return;
@@ -2516,6 +2519,12 @@ const GDC={
     {id:'ec2ae427-8a15-44e0-8be3-692e07393f2b',page:'trade',agency:'bot',n:'จำนวนธนาคารพาณิชย์',state:'avail'},
     {id:'f73d6b1a-b890-43d4-b9a1-0f4d6ed873e4',page:'trade',agency:'bot',n:'เงินฝากของธนาคารพาณิชย์',state:'avail'},
     {id:'b519ce91-d7b1-4719-96d8-795b5307b6ba',page:'trade',agency:'bot',n:'จำนวนสินเชื่อของธนาคารพาณิชย์',state:'api',use:'การ์ดและกราฟสินเชื่อธนาคารพาณิชย์'},
+    {id:'4e7b6800-d379-4556-b29a-327e0052e47c',page:'consume',agency:'pwa',n:'ปริมาณน้ำที่จำหน่ายแก่ผู้ใช้',state:'api',use:'การ์ด กราฟ และตารางการใช้น้ำประปา'},
+    {id:'efbed7cf-7833-4cd2-9a44-325c977bceaa',page:'consume',agency:'pwa',n:'สถิติผู้ใช้น้ำ ปริมาณการผลิต และการจำหน่าย',state:'api',use:'ผู้ใช้น้ำ และน้ำที่ผลิตได้จริง'},
+    {id:'8894d982-c323-47e3-8c27-7be02cb27c68',page:'consume',agency:'pwa',n:'อัตราการใช้น้ำของประชาชน',state:'api',use:'การใช้น้ำเฉลี่ยต่อราย'},
+    {id:'ffcb14fd-0437-4448-aa97-119e754f261d',page:'consume',agency:'pea',n:'การจำหน่ายกระแสไฟฟ้า',state:'api',use:'การ์ด กราฟ และประเภทผู้ใช้ไฟฟ้า'},
+    {id:'867b62de-e452-4c97-b7cf-c8fcb220f49a',page:'consume',agency:'pea',n:'จำนวนผู้ใช้ไฟฟ้า',state:'api',use:'ผู้ใช้ไฟฟ้ารายอำเภอ'},
+    {id:'875de055-d56c-49f0-a4f0-4f5941707340',page:'consume',agency:'dlt',n:'จำนวนรถจดทะเบียน (สะสม) ตามพระราชบัญญัติรถยนต์ พ.ศ. 2522',state:'api',use:'การ์ดและกราฟรถจดทะเบียนสะสม'},
     /* ค่าเป้าหมาย */
     {id:'85640650-a585-476c-af0e-733309d50161',page:'tourism',agency:'mots',n:'ค่าเป้าหมายตัวชี้วัดท่องเที่ยว',state:'avail'},
     {id:'64467029-96c0-4558-996f-a96ce0f4763f',page:'otop',agency:'cdd',n:'ค่าเป้าหมายตัวชี้วัด OTOP',state:'avail'}
@@ -3030,13 +3039,23 @@ Object.assign(PROV_MAP.agri,{tCrop:'cCropArea',tFruit:'cCropArea',tMainCrop:'cCr
   wl3:{t:'link',ag:'env',n:'บ่อบาดาล ประเภทเกษตรกรรม',note:'หน่วยงานอัปโหลดเป็นไฟล์แล้ว แต่ยังไม่เปิด DataStore จึงอ่านผ่าน API ไม่ได้'},
   wask:{t:'file',ag:'',n:'บ่อขนาดเล็ก (เกษตรทฤษฎีใหม่)',note:'รอสอบถามหน่วยงานเจ้าของข้อมูล'}});
 Object.assign(PROV_MAP.trade,{'cTp-agri':'cWeek','cTp-cons':'cWeek'});
-PROV_MAP.consume={'c-consume':()=>secProv('consume'),'cy-consume':()=>secProv('consume'),'td-consume':()=>secProv('consume'),sec:()=>secProv('consume')};
+/* หน้าการบริโภค · ชุด API ใช้สถานะจริงจากหน้า (CS.st) */
+function csProv(keys,extra){const st=typeof CS!=='undefined'?CS.st:{};const N={sold:['ปริมาณน้ำที่จำหน่ายแก่ผู้ใช้','pwa'],wstat:['สถิติผู้ใช้น้ำ ปริมาณการผลิต และการจำหน่าย','pwa'],
+  rate:['อัตราการใช้น้ำของประชาชน','pwa'],kwh:['การจำหน่ายกระแสไฟฟ้า','pea'],eusers:['จำนวนผู้ใช้ไฟฟ้า','pea'],car:['จำนวนรถจดทะเบียน (สะสม)','dlt']};
+  const items=keys.map(k=>({n:N[k][0],ag:N[k][1],t:st[k]||'loading',rid:typeof CS_RES!=='undefined'?CS_RES[k]:'',note:st[k]==='fallback'?'เชื่อมต่อ API ไม่ได้ ใช้ข้อมูลสำรองจากไฟล์':'ระบบบัญชีข้อมูลจังหวัด'}));
+  if(extra)items.push(extra);const ts=items.map(x=>x.t);
+  const t=ts.some(x=>x==='loading')?'loading':ts.every(x=>x==='api')?'api':ts.some(x=>x==='api')?'part':ts.every(x=>x==='file')?'file':'fallback';return {t,items}}
+const CS_FUEL={t:'file',ag:'doeb',n:'ปริมาณการจำหน่ายน้ำมันเชื้อเพลิง',note:'ไฟล์รายงานสถิติจังหวัด ตาราง 13.2'};
+const CS_NEWCAR={t:'file',ag:'dlt',n:'รถจดทะเบียนใหม่',note:'ไฟล์รายงานสถิติจังหวัด ตาราง 15.2'};
+PROV_MAP.consume={wa:()=>csProv(['sold','wstat','rate']),el:()=>csProv(['kwh','eusers']),ca:()=>csProv(['car']),cn:CS_NEWCAR,fu:CS_FUEL,
+  cWater:'wa',cWUser:'wa',cElec:'el',cEType:'el',cFuel:'fu',cCar:()=>csProv(['car'],CS_NEWCAR)};
 PROV_MAP.tourism={spotQ:'res:tour.spots',gapBox2:'res:tour.acc,tour.internal,tour.occ'};
 PROV_MAP.otop={otopPlayer:'cRev',entBox:'res:otop.ent'};
 PROV_MAP.household={dbox:'cDebt'};
 PROV_MAP.population={popMap:'cPop'};
 /* การ์ดที่ไม่มีรหัส · จับคู่จากชื่อหัวการ์ด */
-const PROV_TITLE={gpp:[[/^เสถียรภาพการคลัง/,'res:fis.dis,fis.alloc']],trade:[[/^(ราคาสินค้าเกษตรที่สำคัญ|ราคาสินค้าอุปโภคบริโภค|เปรียบเทียบย้อนหลัง)/,'cWeek']]};
+const PROV_TITLE={gpp:[[/^เสถียรภาพการคลัง/,'res:fis.dis,fis.alloc']],trade:[[/^(ราคาสินค้าเกษตรที่สำคัญ|ราคาสินค้าอุปโภคบริโภค|เปรียบเทียบย้อนหลัง)/,'cWeek']],
+  consume:[[/^ข้อมูลการใช้น้ำประปา/,'wa'],[/^จำนวนผู้ใช้ไฟฟ้า/,'el'],[/^ปริมาณการจำหน่ายน้ำมัน/,'fu'],[/^จำนวนรถจดทะเบียนใหม่/,'cn']]};
 /* หน้าภาคส่วนรายเดือน (การค้า การบริโภค) · ข้อมูลจริงหรือจำลองดูจากชุดรายเดือนของหน้านั้นจริง ๆ */
 function secProv(pg){
   const ids=(typeof TRUST_PAGES!=='undefined'&&TRUST_PAGES[pg])||[];
@@ -3064,7 +3083,7 @@ const KPI_PROV={
   area:{arKpi:Array(4).fill('cAreaShare')},
   agri:{agriKpi:['res:ag.hh','cropFile','cCropArea','cFruit'],agriKpi2:['cCropValue','cropFile'],
     waterKpi:['res:ag.irr','res:ag.benefit','wl1','solar','res:ag.small','wl2','res:ag.bad','wask'],baseKpi:['baseInfo','cropFile','cropFile','baseInfo'],fruitCards:Array(12).fill('cFruit')},
-  trade:{tKpi:['cCpi','cCpi','cCredit'],tpKpi:['cWeek','cWeek','cWeek']},consume:{'k-consume':Array(8).fill('sec')}
+  trade:{tKpi:['cCpi','cCpi','cCredit'],tpKpi:['cWeek','cWeek','cWeek']},consume:{cKpi:['wa','el','ca','cn','fu','fu','fu','fu']}
 };
 Object.assign(KPI_PROV.overview,{homeKpi:Array(20).fill('cMac')});
 Object.assign(KPI_PROV.fiscal,{fiscalPick:['cFiscalTrend','cFiscalTrend']});
@@ -3192,7 +3211,7 @@ GDC.AGENCY={nso:'สำนักงานสถิติจังหวัดห
   crop:'สำนักงานเกษตรจังหวัดหนองบัวลำภู',ldd:'สถานีพัฒนาที่ดินหนองบัวลำภู',env:'สำนักงานทรัพยากรธรรมชาติและสิ่งแวดล้อมจังหวัด',
   bot:'ธนาคารแห่งประเทศไทย',mots:'สำนักงานการท่องเที่ยวและกีฬาจังหวัด',cdd:'สำนักงานพัฒนาชุมชนจังหวัด',energy:'สำนักงานพลังงานจังหวัด',
   dopa:'ที่ทำการปกครองจังหวัด',nesdc:'สำนักงานสภาพัฒนาการเศรษฐกิจและสังคมแห่งชาติ',ind:'สำนักงานอุตสาหกรรมจังหวัด',
-  pea:'การไฟฟ้าส่วนภูมิภาคจังหวัด',moc:'สำนักงานพาณิชย์จังหวัด',tpso:'สำนักงานนโยบายและยุทธศาสตร์การค้า กระทรวงพาณิชย์',dlt:'สำนักงานขนส่งจังหวัด',sso:'สำนักงานประกันสังคมจังหวัด',sme:'ธนาคาร SME D Bank'};
+  pea:'การไฟฟ้าส่วนภูมิภาคจังหวัด',moc:'สำนักงานพาณิชย์จังหวัด',tpso:'สำนักงานนโยบายและยุทธศาสตร์การค้า กระทรวงพาณิชย์',pwa:'การประปาส่วนภูมิภาคสาขาหนองบัวลำภู',doeb:'กรมธุรกิจพลังงาน กระทรวงพลังงาน',dlt:'สำนักงานขนส่งจังหวัด',sso:'สำนักงานประกันสังคมจังหวัด',sme:'ธนาคาร SME D Bank'};
 /* ลายเซ็นของชุดข้อมูล · เปลี่ยนเมื่อจำนวนแถวหรือเนื้อหาเปลี่ยน */
 function gdcSig(v){let h=0;const t=JSON.stringify(v.records);for(let i=0;i<t.length;i+=7)h=(h*31+t.charCodeAt(i))|0;return v.total+':'+t.length+':'+h}
 GDC.logPull=function(id,v){
@@ -3365,11 +3384,10 @@ const SRC_INV=[
   ['industry','เงินทุนและคนงานในสถานประกอบการอุตสาหกรรม รายอำเภอ','file','ind','ไฟล์รายงานสถิติ ตาราง 12.4 · ยังไม่มีใน API'],
   ['industry','สถานประกอบการจำแนกตามประเภทอุตสาหกรรม','file','ind','ไฟล์รายงานสถิติ ตาราง 12.3 · ยังไม่มีใน API'],
   ['industry','เหมืองแร่ คนงานเหมือง และปริมาณแร่ที่ผลิตได้','file','ind','ไฟล์รายงานสถิติ ตาราง 12.5 · ยังไม่มีใน API'],
-  ['trade','ราคาสินค้าเกษตรรายสัปดาห์','gas','moc','ระบบกรอกข้อมูล ตาราง price'],
-  ['trade','ดัชนีราคาผู้บริโภค','sim','moc','รอหน่วยงานส่งข้อมูลจริง'],
-  ['trade','สินเชื่อ SME','sim','sme','รอหน่วยงานส่งข้อมูลจริง'],
-  ['consume','การจำหน่ายน้ำมันเชื้อเพลิง','sim','energy','รอหน่วยงานส่งข้อมูลจริง'],
-  ['consume','รถจดทะเบียนใหม่','sim','dlt','รอหน่วยงานส่งข้อมูลจริง'],
+  ['trade','ราคาสินค้าเกษตรและอุปโภคบริโภครายสัปดาห์','file','moc','ไฟล์รายงานราคาของสำนักงานพาณิชย์จังหวัด (data/trade.json)'],
+  ['trade','ดัชนีราคาผู้บริโภคและอัตราเงินเฟ้อ','file','tpso','ไฟล์รายงานสถิติจังหวัด ตาราง 14.7'],
+  ['consume','ปริมาณการจำหน่ายน้ำมันเชื้อเพลิง','file','doeb','ไฟล์รายงานสถิติจังหวัด ตาราง 13.2'],
+  ['consume','รถจดทะเบียนใหม่','file','dlt','ไฟล์รายงานสถิติจังหวัด ตาราง 15.2'],
   ['area','ข้อมูลเชิงพื้นที่รายอำเภอ','file','dopa','รวมจากหลายหน่วยงาน']
 ];
 const SRC_TYPE={api:['ดึงจาก API','api'],link:['กำลังเชื่อมข้อมูล','link'],avail:['มีใน API ยังไม่ได้แสดง','avail'],

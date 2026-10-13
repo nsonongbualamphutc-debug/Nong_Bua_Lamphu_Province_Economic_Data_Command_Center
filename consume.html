@@ -32,7 +32,79 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="ds.css">
+<style>
+/* ── หน้าการบริโภคและพลังงาน ── */
+.cs-ban{height:auto!important;min-height:132px;display:flex;align-items:flex-end;gap:16px;padding:18px 20px;flex-wrap:wrap;position:relative}
+.cs-ban:before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(90deg,rgba(6,30,48,.82) 0%,rgba(6,30,48,.45) 55%,rgba(6,30,48,.15) 100%)}
+.cs-ban>*{position:relative}
+.cs-ban .tt{display:flex;gap:14px;align-items:center;color:#fff}
+.cs-ban .tt .bi{width:58px;height:58px;border-radius:16px;background:rgba(255,255,255,.16);display:grid;place-items:center;flex:none}
+.cs-ban .tt .bi img{width:44px;height:44px;object-fit:contain}
+.cs-ban .tt b{display:block;font-family:var(--fd);font-size:23px;font-weight:600;line-height:1.2;text-shadow:0 2px 12px rgba(0,0,0,.45)}
+.cs-ban .tt span{font-size:12.5px;color:#d3e6f5}
+.cs-pick{margin-left:auto;background:rgba(255,255,255,.95);border-radius:14px;padding:9px 12px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.cs-pick .ci{width:36px;height:36px;border-radius:10px;background:#2f6fd0;display:grid;place-items:center;flex:none}
+.cs-pick .ci svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cs-pick label{display:block;font-size:11.5px;color:#4b5b66;font-weight:600}
+.cs-pick select{font:inherit;font-size:14px;font-weight:700;border:1px solid #d9e3ea;border-radius:8px;padding:4px 8px;background:#fff;color:#10231e;cursor:pointer;min-width:140px}
+.cs-pick small{display:block;font-size:10.5px;color:#6b7b85;margin-top:2px}
 
+#cKpi .kpi{cursor:pointer}
+#cKpi .kpi.cs-on{outline:2px solid var(--kpi);outline-offset:-1px}
+#cKpi .kpi .h span:last-child small{display:block;font-size:11px;font-weight:500;color:var(--faint);margin-top:1px}
+
+.cs-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cs-bar .segs button{display:inline-flex;align-items:center;gap:6px;padding:7px 16px}
+.cs-act{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.cs-act button{font:inherit;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);
+  color:var(--dim);border-radius:10px;padding:6px 12px;cursor:pointer}
+.cs-act button svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cs-act button.on{border-color:var(--brand);color:var(--brand);background:var(--brand-l);font-weight:600}
+
+.cs-sec{position:relative;overflow:hidden;border-radius:var(--r);border:1px solid var(--line);background:var(--card) right -10px center/auto 230% no-repeat;
+  display:flex;align-items:center;gap:14px;padding:14px 18px;min-height:86px;flex-wrap:wrap}
+.cs-sec .ci{width:54px;height:54px;border-radius:50%;background:var(--sc);display:grid;place-items:center;flex:none;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.cs-sec .ci img{width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))}
+.cs-sec b{display:block;font-family:var(--fd);font-size:21px;font-weight:600;color:var(--sc);line-height:1.2}
+.cs-sec span{font-size:12.5px;color:var(--dim)}
+.cs-sec .st{margin-left:auto;display:flex;gap:18px;flex-wrap:wrap;background:color-mix(in srgb,var(--card) 82%,transparent);padding:6px 12px;border-radius:12px;margin-right:34%}
+.cs-sec .st div{font-size:11.5px;color:var(--dim)}
+.cs-sec .st div b{font-family:var(--fn);font-size:16px;color:var(--ink);display:block}
+[data-theme="dark"] .cs-sec{background-blend-mode:soft-light}
+
+.cs-sub{font-size:12px;color:var(--faint);margin:-2px 16px 0;padding-left:37px}
+.cs-ch{height:280px;position:relative}
+.cs-g{display:grid;grid-template-columns:1.1fr .9fr;gap:13px}
+.cs-t{width:100%;border-collapse:collapse;font-size:12.5px}
+.cs-t th{font-size:11.5px;font-weight:600;color:var(--dim);text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);background:var(--card2);line-height:1.35}
+.cs-t th.l,.cs-t td.l{text-align:left}
+.cs-t th.ce,.cs-t td.ce{text-align:center}
+.cs-t td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--fn);white-space:nowrap}
+.cs-t td.l{font-family:var(--fs)}
+.cs-t tr.tot td{font-weight:700;background:var(--sl,var(--card2));border-bottom:0;font-size:13.5px}
+.cs-t .na{color:var(--faint);font-weight:400}
+.cs-rk{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;background:var(--rc,#f07a1a);color:#fff;font-size:11.5px;font-weight:700;font-family:var(--fn)}
+.cs-bar2{height:12px;border-radius:999px;background:var(--card2);overflow:hidden;min-width:120px}
+.cs-bar2 i{display:block;height:100%;border-radius:999px;background:var(--bc)}
+.cs-foot{font-size:11.5px;color:var(--faint);padding:8px 12px 2px;line-height:1.6}
+@media (max-width:1100px){.cs-g{grid-template-columns:1fr}.cs-sec .st{margin-right:0}}
+@media (max-width:640px){
+  #cKpi{grid-template-columns:1fr 1fr!important;gap:9px}
+  #cKpi .kpi{padding:10px 10px 9px}
+  #cKpi .kpi .v{font-size:19px!important}
+  #cKpi .kpi .v small{display:block;font-size:10.5px}
+  #cKpi .kpi .h{font-size:11.5px}
+  #cKpi .kpi .kpibg{opacity:.3}
+  .cs-pick{margin-left:0;width:100%}.cs-pick select{flex:1}
+  .cs-act{margin-left:0;width:100%}.cs-act button{flex:1;justify-content:center;padding:6px 6px;font-size:11.5px}
+  .cs-ban .tt b{font-size:18px}
+  .cs-sec{background-size:auto 100%;background-position:right -60px center}
+  .cs-sec .st{margin-left:0;width:100%}
+  .cs-sub{padding-left:0}
+  .cs-bar2{min-width:60px}
+  .cs-t td,.cs-t th{padding:7px 6px}
+}
+</style>
 </head>
 <body>
 <div id="tip"></div>
@@ -48,8 +120,323 @@
 <script src="data2.js"></script>
 <script src="ds.js"></script>
 <script>
-window.onSeg=function(w,btn){ if(w.dataset.dom)drawSectorChart(w.dataset.dom,btn.dataset.mode); };
-DS.init('consume',function(){renderSector('consume')});
+/* ════════════════════════════════════════════════════════════════════
+   การบริโภคและพลังงาน
+   API ระบบบัญชีข้อมูลจังหวัด: น้ำประปา (กปภ.) · ไฟฟ้า (กฟภ.) · รถจดทะเบียนสะสม (ขนส่ง)
+   ไฟล์: น้ำมันเชื้อเพลิง (รายงานสถิติ ตาราง 13.2) · รถจดทะเบียนใหม่ (ตาราง 15.2)
+   ข้อมูลไฟล์ฝังไว้ในหน้า และเป็นข้อมูลสำรองของชุด API เมื่อเชื่อมต่อไม่ได้
+   ════════════════════════════════════════════════════════════════════ */
+const CS_EMBED={"water":{"sold":{"2563":{"เมืองหนองบัวลำภู":1656002.0,"นากลาง":335760.0,"โนนสัง":34857.0,"ศรีบุญเรือง":278020.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2564":{"เมืองหนองบัวลำภู":1671480.0,"นากลาง":403976.0,"โนนสัง":387491.0,"ศรีบุญเรือง":394650.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2565":{"เมืองหนองบัวลำภู":710874.0,"นากลาง":481369.0,"โนนสัง":432503.0,"ศรีบุญเรือง":449870.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2566":{"เมืองหนองบัวลำภู":1878960.0,"นากลาง":578039.0,"โนนสัง":497503.0,"ศรีบุญเรือง":541140.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2567":{"เมืองหนองบัวลำภู":1886147.0,"นากลาง":734809.0,"โนนสัง":519060.0,"ศรีบุญเรือง":855611.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2568":{"เมืองหนองบัวลำภู":1837052.0,"นากลาง":686051.0,"โนนสัง":1388141.0,"ศรีบุญเรือง":839182.0,"สุวรรณคูหา":0.0,"นาวัง":0.0}},"users":{"2563":{"เมืองหนองบัวลำภู":6326.0,"นากลาง":1753.0,"โนนสัง":1682.0,"ศรีบุญเรือง":1895.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2564":{"เมืองหนองบัวลำภู":6460.0,"นากลาง":1774.0,"โนนสัง":1784.0,"ศรีบุญเรือง":1905.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2565":{"เมืองหนองบัวลำภู":6695.0,"นากลาง":1840.0,"โนนสัง":1889.0,"ศรีบุญเรือง":1965.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2566":{"เมืองหนองบัวลำภู":6723.0,"นากลาง":1852.0,"โนนสัง":1940.0,"ศรีบุญเรือง":1992.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2567":{"เมืองหนองบัวลำภู":7173.0,"นากลาง":1978.0,"โนนสัง":1862.0,"ศรีบุญเรือง":2176.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2568":{"เมืองหนองบัวลำภู":7288.0,"นากลาง":2023.0,"โนนสัง":3044.0,"ศรีบุญเรือง":2131.0,"สุวรรณคูหา":0.0,"นาวัง":0.0}},"prod":{"2563":{"เมืองหนองบัวลำภู":2164097.0,"นากลาง":443443.0,"โนนสัง":413991.0,"ศรีบุญเรือง":405106.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2564":{"เมืองหนองบัวลำภู":2161658.0,"นากลาง":457797.0,"โนนสัง":440509.0,"ศรีบุญเรือง":439023.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2565":{"เมืองหนองบัวลำภู":2222671.0,"นากลาง":460339.0,"โนนสัง":481401.0,"ศรีบุญเรือง":496034.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2566":{"เมืองหนองบัวลำภู":2312640.0,"นากลาง":471503.0,"โนนสัง":493021.0,"ศรีบุญเรือง":510023.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2567":{"เมืองหนองบัวลำภู":1860754.0,"นากลาง":760359.0,"โนนสัง":1418827.0,"ศรีบุญเรือง":871817.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2568":{"เมืองหนองบัวลำภู":1774780.0,"นากลาง":721992.0,"โนนสัง":1425945.0,"ศรีบุญเรือง":859329.0,"สุวรรณคูหา":0.0,"นาวัง":0.0}},"rate":{"2563":{"เมืองหนองบัวลำภู":267.62,"นากลาง":189.33,"โนนสัง":209.7,"ศรีบุญเรือง":152.29,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2564":{"เมืองหนองบัวลำภู":175.42,"นากลาง":186.53,"โนนสัง":215.84,"ศรีบุญเรือง":163.22,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2565":{"เมืองหนองบัวลำภู":187.13,"นากลาง":130.19,"โนนสัง":189.0,"ศรีบุญเรือง":128.98,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2566":{"เมืองหนองบัวลำภู":185.57,"นากลาง":170.16,"โนนสัง":250.45,"ศรีบุญเรือง":150.45,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2567":{"เมืองหนองบัวลำภู":190.15,"นากลาง":175.62,"โนนสัง":210.3,"ศรีบุญเรือง":156.0,"สุวรรณคูหา":0.0,"นาวัง":0.0},"2568":{"เมืองหนองบัวลำภู":195.52,"นากลาง":183.13,"โนนสัง":214.0,"ศรีบุญเรือง":160.25,"สุวรรณคูหา":0.0,"นาวัง":0.0}}},"elec":{"kwh":{"2561":{"เมืองหนองบัวลำภู":111.796,"นากลาง":29.388,"โนนสัง":22.588,"ศรีบุญเรือง":58.248,"สุวรรณคูหา":45.69,"นาวัง":22.029},"2562":{"เมืองหนองบัวลำภู":114.451,"นากลาง":31.424,"โนนสัง":24.59,"ศรีบุญเรือง":60.068,"สุวรรณคูหา":46.857,"นาวัง":22.764},"2563":{"เมืองหนองบัวลำภู":70.3,"นากลาง":18.48,"โนนสัง":14.2,"ศรีบุญเรือง":36.63,"สุวรรณคูหา":28.73,"นาวัง":13.85},"2564":{"เมืองหนองบัวลำภู":127.636,"นากลาง":57.185,"โนนสัง":36.09,"ศรีบุญเรือง":68.311,"สุวรรณคูหา":28.233,"นาวัง":26.22},"2565":{"เมืองหนองบัวลำภู":131.963,"นากลาง":54.851,"โนนสัง":34.726,"ศรีบุญเรือง":71.4,"สุวรรณคูหา":30.431,"นาวัง":24.582},"2566":{"เมืองหนองบัวลำภู":149.843,"นากลาง":61.641,"โนนสัง":39.666,"ศรีบุญเรือง":75.803,"สุวรรณคูหา":31.599,"นาวัง":29.915},"2567":{"เมืองหนองบัวลำภู":157.793,"นากลาง":64.527,"โนนสัง":43.197,"ศรีบุญเรือง":79.003,"สุวรรณคูหา":32.518,"นาวัง":32.0},"2568":{"เมืองหนองบัวลำภู":150.728,"นากลาง":62.474,"โนนสัง":40.13,"ศรีบุญเรือง":76.089,"สุวรรณคูหา":31.885,"นาวัง":31.849}},"type":{"2561":{"บ้านอยู่อาศัย":141.972,"สถานธุรกิจและ อุตสาหกรรม":139.074,"ส่วนราชการ และองค์กรไม่แสวงหาผลกำไร":0,"อื่น ๆ":8.693,"ไฟฟรี":0},"2562":{"บ้านอยู่อาศัย":147.156,"สถานธุรกิจและ อุตสาหกรรม":144.28,"ส่วนราชการ และองค์กรไม่แสวงหาผลกำไร":0,"อื่น ๆ":8.718,"ไฟฟรี":0},"2563":{"บ้านอยู่อาศัย":98.79,"สถานธุรกิจและ อุตสาหกรรม":86.33,"ส่วนราชการ และองค์กรไม่แสวงหาผลกำไร":0,"อื่น ๆ":2.47,"ไฟฟรี":0},"2564":{"บ้านอยู่อาศัย":180.81,"สถานธุรกิจและ อุตสาหกรรม":154.575,"ส่วนราชการ และองค์กรไม่แสวงหาผลกำไร":0,"อื่น ๆ":8.29,"ไฟฟรี":0},"2565":{"บ้านอยู่อาศัย":163.485,"สถานธุรกิจและ อุตสาหกรรม":165.653,"ส่วนราชการ และองค์กรไม่แสวงหาผลกำไร":16.712,"อื่น ๆ":2.103,"ไฟฟรี":0},"2566":{"บ้านอยู่อาศัย":192.104,"สถานธุรกิจและ อุตสาหกรรม":168.227,"ส่วนราชการ และองค์กรไม่แสวงหาผลกำไร":0,"อื่น ๆ":28.135,"ไฟฟรี":0},"2567":{"บ้านอยู่อาศัย":204.036,"สถานธุรกิจและ อุตสาหกรรม":171.239,"ส่วนราชการ และองค์กรไม่แสวงหาผลกำไร":8.669,"อื่น ๆ":0.164,"ไฟฟรี":24.93},"2568":{"บ้านอยู่อาศัย":194.121,"สถานธุรกิจและ อุตสาหกรรม":162.463,"ส่วนราชการ และองค์กรไม่แสวงหาผลกำไร":0,"อื่น ๆ":8.193,"ไฟฟรี":28.375}},"users":{"2561":{"ยอดรวม":143609.0,"เมืองหนองบัวลำภู":40903.0,"นากลาง":26661.0,"โนนสัง":18078.0,"ศรีบุญเรือง":29657.0,"สุวรรณคูหา":17302.0,"นาวัง":11008.0},"2562":{"ยอดรวม":146423.0,"เมืองหนองบัวลำภู":41989.0,"นากลาง":27204.0,"โนนสัง":18440.0,"ศรีบุญเรือง":30197.0,"สุวรรณคูหา":17504.0,"นาวัง":11089.0},"2563":{"ยอดรวม":151244.0,"เมืองหนองบัวลำภู":43264.0,"นากลาง":28186.0,"โนนสัง":19074.0,"ศรีบุญเรือง":31078.0,"สุวรรณคูหา":18222.0,"นาวัง":11420.0},"2564":{"ยอดรวม":154976.0,"เมืองหนองบัวลำภู":44517.0,"นากลาง":29021.0,"โนนสัง":19523.0,"ศรีบุญเรือง":31571.0,"สุวรรณคูหา":18697.0,"นาวัง":11647.0},"2565":{"ยอดรวม":157818.0,"เมืองหนองบัวลำภู":45619.0,"นากลาง":29602.0,"โนนสัง":19896.0,"ศรีบุญเรือง":31735.0,"สุวรรณคูหา":19090.0,"นาวัง":11876.0},"2566":{"ยอดรวม":154574.0,"เมืองหนองบัวลำภู":40772.0,"นากลาง":30264.0,"โนนสัง":20077.0,"ศรีบุญเรือง":32254.0,"สุวรรณคูหา":19051.0,"นาวัง":12156.0},"2567":{"ยอดรวม":150510.0,"เมืองหนองบัวลำภู":44278.0,"นากลาง":27110.0,"โนนสัง":18865.0,"ศรีบุญเรือง":30721.0,"สุวรรณคูหา":17996.0,"นาวัง":11540.0},"2568":{"ยอดรวม":155274.0,"เมืองหนองบัวลำภู":45701.0,"นากลาง":28357.0,"โนนสัง":19631.0,"ศรีบุญเรือง":31485.0,"สุวรรณคูหา":18602.0,"นาวัง":11498.0}}},"car":{"cum":{"2563":124580.0,"2564":136949.0,"2565":152636.0,"2566":166212.0,"2567":177648.0},"new":{"2564":12369,"2565":15697,"2566":29333,"2567":40767,"2568":51161}},"fuel":{"2564":{"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 91":6884.63,"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95":9578.12,"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95 (ชนิดพิเศษ)":347.9,"น้ำมันแก๊สโซฮอล์อี 20":5013.99,"น้ำมันแก๊สโซฮอล์อี 85":446.75,"น้ำมันเบนซิน ออกเทน 91":0,"น้ำมันเบนซิน":11.97,"น้ำมันดีเซลหมุนเร็วธรรมดา":12680.81,"น้ำมันดีเซลหมุนเร็วธรรมดา (ชนิดพิเศษ)":0,"น้ำมันดีเซลหมุนเร็ว บี 7":51373.05,"น้ำมันดีเซลหมุนเร็ว บี 7 (ชนิดพิเศษ)":460.44,"น้ำมันดีเซลหมุนเร็ว บี 7 (ชนิดพิเศษ) ยูโร 5":356.02,"น้ำมันดีเซลหมุนเร็ว บี 20":123.98,"น้ำมันดีเซลพื้นฐาน (10 PPM)":0,"น้ำมันดีเซลพื้นฐาน (50 PPM)":0,"น้ำมันดีเซลกำมะถันสูง":0,"น้ำมันดีเซลเขตต่อเนื่อง (น้ำมันเขียว)":0,"น้ำมันเตา":0,"ก๊าซแอลพีจี":5329.92,"โพรเพน":0,"บิวเทน":0},"2565":{"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 91":7837.91,"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95":13143.26,"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95 (ชนิดพิเศษ)":814.18,"น้ำมันแก๊สโซฮอล์อี 20":4764.31,"น้ำมันแก๊สโซฮอล์อี 85":450.32,"น้ำมันเบนซิน ออกเทน 91":0,"น้ำมันเบนซิน":2.99,"น้ำมันดีเซลหมุนเร็วธรรมดา":783.57,"น้ำมันดีเซลหมุนเร็วธรรมดา (ชนิดพิเศษ)":0,"น้ำมันดีเซลหมุนเร็ว บี 7":78198.19,"น้ำมันดีเซลหมุนเร็ว บี 7 (ชนิดพิเศษ)":620.5,"น้ำมันดีเซลหมุนเร็ว บี 7 (ชนิดพิเศษ) ยูโร 5":223.66,"น้ำมันดีเซลหมุนเร็ว บี 20":0,"น้ำมันดีเซลพื้นฐาน (10 PPM)":0,"น้ำมันดีเซลพื้นฐาน (50 PPM)":0,"น้ำมันดีเซลกำมะถันสูง":0,"น้ำมันดีเซลเขตต่อเนื่อง (น้ำมันเขียว)":0,"น้ำมันเตา":401.84,"ก๊าซแอลพีจี":5293.3,"โพรเพน":0,"บิวเทน":0},"2566":{"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 91":7379.73,"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95":13547.6,"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95 (ชนิดพิเศษ)":415.43,"น้ำมันแก๊สโซฮอล์อี 20":4408.98,"น้ำมันแก๊สโซฮอล์อี 85":86.15,"น้ำมันเบนซิน ออกเทน 91":0,"น้ำมันเบนซิน":0,"น้ำมันดีเซลหมุนเร็วธรรมดา":71.03,"น้ำมันดีเซลหมุนเร็วธรรมดา (ชนิดพิเศษ)":0,"น้ำมันดีเซลหมุนเร็ว บี 7":76263.49,"น้ำมันดีเซลหมุนเร็ว บี 7 (ชนิดพิเศษ)":281.33,"น้ำมันดีเซลหมุนเร็ว บี 7 (ชนิดพิเศษ) ยูโร 5":192.85,"น้ำมันดีเซลหมุนเร็ว บี 20":0,"น้ำมันดีเซลพื้นฐาน (10 PPM)":0,"น้ำมันดีเซลพื้นฐาน (50 PPM)":0,"น้ำมันดีเซลกำมะถันสูง":0,"น้ำมันดีเซลเขตต่อเนื่อง (น้ำมันเขียว)":0,"น้ำมันเตา":551.5,"ก๊าซแอลพีจี":4881.89,"โพรเพน":0,"บิวเทน":0},"2567":{"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 91":7725.13,"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95":13630.45,"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95 (ชนิดพิเศษ)":352.14,"น้ำมันแก๊สโซฮอล์อี 20":3975.84,"น้ำมันแก๊สโซฮอล์อี 85":3.01,"น้ำมันเบนซิน ออกเทน 91":0,"น้ำมันเบนซิน":0,"น้ำมันดีเซลหมุนเร็วธรรมดา":76909.13,"น้ำมันดีเซลหมุนเร็วธรรมดา (ชนิดพิเศษ)":215.2,"น้ำมันดีเซลหมุนเร็ว บี 7":0,"น้ำมันดีเซลหมุนเร็ว บี 7 (ชนิดพิเศษ)":0,"น้ำมันดีเซลหมุนเร็ว บี 7 (ชนิดพิเศษ) ยูโร 5":0,"น้ำมันดีเซลหมุนเร็ว บี 20":0,"น้ำมันดีเซลพื้นฐาน (10 PPM)":0,"น้ำมันดีเซลพื้นฐาน (50 PPM)":0,"น้ำมันดีเซลกำมะถันสูง":0,"น้ำมันดีเซลเขตต่อเนื่อง (น้ำมันเขียว)":0,"น้ำมันเตา":217.43,"ก๊าซแอลพีจี":4952.23,"โพรเพน":0,"บิวเทน":0},"2568":{"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 91":7414.31,"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95":15311.09,"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95 (ชนิดพิเศษ)":325.76,"น้ำมันแก๊สโซฮอล์อี 20":3903.49,"น้ำมันแก๊สโซฮอล์อี 85":0,"น้ำมันเบนซิน ออกเทน 91":0,"น้ำมันเบนซิน":0,"น้ำมันดีเซลหมุนเร็วธรรมดา":77574.32,"น้ำมันดีเซลหมุนเร็วธรรมดา (ชนิดพิเศษ)":323.63,"น้ำมันดีเซลหมุนเร็ว บี 7":0,"น้ำมันดีเซลหมุนเร็ว บี 7 (ชนิดพิเศษ)":0,"น้ำมันดีเซลหมุนเร็ว บี 7 (ชนิดพิเศษ) ยูโร 5":0,"น้ำมันดีเซลหมุนเร็ว บี 20":0,"น้ำมันดีเซลพื้นฐาน (10 PPM)":0,"น้ำมันดีเซลพื้นฐาน (50 PPM)":0,"น้ำมันดีเซลกำมะถันสูง":0,"น้ำมันดีเซลเขตต่อเนื่อง (น้ำมันเขียว)":0,"น้ำมันเตา":0,"ก๊าซแอลพีจี":5245.18,"โพรเพน":0.23,"บิวเทน":0}},"fuelUnit":{"น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 91":"พันลิตร","น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95":"พันลิตร","น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95 (ชนิดพิเศษ)":"พันลิตร","น้ำมันแก๊สโซฮอล์อี 20":"พันลิตร","น้ำมันแก๊สโซฮอล์อี 85":"พันลิตร","น้ำมันเบนซิน ออกเทน 91":"พันลิตร","น้ำมันเบนซิน":"พันลิตร","น้ำมันดีเซลหมุนเร็วธรรมดา":"พันลิตร","น้ำมันดีเซลหมุนเร็วธรรมดา (ชนิดพิเศษ)":"พันลิตร","น้ำมันดีเซลหมุนเร็ว บี 7":"พันลิตร","น้ำมันดีเซลหมุนเร็ว บี 7 (ชนิดพิเศษ)":"พันลิตร","น้ำมันดีเซลหมุนเร็ว บี 7 (ชนิดพิเศษ) ยูโร 5":"พันลิตร","น้ำมันดีเซลหมุนเร็ว บี 20":"พันลิตร","น้ำมันดีเซลพื้นฐาน (10 PPM)":"พันลิตร","น้ำมันดีเซลพื้นฐาน (50 PPM)":"พันลิตร","น้ำมันดีเซลกำมะถันสูง":"พันลิตร","น้ำมันดีเซลเขตต่อเนื่อง (น้ำมันเขียว)":"พันลิตร","น้ำมันเตา":"พันลิตร","ก๊าซแอลพีจี":"พันกิโลกรัม","โพรเพน":"พันกิโลกรัม","บิวเทน":"พันกิโลกรัม"}};
+const CS_RES={sold:'4e7b6800-d379-4556-b29a-327e0052e47c',wstat:'efbed7cf-7833-4cd2-9a44-325c977bceaa',rate:'8894d982-c323-47e3-8c27-7be02cb27c68',
+  kwh:'ffcb14fd-0437-4448-aa97-119e754f261d',eusers:'867b62de-e452-4c97-b7cf-c8fcb220f49a',car:'875de055-d56c-49f0-a4f0-4f5941707340'};
+const CS={D:JSON.parse(JSON.stringify(CS_EMBED)),st:{sold:'loading',wstat:'loading',rate:'loading',kwh:'loading',eusers:'loading',car:'loading'},
+  year:null,tab:'water',view:'trend'};
+const AMP=['เมืองหนองบัวลำภู','นากลาง','โนนสัง','ศรีบุญเรือง','สุวรรณคูหา','นาวัง'];
+const COL={water:'#2f7fd8',wuser:'#2f7fd8',wrate:'#16a06a',elec:'#f07a1a',diesel:'#f07a1a',g95:'#16a06a',g91:'#2f7fd8',e20:'#d6407a',lpg:'#8b5cf6',cum:'#6a3fd6',newc:'#e8336d'};
+const TABS=[
+  {k:'water',t:'การใช้น้ำประปา',ic:'tapwater|water',c:'#2f7fd8',bg:'irrigation'},
+  {k:'elec',t:'การใช้ไฟฟ้า',ic:'power',c:'#f07a1a',bg:'power'},
+  {k:'fuel',t:'การใช้น้ำมันเชื้อเพลิง',ic:'fuel',c:'#16865f',bg:'fuel'},
+  {k:'car',t:'รถจดทะเบียน',ic:'vehicle',c:'#6a3fd6',bg:'vehicle'}];
+
+/* ── ตัวช่วย ── */
+const yrs=o=>Object.keys(o||{}).map(Number).filter(Boolean).sort((a,b)=>a-b);
+const sumA=o=>{if(!o)return null;const v=Object.values(o).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0):null};
+const nz=v=>v==null||v===0?null:v;
+function atOr(o,Y){const ys=yrs(o).filter(y=>o[y]!=null);const y=ys.filter(x=>x<=Y).pop();return y==null?{y:null,v:null}:{y,v:o[y]}}
+function fx(v,d){return v==null?'—':(d?f(v,d):f_num(Math.round(v)))}
+/* ป้ายค่าบนจุด */
+const lblPlug={id:'csLbl',afterDatasetsDraw(c){
+  const ctx=c.ctx;
+  c.data.datasets.forEach((d,i)=>{
+    if(!d.lbl)return;const m=c.getDatasetMeta(i);if(m.hidden)return;
+    m.data.forEach((pt,j)=>{const v=d.data[j];if(v==null||pt.skip)return;
+      if(innerWidth<640&&d.data.length>6&&j%2&&j!==d.data.length-1)return;
+      const t=d.lbl(v,j);if(t==null)return;
+      ctx.save();ctx.font=`600 ${innerWidth<640?10:11}px 'IBM Plex Sans','IBM Plex Sans Thai',sans-serif`;
+      ctx.textAlign='center';ctx.textBaseline='middle';const y=pt.y+(d.lblPos==='below'?15:-14);
+      ctx.lineWidth=3.2;ctx.strokeStyle=cv('--card');ctx.lineJoin='round';ctx.strokeText(t,pt.x,y);
+      ctx.fillStyle=d.lblColor||d.borderColor;ctx.fillText(t,pt.x,y);ctx.restore()})})}};
+function grad(id,hex){const el=document.getElementById(id);if(!el)return hex+'22';
+  const g=el.getContext('2d').createLinearGradient(0,0,0,280);g.addColorStop(0,hex+'55');g.addColorStop(1,hex+'05');return g}
+function lineDs(label,data,col,o){return Object.assign({label,data,borderColor:col,backgroundColor:col,borderWidth:2.6,tension:.25,cubicInterpolationMode:'monotone',
+  pointRadius:4.5,pointHoverRadius:7,pointBackgroundColor:'#fff',pointBorderWidth:2.4,spanGaps:true},o||{})}
+
+/* ── ชุดตัวเลขที่ใช้ทั้งหน้า ── */
+const FUEL_DIESEL=/^น้ำมันดีเซลหมุนเร็ว/;
+function series(){
+  const D=CS.D,W=D.water,E=D.elec,F=D.fuel;
+  const by=(o,fn)=>{const r={};yrs(o).forEach(y=>{const v=fn(o[y],y);if(v!=null)r[y]=v});return r};
+  const fsum=re=>by(F,o=>{const k=Object.keys(o).filter(n=>re.test(n));return k.length?k.reduce((a,n)=>a+(o[n]||0),0):null});
+  return {
+    water:by(W.sold,o=>{const s=sumA(o);return s?s/1e6:null}),
+    wprod:by(W.prod,o=>{const s=sumA(o);return s?s/1e6:null}),
+    wuser:by(W.users,o=>nz(sumA(o))),
+    wrate:by(W.rate,(o,y)=>{const u=W.users[y]||{};let a=0,b=0;AMP.forEach(m=>{if(o[m]&&u[m]){a+=o[m]*u[m];b+=u[m]}});return b?a/b:null}),
+    elec:by(E.kwh,o=>nz(sumA(o))),
+    euser:by(E.users,o=>o['ยอดรวม']!=null?o['ยอดรวม']:nz(sumA(o))),
+    cum:by(D.car.cum,v=>v),newc:by(D.car.new,v=>v),
+    diesel:fsum(FUEL_DIESEL),g91:fsum(/ออกเทน 91$/),g95:fsum(/ออกเทน 95/),e20:fsum(/อี 20$/),
+    lpg:fsum(/^ก๊าซแอลพีจี$/),
+    fuelL:by(F,o=>Object.keys(o).filter(n=>(CS.D.fuelUnit[n]||'')==='พันลิตร').reduce((a,n)=>a+(o[n]||0),0)||null)
+  };
+}
+
+/* ── ดึง API แล้วแปลงเป็นโครงเดียวกับข้อมูลฝัง ── */
+function apiRows(v){return gdcRows(v).map(r=>({y:parseInt(r['ปี'],10),amp:String(r['อำเภอ']||'').trim(),item:String(r['รายการ']||'').trim(),
+  type:String(r['ประเภท']||'').replace(/\s+/g,' ').trim(),v:gdcNum(r['ค่าข้อมูล']!=null?r['ค่าข้อมูล']:r['จำนวน']!=null?r['จำนวน']:r['ค่าของข้อมูล'])})).filter(r=>r.y)}
+const CS_APPLY={
+  sold(R){const o={};R.forEach(r=>{(o[r.y]=o[r.y]||{})[r.amp]=r.v});return Object.keys(o).length&&(CS.D.water.sold=o)},
+  rate(R){const o={};R.forEach(r=>{(o[r.y]=o[r.y]||{})[r.amp]=r.v});return Object.keys(o).length&&(CS.D.water.rate=o)},
+  wstat(R){const u={},p={};R.forEach(r=>{const t=/ผู้ใช้/.test(r.item)?u:/ผลิต/.test(r.item)?p:null;if(t)(t[r.y]=t[r.y]||{})[r.amp]=r.v});
+    if(Object.keys(u).length)CS.D.water.users=u;if(Object.keys(p).length)CS.D.water.prod=p;return Object.keys(u).length},
+  kwh(R){const k={},t={};R.forEach(r=>{if(!r.type||r.type==='ยอดรวม')(k[r.y]=k[r.y]||{})[r.amp]=r.v;
+      else{const d=(t[r.y]=t[r.y]||{});d[r.type]=+((d[r.type]||0)+(r.v||0)).toFixed(3)}});
+    if(Object.keys(k).length){CS.D.elec.kwh=k;CS.D.elec.type=t}return Object.keys(k).length},
+  eusers(R){const o={};R.forEach(r=>{(o[r.y]=o[r.y]||{})[r.amp]=r.v});return Object.keys(o).length&&(CS.D.elec.users=o)},
+  car(R){const o={};R.forEach(r=>{if(r.v!=null)o[r.y]=r.v});return Object.keys(o).length&&(CS.D.car.cum=o)}
+};
+function loadApi(){
+  Object.keys(CS_RES).forEach(k=>GDC.all(CS_RES[k]).then(v=>{CS.st[k]=CS_APPLY[k](apiRows(v))?'api':'fallback'})
+    .catch(()=>{CS.st[k]='fallback'}).finally(()=>safeRender()));
+}
+
+/* ── ปีที่เลือกได้ · ปีที่ตัวชี้วัดหลักอย่างน้อย 6 ใน 8 ตัวมีข้อมูล ── */
+function yearList(S){
+  const K=['water','elec','cum','newc','diesel','g91','g95','lpg'];
+  const all=[...new Set(K.flatMap(k=>yrs(S[k])))].sort((a,b)=>a-b);
+  return all.filter(y=>K.filter(k=>S[k][y]!=null).length>=6);
+}
+
+/* ── หัวหน้า + การ์ด ── */
+function bannerHtml(Y,ys){
+  return `<div class="pgbanner cs-ban mb" style="background-image:url('assets/h-consume.jpg')">
+    <div class="tt"><span class="bi">${icoImg('consume',44)}</span><span><b>การบริโภคและพลังงาน</b><span>ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</span></span></div>
+    <div class="cs-pick"><span class="ci"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8.5 3v4M15.5 3v4"/></svg></span>
+      <span><label for="csYear">เลือกปีที่แสดงข้อมูล</label><select id="csYear">${ys.slice().reverse().map(y=>`<option value="${y}"${y===Y?' selected':''}>${y}</option>`).join('')}</select>
+      <small>ข้อมูลรายปี · ล่าสุดปี ${ys[ys.length-1]}</small></span></div></div>`;
+}
+function kpis(S,Y){
+  const L=[
+    {k:'water',tab:'water',lbl:'ปริมาณการใช้น้ำประปา',u:'ล้าน ลบ.ม.',d:2,ic:'tapwater|water',bg:'irrigation',c:COL.water,src:'pwa',
+      def:'ปริมาณน้ำที่การประปาส่วนภูมิภาคจำหน่ายแก่ผู้ใช้ รวมทุกอำเภอที่มีสาขาให้บริการ'},
+    {k:'elec',tab:'elec',lbl:'ปริมาณการใช้ไฟฟ้า',u:'ล้านกิโลวัตต์-ชั่วโมง',d:2,ic:'power',bg:'power',c:COL.elec,src:'pea',
+      def:'ปริมาณการจำหน่ายกระแสไฟฟ้ารวมทุกประเภทผู้ใช้ทุกอำเภอ (ล้านหน่วย = GWh)'},
+    {k:'cum',tab:'car',lbl:'รถจดทะเบียนสะสม',u:'คัน',d:0,ic:'carstock|vehicle',bg:'vehicle',c:COL.cum,src:'dlt',
+      def:'จำนวนรถจดทะเบียนสะสมตามพระราชบัญญัติรถยนต์ พ.ศ. 2522'},
+    {k:'newc',tab:'car',lbl:'รถจดทะเบียนใหม่',u:'คัน',d:0,ic:'newcar|car',bg:'vehicle',c:COL.newc,src:'dlt',
+      def:'จำนวนรถจดทะเบียนใหม่ในปีตามพระราชบัญญัติรถยนต์ พ.ศ. 2522 (รายงานสถิติจังหวัด ตาราง 15.2)'},
+    {k:'diesel',tab:'fuel',lbl:'การจำหน่ายน้ำมันดีเซลหมุนเร็ว',u:'พันลิตร',d:2,ic:'diesel|fuel',bg:'fuel',c:COL.diesel,src:'doeb',
+      def:'รวมน้ำมันดีเซลหมุนเร็วทุกชนิด (ธรรมดา บี 7 บี 20 และชนิดพิเศษ) เพราะตั้งแต่ปี 2567 รายงานเปลี่ยนจาก "บี 7" เป็น "ดีเซลหมุนเร็วธรรมดา" การรวมจึงเทียบข้ามปีได้'},
+    {k:'g91',tab:'fuel',lbl:'การจำหน่ายแก๊สโซฮอล์ E10 ออกเทน 91',u:'พันลิตร',d:2,ic:'gasohol91|fuel',bg:'fuel',c:COL.g91,src:'doeb',
+      def:'น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 91'},
+    {k:'g95',tab:'fuel',lbl:'การจำหน่ายแก๊สโซฮอล์ E10 ออกเทน 95',u:'พันลิตร',d:2,ic:'gasohol95|fuel',bg:'fuel',c:COL.g95,src:'doeb',
+      def:'น้ำมันแก๊สโซฮอล์อี 10 ออกเทน 95 รวมชนิดพิเศษ'},
+    {k:'lpg',tab:'fuel',lbl:'การจำหน่ายก๊าซแอลพีจี',u:'พันกิโลกรัม',d:2,ic:'lpg|fuel',bg:'fuel',c:COL.lpg,src:'doeb',
+      def:'ก๊าซปิโตรเลียมเหลว (LPG) หน่วยเป็นน้ำหนัก'}];
+  return L.map(o=>{const a=atOr(S[o.k],Y),b=a.y!=null?S[o.k][a.y-1]:null;
+    return kpiCard({icon:'chart',img:o.ic,bg:o.bg,color:o.c,sim:false,
+      label:`${o.lbl}<small>จังหวัดหนองบัวลำภู ปี ${a.y||Y}</small>`,value:fx(a.v,o.d),unit:o.u,
+      chip:b!=null&&a.v!=null?chip(pctc(a.v,b)):'<span class="chip">—</span>',
+      sub:a.y==null?'ยังไม่มีข้อมูล':a.y!==Y?`ข้อมูลล่าสุดปี ${a.y} · ปี ${Y} ยังไม่เผยแพร่`:(b!=null?`จากปีก่อน (${a.y-1}) ${fx(b,o.d)}`:'ไม่มีปีก่อนให้เทียบ'),
+      tip:tipOf({t:o.lbl,d:o.def,calc:'เปลี่ยนแปลง = (ปีนี้ − ปีก่อน) ÷ ปีก่อน × 100',src:o.src,when:'ปี '+(a.y||Y)})}).replace('<div class="kpi','<div data-cstab="'+o.tab+'" class="kpi'+(o.tab===CS.tab?' cs-on':''));
+  }).join('');
+}
+const ICO={trend:'<path d="M4 17l5-5 4 3 7-8"/><path d="M15 7h5v5"/>',cmp:'<path d="M5 20V10M12 20V4M19 20v-7"/>',dl:'<path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 19h14"/>'};
+function barHtml(){
+  return `<div class="cs-bar mb"><div class="segs" id="csTabs">${TABS.map(t=>`<button class="${t.k===CS.tab?'on':''}" data-k="${t.k}">${icoImg(t.ic,20).replace('class="ico"','class="segico"')}${t.t}</button>`).join('')}</div>
+    <div class="cs-act"><button class="${CS.view==='trend'?'on':''}" data-csv="trend"><svg viewBox="0 0 24 24">${ICO.trend}</svg>แนวโน้มรายปี</button>
+      <button class="${CS.view==='cmp'?'on':''}" data-csv="cmp"><svg viewBox="0 0 24 24">${ICO.cmp}</svg>เปรียบเทียบรายปี</button>
+      <button data-csdl="1"><svg viewBox="0 0 24 24">${ICO.dl}</svg>ดาวน์โหลดข้อมูล</button></div></div>`;
+}
+function secHtml(t,stats){
+  return `<div class="cs-sec mb" style="--sc:${t.c};background-image:url('assets/cardbg/bg-${t.bg}.webp')">
+    <span class="ci">${icoImg(t.ic,34)}</span><span><b>${t.t}</b><span>จังหวัดหนองบัวลำภู</span></span>
+    ${stats?`<div class="st">${stats.map(s=>`<div><b>${s[1]}</b>${s[0]}</div>`).join('')}</div>`:''}</div>`;
+}
+function card(id,ico,title,sub,body,u){
+  return `<div class="c"><header><span class="hdico icow img">${icoImg(ico,26)}</span><h3>${title}</h3>${u?`<span class="u">${u}</span>`:''}</header>
+    ${sub?`<div class="cs-sub">${sub}</div>`:''}<div class="b">${body}</div></div>`;
+}
+const span=o=>{const y=yrs(o);return y.length?`จังหวัดหนองบัวลำภู พ.ศ. ${y[0]} – ${y[y.length-1]}`:''};
+/* ข้อสังเกตอัตโนมัติ: ปีที่ลดลงแรงแล้วกลับขึ้น (อาจเป็นข้อมูลไม่ครบ) */
+function oddYear(o){const y=yrs(o);for(let i=1;i<y.length-1;i++){const a=o[y[i-1]],b=o[y[i]],c=o[y[i+1]];if(a&&b&&c&&b<a*.7&&c>b*1.3)return y[i]}return null}
+function trendNote(o,u,d){const y=yrs(o);if(y.length<2)return '';const a=y[0],b=y[y.length-1],p=pctc(o[b],o[a]);const odd=oddYear(o);
+  return `ปี ${b} อยู่ที่ ${fx(o[b],d)} ${u} ${p>=0?'เพิ่มขึ้น':'ลดลง'} ${f(Math.abs(p),1)}% จากปี ${a}${odd?` · ปี ${odd} ตัวเลขต่ำผิดปกติเมื่อเทียบปีข้างเคียง ควรตรวจสอบกับหน่วยงานเจ้าของข้อมูล`:''}`}
+
+/* ════════════ แท็บ ════════════ */
+function waterHtml(S,Y){
+  const W=CS.D.water,y=atOr(S.water,Y).y,so=W.sold[y]||{},us=W.users[y]||{},ra=W.rate[y]||{};
+  const loss=S.wprod[y]&&S.water[y]?(1-S.water[y]/S.wprod[y])*100:null;
+  const rows=AMP.map(a=>{const s=nz(so[a]),u=nz(us[a]),r=nz(ra[a]);
+    return `<tr><td class="l">${a}</td><td>${s==null?'<span class="na">—</span>':f(s/1e6,2)}</td><td>${u==null?'<span class="na">—</span>':f_num(u)}</td><td>${r==null?'<span class="na">—</span>':f(r,2)}</td></tr>`}).join('');
+  const none=AMP.filter(a=>!nz(so[a])&&!nz(us[a]));
+  return secHtml(TABS[0],[['ผู้ใช้น้ำ (ราย)',fx(S.wuser[y])],['ใช้น้ำเฉลี่ย (ลบ.ม./ราย)',fx(S.wrate[y],2)],['น้ำสูญเสีย (ผลิต − จำหน่าย)',loss==null?'—':f(loss,1)+'%']])+
+  `<div class="mb">${card('','line','แนวโน้มปริมาณการใช้น้ำประปา รายปี',span(S.water),
+      `<div class="cs-ch"><canvas id="cWater"></canvas></div><div class="note">${trendNote(S.water,'ล้าน ลบ.ม.',2)} · เส้นประคือปริมาณน้ำที่ผลิตได้จริง ส่วนต่างกับน้ำที่จำหน่ายคือน้ำสูญเสียในระบบ</div>`,'ล้าน ลบ.ม.')}</div>
+  <div class="cs-g">
+    ${card('','district',`ข้อมูลการใช้น้ำประปา รายอำเภอ ปี ${y}`,'จังหวัดหนองบัวลำภู',
+      `<div class="sc"><table class="cs-t" style="--sl:#e8f1fc"><thead><tr><th class="l">อำเภอ</th><th>ปริมาณการใช้น้ำ<br>(ล้าน ลบ.ม.)</th><th>จำนวนผู้ใช้น้ำ<br>(ราย)</th><th>การใช้น้ำเฉลี่ย<br>(ลบ.ม./ราย)</th></tr></thead>
+      <tbody>${rows}<tr class="tot"><td class="l">รวมจังหวัด</td><td>${fx(S.water[y],2)}</td><td>${fx(S.wuser[y])}</td><td>${fx(S.wrate[y],2)}</td></tr></tbody></table></div>
+      <div class="cs-foot">${none.length?`อำเภอ${none.join(' และ ')} ไม่มีข้อมูลในชุดข้อมูลของการประปาส่วนภูมิภาค (ค่าเป็น 0) · `:''}การใช้น้ำเฉลี่ยรวมจังหวัด = ค่าเฉลี่ยของแต่ละอำเภอถ่วงน้ำหนักด้วยจำนวนผู้ใช้น้ำ</div>`)}
+    ${card('','population','จำนวนผู้ใช้น้ำประปา และการใช้น้ำเฉลี่ยต่อราย',span(S.wuser),`<div class="cs-ch"><canvas id="cWUser"></canvas></div>`)}
+  </div>`;
+}
+function elecHtml(S,Y){
+  const E=CS.D.elec,y=atOr(S.elec,Y).y,uy=atOr(S.euser,Y).y,U=E.users[uy]||{};
+  const L=AMP.map(a=>({a,v:U[a]})).filter(x=>x.v!=null).sort((p,q)=>q.v-p.v),mx=Math.max(...L.map(x=>x.v));
+  const tot=S.euser[uy];
+  const T=E.type[y]||{},tl=Object.keys(T).filter(k=>T[k]>0).sort((a,b)=>T[b]-T[a]);
+  return secHtml(TABS[1],[['ผู้ใช้ไฟฟ้า (ราย)',fx(tot)],['ใช้ไฟเฉลี่ยต่อราย (หน่วย/ปี)',S.elec[y]&&tot?f_num(Math.round(S.elec[y]*1e6/tot)):'—'],['บ้านอยู่อาศัย',T['บ้านอยู่อาศัย']&&S.elec[y]?f(T['บ้านอยู่อาศัย']/S.elec[y]*100,1)+'%':'—']])+
+  `<div class="mb">${card('','power','แนวโน้มปริมาณการใช้ไฟฟ้า รายปี',span(S.elec),
+      `<div class="cs-ch"><canvas id="cElec"></canvas></div><div class="note">${trendNote(S.elec,'ล้านหน่วย',2)}</div>`,'ล้านกิโลวัตต์-ชั่วโมง')}</div>
+  <div class="cs-g">
+    ${card('','ranking',`จำนวนผู้ใช้ไฟฟ้า จำแนกรายอำเภอ ปี ${uy}`,'จังหวัดหนองบัวลำภู',
+      `<div class="sc"><table class="cs-t" style="--sl:#fff3e6;--bc:linear-gradient(90deg,#f7a54a,#f07a1a)"><thead><tr><th class="ce">อันดับ</th><th class="l">อำเภอ</th><th>จำนวนผู้ใช้ไฟฟ้า (ราย)</th><th class="l" style="width:38%"></th></tr></thead>
+      <tbody>${L.map((x,i)=>`<tr><td class="ce"><span class="cs-rk">${i+1}</span></td><td class="l">${x.a}</td><td>${f_num(x.v)}</td><td class="l"><div class="cs-bar2"><i style="width:${(x.v/mx*100).toFixed(1)}%"></i></div></td></tr>`).join('')}
+      <tr class="tot"><td></td><td class="l">รวมจังหวัด</td><td>${fx(tot)}</td><td class="l"><div class="cs-bar2"><i style="width:100%"></i></div></td></tr></tbody></table></div>`)}
+    ${card('','powerbiz',`ปริมาณการใช้ไฟฟ้า จำแนกตามประเภทผู้ใช้ ปี ${y}`,'ล้านกิโลวัตต์-ชั่วโมง',
+      `<div class="cs-ch" style="height:${Math.max(220,tl.length*46+40)}px"><canvas id="cEType"></canvas></div><div class="cs-foot">ประเภทที่ไม่มีการจำหน่ายในปีนี้ไม่แสดง</div>`)}
+  </div>`;
+}
+function fuelHtml(S,Y){
+  const y=atOr(S.fuelL,Y).y,F=CS.D.fuel[y]||{},U=CS.D.fuelUnit;
+  const L=Object.keys(F).filter(n=>U[n]==='พันลิตร'&&F[n]>0).map(n=>({n,v:F[n]})).sort((a,b)=>b.v-a.v),tot=L.reduce((a,b)=>a+b.v,0);
+  const C=['#f07a1a','#16a06a','#2f7fd8','#9b6bd6','#e8336d','#f2b01e','#14a3b8','#7a8a94'];
+  return secHtml(TABS[2],[['น้ำมันรวม (พันลิตร)',fx(tot,2)],['สัดส่วนดีเซล',S.diesel[y]&&tot?f(S.diesel[y]/tot*100,1)+'%':'—'],['ก๊าซแอลพีจี (พันกก.)',fx(S.lpg[y],2)]])+
+  `<div class="mb">${card('','line','แนวโน้มปริมาณการจำหน่ายน้ำมันเชื้อเพลิง รายปี',span(S.diesel),
+      `<div class="cs-ch"><canvas id="cFuel"></canvas></div><div class="note">ดีเซลหมุนเร็วรวมทุกชนิด เพราะตั้งแต่ปี 2567 รายงานเปลี่ยนชื่อจาก "บี 7" เป็น "ดีเซลหมุนเร็วธรรมดา" · ${trendNote(S.diesel,'พันลิตร',2).replace(/^ปี/,'ดีเซลปี')}</div>`,'พันลิตร')}</div>
+  ${card('','fuel',`ปริมาณการจำหน่ายน้ำมันเชื้อเพลิง รายชนิด ปี ${y}`,'จังหวัดหนองบัวลำภู',
+    `<div class="sc"><table class="cs-t" style="--sl:#e6f6ee"><thead><tr><th class="ce">อันดับ</th><th class="l">ชนิดของน้ำมันเชื้อเพลิง</th><th>ปริมาณการจำหน่าย (พันลิตร)</th><th class="l" style="width:34%">สัดส่วน (%)</th><th></th></tr></thead>
+    <tbody>${L.map((x,i)=>`<tr><td class="ce"><span class="cs-rk" style="--rc:${C[i%C.length]}">${i+1}</span></td><td class="l">${x.n}</td><td>${f(x.v,2)}</td>
+      <td class="l"><div class="cs-bar2" style="--bc:${C[i%C.length]}"><i style="width:${Math.max(.6,x.v/tot*100).toFixed(1)}%"></i></div></td><td>${f(x.v/tot*100,1)}</td></tr>`).join('')}
+    <tr class="tot"><td></td><td class="l">รวมน้ำมันทั้งหมด</td><td>${f(tot,2)}</td><td class="l"><div class="cs-bar2" style="--bc:#16865f"><i style="width:100%"></i></div></td><td>100.0</td></tr></tbody></table></div>
+    <div class="cs-foot">ก๊าซแอลพีจี ${fx(S.lpg[y],2)} พันกิโลกรัม ไม่รวมในสัดส่วนเพราะหน่วยต่างจากน้ำมัน (น้ำหนัก ไม่ใช่ปริมาตร) · แสดงเฉพาะชนิดที่มีการจำหน่ายในปีนี้</div>`,'หน่วย: พันลิตร')}`;
+}
+function carHtml(S,Y){
+  const ny=yrs(S.newc),tot=ny.reduce((a,y)=>a+S.newc[y],0),L=ny.slice().sort((a,b)=>b-a),mx=Math.max(...ny.map(y=>S.newc[y]));
+  const cy=atOr(S.cum,Y).y;
+  return secHtml(TABS[3],[['รถสะสม (คัน)',fx(S.cum[cy])+(cy!==Y?` <small style="font-size:10.5px;color:var(--faint)">ปี ${cy}</small>`:'')],['รถใหม่ปี '+Y+' (คัน)',fx(S.newc[Y])],[`รถใหม่รวม ${ny[0]}–${ny[ny.length-1]}`,fx(tot)]])+
+  `<div class="mb">${card('','vehicle','แนวโน้มจำนวนรถจดทะเบียน รายปี',`จังหวัดหนองบัวลำภู พ.ศ. ${Math.min(...yrs(S.cum),...ny)} – ${Math.max(...yrs(S.cum),...ny)}`,
+      `<div class="cs-ch"><canvas id="cCar"></canvas></div><div class="note">รถจดทะเบียนใหม่ปี ${ny[ny.length-1]} ${fx(S.newc[ny[ny.length-1]])} คัน เพิ่มจาก ${fx(S.newc[ny[0]])} คันในปี ${ny[0]} (${f(pctc(S.newc[ny[ny.length-1]],S.newc[ny[0]]),1)}%)</div>`,'คัน')}</div>
+  ${card('','car','จำนวนรถจดทะเบียนใหม่ จำแนกรายปี','จังหวัดหนองบัวลำภู',
+    `<div class="sc"><table class="cs-t" style="--sl:#f1ecfd;--bc:linear-gradient(90deg,#f37aa0,#e8336d)"><thead><tr><th class="ce">อันดับ</th><th class="ce">ปี</th><th>จำนวนรถจดทะเบียนใหม่ (คัน)</th><th>เทียบปีก่อน</th><th class="l" style="width:34%">สัดส่วน (%)</th><th></th></tr></thead>
+    <tbody>${L.map((y,i)=>`<tr><td class="ce"><span class="cs-rk" style="--rc:#e8336d">${i+1}</span></td><td class="ce">${y}</td><td>${f_num(S.newc[y])}</td><td>${S.newc[y-1]?chip(pctc(S.newc[y],S.newc[y-1])):'<span class="na">—</span>'}</td>
+      <td class="l"><div class="cs-bar2"><i style="width:${(S.newc[y]/mx*100).toFixed(1)}%"></i></div></td><td>${f(S.newc[y]/tot*100,1)}</td></tr>`).join('')}
+    <tr class="tot"><td></td><td class="ce">รวมทั้งหมด</td><td>${f_num(tot)}</td><td></td><td class="l"><div class="cs-bar2"><i style="width:100%"></i></div></td><td>100.0</td></tr></tbody></table></div>`,'หน่วย: คัน')}`;
+}
+/* ── ตารางเปรียบเทียบรายปีของแท็บ ── */
+function cmpRows(S){
+  return {water:[['ปริมาณการใช้น้ำประปา (ล้าน ลบ.ม.)',S.water,2],['ปริมาณน้ำที่ผลิตได้จริง (ล้าน ลบ.ม.)',S.wprod,2],['จำนวนผู้ใช้น้ำ (ราย)',S.wuser,0],['การใช้น้ำเฉลี่ย (ลบ.ม./ราย)',S.wrate,2]],
+    elec:[['ปริมาณการใช้ไฟฟ้า (ล้านกิโลวัตต์-ชั่วโมง)',S.elec,2],['จำนวนผู้ใช้ไฟฟ้า (ราย)',S.euser,0]],
+    fuel:[['น้ำมันดีเซลหมุนเร็ว รวม (พันลิตร)',S.diesel,2],['แก๊สโซฮอล์ E10 ออกเทน 95 (พันลิตร)',S.g95,2],['แก๊สโซฮอล์ E10 ออกเทน 91 (พันลิตร)',S.g91,2],['แก๊สโซฮอล์ E20 (พันลิตร)',S.e20,2],['น้ำมันรวม (พันลิตร)',S.fuelL,2],['ก๊าซแอลพีจี (พันกิโลกรัม)',S.lpg,2]],
+    car:[['รถจดทะเบียนสะสม (คัน)',S.cum,0],['รถจดทะเบียนใหม่ (คัน)',S.newc,0]]}[CS.tab];
+}
+function cmpHtml(S){
+  const R=cmpRows(S),Y=[...new Set(R.flatMap(r=>yrs(r[1])))].sort((a,b)=>a-b),t=TABS.find(x=>x.k===CS.tab);
+  return secHtml(t)+card('','compare',`เปรียบเทียบรายปี · ${t.t}`,'ตัวเลขเล็กใต้ค่าคือร้อยละเปลี่ยนแปลงจากปีก่อน',
+    `<div class="sc"><table class="cs-t"><thead><tr><th class="l">รายการ</th>${Y.map(y=>`<th${y===CS.year?' style="background:var(--brand-l)"':''}>${y}</th>`).join('')}</tr></thead>
+    <tbody>${R.map(([n,o,d])=>`<tr><td class="l">${n}</td>${Y.map(y=>{const v=o[y],p=o[y-1];
+      return `<td${y===CS.year?' style="background:var(--brand-l)"':''}>${v==null?'<span class="na">—</span>':fx(v,d)}${v!=null&&p?`<div style="font-size:10.5px;color:${v>=p?'var(--good)':'var(--bad)'}">${v>=p?'▲':'▼'} ${f(Math.abs(pctc(v,p)),1)}%</div>`:''}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>`);
+}
+
+/* ── กราฟ ── */
+function drawTab(S,Y){
+  if(CS.view!=='trend')return;
+  const X=o=>yrs(o).map(String),V=(o,ys)=>ys.map(y=>o[y]??null);
+  const sel=ys=>ys.map(y=>+y===Y?7:4.5);
+  const base={maintainAspectRatio:false,layout:{padding:{top:16,right:16,left:10}},interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'bottom',labels:{usePointStyle:true,padding:14}}}};
+  if(CS.tab==='water'){
+    const ys=[...new Set([...yrs(S.water),...yrs(S.wprod)])].sort((a,b)=>a-b);
+    mk('cWater',{type:'line',data:{labels:ys.map(String),datasets:[
+        lineDs('ปริมาณน้ำที่จำหน่าย (การใช้น้ำ)',V(S.water,ys),COL.water,{fill:true,backgroundColor:grad('cWater',COL.water),pointRadius:sel(ys),lbl:v=>f(v,2)}),
+        lineDs('ปริมาณน้ำที่ผลิตได้จริง',V(S.wprod,ys),'#94a3b8',{borderDash:[6,5],borderWidth:2,pointRadius:3})]},plugins:[lblPlug],
+      options:Object.assign({},base,{plugins:{legend:base.plugins.legend,tooltip:{callbacks:{label:c=>c.dataset.label+' '+f(c.raw,2)+' ล้าน ลบ.ม.'}}},
+        scales:{x:ax({grid:{display:false},ticks:{font:{size:11.5,weight:'600'}}}),y:ax({beginAtZero:true,grace:'15%',title:{display:true,text:'ล้าน ลบ.ม.',font:{weight:'600'}}})}})});
+    const uy=yrs(S.wuser);
+    mk('cWUser',{type:'line',data:{labels:uy.map(String),datasets:[
+        lineDs('จำนวนผู้ใช้น้ำประปา (ราย)',V(S.wuser,uy),COL.wuser,{yAxisID:'y',pointRadius:sel(uy),lbl:v=>f_num(v)}),
+        lineDs('การใช้น้ำเฉลี่ยต่อราย (ลบ.ม./ราย)',V(S.wrate,uy),COL.wrate,{yAxisID:'y1',pointStyle:'rectRot',pointRadius:sel(uy).map(r=>r+1),lbl:v=>f(v,1),lblPos:'below'})]},plugins:[lblPlug],
+      options:Object.assign({},base,{scales:{x:ax({grid:{display:false}}),
+        y:ax({min:0,max:Math.ceil(Math.max(...V(S.wuser,uy).filter(Boolean))*1.12/2000)*2000,title:{display:true,text:'ราย',color:COL.wuser,font:{weight:'600'}},ticks:{callback:v=>f_num(v)}}),
+        y1:ax({position:'right',min:0,max:Math.ceil(Math.max(...V(S.wrate,uy).filter(Boolean))*2/50)*50,grid:{display:false},title:{display:true,text:'ลบ.ม./ราย',color:COL.wrate,font:{weight:'600'}}})}})});
+  }
+  if(CS.tab==='elec'){
+    const ys=yrs(S.elec);
+    mk('cElec',{type:'line',data:{labels:X(S.elec),datasets:[lineDs('ปริมาณการใช้ไฟฟ้า (ล้านกิโลวัตต์-ชั่วโมง)',V(S.elec,ys),COL.elec,{fill:true,backgroundColor:grad('cElec',COL.elec),pointRadius:sel(ys),lbl:v=>f(v,2)})]},plugins:[lblPlug],
+      options:Object.assign({},base,{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>f(c.raw,2)+' ล้านกิโลวัตต์-ชั่วโมง'}}},
+        scales:{x:ax({grid:{display:false},ticks:{font:{size:11.5,weight:'600'}}}),y:ax({beginAtZero:true,grace:'15%',title:{display:true,text:'ล้านหน่วย',font:{weight:'600'}}})}})});
+    const y=atOr(S.elec,Y).y,T=CS.D.elec.type[y]||{},tl=Object.keys(T).filter(k=>T[k]>0).sort((a,b)=>T[b]-T[a]),tt=tl.reduce((a,k)=>a+T[k],0);
+    const C=['#f07a1a','#f2b01e','#2f7fd8','#16a06a','#9b6bd6'];
+    mk('cEType',{type:'bar',data:{labels:tl.map(k=>k.replace('สถานธุรกิจและ อุตสาหกรรม','ธุรกิจและอุตสาหกรรม').replace('ส่วนราชการ และองค์กรไม่แสวงหาผลกำไร','ส่วนราชการและองค์กรไม่แสวงหากำไร')),
+        datasets:[{data:tl.map(k=>T[k]),backgroundColor:tl.map((_,i)=>C[i%C.length]),borderRadius:6,barPercentage:.72}]},
+      plugins:[{id:'csHb',afterDatasetsDraw(c){const ctx=c.ctx;c.getDatasetMeta(0).data.forEach((b,i)=>{const v=c.data.datasets[0].data[i];
+        ctx.save();ctx.font="600 11px 'IBM Plex Sans','IBM Plex Sans Thai',sans-serif";ctx.fillStyle=cv('--ink');ctx.textBaseline='middle';
+        ctx.fillText(f(v,2)+' ('+f(v/tt*100,1)+'%)',b.x+6,b.y);ctx.restore()})}}],
+      options:{indexAxis:'y',maintainAspectRatio:false,layout:{padding:{right:90}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>f(c.raw,2)+' ล้านหน่วย ('+f(c.raw/tt*100,1)+'%)'}}},
+        scales:{x:ax({beginAtZero:true}),y:ax({grid:{display:false},ticks:{font:{size:11.5}}})}}});
+  }
+  if(CS.tab==='fuel'){
+    const ys=[...new Set([...yrs(S.diesel),...yrs(S.g95)])].sort((a,b)=>a-b);
+    mk('cFuel',{type:'line',data:{labels:ys.map(String),datasets:[
+        lineDs('น้ำมันดีเซลหมุนเร็ว (รวม)',V(S.diesel,ys),COL.diesel,{pointRadius:sel(ys),lbl:v=>f_num(Math.round(v))}),
+        lineDs('แก๊สโซฮอล์ E10 ออกเทน 95',V(S.g95,ys),COL.g95,{pointRadius:sel(ys),lbl:v=>f_num(Math.round(v))}),
+        lineDs('แก๊สโซฮอล์ E10 ออกเทน 91',V(S.g91,ys),COL.g91,{pointRadius:sel(ys),lbl:v=>f_num(Math.round(v)),lblPos:'below'}),
+        lineDs('แก๊สโซฮอล์ E20',V(S.e20,ys),COL.e20,{pointRadius:sel(ys)})]},plugins:[lblPlug],
+      options:Object.assign({},base,{plugins:{legend:base.plugins.legend,tooltip:{callbacks:{label:c=>c.dataset.label+' '+f(c.raw,2)+' พันลิตร'}}},
+        scales:{x:ax({grid:{display:false},ticks:{font:{size:11.5,weight:'600'}}}),y:ax({beginAtZero:true,grace:'12%',title:{display:true,text:'พันลิตร',font:{weight:'600'}},ticks:{callback:v=>f_num(v)}})}})});
+  }
+  if(CS.tab==='car'){
+    const ys=[...new Set([...yrs(S.cum),...yrs(S.newc)])].sort((a,b)=>a-b);
+    mk('cCar',{type:'line',data:{labels:ys.map(String),datasets:[
+        lineDs('รถจดทะเบียนสะสม (คัน)',V(S.cum,ys),COL.cum,{fill:true,backgroundColor:grad('cCar',COL.cum),pointRadius:sel(ys),lbl:v=>f_num(v)}),
+        lineDs('รถจดทะเบียนใหม่ (คัน)',V(S.newc,ys),COL.newc,{fill:true,backgroundColor:COL.newc+'14',pointRadius:sel(ys),lbl:v=>f_num(v)})]},plugins:[lblPlug],
+      options:Object.assign({},base,{plugins:{legend:base.plugins.legend,tooltip:{callbacks:{label:c=>c.dataset.label+' '+f_num(c.raw)}}},
+        scales:{x:ax({grid:{display:false},ticks:{font:{size:11.5,weight:'600'}}}),y:ax({beginAtZero:true,grace:'12%',title:{display:true,text:'คัน',font:{weight:'600'}},ticks:{callback:v=>f_num(v)}})}})});
+  }
+}
+
+/* ── ดาวน์โหลด CSV ของแท็บ ── */
+function downloadCsv(){
+  const S=series(),R=cmpRows(S),Y=[...new Set(R.flatMap(r=>yrs(r[1])))].sort((a,b)=>a-b),t=TABS.find(x=>x.k===CS.tab);
+  const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+  const L=[['รายการ',...Y].map(q).join(',')];R.forEach(([n,o,d])=>L.push([n,...Y.map(y=>o[y]==null?'':(+o[y]).toFixed(d))].map(q).join(',')));
+  if(CS.tab==='water'){const W=CS.D.water;L.push('',q('รายอำเภอ'));L.push(['ปี','อำเภอ','ปริมาณน้ำที่จำหน่าย (ลบ.ม.)','ผู้ใช้น้ำ (ราย)','อัตราการใช้น้ำ (ลบ.ม./ราย)'].map(q).join(','));
+    yrs(W.sold).forEach(y=>AMP.forEach(a=>L.push([y,a,(W.sold[y]||{})[a],(W.users[y]||{})[a],(W.rate[y]||{})[a]].map(q).join(','))))}
+  if(CS.tab==='elec'){const E=CS.D.elec;L.push('',q('รายอำเภอ'));L.push(['ปี','อำเภอ','การจำหน่ายไฟฟ้า (ล้านหน่วย)','ผู้ใช้ไฟฟ้า (ราย)'].map(q).join(','));
+    yrs(E.kwh).forEach(y=>AMP.forEach(a=>L.push([y,a,(E.kwh[y]||{})[a],(E.users[y]||{})[a]].map(q).join(','))))}
+  if(CS.tab==='fuel'){const F=CS.D.fuel;L.push('',q('รายชนิด'));L.push(['ปี','ชนิดของน้ำมันเชื้อเพลิง','ปริมาณ','หน่วย'].map(q).join(','));
+    yrs(F).forEach(y=>Object.keys(F[y]).forEach(n=>L.push([y,n,F[y][n],CS.D.fuelUnit[n]].map(q).join(','))))}
+  L.push('',q('ที่มา: ระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู และรายงานสถิติจังหวัด'));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+L.join('\r\n')],{type:'text/csv;charset=utf-8'}));
+  a.download=t.t+'_หนองบัวลำภู.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
+}
+
+/* ── วาดหน้า ── */
+function renderConsume(){
+  const v=document.getElementById('v-consume');
+  const S=series(),ys=yearList(S);
+  if(!CS.year||ys.indexOf(CS.year)<0)CS.year=ys[ys.length-1];
+  const Y=CS.year;
+  const body=CS.view==='cmp'?cmpHtml(S):{water:waterHtml,elec:elecHtml,fuel:fuelHtml,car:carHtml}[CS.tab](S,Y);
+  const apiN=Object.values(CS.st).filter(x=>x==='api').length;
+  v.innerHTML=bannerHtml(Y,ys)+`<div class="grid g4 mb" id="cKpi">${kpis(S,Y)}</div>`+barHtml()+`<div id="csBody">${body}</div>
+    <div class="c" style="margin-top:13px"><header><span class="hdico icow img">${icoImg('source',26)}</span><h3>แหล่งข้อมูลและหน่วยงานผู้รับผิดชอบ</h3></header>
+      <div class="b">${srcBar(['pwa','pea','dlt','doeb'],`น้ำประปา ไฟฟ้า และรถจดทะเบียนสะสม: ระบบบัญชีข้อมูลจังหวัด (API ${apiN} จาก 6 ชุด${apiN<6?' · ชุดที่เชื่อมไม่ได้ใช้ข้อมูลสำรองจากไฟล์':''}) · น้ำมันเชื้อเพลิง: รายงานสถิติจังหวัด ตาราง 13.2 (ไฟล์) · รถจดทะเบียนใหม่: รายงานสถิติจังหวัด ตาราง 15.2 (ไฟล์)`)}</div></div>`;
+  drawTab(S,Y);
+  try{gdcLive('consume')}catch(e){}
+}
+window.onSeg=function(w,btn){if(w.id==='csTabs'){CS.tab=btn.dataset.k;safeRender()}};
+document.addEventListener('click',e=>{
+  const k=e.target.closest('[data-cstab]');if(k&&!e.target.closest('.kdot')){CS.tab=k.dataset.cstab;safeRender();
+    const b=document.getElementById('csTabs');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});return}
+  const vw=e.target.closest('[data-csv]');if(vw){CS.view=vw.dataset.csv;safeRender();return}
+  if(e.target.closest('[data-csdl]'))downloadCsv();
+});
+document.addEventListener('change',e=>{if(e.target.id==='csYear'){CS.year=+e.target.value;safeRender()}});
+DS.init('consume',renderConsume);
+loadApi();
 </script>
 </body>
 </html>
