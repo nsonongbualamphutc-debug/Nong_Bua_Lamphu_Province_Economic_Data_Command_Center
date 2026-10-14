@@ -286,7 +286,7 @@ function treemap(items,opt){
     const p=b.it.v/total*100;
     const aw=b.w/W*100, ah=b.h/H*100, area=aw*ah/100;
     const cls=(aw<9||ah<9)?'tm tiny':(area<4||aw<16||ah<14)?'tm sm':'tm';
-    const art=(b.it.bg&&area>=3)?`<span class="tmbg" style="background-image:url('${b.it.bg}')"></span>`:'';
+    const art=(b.it.bg&&area>=3)?`<span class="tmbg" style="background-image:${[].concat(b.it.bg).filter(Boolean).map(u=>`url('${u}')`).join(',')}"></span>`:'';
     const ico=(b.it.icon&&area>=2)?`<img class="tmic" src="${b.it.icon}" alt="" loading="lazy" onerror="this.remove()">`:'';
     const sub=(b.it.sub&&area>=6)?`<em>${b.it.sub}</em>`:'';
     return `<div class="${cls}" style="left:${(b.x/W*100).toFixed(3)}%;top:${(b.y/H*100).toFixed(3)}%;`+
@@ -646,14 +646,21 @@ function relabelIcons(root){
 const CARD_BG_DIR='assets/cardbg/';
 /* ไอคอนที่ไม่มีภาพพื้นหลังการ์ดของตัวเอง ใช้ภาพที่มีอยู่แล้วซึ่งความหมายใกล้กัน */
 const BG_ALIAS={area:'landuse',gap:'gini',analysis:'forecast',disburse:'fiscal',cropvalue:'crop',institution:'spend'};
-function cardBg(name){name=BG_ALIAS[name]||name;return name?`<span class="kpibg" style="background-image:url('${CARD_BG_DIR}bg-${name}.webp')"></span>`:''}
+/* พื้นหลังเฉพาะของแต่ละการ์ด · จับจากชื่อการ์ด → assets/cardbg/bg-<ชื่อ>.webp
+   วางรูปใหม่ทับรูปเดิมเป็นชั้นบน · ถ้ายังไม่ได้อัปโหลดรูปใหม่ จะเห็นรูปเดิมตามปกติ */
+const CARD_BG=[[/^ภาคอุตสาหกรรม$/,'econ-industry'],[/^ภาคบริการ$/,'econ-service'],[/^การบริโภคภาคเอกชน$/,'econ-consume'],[/^การลงทุนภาคเอกชน$/,'econ-invest'],[/^เงินฝากรวม$/,'econ-deposit'],[/^สินเชื่อรวม$/,'econ-loan'],[/^กำลังแรงงานรวม$/,'econ-labor'],[/^การใช้จ่ายภาครัฐ$/,'econ-gov'],[/^เบิกจ่ายภาพรวม$/,'fis-disburse'],[/^เบิกจ่ายงบประมาณภาพรวม$/,'fis-disburse'],[/^เบิกจ่ายรายจ่ายประจำ$/,'fis-opex'],[/^งบประจำสะสม/,'fis-opex'],[/^เบิกจ่ายงบลงทุน$/,'fis-capex'],[/^เบิกจ่ายรายจ่ายลงทุน$/,'fis-capex'],[/^งบลงทุนสะสม/,'fis-capex'],[/^งบจัดสรรทั้งจังหวัด$/,'fis-alloc'],[/^ใช้จ่ายภาพรวม$/,'fis-spend'],[/^อัตราการขยายตัว GPP$/,'gpp-growth'],[/^GPP ปี/,'gpp-total'],[/^GPP ต่อหัว/,'gpp-percap'],[/^ครัวเรือนภาคการเกษตร$/,'agri-hh'],[/^พื้นที่ภาคการเกษตร$/,'agri-land'],[/^การปลูกพืชอายุสั้น$/,'agri-crop'],[/^ไม้ผลเศรษฐกิจสำคัญ$/,'agri-fruit'],[/^มูลค่าผลผลิต$/,'agri-value'],[/^มูลค่าผลผลิตพืชอายุสั้น$/,'agri-value'],[/^ท่องเที่ยวเชิงเกษตร$/,'agri-tour'],[/^แหล่งน้ำชลประทาน$/,'wat-irrsrc'],[/^พื้นที่ที่ได้รับประโยชน์ในเขตชลประทาน$/,'wat-benefit'],[/^พื้นที่เพาะปลูกในเขตชลประทาน$/,'wat-irrcrop'],[/^ระบบกระจายน้ำด้วย Solar Cell$/,'wat-solar'],[/^แหล่งน้ำขนาดเล็ก$/,'wat-small'],[/^สระน้ำในไร่นา/,'wat-farmpond'],[/^บ่อบาดาล/,'wat-well'],[/^บ่อขนาดเล็ก/,'wat-newtheory'],[/^สถานประกอบการอุตสาหกรรม$/,'ind-establish'],[/^เงินทุนสถานประกอบการ$/,'ind-capital'],[/^จำนวนคนงาน$/,'ind-workers'],[/^รายได้ภาคอุตสาหกรรม/,'ind-gpp'],[/^เหมืองแร่$/,'ind-mine'],[/^ดัชนีราคาผู้บริโภค/,'trade-cpi'],[/^อัตราเงินเฟ้อ$/,'trade-inflation'],[/^สินเชื่อธนาคารพาณิชย์$/,'trade-credit'],[/^สินค้าที่ราคาสูงขึ้น$/,'trade-priceup'],[/^สินค้าที่ราคาลดลง$/,'trade-pricedown'],[/^ราคาสินค้าโดยรวม$/,'trade-overall'],[/^ปริมาณการใช้น้ำประปา$/,'con-tapwater'],[/^ปริมาณการใช้ไฟฟ้า$/,'con-elec'],[/^รถจดทะเบียนสะสม$/,'con-carstock'],[/^รถจดทะเบียนใหม่$/,'con-newcar'],[/^การจำหน่ายน้ำมันดีเซล/,'con-diesel'],[/ออกเทน 91$/,'con-g91'],[/ออกเทน 95$/,'con-g95'],[/^การจำหน่ายก๊าซแอลพีจี$/,'con-lpg'],[/^ผู้มีงานทำ$/,'lab-employed'],[/^นักท่องเที่ยว$/,'tour-tourist'],[/^นักทัศนาจร$/,'tour-excursion'],[/^รายได้ OTOP/,'otop-rev'],[/^ผู้ประกอบการ$/,'otop-ent'],[/^ผลิตภัณฑ์$/,'otop-prod'],[/^ร้านค้าชุมชน$/,'otop-shop'],[/^รายได้เฉลี่ยต่อเดือน$/,'hh-income'],[/^เงินเหลือต่อเดือน$/,'hh-saving'],[/^ความเหลื่อมล้ำด้านรายได้$/,'hh-gini'],[/^การเปลี่ยนแปลงตามธรรมชาติ$/,'pop-natural'],[/^รวมทั้งจังหวัด$/,'area-total'],[/^อำเภอที่ต่ำที่สุด$/,'area-low'],[/^ภาวะเศรษฐกิจเดือนล่าสุด$/,'rpt-monthly'],[/^หน่วยงานเจ้าของข้อมูล$/,'src-agency'],[/^ชุดข้อมูลที่แดชบอร์ดใช้$/,'src-datasets'],[/^เกษตรกรรม การป่าไม้ และการประมง$/,'gpps-agri'],[/^การทำเหมืองแร่และเหมืองหิน$/,'gpps-mining'],[/^การผลิต$/,'gpps-manuf'],[/^ไฟฟ้า ก๊าซ และระบบปรับอากาศ$/,'gpps-power'],[/^ประปาและการจัดการของเสีย$/,'gpps-water'],[/^การก่อสร้าง$/,'gpps-construct'],[/^ขายส่ง ขายปลีก ซ่อมยานยนต์$/,'gpps-retail'],[/^ขนส่งและสถานที่เก็บสินค้า$/,'gpps-transport'],[/^ที่พักแรมและบริการอาหาร$/,'gpps-hotel'],[/^ข้อมูลข่าวสารและการสื่อสาร$/,'gpps-ict'],[/^การเงินและการประกันภัย$/,'gpps-finance'],[/^อสังหาริมทรัพย์$/,'gpps-realestate'],[/^วิชาชีพ วิทยาศาสตร์ และเทคนิค$/,'gpps-prof'],[/^การบริหารและบริการสนับสนุน$/,'gpps-admin'],[/^บริหารราชการและการป้องกันประเทศ$/,'gpps-govt'],[/^การศึกษา$/,'gpps-edu'],[/^สุขภาพและสังคมสงเคราะห์$/,'gpps-health'],[/^ศิลปะ บันเทิง และนันทนาการ$/,'gpps-arts'],[/^บริการด้านอื่น ๆ$/,'gpps-other']];
+function cardKey(label){const t=String(label||'').replace(/<small[\s\S]*?<\/small>/g,'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+  for(const [re,k] of CARD_BG)if(re.test(t))return k;return null}
+function cardBg(name,key){name=BG_ALIAS[name]||name;if(!name&&!key)return '';
+  const L=[key,name].filter(Boolean).map(n=>`url('${CARD_BG_DIR}bg-${n}.webp')`).join(',');
+  return `<span class="kpibg" style="background-image:${L}"></span>`}
 function kpiCard(o){
   const T=o.go?'button':'div';
   let sc=o.sim===false?(SIM_TOUCH=null,''):simChip(simTake());
   /* การ์ดดัชนี NBL–MEI ไม่ได้อ่านผ่าน seriesAt จึงตรวจจากสัดส่วนน้ำหนักที่เป็นค่าจริงแทน */
   if(!sc&&o.sim!==false&&typeof MEI!=='undefined'&&MEI.real<.999&&/NBL|ดัชนีเศรษฐกิจรายเดือน|ดัชนีภาวะเศรษฐกิจ/.test(String(o.label||'')))
     sc=simChip({sim:1,real:MEI.real>0?1:0});
-  const bg=o.bg===false?'':cardBg(o.bg||icoBase(o.img));
+  const bg=o.bg===false?'':cardBg(o.bg||icoBase(o.img),o.bgKey||cardKey(o.label));
   return`<${T} class="kpi${bg?' hasbg':''}"${o.go?` data-go="${o.go}"`:''}${o.tip?` data-tip2="${o.tip}"`:''}
     ${o.color?`style="--kpi:${o.color}"`:''}>
     ${bg}

@@ -2438,3 +2438,6 @@ body.kiosk .totop,body.tour .totop{right:16px;bottom:18px}
 #bot .bt-sug button:hover{background:var(--brand);color:#fff}
 
 #bot .bt-note{margin:8px 0;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,#d4a017 9%,var(--card));border:1px dashed color-mix(in srgb,#d4a017 45%,var(--line));font-size:12px;line-height:1.6}
+
+/* การ์ดแบบหลายแถว (kv2) ที่มีรูปพื้นหลัง · ให้แถวโปร่งขึ้นเพื่อเห็นรูป */
+.kpi.hasbg .kv2 .kr{background:color-mix(in srgb,var(--card) 64%,transparent)}

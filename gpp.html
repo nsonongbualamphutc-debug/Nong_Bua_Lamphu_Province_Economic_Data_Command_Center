@@ -211,7 +211,7 @@ function renderGpp(){
     const share=x.v/gVal(x.g)*100;
     return {n:x.n, v:x.v, p:x.p, g:x.g, yoy, color, sub:f(x.v,1)+' ล้านบาท',
       icon:'assets/icons/ic-'+m[2]+'.png',
-      bg:m[3]?'assets/cardbg/bg-'+m[3]+'.webp':'',
+      bg:[cardKey(x.n)?'assets/cardbg/bg-'+cardKey(x.n)+'.webp':'',m[3]?'assets/cardbg/bg-'+m[3]+'.webp':''].filter(Boolean),
       tip:tipOf({t:x.n,
         d:(x.g==='เกษตร'
             ? 'ภาคการเกษตรมีสาขาเดียวคือสาขานี้ · อันดับ '+(i+1)+' จาก '+STRUCT.length+' สาขา'

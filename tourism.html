@@ -298,7 +298,7 @@ function renderTour(){
       src:'tour',when:'ปี '+TY});
     const bkn=i===0?'visitor':i===1?'tourism':'migration';
     return `<div class="bigkpi hasbg" data-tip2="${tpk}" style="--bk:${cols[i]}">
-      <span class="kpibg" style="background-image:url('assets/cardbg/bg-${bkn}.webp')"></span>
+      ${cardBg(bkn,cardKey(k))}
       <div class="bk-ic icow img">${icoImg(bkn,44)}</div>
       <div class="bk-v">${f(n,0)}<small>คน</small></div>
       <div class="bk-l">${k}</div>
