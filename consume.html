@@ -61,17 +61,29 @@
 .cs-act button svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .cs-act button.on{border-color:var(--brand);color:var(--brand);background:var(--brand-l);font-weight:600}
 
-.cs-sec{position:relative;overflow:hidden;border-radius:var(--r);border:1px solid var(--line);background:var(--card) right -10px center/auto 230% no-repeat;
-  display:flex;align-items:center;gap:14px;padding:14px 18px;min-height:86px;flex-wrap:wrap}
-.cs-sec .ci{width:54px;height:54px;border-radius:50%;background:var(--sc);display:grid;place-items:center;flex:none;box-shadow:0 4px 12px rgba(0,0,0,.12)}
-.cs-sec .ci img{width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))}
-.cs-sec b{display:block;font-family:var(--fd);font-size:21px;font-weight:600;color:var(--sc);line-height:1.2}
-.cs-sec span{font-size:12.5px;color:var(--dim)}
-.cs-sec .st{margin-left:auto;display:flex;gap:18px;flex-wrap:wrap;background:color-mix(in srgb,var(--card) 82%,transparent);padding:6px 12px;border-radius:12px;margin-right:34%}
-.cs-sec .st div{font-size:11.5px;color:var(--dim)}
-.cs-sec .st div b{font-family:var(--fn);font-size:16px;color:var(--ink);display:block}
-[data-theme="dark"] .cs-sec{background-blend-mode:soft-light}
-
+.cs-sec{position:relative;overflow:hidden;border-radius:18px;border:1px solid var(--line);
+  background:var(--card) right -10px center/auto 230% no-repeat;display:flex;align-items:center;gap:18px;padding:16px 18px;min-height:104px;flex-wrap:wrap}
+.cs-sec:before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--sc) 14%,var(--card)) 0%,color-mix(in srgb,var(--card) 92%,transparent) 30%,color-mix(in srgb,var(--card) 55%,transparent) 72%,transparent 100%)}
+.cs-sec:after{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--sc)}
+.cs-sec>*{position:relative}
+.cs-hd{display:flex;gap:14px;align-items:center;min-width:230px}
+.cs-hd .ci{width:58px;height:58px;border-radius:18px;background:var(--sc);display:grid;place-items:center;flex:none;box-shadow:0 6px 16px color-mix(in srgb,var(--sc) 35%,transparent)}
+.cs-hd .ci img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))}
+.cs-hd b{display:block;font-family:var(--fd);font-size:23px;font-weight:700;color:var(--sc);line-height:1.15;letter-spacing:-.2px}
+.cs-hd span span{font-size:12.5px;color:var(--dim)}
+.cs-st{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;flex:1;max-width:760px;margin-right:22%}
+.cs-tile{display:flex;gap:10px;align-items:center;background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(3px);
+  border:1px solid color-mix(in srgb,var(--sc) 22%,var(--line));border-radius:14px;padding:10px 12px;min-width:0;box-shadow:0 2px 8px rgba(16,35,30,.05)}
+.cs-tile .ti{width:42px;height:42px;border-radius:12px;background:color-mix(in srgb,var(--sc) 13%,var(--card));display:grid;place-items:center;flex:none}
+.cs-tile .ti img{width:28px;height:28px;object-fit:contain}
+.cs-tile .tx{display:flex;flex-direction:column;min-width:0;gap:1px}
+.cs-tile .tl{font-size:11.5px;color:var(--dim);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cs-tile .tv{font-family:var(--fn);font-size:22px;font-weight:700;color:var(--ink);line-height:1.15;letter-spacing:-.4px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cs-tile .tv small{font-family:var(--fs);font-size:11px;font-weight:500;color:var(--faint);margin-left:4px;letter-spacing:0}
+.cs-d{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;width:max-content;max-width:100%;padding:1px 8px;border-radius:999px;margin-top:2px}
+.cs-d em{font-style:normal;font-weight:400;opacity:.75}
+.cs-d.up{color:var(--good);background:var(--brand-l)}.cs-d.dn{color:var(--bad);background:var(--coral-l)}.cs-d.fl,.cs-d.nt{color:var(--dim);background:var(--card2);font-weight:500}
 .cs-sub{font-size:12px;color:var(--faint);margin:-2px 16px 0;padding-left:37px}
 .cs-ch{height:280px;position:relative}
 .cs-g{display:grid;grid-template-columns:1.1fr .9fr;gap:13px}
@@ -87,8 +99,11 @@
 .cs-bar2{height:12px;border-radius:999px;background:var(--card2);overflow:hidden;min-width:120px}
 .cs-bar2 i{display:block;height:100%;border-radius:999px;background:var(--bc)}
 .cs-foot{font-size:11.5px;color:var(--faint);padding:8px 12px 2px;line-height:1.6}
-@media (max-width:1100px){.cs-g{grid-template-columns:1fr}.cs-sec .st{margin-right:0}}
+@media (max-width:1100px){.cs-g{grid-template-columns:1fr}.cs-st{margin-right:0;max-width:none}}
 @media (max-width:640px){
+  .cs-st{grid-template-columns:1fr!important;flex:1 1 100%;width:100%;margin-right:0}
+  .cs-hd{min-width:0}
+  .cs-sec{background-size:auto 140%;background-position:right -40px top}
   #cKpi{grid-template-columns:1fr 1fr!important;gap:9px}
   #cKpi .kpi{padding:10px 10px 9px}
   #cKpi .kpi .v{font-size:19px!important}
@@ -99,7 +114,8 @@
   .cs-act{margin-left:0;width:100%}.cs-act button{flex:1;justify-content:center;padding:6px 6px;font-size:11.5px}
   .cs-ban .tt b{font-size:18px}
   .cs-sec{background-size:auto 100%;background-position:right -60px center}
-  .cs-sec .st{margin-left:0;width:100%}
+  .cs-st{grid-template-columns:1fr;width:100%}
+  .cs-hd b{font-size:20px}
   .cs-sub{padding-left:0}
   .cs-bar2{min-width:60px}
   .cs-t td,.cs-t th{padding:7px 6px}
@@ -249,10 +265,15 @@ function barHtml(){
       <button class="${CS.view==='cmp'?'on':''}" data-csv="cmp"><svg viewBox="0 0 24 24">${ICO.cmp}</svg>เปรียบเทียบรายปี</button>
       <button data-csdl="1"><svg viewBox="0 0 24 24">${ICO.dl}</svg>ดาวน์โหลดข้อมูล</button></div></div>`;
 }
-function secHtml(t,stats){
-  return `<div class="cs-sec mb" style="--sc:${t.c};background-image:url('assets/cardbg/bg-${t.bg}.webp')">
-    <span class="ci">${icoImg(t.ic,34)}</span><span><b>${t.t}</b><span>จังหวัดหนองบัวลำภู</span></span>
-    ${stats?`<div class="st">${stats.map(s=>`<div><b>${s[1]}</b>${s[0]}</div>`).join('')}</div>`:''}</div>`;
+function dchip(a,b,mode,inv,yb){if(a==null||b==null||!isFinite(a)||!isFinite(b))return '';
+  const d=mode==='pt'?a-b:pctc(a,b);if(d==null||!isFinite(d))return '';
+  const up=d>0,flat=Math.abs(d)<0.05,good=flat?'fl':((up!==!!inv)?'up':'dn');
+  return `<span class="cs-d ${good}">${flat?'▬':up?'▲':'▼'} ${f(Math.abs(d),1)}${mode==='pt'?' จุด':'%'}<em>จากปี ${yb}</em></span>`}
+function secHtml(t,stats,Y){
+  return `<div class="cs-sec mb" style="--sc:${t.c};background-image:url('assets/cardbg/bg-sec-${t.k}.webp'),url('assets/cardbg/bg-${t.bg}.webp')">
+    <div class="cs-hd"><span class="ci">${icoImg(t.ic,34)}</span><span><b>${t.t}</b><span>จังหวัดหนองบัวลำภู${Y?` · ปี ${Y}`:''}</span></span></div>
+    ${stats?`<div class="cs-st">${stats.map(x=>`<div class="cs-tile"><span class="ti">${icoImg(x.ic,28)}</span><div class="tx">
+      <span class="tl">${x.l}</span><span class="tv">${x.v}${x.u?`<small>${x.u}</small>`:''}</span>${x.d||(x.n?`<span class="cs-d nt">${x.n}</span>`:'')}</div></div>`).join('')}</div>`:''}</div>`;
 }
 function card(id,ico,title,sub,body,u){
   return `<div class="c"><header><span class="hdico icow img">${icoImg(ico,26)}</span><h3>${title}</h3>${u?`<span class="u">${u}</span>`:''}</header>
@@ -271,7 +292,10 @@ function waterHtml(S,Y){
   const rows=AMP.map(a=>{const s=nz(so[a]),u=nz(us[a]),r=nz(ra[a]);
     return `<tr><td class="l">${a}</td><td>${s==null?'<span class="na">—</span>':f(s/1e6,2)}</td><td>${u==null?'<span class="na">—</span>':f_num(u)}</td><td>${r==null?'<span class="na">—</span>':f(r,2)}</td></tr>`}).join('');
   const none=AMP.filter(a=>!nz(so[a])&&!nz(us[a]));
-  return secHtml(TABS[0],[['ผู้ใช้น้ำ (ราย)',fx(S.wuser[y])],['ใช้น้ำเฉลี่ย (ลบ.ม./ราย)',fx(S.wrate[y],2)],['น้ำสูญเสีย (ผลิต − จำหน่าย)',loss==null?'—':f(loss,1)+'%']])+
+  const lossP=S.wprod[y-1]&&S.water[y-1]?(1-S.water[y-1]/S.wprod[y-1])*100:null;
+  return secHtml(TABS[0],[{l:'ผู้ใช้น้ำประปา',v:fx(S.wuser[y]),u:'ราย',ic:'population',d:dchip(S.wuser[y],S.wuser[y-1],'pct',0,y-1)},
+    {l:'ใช้น้ำเฉลี่ยต่อราย',v:fx(S.wrate[y],1),u:'ลบ.ม./ปี',ic:'tapwater|water',d:dchip(S.wrate[y],S.wrate[y-1],'pct',0,y-1)},
+    {l:'น้ำสูญเสียในระบบ',v:loss==null?'—':f(loss,1),u:'%',ic:'gap',d:dchip(loss,lossP,'pt',1,y-1)}],y)+
   `<div class="mb">${card('','line','แนวโน้มปริมาณการใช้น้ำประปา รายปี',span(S.water),
       `<div class="cs-ch"><canvas id="cWater"></canvas></div><div class="note">${trendNote(S.water,'ล้าน ลบ.ม.',2)} · เส้นประคือปริมาณน้ำที่ผลิตได้จริง ส่วนต่างกับน้ำที่จำหน่ายคือน้ำสูญเสียในระบบ</div>`,'ล้าน ลบ.ม.')}</div>
   <div class="cs-g">
@@ -287,7 +311,10 @@ function elecHtml(S,Y){
   const L=AMP.map(a=>({a,v:U[a]})).filter(x=>x.v!=null).sort((p,q)=>q.v-p.v),mx=Math.max(...L.map(x=>x.v));
   const tot=S.euser[uy];
   const T=E.type[y]||{},tl=Object.keys(T).filter(k=>T[k]>0).sort((a,b)=>T[b]-T[a]);
-  return secHtml(TABS[1],[['ผู้ใช้ไฟฟ้า (ราย)',fx(tot)],['ใช้ไฟเฉลี่ยต่อราย (หน่วย/ปี)',S.elec[y]&&tot?f_num(Math.round(S.elec[y]*1e6/tot)):'—'],['บ้านอยู่อาศัย',T['บ้านอยู่อาศัย']&&S.elec[y]?f(T['บ้านอยู่อาศัย']/S.elec[y]*100,1)+'%':'—']])+
+  const pu=v=>S.elec[v]&&S.euser[v]?S.elec[v]*1e6/S.euser[v]:null,rs=v=>{const t=(CS.D.elec.type[v]||{})['บ้านอยู่อาศัย'];return t&&S.elec[v]?t/S.elec[v]*100:null};
+  return secHtml(TABS[1],[{l:'ผู้ใช้ไฟฟ้า',v:fx(tot),u:'ราย',ic:'population',d:dchip(tot,S.euser[uy-1],'pct',0,uy-1)},
+    {l:'ใช้ไฟเฉลี่ยต่อราย',v:pu(y)?f_num(Math.round(pu(y))):'—',u:'หน่วย/ปี',ic:'power',d:dchip(pu(y),pu(y-1),'pct',0,y-1)},
+    {l:'สัดส่วนบ้านอยู่อาศัย',v:rs(y)==null?'—':f(rs(y),1),u:'%',ic:'household',d:dchip(rs(y),rs(y-1),'pt',0,y-1)}],y)+
   `<div class="mb">${card('','power','แนวโน้มปริมาณการใช้ไฟฟ้า รายปี',span(S.elec),
       `<div class="cs-ch"><canvas id="cElec"></canvas></div><div class="note">${trendNote(S.elec,'ล้านหน่วย',2)}</div>`,'ล้านกิโลวัตต์-ชั่วโมง')}</div>
   <div class="cs-g">
@@ -303,7 +330,10 @@ function fuelHtml(S,Y){
   const y=atOr(S.fuelL,Y).y,F=CS.D.fuel[y]||{},U=CS.D.fuelUnit;
   const L=Object.keys(F).filter(n=>U[n]==='พันลิตร'&&F[n]>0).map(n=>({n,v:F[n]})).sort((a,b)=>b.v-a.v),tot=L.reduce((a,b)=>a+b.v,0);
   const C=['#f07a1a','#16a06a','#2f7fd8','#9b6bd6','#e8336d','#f2b01e','#14a3b8','#7a8a94'];
-  return secHtml(TABS[2],[['น้ำมันรวม (พันลิตร)',fx(tot,2)],['สัดส่วนดีเซล',S.diesel[y]&&tot?f(S.diesel[y]/tot*100,1)+'%':'—'],['ก๊าซแอลพีจี (พันกก.)',fx(S.lpg[y],2)]])+
+  const ds=v=>S.diesel[v]&&S.fuelL[v]?S.diesel[v]/S.fuelL[v]*100:null;
+  return secHtml(TABS[2],[{l:'น้ำมันเชื้อเพลิงรวม',v:fx(tot/1000,2),u:'ล้านลิตร',ic:'fuel',d:dchip(tot,S.fuelL[y-1],'pct',0,y-1)},
+    {l:'สัดส่วนน้ำมันดีเซล',v:ds(y)==null?'—':f(ds(y),1),u:'%',ic:'diesel|fuel',d:dchip(ds(y),ds(y-1),'pt',0,y-1)},
+    {l:'ก๊าซแอลพีจี',v:fx(S.lpg[y]/1000,2),u:'ล้าน กก.',ic:'lpg|fuel',d:dchip(S.lpg[y],S.lpg[y-1],'pct',0,y-1)}],y)+
   `<div class="mb">${card('','line','แนวโน้มปริมาณการจำหน่ายน้ำมันเชื้อเพลิง รายปี',span(S.diesel),
       `<div class="cs-ch"><canvas id="cFuel"></canvas></div><div class="note">ดีเซลหมุนเร็วรวมทุกชนิด เพราะตั้งแต่ปี 2567 รายงานเปลี่ยนชื่อจาก "บี 7" เป็น "ดีเซลหมุนเร็วธรรมดา" · ${trendNote(S.diesel,'พันลิตร',2).replace(/^ปี/,'ดีเซลปี')}</div>`,'พันลิตร')}</div>
   ${card('','fuel',`ปริมาณการจำหน่ายน้ำมันเชื้อเพลิง รายชนิด ปี ${y}`,'จังหวัดหนองบัวลำภู',
@@ -316,7 +346,9 @@ function fuelHtml(S,Y){
 function carHtml(S,Y){
   const ny=yrs(S.newc),tot=ny.reduce((a,y)=>a+S.newc[y],0),L=ny.slice().sort((a,b)=>b-a),mx=Math.max(...ny.map(y=>S.newc[y]));
   const cy=atOr(S.cum,Y).y;
-  return secHtml(TABS[3],[['รถสะสม (คัน)',fx(S.cum[cy])+(cy!==Y?` <small style="font-size:10.5px;color:var(--faint)">ปี ${cy}</small>`:'')],['รถใหม่ปี '+Y+' (คัน)',fx(S.newc[Y])],[`รถใหม่รวม ${ny[0]}–${ny[ny.length-1]}`,fx(tot)]])+
+  return secHtml(TABS[3],[{l:'รถจดทะเบียนสะสม'+(cy!==Y?` (ปี ${cy})`:''),v:fx(S.cum[cy]),u:'คัน',ic:'carstock|vehicle',d:dchip(S.cum[cy],S.cum[cy-1],'pct',0,cy-1)},
+    {l:'รถจดทะเบียนใหม่',v:fx(S.newc[Y]),u:'คัน',ic:'newcar|car',d:dchip(S.newc[Y],S.newc[Y-1],'pct',0,Y-1)},
+    {l:`รถใหม่รวม ${ny[0]}–${ny[ny.length-1]}`,v:fx(tot),u:'คัน',ic:'history',n:`เฉลี่ยปีละ ${f_num(Math.round(tot/ny.length))} คัน`}],Y)+
   `<div class="mb">${card('','vehicle','แนวโน้มจำนวนรถจดทะเบียน รายปี',`จังหวัดหนองบัวลำภู พ.ศ. ${Math.min(...yrs(S.cum),...ny)} – ${Math.max(...yrs(S.cum),...ny)}`,
       `<div class="cs-ch"><canvas id="cCar"></canvas></div><div class="note">รถจดทะเบียนใหม่ปี ${ny[ny.length-1]} ${fx(S.newc[ny[ny.length-1]])} คัน เพิ่มจาก ${fx(S.newc[ny[0]])} คันในปี ${ny[0]} (${f(pctc(S.newc[ny[ny.length-1]],S.newc[ny[0]]),1)}%)</div>`,'คัน')}</div>
   ${card('','car','จำนวนรถจดทะเบียนใหม่ จำแนกรายปี','จังหวัดหนองบัวลำภู',
