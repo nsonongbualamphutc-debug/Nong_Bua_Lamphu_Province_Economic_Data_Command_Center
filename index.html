@@ -119,12 +119,12 @@ function renderCover(){
   $('#portalGrid').innerHTML=SECTORS.map(s=>{
     const agy=[...new Set(s.datasets.map(id=>DATASETS.find(x=>x.id===id).agency))]
       .map(a=>a.replace('สำนักงาน','สนง.').replace('จังหวัดหนองบัวลำภู','จ.นภ.')).join(' · ');
-    const real=s.datasets.some(id=>DATASETS.find(x=>x.id===id).real);
+    const real=s.real||s.datasets.some(id=>DATASETS.find(x=>x.id===id).real);
     return`<button class="pcard" data-go="${s.id}">
       <span class="pimg"><i style="background-image:url('${s.img}')"></i>
         <span class="pi" style="background:${s.color}"><svg viewBox="0 0 24 24" style="stroke:#fff">${IC[s.icon]}</svg></span></span>
       <span class="pbody"><h4>${s.name}</h4><p>${s.desc}</p>
-      <span class="pm">${real?'<span class="chip real">ข้อมูลจริง</span>':'<span class="chip mock">โครงร่าง</span>'}<span>${agy}</span></span></span></button>`}).join('')+
+      <span class="pm">${real?'<span class="chip real">ข้อมูลจริง</span>':'<span class="chip mock">โครงร่าง</span>'}<span>${s.agy||agy}</span></span></span></button>`}).join('')+
     `<button class="pcard" data-go="area">
       <span class="pimg"><i style="background-image:url('assets/cover-city.jpg')"></i>
         <span class="pi" style="background:${cv('--brand2')}"><svg viewBox="0 0 24 24" style="stroke:#fff"><path d="M9 3.5 3.5 6v14.5L9 18l6 2.5 5.5-2.5V3.5L15 6z"/><path d="M9 3.5V18M15 6v14.5"/></svg></span></span>
