@@ -3092,7 +3092,7 @@ const KPI_PROV={
     waterKpi:['res:ag.irr','res:ag.benefit','wl1','solar','res:ag.small','wl2','res:ag.bad','wask'],baseKpi:['baseInfo','cropFile','cropFile','baseInfo'],fruitCards:Array(12).fill('cFruit')},
   trade:{tKpi:['cCpi','cCpi','cCredit'],tpKpi:['cWeek','cWeek','cWeek']},consume:{cKpi:['wa','el','ca','cn','fu','fu','fu','fu']}
 };
-Object.assign(KPI_PROV.overview,{homeKpi:Array(20).fill('cMac')});
+Object.assign(KPI_PROV.overview,{homeKpi:Array(20).fill('cMac'),hkDem:Array(3).fill('cMac'),hkSup:Array(3).fill('cMac'),hkFin:Array(2).fill('cMac'),hkLab:['cMac']});
 Object.assign(KPI_PROV.fiscal,{fiscalPick:['cFiscalTrend','cFiscalTrend']});
 /* การ์ดตัวเลขที่ไม่อยู่ในกล่องที่ระบุ ใช้ที่มาตั้งต้นของหน้า */
 const KPI_DEFAULT={};

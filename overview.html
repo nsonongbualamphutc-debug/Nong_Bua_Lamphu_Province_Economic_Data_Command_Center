@@ -60,7 +60,15 @@
     </div>
   </div>
   <div id="macroPick"></div>
-  <div class="grid g3 mb" id="homeKpi"></div>
+  <div class="ovg mb" id="homeKpi">
+    <section class="ovs" style="--sc:#e8792b"><h4><span class="ovi icow img"></span>ด้านอุปสงค์ <small>(Demand)</small></h4><div class="grid g3" id="hkDem"></div></section>
+    <section class="ovs" style="--sc:#2f7fd8"><h4><span class="ovi icow img"></span>ด้านอุปทาน <small>(Supply)</small></h4><div class="grid g3" id="hkSup"></div></section>
+  </div>
+  <div class="ovg2 mb">
+    <section class="ovs" style="--sc:#1f6f78"><h4><span class="ovi icow img"></span>ด้านการเงิน</h4><div class="grid g2" id="hkFin"></div></section>
+    <section class="ovs" style="--sc:#1f6f78"><h4><span class="ovi icow img"></span>ด้านเสถียรภาพ</h4><div class="grid g2" id="hkStab"></div></section>
+    <section class="ovs" style="--sc:#1f6f78"><h4><span class="ovi icow img"></span>ตลาดแรงงาน</h4><div class="grid" id="hkLab"></div></section>
+  </div>
   <div class="c mb" id="hiBox"><header><span class="hdico icow img" data-hdico="forecast"></span>
     <h3>สรุปเดือนนี้</h3><span class="u" id="hiSub"></span>
     <span class="r"><a class="briefbtn" id="briefLink" href="brief.html" data-tip2="สรุปผู้บริหาร 1 หน้า A4|รวมตัวเลขสำคัญของเดือนที่เลือก จุดเด่น จุดเฝ้าระวัง ประเด็นที่ควรเตรียมคำตอบ และ QR ไว้ในแผ่นเดียว พิมพ์แจกในที่ประชุมหรือบันทึกเป็น PDF ได้">
@@ -228,7 +236,7 @@ function renderOverview(){
   if(eyeb)eyeb.textContent='ภาวะเศรษฐกิจจังหวัดหนองบัวลำภู · '+TH_FULL[cur.m-1]+' '+cur.y;
 
   /* ── หัวเรื่อง ── */
-  $('#meiVal').textContent=(ov>0?'+':'')+f(ov,1)+'%';
+  $('#meiVal').innerHTML=(ov>0?'+':'')+f(ov,1)+'%<small class="yoy">(YoY)</small>';
   /* ป้ายปีก่อน/เดือนก่อนแบบเดียวกับการ์ดอื่น ผู้ดูจะได้อ่านความหมายตรงกันทั้งหน้า */
   (function(){
     const box=document.getElementById('meiBadges'); if(!box)return;
@@ -280,7 +288,23 @@ function renderOverview(){
       <div class="pil-b">${badge(v,'ปีก่อน','%',tY)}${badge(mom,'เดือนก่อน',' จุด',tM)}</div>
     </div>`;
   };
-  $('#heroPil').innerHTML=pill('dem','ด้านอุปสงค์','cpi',dem,demP)+pill('sup','ด้านอุปทาน','factorynew',sup,supP);
+  /* เสาสองต้นใช้ GPP และ GPP ต่อหัวของ สศช. (รายปี) · เทียบปีก่อน ณ ราคาประจำปี */
+  const GR=((D.gpp&&D.gpp.rows)||[]).filter(x=>x&&x.y&&x.value).slice().sort((a,b)=>a.y-b.y);
+  const gL=GR[GR.length-1],gP=GR[GR.length-2];
+  const gpPill=(k,label,ico,unit,u2)=>{
+    if(!gL)return '';
+    const v=gL[k],p=gP?gP[k]:null,d=p?pctc(v,p):null;
+    const c=d==null?'fl':d>.15?'up':d<-.15?'dn':'fl',a=d==null?'':d>.15?'▲':d<-.15?'▼':'▬';
+    const tip=tipOf({t:label,d:k==='value'?'มูลค่าสินค้าและบริการขั้นสุดท้ายที่ผลิตได้ในจังหวัดทั้งปี ณ ราคาประจำปี':'GPP ทั้งจังหวัดหารด้วยประชากรกลางปีที่ สศช. ใช้',
+      calc:p?'เทียบปีก่อน = ('+f_num(v)+' − '+f_num(p)+') ÷ '+f_num(p)+' × 100 = '+f(d,2)+'%':'ไม่มีปีก่อนให้เทียบ',
+      src:'gpp',when:'ปี '+gL.y+(gL.note?' ('+gL.note+')':'')});
+    return `<div class="pil gpil" data-go="gpp" data-tip2="${tip}">
+      <div class="pil-h"><span class="pil-ic icow img">${icoImg(ico,26)}</span><span class="pil-l">${label}</span></div>
+      <b class="n">${f(v,0)}<small>${unit}</small></b>
+      <div class="pil-b">${d==null?'':`<span class="pb ${c}">${a} ${d>0?'+':''}${f(d,1)}% <em>ปีก่อน</em></span>`}<span class="gy">ข้อมูลล่าสุด : ${gL.y}</span></div>
+    </div>`;
+  };
+  $('#heroPil').innerHTML=gpPill('value','ผลิตภัณฑ์มวลรวมจังหวัด<br>(GPP)','gpp','ล้านบาท')+gpPill('pc','ผลิตภัณฑ์มวลรวมจังหวัดต่อหัว<br>(GPP per Capita)','gpppc|income','บาท/คน/ปี');
 
   const mb=document.querySelector('.meibox');
   if(mb)mb.dataset.tip2=macroTip('overall','ภาวะเศรษฐกิจรายเดือน',cur,prv,
@@ -303,19 +327,19 @@ function renderOverview(){
   /* เส้นเล็กในการ์ด = 12 เดือนล่าสุดนับถึงงวดที่เลือก ทำให้เห็นทิศทางไม่ใช่แค่ตัวเลขเดือนเดียว */
   const hist=k=>MAC.slice(Math.max(0,mIdx()-11),mIdx()+1).map(r=>r[k]).filter(x=>x!=null);
   const pctCard=(k,label,ico,col,go)=>{
-    const v=cur[k], p=prv?prv[k]:null;
+    const v=cur[k], p=prv?prv[k]:null, lp=label.replace(/<small>[\s\S]*?<\/small>/,'');
     return kpiCard({icon:'chart',img:ico,color:cv(col),label:label,value:(v>0?'+':'')+f(v,1),unit:'%',
-      chip:chip2(v,p==null?null:v-p,'pt',CX({label,yoyDirect:true,v,vm:p})),spark:spark(hist(k),cv(col)),
+      chip:chip2(v,p==null?null:v-p,'pt',CX({label:lp,yoyDirect:true,v,vm:p})),spark:spark(hist(k),cv(col)),
       sub:'เดือนก่อน '+(p==null?'—':f(p,1)+'%'),go:go,
-      tip:macroTip(k,label,cur,prv)});
+      tip:macroTip(k,lp,cur,prv)});
   };
-  $('#homeKpi').innerHTML=[
-    pctCard('agri','ภาคเกษตรกรรม','agri','--leaf','agri'),
-    pctCard('indus','ภาคอุตสาหกรรม','factorynew','--blue','industry'),
-    pctCard('serv','ภาคบริการ','trade','--brand','trade'),
-    pctCard('cons','การบริโภคภาคเอกชน','cpi','--brand2','consume'),
-    pctCard('invest','การลงทุนภาคเอกชน','invest','--gold','industry'),
-    pctCard('gov','การใช้จ่ายภาครัฐ','spend','--blue','fiscal'),
+  const HK=[
+    pctCard('agri','ภาคเกษตรกรรม<small>สัดส่วน '+MW.agri+'%</small>','agri','--leaf','agri'),
+    pctCard('indus','ภาคอุตสาหกรรม<small>สัดส่วน '+MW.indus+'%</small>','factorynew','--blue','industry'),
+    pctCard('serv','ภาคบริการ<small>สัดส่วน '+MW.serv+'%</small>','trade','--brand','trade'),
+    pctCard('cons','การบริโภคภาคเอกชน<small>Cp Index</small>','cpi','--brand2','consume'),
+    pctCard('invest','การลงทุนภาคเอกชน<small>Ip Index</small>','invest','--gold','industry'),
+    pctCard('gov','การใช้จ่ายภาครัฐ<small>G Index</small>','spend','--blue','fiscal'),
     lvl('depo','depoY','เงินฝากรวม','ลบ.','credit','--gold',0),
     lvl('cred','credY','สินเชื่อรวม','ลบ.','invest','--brand2',0),
     (function(){
@@ -331,7 +355,18 @@ function renderOverview(){
             (p==null?'':' · เดือนก่อน '+f_num(p)+' คน'),
           src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู',when:'เดือน '+mLabel(cur)})});
     })()
-  ].join('');
+  ];
+  /* แยกตามด้าน: อุปสงค์ (บริโภค ลงทุน รัฐ) · อุปทาน (เกษตร อุตสาหกรรม บริการ) · การเงิน · แรงงาน */
+  $('#hkSup').innerHTML=HK.slice(0,3).join('');
+  $('#hkDem').innerHTML=HK.slice(3,6).join('');
+  $('#hkFin').innerHTML=HK.slice(6,8).join('');
+  $('#hkLab').innerHTML=HK[8];
+  const noData=(label,sub,ico)=>kpiCard({icon:'chart',img:ico,color:cv('--faint'),label,value:'—',unit:'',sim:false,
+    chip:'<span class="chip">ยังไม่มีข้อมูลรายเดือน</span>',sub,
+    tip:tipOf({t:label.replace(/<[^>]+>/g,' '),d:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดรายเดือนยังไม่มีตัวชี้วัดนี้ จึงแสดงเป็นขีด ไม่ใช้ค่าประมาณแทน',src:'แฟ้มเครื่องชี้เศรษฐกิจจังหวัดหนองบัวลำภู'})});
+  $('#hkStab').innerHTML=noData('ดัชนีราคาผู้บริโภค<small>เงินเฟ้อจังหวัด (%YoY)</small>','ดูดัชนีรายปีที่หน้าการค้าและค่าครองชีพ','cpi')+
+    noData('ดัชนีราคาผู้ผลิต<small>(%YoY)</small>','รอข้อมูลจากแฟ้มเครื่องชี้ฯ','inflation');
+  document.querySelectorAll('#homeKpi .ovs h4 .ovi, .ovg2 .ovs h4 .ovi').forEach((e,i)=>{if(!e.innerHTML)e.innerHTML=icoImg(['demand|cpi','supply|factorynew','savings|credit','stability|cpi','labor|employed'][i],26)});
 
   renderHighlight(cur,prv);
   renderMacro();
