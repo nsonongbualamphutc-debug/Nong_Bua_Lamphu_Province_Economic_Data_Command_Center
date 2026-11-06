@@ -1,44 +1,202 @@
-<!doctype html>
-<html lang="th">
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>รายงานและบทวิเคราะห์ · 12 Plus+</title>
-<meta name="description" content="สรุปผู้บริหาร ตารางตัวชี้วัด และข้อมูลที่ต้องบูรณาการเพิ่ม">
-<meta name="theme-color" content="#FCE9EF" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#130911" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="img/icon-180.png">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b3c32">
+<meta name="description" content="บทวิเคราะห์เศรษฐกิจจังหวัดพร้อมข้อเสนอเชิงนโยบาย">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta property="og:title" content="รายงานและบทวิเคราะห์ · 12 Plus+"><meta property="og:description" content="สรุปผู้บริหาร ตารางตัวชี้วัด และข้อมูลที่ต้องบูรณาการเพิ่ม"><meta property="og:image" content="https://nsonongbualamphutc-debug.github.io/Dashboard-12-Product-Plus-NBLP/img/og-00.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://nsonongbualamphutc-debug.github.io/Dashboard-12-Product-Plus-NBLP/img/og-00.jpg">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,400;1,9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@400;500;600&display=swap">
-<script>try{var s=JSON.parse(localStorage.getItem('nbl12-set')||'{}');var t=s.theme||'light';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=c79ac71e">
-<script>(function(){var B="65488912b0";try{fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==B){var k="nbl12-rl-"+j.v;if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");location.reload()}}}).catch(function(){})}catch(e){}})()</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="เศรษฐกิจหนองบัวลำภู">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="รายงานและบทวิเคราะห์ · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู">
+<meta property="og:description" content="บทวิเคราะห์เศรษฐกิจจังหวัดพร้อมข้อเสนอเชิงนโยบาย">
+<meta property="og:url" content="https://nsonongbualamphutc-debug.github.io/Nong_Bua_Lamphu_Province_Economic_Data_Command_Center/report.html">
+<meta property="og:image" content="https://nsonongbualamphutc-debug.github.io/Nong_Bua_Lamphu_Province_Economic_Data_Command_Center/assets/og/og-report.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="รายงานและบทวิเคราะห์ · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="รายงานและบทวิเคราะห์ · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู">
+<meta name="twitter:description" content="บทวิเคราะห์เศรษฐกิจจังหวัดพร้อมข้อเสนอเชิงนโยบาย">
+<meta name="twitter:image" content="https://nsonongbualamphutc-debug.github.io/Nong_Bua_Lamphu_Province_Economic_Data_Command_Center/assets/og/og-report.jpg">
+<title>รายงานและบทวิเคราะห์ · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ds.css">
+
 </head>
-<body data-page="report" data-pid="0">
-<noscript><p style="padding:24px">กรุณาเปิดใช้ JavaScript เพื่อดูแดชบอร์ด</p></noscript>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="data.js?v=555b454c"></script>
-<script src="app.js?v=60aa6172"></script>
-<script src="pages.js?v=b8a39da8"></script>
-<script src="pages2.js?v=04dae068"></script>
-<script src="pages3.js?v=aaa7422d"></script>
-<script src="pages4.js?v=96025f00"></script>
-<script src="pages5.js?v=078f2856"></script>
-<script src="pages6.js?v=daac5130"></script>
-<script src="items-en.js?v=a9ac2ec2"></script>
-<script src="pages7.js?v=59dd3fe6"></script>
-<script src="pages8.js?v=0426cfa3"></script>
-<script src="pages9.js?v=c7b1e3e6"></script>
-<script src="pages10.js?v=9accb97e"></script>
-<script src="pages11.js?v=881100f7"></script>
-<script src="pages12.js?v=fcd498e2"></script>
-<script src="pages13.js?v=28106076"></script>
-<script src="pages14.js?v=655c185b"></script>
-<script src="pages15.js?v=781b5f19"></script>
-<script src="pages16.js?v=3538366f"></script>
-<script src="fx.js?v=f31c62cf"></script>
+<body>
+<div id="tip"></div>
+<div class="app" id="app">
+  <header class="top" id="topbar"></header>
+  <nav class="side" id="sidebar"></nav>
+  <main class="main">
+    <section class="view on" id="v-report">
+  <div class="rbanner" style="background-image:url('assets/banner-wide.jpg')">
+    <div class="rb-in"><b>สรุปภาวะเศรษฐกิจจังหวัดหนองบัวลำภู</b>
+      <span>รายงานอัตโนมัติจากข้อมูลล่าสุดในระบบ · สำนักงานจังหวัด และสำนักงานสถิติจังหวัดหนองบัวลำภู</span></div></div>
+  <div class="ph"><div class="t" style="display:flex;gap:14px;align-items:flex-start"><span class="bigico icow img" data-bigico="report"></span><span><h2>รายงานและบทวิเคราะห์</h2>
+    <p>สรุปภาวะเศรษฐกิจจังหวัดสำหรับเสนอผู้บริหาร พร้อมดาวน์โหลดข้อมูลดิบไปใช้งานต่อ</p></span></div>
+    <div class="r">
+      <button class="tb" id="btnCsv"><svg viewBox="0 0 24 24"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4.5 20.5h15"/></svg>ดาวน์โหลด CSV</button>
+      <button class="tb" id="btnJson"><svg viewBox="0 0 24 24"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4.5 20.5h15"/></svg>JSON</button>
+      <button class="tb" id="btnPrint2"><span class="icow img" style="width:18px;height:18px;display:inline-grid;place-items:center"><img class="ico" src="assets/icons/ic-print.png" alt="" width="18" height="18" loading="lazy" onerror="this.closest('.icow').classList.add('noimg');this.remove()"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z"/></svg></span>พิมพ์ / บันทึก PDF</button>
+    </div></div>
+  <div class="grid g4 mb" id="rpKpi"></div>
+
+  <div class="secthead"><span class="sn">1</span><b>บทสรุปสำหรับผู้บริหาร</b><span>เขียนอัตโนมัติจากข้อมูลล่าสุดในระบบ พร้อมข้อเสนอเชิงนโยบาย</span></div>
+  <div class="grid g21 mb">
+    <div class="c"><header><span class="hdico icow img" data-hdico="report"></span><h3>สรุปภาวะเศรษฐกิจจังหวัดหนองบัวลำภู</h3><span class="u" id="briefAsof"></span></header>
+      <div class="b brief" id="brief"></div></div>
+    <div class="rp-side">
+      <div class="c"><header><span class="hdico icow img" data-hdico="print"></span><h3>ส่งออกและนำไปใช้</h3></header>
+        <div class="b"><div class="rp-acts">
+          <a class="rp-act" href="brief.html"><span class="rp-ai" style="--c:#0d9268"><svg viewBox="0 0 24 24"><path d="M6 3.5h8l4 4V20.5H6z"/><path d="M13.5 3.6V8h4.4M9 12h6M9 15.5h6"/></svg></span><b>สรุปผู้บริหาร 1 หน้า</b><small>ขนาด A4 พร้อมพิมพ์</small></a>
+          <button class="rp-act" data-rp="print"><span class="rp-ai" style="--c:#2f7fd1"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z"/></svg></span><b>พิมพ์ / บันทึก PDF</b><small>รายงานทั้งหน้า</small></button>
+          <button class="rp-act" data-rp="csv"><span class="rp-ai" style="--c:#c98a1b"><svg viewBox="0 0 24 24"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4.5 20.5h15"/></svg></span><b>ดาวน์โหลด CSV</b><small>เปิดใน Excel ได้ทันที</small></button>
+          <button class="rp-act" data-rp="json"><span class="rp-ai" style="--c:#8b5cf6"><svg viewBox="0 0 24 24"><path d="M8 4c-2 0-2.5 1-2.5 3v2c0 1.5-.8 2.5-2 3 1.2.5 2 1.5 2 3v2c0 2 .5 3 2.5 3M16 4c2 0 2.5 1 2.5 3v2c0 1.5.8 2.5 2 3-1.2.5-2 1.5-2 3v2c0 2-.5 3-2.5 3"/></svg></span><b>ดาวน์โหลด JSON</b><small>สำหรับนักพัฒนาระบบ</small></button>
+        </div></div></div>
+      <div class="c"><header><span class="hdico icow img" data-hdico="datastatus"></span><h3>ที่มาของตัวเลขในรายงาน</h3></header>
+        <div class="b"><div id="rpSrc"></div>
+          <a class="rp-more" href="sources.html">ดูทะเบียนชุดข้อมูลทั้งหมด ›</a></div></div>
+    </div>
+  </div>
+
+  <div class="secthead"><span class="sn">2</span><b>ตัวชี้วัดทั้งหมด</b><span>ค่าล่าสุดและการเปลี่ยนแปลงเทียบปีก่อน</span></div>
+  <div class="c mb"><header><span class="hdico icow img"><img class="ico" src="assets/icons/ic-target.png" alt="" width="26" height="26" loading="lazy" onerror="this.remove()"></span><h3>ตารางสรุปตัวชี้วัดทั้งหมด</h3><span class="u" id="tAllU"></span></header>
+    <div class="b"><div class="sc" style="max-height:520px"><table class="t" id="tAll"></table></div></div></div>
+
+  <div class="secthead"><span class="sn">3</span><b>ข้อมูลที่ต้องบูรณาการเพิ่ม</b><span>รายการที่ต้องประสานหน่วยงาน เรียงตามความสำคัญ</span></div>
+  <div class="c"><header><span class="hdico icow img"><img class="ico" src="assets/icons/ic-network.png" alt="" width="26" height="26" loading="lazy" onerror="this.remove()"></span><h3>สิ่งที่ยังขาดและต้องบูรณาการเพิ่ม</h3><span class="u" id="gapU"></span></header>
+    <div class="b"><div class="rp-gprog" id="gapProg"></div><div class="rp-gaps" id="tGap"></div></div></div></section>
+  </main>
+</div>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="data1.js"></script>
+<script src="data2.js"></script>
+<script src="ds.js"></script>
+<script>
+/* ─────────────── 16) รายงาน ─────────────── */
+const GAPS=[
+ ['ภาคเกษตร','ข้อมูลปศุสัตว์และประมงรายอำเภอ','สนง.ปศุสัตว์จังหวัด · สนง.ประมงจังหวัด','สูง'],
+ ['ภาคเกษตร','แหล่งน้ำเพื่อการเกษตร (บ่อบาดาล สถานีสูบน้ำ พื้นที่ชลประทาน)','โครงการชลประทานจังหวัด · ทรัพยากรน้ำบาดาล','สูง'],
+ ['ภาคเกษตร','ราคาสินค้าเกษตรรายสัปดาห์ ณ จุดรับซื้อ','สนง.พาณิชย์จังหวัด · สศก.','สูง'],
+ ['ภาคเกษตร','ต้นทุนการผลิตต่อไร่รายพืช','สำนักงานเศรษฐกิจการเกษตร (สศก.)','กลาง'],
+ ['ตลาดแรงงาน','ผลสำรวจภาวะการทำงานของประชากร รายไตรมาส','สนง.สถิติจังหวัดหนองบัวลำภู','สูง','labor'],
+ ['ตลาดแรงงาน','ตำแหน่งงานว่างและผู้สมัครงาน','สนง.จัดหางานจังหวัด','กลาง'],
+ ['ตลาดแรงงาน','แรงงานย้ายถิ่นและแรงงานคืนถิ่น','สนง.แรงงานจังหวัด','กลาง'],
+ ['ท่องเที่ยว','จำนวนผู้เยี่ยมเยือนและรายได้รายเดือน','สนง.การท่องเที่ยวและกีฬาจังหวัด','สูง','tourism'],
+ ['ท่องเที่ยว','จำนวนห้องพักและอัตราการเข้าพัก','สนง.การท่องเที่ยวและกีฬาจังหวัด','กลาง','tourism'],
+ ['การค้า','ยอดจดทะเบียนนิติบุคคลตั้งใหม่/เลิกกิจการ','สนง.พาณิชย์จังหวัด','สูง'],
+ ['การค้า','ดัชนีราคาผู้บริโภคจังหวัดรายเดือนย้อนหลัง 3 ปี','สนง.พาณิชย์จังหวัด','สูง'],
+ ['การเงิน','เงินฝากและสินเชื่อของธนาคารพาณิชย์ในจังหวัด','ธนาคารแห่งประเทศไทย สำนักงานภาคตะวันออกเฉียงเหนือ','กลาง'],
+ ['ภาพรวม','GPP รายสาขาย้อนหลัง 5 ปี','สศช. (NESDC)','สูง'],
+ ['ภาพรวม','ข้อมูลความยากจนและเส้นความยากจนระดับอำเภอ','สนง.พัฒนาชุมชนจังหวัด (TPMAP)','สูง']
+];
+/* สรุปภาวะเศรษฐกิจใช้เครื่องชี้รายเดือนชุดเดียวกับหน้าภาพรวม เป็นข้อมูลจริงจากแฟ้มของคลังจังหวัด
+   ไม่ใช้ดัชนีที่ระบบคำนวณเองอีกแล้ว รายงานที่พิมพ์ออกไปจึงอ้างอิงได้ */
+const RMAC=((typeof DX!=='undefined'&&DX.macro&&DX.macro.rows)||[]).slice().sort((a,b)=>(a.y-b.y)||(a.m-b.m));
+const rmLab=r=>TH_M[r.m-1]+' '+r.y;
+function renderReport(){
+  const cur=RMAC[RMAC.length-1]||{}, prv=RMAC[RMAC.length-2]||null;
+  const F=D.fiscal,val=cropValue();
+  const MWr=(typeof DX!=='undefined'&&DX.macro&&DX.macro.weight)||{agri:21,indus:22,serv:57};
+  const wsum=MWr.agri+MWr.indus+MWr.serv;
+  const sup=cur.agri!=null?(cur.agri*MWr.agri+cur.indus*MWr.indus+cur.serv*MWr.serv)/wsum:null;
+  const dem=cur.cons!=null?(cur.cons+cur.invest+cur.gov)/3:null;
+  const parts=[['ภาคเกษตรกรรม',cur.agri],['ภาคอุตสาหกรรม',cur.indus],['ภาคบริการ',cur.serv],
+               ['การบริโภคเอกชน',cur.cons],['การลงทุนเอกชน',cur.invest],['การใช้จ่ายภาครัฐ',cur.gov]]
+              .filter(x=>x[1]!=null).sort((a,b)=>b[1]-a[1]);
+  $('#briefAsof').textContent='ข้อมูล ณ '+CFG.asof;
+  $('#brief').innerHTML=`
+    <p><b>ภาพรวม</b> — ภาวะเศรษฐกิจจังหวัดหนองบัวลำภู เดือน${rmLab(cur)}
+    ${cur.overall>0?'ขยายตัว':'หดตัว'} <b>${Math.abs(cur.overall).toFixed(1)}%</b> เมื่อเทียบกับเดือนเดียวกันปีก่อน
+    ${prv?`(เดือนก่อน ${prv.overall.toFixed(1)}% เปลี่ยนแปลง ${(cur.overall-prv.overall>0?'+':'')+(cur.overall-prv.overall).toFixed(1)} จุด)`:''}
+    ด้านอุปทานอยู่ที่ <b>${sup==null?'—':(sup>0?'+':'')+sup.toFixed(1)+'%'}</b>
+    ด้านอุปสงค์อยู่ที่ <b>${dem==null?'—':(dem>0?'+':'')+dem.toFixed(1)+'%'}</b>
+    โดยมี <b>${parts[0]?parts[0][0]:'—'}</b> เป็นแรงหนุนหลัก และ <b>${parts.length?parts[parts.length-1][0]:'—'}</b> เป็นตัวฉุด</p>
+
+    <h4>1. การคลังภาครัฐ — เครื่องยนต์หลักที่ยังทำงานเต็มกำลัง</h4>
+    <p>จังหวัดเบิกจ่ายงบประมาณแล้ว <b>${F.fn.dis[0].pct}%</b> (${f(F.fn.dis[0].val,2)} จาก ${f(F.fn.dis[0].alloc,2)} ล้านบาท)
+    ${F.fn.dis[0].over!=null?'สูงกว่าเป้าหมาย '+F.fn.dis[0].over+'% และ':''}เป็น <b>อันดับ ${F.fn.dis[0].rank} ของประเทศ</b>
+    งบลงทุนเบิกจ่ายแล้ว ${F.fn.dis[2].pct}% ${F.fn.dis[2].over!=null?'สูงกว่าเป้าหมายถึง '+F.fn.dis[2].over+'% ':''}ซึ่งเป็นอันดับ ${F.fn.dis[2].rank} ของประเทศเช่นกัน
+    ยังมีเงินกันไว้เบิกเหลื่อมปี 2568 คงเหลืออีก ${f(F.carry.left,2)} ล้านบาทที่ผลักลงพื้นที่ได้ทันที</p>
+
+    <h4>2. ภาคเกษตร — ฐานรายได้ของคนส่วนใหญ่</h4>
+    <p>ครัวเรือนเกษตรกร <b>${f(D.crop.hh,0)}</b> ครัวเรือน เพาะปลูกพืชอายุสั้นรวม ${f(D.crop.area,0)} ไร่
+    ให้ผลผลิต ${f(D.crop.yieldKg/1e6,0)} ล้านกิโลกรัม คิดเป็นมูลค่า <b>${f(val,0)} ล้านบาท</b>
+    โดยอ้อยโรงงานสร้างมูลค่าถึง 89% ของทั้งหมด ขณะที่ข้าวนาปีใช้เนื้อที่มากที่สุด 60.9% แต่ยังอยู่ระหว่างฤดูกาล
+    ไม้ผลเศรษฐกิจกำลังขยายตัว ทุเรียนมีพื้นที่ปลูก 327 ไร่ แต่ให้ผลเพียง 95 ไร่ แปลว่าผลผลิตอีกกว่า 2 ใน 3 กำลังจะเข้ามาในอีก 2–4 ปี</p>
+
+    <h4>3. ข้อเสนอเชิงนโยบาย</h4>
+    <ul>
+      <li>เร่งเบิกจ่ายเงินกันเหลื่อมปีที่เหลือ ${f(F.carry.left,2)} ล้านบาท ให้จบภายในไตรมาสนี้</li>
+      <li>ขยายแหล่งน้ำเพื่อการเกษตร ปัจจุบันพื้นที่รับประโยชน์จากระบบสูบน้ำโซลาร์เซลล์มีเพียง ${f(D.water[0].benefit,0)} ไร่ จากพื้นที่เกษตร 1.55 ล้านไร่</li>
+      <li>วางแผนตลาดและจุดรับซื้อไม้ผลล่วงหน้า เพราะทุเรียนและลำไยออกพร้อมกันในเดือน ก.ค.–ส.ค.</li>
+      <li>เชื่อมเส้นทางท่องเที่ยวเชิงเกษตร 73 แห่ง เข้ากับแปลงใหญ่ 73 แปลง เพื่อสร้างรายได้เสริมให้เกษตรกร</li>
+      <li>เร่งบูรณาการข้อมูลที่ยังขาด ${GAPS.filter(g=>g[3]==='สูง').length} รายการที่มีความสำคัญสูง ตามตารางด้านล่าง</li>
+    </ul>
+    <div class="note">รายงานนี้สร้างอัตโนมัติจากข้อมูลล่าสุดในระบบ ตัวเลขบางส่วนยังเป็นโครงร่างระหว่างรอข้อมูลจริงจากหน่วยงาน</div>`;
+
+  let rows='';
+  DATASETS.forEach(d=>d.series.forEach(s=>{const a=DB[d.id][s.key];
+    rows+=`<tr><td>${SECTORS.find(x=>x.id===d.sector).name}</td><td>${s.label}${simChip({sim:a[35].sim?1:0,real:0},true)}</td>
+      <td class="r">${f(a[35].v,s.dec??0)}</td><td>${s.unit}</td><td class="r">${(a[35].sim||a[23].sim)?'<span class="chip">—</span>':chip(pctc(a[35].v,a[23].v))}</td></tr>`}));
+  $('#tAll').innerHTML=`<thead><tr><th>ภาคส่วน</th><th>ตัวชี้วัด</th><th class="r">ค่าล่าสุด</th><th>หน่วย</th><th class="r">%YoY</th></tr></thead><tbody>${rows}</tbody>`;
+
+  const tAllN=DATASETS.reduce((a,d)=>a+d.series.length,0);document.getElementById('tAllU').textContent=tAllN+' ตัวชี้วัด';
+  /* รายการที่ยังขาด · รายการที่เชื่อม API ได้แล้วจะขึ้นสถานะ "เชื่อมแล้ว" พร้อมลิงก์ไปหน้านั้น */
+  const G=GAPS.slice().sort((a,b)=>(!!a[4]-!!b[4])||((a[3]==='สูง'?0:1)-(b[3]==='สูง'?0:1)));
+  const done=G.filter(g=>g[4]).length;
+  document.getElementById('gapU').textContent='เชื่อมแล้ว '+done+' จาก '+G.length+' รายการ';
+  document.getElementById('gapProg').innerHTML=`<div class="rp-gbar"><i style="width:${(done/G.length*100).toFixed(0)}%"></i></div>
+    <span><b>${done}/${G.length}</b> รายการเชื่อมผ่าน API แล้ว · เหลือความสำคัญสูง <b>${G.filter(g=>!g[4]&&g[3]==='สูง').length}</b> รายการ</span>`;
+  $('#tGap').innerHTML=G.map(g=>`<div class="rp-gap${g[4]?' ok':''}">
+      <div class="rp-gh"><span class="rp-sec">${g[0]}</span>${g[4]?'<span class="chip up">เชื่อม API แล้ว</span>':g[3]==='สูง'?'<span class="chip dn">สำคัญสูง</span>':'<span class="chip fl">สำคัญกลาง</span>'}</div>
+      <b>${g[1]}</b><small>${g[2]}</small>
+      ${g[4]?`<a href="${g[4]}.html">ดูในหน้า${(NAVI.find(n=>n.id===g[4])||{}).label||g[4]} ›</a>`:''}</div>`).join('');
+  /* KPI ด้านบน */
+  const AV=srcInventory().filter(x=>x.type!=='avail'),apiN=AV.filter(x=>x.type==='api').length;
+  const d0=F.fn.dis[0];
+  document.getElementById('rpKpi').innerHTML=[
+    kpiCard({sim:false,img:'analysis',color:cur.overall>=0?'#0d9268':'#d9534f',label:'ภาวะเศรษฐกิจเดือนล่าสุด',value:cur.overall!=null?(cur.overall>0?'+':'')+cur.overall.toFixed(1):'—',unit:'%YoY',
+      chip:prv&&cur.overall!=null?(d=>`<span class="chip ${d>.05?'up':d<-.05?'dn':'fl'}">${d>0?'▲ +':d<0?'▼ ':''}${d.toFixed(1)} จุด</span>`)(cur.overall-prv.overall):'',sub:cur.m?'เดือน'+rmLab(cur):''}),
+    kpiCard({sim:false,img:'disburse',color:'#2f7fd1',label:'เบิกจ่ายงบประมาณภาพรวม',value:d0&&d0.pct!=null?d0.pct.toFixed(2):'—',unit:'%',sub:d0&&d0.rank?'อันดับ '+d0.rank+' ของประเทศ':'งบส่วนราชการ'}),
+    kpiCard({sim:false,img:'cropvalue',color:'#c98a1b',label:'มูลค่าผลผลิตพืชอายุสั้น',value:f(val,0),unit:'ล้านบาท',sub:'ครัวเรือนเกษตรกร '+f(D.crop.hh,0)+' ครัวเรือน'}),
+    kpiCard({sim:false,img:'network',color:'#8b5cf6',label:'ตัวเลขที่ดึงจาก API',value:apiN+'/'+AV.length,unit:'ชุด',sub:'อัปเดตอัตโนมัติจากระบบบัญชีข้อมูล'})].join('');
+  const TC={};AV.forEach(x=>TC[x.type]=(TC[x.type]||0)+1);
+  const COL={api:'#12a36f',link:'#d4a017',gas:'#8b5cf6',file:'#6f9488',ext:'#0fa5c0',sim:'#e0523e'};
+  document.getElementById('rpSrc').innerHTML=`<div class="rp-stack">${Object.keys(COL).filter(k=>TC[k]).map(k=>`<i style="flex:${TC[k]};background:${COL[k]}" title="${SRC_TYPE[k][0]} ${TC[k]}"></i>`).join('')}</div>`+
+    Object.keys(COL).filter(k=>TC[k]).map(k=>`<div class="rp-sl"><i style="background:${COL[k]}"></i><span>${SRC_TYPE[k][0]}</span><b>${TC[k]}</b></div>`).join('');
+}
+function toCsv(){
+  const L=['sector,dataset,indicator,unit,period,value,status'];
+  DATASETS.forEach(d=>d.series.forEach(s=>DB[d.id][s.key].forEach(x=>
+    L.push([SECTORS.find(y=>y.id===d.sector).name,d.id,s.label,s.unit,x.key,x.v,x.sim?'simulated':'actual'].map(v=>`"${v}"`).join(',')))));
+  return L.join('\n')}
+function dl(name,text,type){
+  const b=new Blob(['\ufeff'+text],{type:type||'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+
+
+DS.init('report',function(){
+  if(typeof FISCAL_API!=='undefined'&&FISCAL_API.state==='idle')setTimeout(fiscalSync,0);
+  renderReport();
+  document.getElementById('btnCsv').onclick=function(){dl('nbl-economy-'+CFG.latest.y+'.csv',toCsv(),'text/csv;charset=utf-8')};
+  document.getElementById('btnJson').onclick=function(){dl('nbl-economy-data.json',JSON.stringify({real:D,monthly:DB,district:DBD},null,1),'application/json')};
+  document.getElementById('btnPrint2').onclick=function(){window.print()};
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-rp]');if(!b)return;({print:'btnPrint2',csv:'btnCsv',json:'btnJson'})[b.dataset.rp]&&document.getElementById(({print:'btnPrint2',csv:'btnCsv',json:'btnJson'})[b.dataset.rp]).click()});
+});
+</script>
 </body>
 </html>
