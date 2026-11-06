@@ -940,7 +940,103 @@ function tableOwner(td){
   return t?t.dataset.owner:'*';
 }
 
+
+/* ─────────────── 19b) แก้หัวเรื่องการ์ดได้เองในโหมดแก้ไข ───────────────
+   เจ้าของข้อมูลของหน้า และผู้ดูแลระบบ กดไอคอนปากกาข้างหัวเรื่องแล้วพิมพ์ใหม่ได้ทันที ไม่ต้องแก้โค้ด
+   จำด้วยข้อความตั้งต้นของหัวเรื่อง → ข้อความใหม่ · เก็บบนฐานข้อมูลกลาง ทุกเครื่องเห็นตรงกัน
+   ลบข้อความจนว่างแล้วกดบันทึก = คืนหัวเรื่องเดิม */
+const TITLE_TBL={fiscal:'fiscal',overview:'macro',gpp:'gpp',agri:'crop',trade:'price',labor:'labor',otop:'otop',
+  tourism:'tour',population:'pop',household:'house',report:'macro',brief:'macro'};
+const TITLE_SEL='.view .c>header h3, .view .ph h2, .view .ovs>h4';
+let TITLES={};
+try{TITLES=JSON.parse(localStorage.getItem('nblEcon.titles')||'{}')||{}}catch(e){TITLES={}}
+function titleOwner(pg){const k=TITLE_TBL[pg];return k&&TABLE_OWNER[k]?TABLE_OWNER[k]:'*'}
+function ownText(el){return Array.from(el.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').replace(/\s+/g,' ').trim()}
+function setOwnText(el,t){
+  const tn=Array.from(el.childNodes).filter(n=>n.nodeType===3);
+  if(!tn.length){el.insertBefore(document.createTextNode(t),el.firstChild);return}
+  tn.forEach((n,i)=>n.textContent=i?'':t);
+}
+function applyTitles(){
+  if(typeof PAGE==='undefined'||!PAGE)return;
+  const map=TITLES[PAGE.id]||{},can=EDIT&&canEdit(titleOwner(PAGE.id));
+  document.querySelectorAll(TITLE_SEL).forEach(el=>{
+    if(el.isContentEditable)return;
+    const now=ownText(el);
+    /* โค้ดของหน้าเขียนหัวเรื่องใหม่เอง (เช่นเปลี่ยนงวด) → ถือข้อความนั้นเป็นค่าตั้งต้นใหม่ */
+    if(el.dataset.t0==null||(el.dataset.tset!=null&&now!==el.dataset.tset)||(el.dataset.tset==null&&now!==el.dataset.t0))el.dataset.t0=now;
+    const t0=el.dataset.t0,v=map[t0];
+    if(v&&v!==now){setOwnText(el,v);el.dataset.tset=v}
+    else if(!v){if(el.dataset.tset!=null&&now===el.dataset.tset)setOwnText(el,t0);delete el.dataset.tset}
+    let b=el.querySelector(':scope>.ttl-ed');
+    if(can&&t0&&!b){b=document.createElement('button');b.type='button';b.className='ttl-ed';b.title='แก้หัวเรื่อง';
+      b.setAttribute('aria-label','แก้หัวเรื่อง');
+      b.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4.5L19 9.5a2.1 2.1 0 0 0-3-3L5.5 17z"/><path d="M14.5 8l2.5 2.5"/></svg>';
+      el.appendChild(b);}
+    else if(!can&&b)b.remove();
+  });
+}
+function editTitle(el){
+  if(!el||el.isContentEditable)return;
+  const t0=el.dataset.t0||ownText(el),before=ownText(el);
+  const extra=Array.from(el.children);
+  extra.forEach(c=>{c.dataset.hid=c.style.display||'';c.style.display='none'});
+  setOwnText(el,before);
+  el.contentEditable='plaintext-only';
+  if(el.contentEditable!=='plaintext-only')el.contentEditable='true';
+  el.classList.add('ttl-editing');el.focus();
+  const r=document.createRange();r.selectNodeContents(el);const sl=getSelection();sl.removeAllRanges();sl.addRange(r);
+  let done=false;
+  const finish=async ok=>{
+    if(done)return;done=true;
+    const val=ownText(el);
+    el.removeAttribute('contenteditable');el.classList.remove('ttl-editing');
+    extra.forEach(c=>{c.style.display=c.dataset.hid;delete c.dataset.hid});
+    el.removeEventListener('keydown',kd);el.removeEventListener('blur',bl);
+    if(!ok||val===before){setOwnText(el,before);return}
+    await saveTitle(PAGE.id,t0,val===''||val===t0?null:val);
+    applyTitles();
+  };
+  const kd=e=>{if(e.key==='Enter'){e.preventDefault();finish(true)}else if(e.key==='Escape'){e.preventDefault();finish(false)}};
+  const bl=()=>finish(true);
+  el.addEventListener('keydown',kd);el.addEventListener('blur',bl);
+}
+async function saveTitle(pg,t0,val){
+  if(!canEdit(titleOwner(pg))){toast('ไม่มีสิทธิ์แก้หัวเรื่องของหน้านี้',true);return}
+  const m=TITLES[pg]=TITLES[pg]||{};
+  if(val==null)delete m[t0];else m[t0]=val;
+  try{localStorage.setItem('nblEcon.titles',JSON.stringify(TITLES))}catch(e){}
+  if(!CFG.API){toast('บันทึกหัวเรื่องในเครื่องนี้แล้ว — ยังไม่ได้เชื่อมฐานข้อมูลกลาง',true);return}
+  if(!authValid()){toast('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่',true);return}
+  const post=async(key,json)=>{const res=await fetch(CFG.API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'savetable',token:AUTH.token,key,json:JSON.stringify(json)})});return res.json()};
+  try{
+    /* ช่องทางหลัก: ตาราง titles ของทั้งระบบ */
+    let r=null;try{r=await post('titles',TITLES)}catch(e){r=null}
+    if(!r||!r.ok){
+      /* ฐานข้อมูลรุ่นที่ยังไม่รู้จักตาราง titles → ฝากไว้ในตารางของหน้านั้นแทน */
+      const key=TITLE_TBL[pg],store=key&&((D[key]!==undefined)?D:(typeof DX!=='undefined'&&DX[key]!==undefined?DX:null));
+      if(!store||!store[key]||Array.isArray(store[key])||typeof store[key]!=='object')throw new Error((r&&r.error)||'ไม่มีตารางสำหรับเก็บหัวเรื่องของหน้านี้');
+      store[key]._titles=Object.assign({},store[key]._titles||{},{[pg]:m});
+      r=await post(key,store[key]);
+      if(!r||!r.ok)throw new Error((r&&r.error)||'บันทึกไม่สำเร็จ');
+    }
+    toast(val==null?'คืนหัวเรื่องเดิมแล้ว ทุกคนเห็นตรงกัน':'บันทึกหัวเรื่องแล้ว ทุกคนเห็นตรงกัน');
+  }catch(e){toast('บันทึกหัวเรื่องขึ้นฐานข้อมูลกลางไม่สำเร็จ ('+e.message+') เก็บไว้ในเครื่องนี้แล้ว',true)}
+}
+/* อ่านหัวเรื่องที่บันทึกไว้จากผลของ action=tables */
+function titlesFromTables(tb){
+  if(!tb)return;
+  const mergeIn=o=>{if(!o||typeof o!=='object')return;Object.keys(o).forEach(pg=>{if(o[pg]&&typeof o[pg]==='object')TITLES[pg]=Object.assign({},o[pg])})};
+  Object.keys(tb).forEach(k=>{if(k!=='titles'&&tb[k]&&tb[k]._titles)mergeIn(tb[k]._titles)});
+  if(tb.titles)mergeIn(tb.titles);
+  try{localStorage.setItem('nblEcon.titles',JSON.stringify(TITLES))}catch(e){}
+}
+document.addEventListener('click',e=>{const b=e.target.closest('.ttl-ed');if(!b)return;e.preventDefault();e.stopPropagation();
+  const h=b.parentElement;if(h)editTitle(h)},true);
+
 function applyEditMode(){
+  try{applyTitles()}catch(e){}
   document.querySelectorAll('table[data-owner]').forEach(t=>{
     t.classList.toggle('locked',EDIT&&!canEdit(t.dataset.owner));
   });
@@ -1157,9 +1253,10 @@ async function loadTables(){
       else if(typeof DX!=='undefined'&&DX[k]!==undefined){ DX[k]=mergeRemote(k,DX[k],r.tables[k]); n++; }
     });
     TBL_META=r.updated||{};
+    try{titlesFromTables(r.tables)}catch(e){}
     /* ตารางปิรามิดเก็บเป็นแถวแบน ต้องแปลงกลับเข้าโครงสร้างที่หน้าประชากรใช้ */
     if(r.tables.pyr&&typeof pyrApplyRows==='function')pyrApplyRows(DX.pyr);
-    if(n)safeRender();
+    if(n)safeRender();else try{applyTitles()}catch(e){}
   }catch(e){}
 }
 function toast(text,bad){
@@ -2230,6 +2327,7 @@ function safeRender(){
     fillIcons();
     pageBanner();bindToggle();revealCards();animateNums();
   }catch(e){}
+  try{applyTitles()}catch(e){}
 }
 
 document.addEventListener('click',function(e){

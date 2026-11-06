@@ -2463,3 +2463,11 @@ body.kiosk .totop,body.tour .totop{right:16px;bottom:18px}
 .hero .gpil .pil-l{line-height:1.3;font-weight:600}
 .hero .gpil .n{font-size:32px}
 .hero .gpil .gy{display:inline-block;margin-left:auto;align-self:center;font-size:10.5px;color:rgba(255,255,255,.78)}
+
+/* ปุ่มปากกาแก้หัวเรื่อง (โหมดแก้ไข) */
+.ttl-ed{display:none;flex:none;width:24px;height:24px;margin-left:4px;border-radius:7px;border:1px dashed color-mix(in srgb,var(--gold) 60%,transparent);
+  background:var(--gold-l);color:var(--gold);cursor:pointer;place-items:center;padding:0;vertical-align:middle}
+body.editing .ttl-ed{display:inline-grid}
+.ttl-ed:hover{background:var(--gold);color:#fff}
+.ttl-ed:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.ttl-editing{outline:2px solid var(--brand);background:var(--brand-l);border-radius:6px;padding:0 6px;cursor:text;min-width:120px}
