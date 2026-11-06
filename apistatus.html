@@ -3,6 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b3c32">
+<meta name="description" content="สถานะการเชื่อม API กับระบบบัญชีข้อมูลจังหวัด ค้นหาชุดข้อมูล และประวัติการอัปเดต">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="เศรษฐกิจหนองบัวลำภู">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="ศูนย์ควบคุมแหล่งข้อมูล (API) · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู">
+<meta property="og:description" content="สถานะการเชื่อม API กับระบบบัญชีข้อมูลจังหวัด ค้นหาชุดข้อมูล และประวัติการอัปเดต">
+<meta property="og:url" content="https://nsonongbualamphutc-debug.github.io/Nong_Bua_Lamphu_Province_Economic_Data_Command_Center/apistatus.html">
+<meta property="og:image" content="https://nsonongbualamphutc-debug.github.io/Nong_Bua_Lamphu_Province_Economic_Data_Command_Center/assets/og/og-apistatus.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ศูนย์ควบคุมแหล่งข้อมูล · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ศูนย์ควบคุมแหล่งข้อมูล (API) · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู">
+<meta name="twitter:description" content="สถานะการเชื่อม API กับระบบบัญชีข้อมูลจังหวัด ค้นหาชุดข้อมูล และประวัติการอัปเดต">
+<meta name="twitter:image" content="https://nsonongbualamphutc-debug.github.io/Nong_Bua_Lamphu_Province_Economic_Data_Command_Center/assets/og/og-apistatus.jpg">
 <title>ศูนย์ควบคุมแหล่งข้อมูล (API) · ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
@@ -203,12 +227,154 @@ table.ds tr{transition:background .15s}table.ds tbody tr:hover{background:rgba(6
 .cc-cvb{height:7px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}.cc-cvb i{display:block;height:100%;border-radius:4px;box-shadow:0 0 8px currentColor}
 .cc-cv b{font:600 12px 'Kanit',sans-serif;text-align:right;color:var(--tx)}
 @media(max-width:640px){.cc-cov{grid-template-columns:1fr}}
+
+/* ── v4: ภาพและไอคอน 3 มิติ ── */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(1200px 600px at 85% -10%,rgba(60,240,176,.10),transparent 60%),radial-gradient(900px 500px at -10% 30%,rgba(106,168,255,.08),transparent 60%),
+  linear-gradient(rgba(140,255,210,.035) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(140,255,210,.035) 1px,transparent 1px) 0 0/44px 44px;
+  mask-image:linear-gradient(180deg,#000,transparent 85%);-webkit-mask-image:linear-gradient(180deg,#000,transparent 85%)}
+.cc-wrap,.cc-top{position:relative;z-index:1}
+.cc-h-l{isolation:isolate}
+.cc-h-l .cc-hbg{position:absolute;inset:0;z-index:-2;background-size:cover;background-position:72% center;opacity:0;transition:opacity .8s}
+.cc-h-l .cc-hbg.on{opacity:.95}
+.cc-h-l.hasimg .cc-flow{display:none}
+.cc-h-l::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(6,28,22,.97) 36%,rgba(6,28,22,.72) 56%,rgba(6,28,22,.15) 82%,rgba(6,28,22,0) 100%),linear-gradient(0deg,rgba(6,28,22,.55),transparent 45%)}
+.cc-flow{position:absolute;right:6px;top:14px;width:250px;height:174px;z-index:-1;opacity:.85;pointer-events:none}
+.cc-h-l h1,.cc-h-l p{max-width:calc(100% - 210px)}
+@media(max-width:1100px){.cc-h-l h1,.cc-h-l p{max-width:none}}
+.cc-flow .ln{fill:none;stroke:rgba(60,240,176,.22);stroke-width:1.4}
+.cc-flow .pk{fill:none;stroke:#3cf0b0;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:6 140;animation:flow 3.2s linear infinite;filter:drop-shadow(0 0 4px #3cf0b0)}
+.cc-flow .nd{fill:#0b2a22;stroke:rgba(60,240,176,.55);stroke-width:1.4}
+.cc-flow .core{fill:url(#coreg);filter:drop-shadow(0 0 16px rgba(60,240,176,.7))}
+@keyframes flow{to{stroke-dashoffset:-146}}
+.cc-kp{padding-right:64px}
+.cc-kp .cc-ki{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:54px;height:54px;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45));transition:.3s}
+.cc-kp:hover .cc-ki{transform:translateY(-50%) scale(1.1) rotate(-4deg)}
+.cc-tabs button img{width:20px;height:20px;object-fit:contain;vertical-align:-5px;margin-right:6px}
+.cc-pc{padding:0;overflow:hidden;gap:0}
+.cc-pc .cc-pban{position:relative;height:92px;background-size:cover;background-position:center 55%}
+.cc-pc .cc-pban::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,22,17,.15),rgba(6,28,22,.92))}
+.cc-pc .cc-pban .cc-pico{position:absolute;left:14px;bottom:-22px;z-index:2;width:56px;height:56px;border-radius:16px;display:grid;place-items:center;
+  background:linear-gradient(160deg,#123d31,#0a241d);border:1px solid var(--ln);box-shadow:0 10px 24px -10px rgba(0,0,0,.7)}
+.cc-pc .cc-pban .cc-pico img{width:42px;height:42px;object-fit:contain}
+.cc-pc .cc-pban .cc-ring{position:absolute;right:12px;bottom:-20px;z-index:2;background:#0a241d;border-radius:50%;box-shadow:0 8px 20px -8px rgba(0,0,0,.7)}
+.cc-pc .cc-ph{padding:28px 16px 4px}
+.cc-pc ul{padding:6px 16px 16px}
+.cc-ag .cc-ah img{width:40px;height:40px;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4))}
+.cc-feed .cc-fi{transition:.2s;border-radius:12px}.cc-feed .cc-fi:hover{background:var(--gl)}
+@media(max-width:640px){.cc-flow{display:none}.cc-kp{padding-right:14px}.cc-kp .cc-ki{top:10px;right:8px;transform:none;width:34px;height:34px}.cc-kp:hover .cc-ki{transform:none}}
+
+/* ── บล็อกส่งเสริมการใช้ระบบบัญชีข้อมูลจังหวัด ── */
+@property --ang{syntax:'<angle>';initial-value:0deg;inherits:false}
+.gp{position:relative;margin:26px 0 0;border-radius:28px;padding:2px;isolation:isolate;
+  background:conic-gradient(from var(--ang),#3cf0b0,#6aa8ff,#f0d79a,#ff7ad1,#3cf0b0);animation:gpspin 8s linear infinite;
+  box-shadow:0 40px 90px -50px rgba(60,240,176,.55),0 0 0 1px rgba(60,240,176,.08)}
+@keyframes gpspin{to{--ang:360deg}}
+.gp-in{position:relative;border-radius:26px;overflow:hidden;background:radial-gradient(900px 420px at 80% 0%,rgba(60,240,176,.18),transparent 60%),
+  radial-gradient(700px 400px at 0% 100%,rgba(106,168,255,.14),transparent 60%),linear-gradient(160deg,#06251d,#041611 70%);
+  display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.95fr);gap:22px;padding:30px 30px 0}
+.gp-bg{position:absolute;inset:0;z-index:0;background-size:cover;background-position:right 30%;opacity:0;transition:opacity .8s}
+.gp-bg.on{opacity:.9}
+.gp-in::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(90deg,rgba(4,22,17,.96) 34%,rgba(4,22,17,.78) 50%,rgba(4,22,17,.25) 66%,rgba(4,22,17,.05) 85%),linear-gradient(0deg,rgba(4,22,17,.6),transparent 35%)}
+.gp-cv{position:absolute;inset:0;z-index:0;width:100%;height:100%;pointer-events:none}
+.gp-l,.gp-r,.gp-tk{position:relative;z-index:1}
+.gp-badge{display:inline-flex;align-items:center;gap:9px;padding:6px 13px 6px 7px;border-radius:999px;border:1px solid rgba(60,240,176,.35);
+  background:rgba(60,240,176,.08);font:600 12.5px 'Kanit',sans-serif;color:#b8ffe2}
+.gp-badge img{width:24px;height:24px;object-fit:contain}
+.gp-badge i{width:7px;height:7px;border-radius:50%;background:#3cf0b0;box-shadow:0 0 10px #3cf0b0;animation:pulse 1.6s infinite}
+.gp-l h2{font-family:'Kanit',sans-serif;font-weight:700;font-size:44px;line-height:1.12;margin:14px 0 10px;letter-spacing:-.3px;
+  background:linear-gradient(95deg,#fff 10%,#b8ffe2 45%,#7fd3ff 70%,#f0d79a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gp-l h2 em{font-style:normal;color:#3cf0b0;-webkit-text-fill-color:#3cf0b0;text-shadow:0 0 28px rgba(60,240,176,.45)}
+.gp-l p{margin:0;color:#b5ccc4;font-size:15px;line-height:1.75;max-width:620px}
+.gp-acts{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 18px}
+.gp-btn{font:600 14px 'Kanit',sans-serif;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:14px;cursor:pointer;text-decoration:none;
+  border:1px solid rgba(140,255,210,.22);background:rgba(255,255,255,.05);color:#e8fff6;transition:.25s}
+.gp-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+.gp-btn:hover{transform:translateY(-2px);border-color:rgba(60,240,176,.6);box-shadow:0 12px 30px -14px rgba(60,240,176,.7)}
+.gp-btn.pri{background:linear-gradient(135deg,#3cf0b0,#12b886);color:#03221a;border-color:transparent;box-shadow:0 14px 34px -14px rgba(60,240,176,.9)}
+.gp-btn.pri:hover{box-shadow:0 18px 40px -12px rgba(60,240,176,1)}
+.gp-btn.gold{background:linear-gradient(135deg,#f0d79a,#e8b84a);color:#2a1d02;border-color:transparent}
+.gp-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:22px}
+.gp-st{padding:12px 14px;border-radius:16px;background:rgba(4,22,17,.62);backdrop-filter:blur(3px);border:1px solid rgba(140,255,210,.12);position:relative;overflow:hidden}
+.gp-st::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,transparent,var(--c),transparent);opacity:.8}
+.gp-st b{display:block;font:700 28px/1.05 'Kanit',sans-serif;color:#fff;text-shadow:0 0 18px color-mix(in srgb,var(--c) 55%,transparent)}
+.gp-st span{font-size:12px;color:#9fb8ae}
+.gp-perks{display:flex;flex-wrap:wrap;gap:8px;margin:-6px 0 22px}
+.gp-perk{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:#cfe8df;padding:5px 12px 5px 6px;border-radius:12px;background:rgba(4,22,17,.7);border:1px solid rgba(140,255,210,.1)}
+.gp-perk img{width:26px;height:26px;object-fit:contain}
+.gp-r{display:flex;flex-direction:column;gap:18px;padding-bottom:22px;min-width:0}
+.gp-term{border-radius:18px;background:rgba(2,14,11,.6);border:1px solid rgba(60,240,176,.25);box-shadow:0 24px 50px -28px #000,inset 0 1px 0 rgba(255,255,255,.05);overflow:hidden;backdrop-filter:blur(3px)}
+.gp-th{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:1px solid rgba(60,240,176,.14);font:500 11.5px 'IBM Plex Mono',ui-monospace,monospace;color:#7fa99b}
+.gp-th i{width:10px;height:10px;border-radius:50%;background:#ff5f57}.gp-th i:nth-child(2){background:#febc2e}.gp-th i:nth-child(3){background:#28c840;margin-right:6px}
+.gp-th .live{margin-left:auto;color:#3cf0b0;display:inline-flex;align-items:center;gap:5px}.gp-th .live::before{content:'';width:6px;height:6px;border-radius:50%;background:#3cf0b0;box-shadow:0 0 8px #3cf0b0;animation:pulse 1.4s infinite}
+.gp-code{margin:0;padding:14px 16px;min-height:186px;font:12.5px/1.65 'IBM Plex Mono',ui-monospace,monospace;color:#cfe8df;white-space:pre-wrap;word-break:break-all;height:262px;overflow-y:auto;scrollbar-width:none;overscroll-behavior:contain}
+.gp-code::-webkit-scrollbar{display:none}
+.gp-code .tk-k{color:#7fd3ff}.gp-code .tk-s{color:#f0d79a}.gp-code .tk-n{color:#3cf0b0}.gp-code .tk-c{color:#5f8a7c}
+.gp-code .cur{display:inline-block;width:8px;height:15px;background:#3cf0b0;vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.gp-qr{flex:none;margin-top:auto;display:flex;gap:14px;align-items:center;padding:12px 14px;border-radius:18px;background:rgba(2,14,11,.55);backdrop-filter:blur(3px);border:1px solid rgba(140,255,210,.14)}
+.gp-qr .q{width:92px;height:92px;flex:0 0 92px;border-radius:12px;background:#fff;padding:5px;display:grid;place-items:center}
+.gp-qr .q svg{width:100%;height:100%}
+.gp-qr b{font:600 14px 'Kanit',sans-serif;color:#fff;display:block}.gp-qr span{font-size:12px;color:#9fb8ae;line-height:1.5;display:block;margin-top:2px}
+.gp-qr a{color:#3cf0b0;font-size:12px;word-break:break-all}
+.gp-tk{grid-column:1/-1;margin:0 -30px;border-top:1px solid rgba(60,240,176,.16);background:rgba(0,0,0,.25);display:flex;align-items:center;overflow:hidden}
+.gp-tk .lab{flex:0 0 auto;font:600 12px 'Kanit',sans-serif;color:#03221a;background:linear-gradient(135deg,#3cf0b0,#12b886);padding:11px 16px;display:flex;align-items:center;gap:7px;z-index:2}
+.gp-tk .lab::before{content:'';width:7px;height:7px;border-radius:50%;background:#03221a;animation:pulse 1.4s infinite}
+.gp-tk .rail{flex:1;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.gp-tk .mv{display:inline-flex;gap:34px;white-space:nowrap;padding:11px 0;animation:tick 60s linear infinite}
+.gp-tk:hover .mv{animation-play-state:paused}
+.gp-tk a{color:#dff7ee;text-decoration:none;font-size:13px}.gp-tk a:hover{color:#3cf0b0}
+.gp-tk a small{color:#7fa99b;margin-left:6px}.gp-tk a em{font-style:normal;color:#f0d79a;margin-left:6px;font-size:12px}
+@keyframes tick{to{transform:translateX(-50%)}}
+@media(max-width:1100px){.gp-in::after{background:linear-gradient(180deg,rgba(4,22,17,.86),rgba(4,22,17,.72))}.gp-bg{background-position:70% top}.gp-in{grid-template-columns:1fr}.gp-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.gp-in{padding:22px 16px 0}.gp-tk{margin:0 -16px}.gp-l h2{font-size:31px}.gp-btn{padding:11px 14px;font-size:13px}.gp-st b{font-size:24px}.gp-code{height:230px;font-size:11.5px}}
+@media(prefers-reduced-motion:reduce){.gp,.gp-tk .mv{animation:none}}
+
+/* ── โลโก้จังหวัดและ GD ── */
+.cc-brand .cc-logos{display:flex;align-items:center;gap:6px;padding:3px 8px 3px 3px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--ln)}
+.cc-brand .cc-logos img{height:36px;width:auto;display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
+.cc-brand .cc-logos i{width:1px;height:24px;background:var(--ln)}
+.gp-lock{display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.gp-logo{position:relative;width:86px;height:86px;flex:0 0 86px;display:grid;place-items:center;border-radius:24px;
+  background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.14),rgba(255,255,255,.03) 70%);border:1px solid rgba(140,255,210,.18);
+  box-shadow:0 18px 40px -20px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08)}
+.gp-logo::before{content:'';position:absolute;inset:-2px;border-radius:26px;padding:2px;background:conic-gradient(from var(--ang),transparent 0 70%,var(--g1) 80%,var(--g2) 90%,transparent);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:gpspin 5s linear infinite}
+.gp-logo img{width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5));transition:transform .4s}
+.gp-logo:hover img{transform:scale(1.08) rotate(-3deg)}
+.gp-logo.nbl{--g1:#ff7ad1;--g2:#f0d79a}.gp-logo.gd{--g1:#3cf0b0;--g2:#6aa8ff}
+.gp-x{font:300 26px 'Kanit',sans-serif;color:rgba(184,255,226,.55)}
+.gp-lt b{display:block;font:600 17px/1.3 'Kanit',sans-serif;color:#fff}
+.gp-lt span{display:block;font-size:12.5px;color:#9fd9c3;margin-top:2px}
+@media(max-width:640px){.gp-logo{width:64px;height:64px;flex-basis:64px;border-radius:18px}.gp-logo img{width:52px;height:52px}.gp-x{font-size:20px}.gp-lt{flex-basis:100%}.cc-brand .cc-logos img{height:30px}}
+.cc-ah img.cc-agl{background:#fff;border-radius:50%;padding:5px;box-shadow:0 0 0 2px rgba(255,255,255,.15),0 8px 18px rgba(0,0,0,.35);object-fit:contain}
+
+/* ── สำเนาข้อมูลสำหรับทุกอุปกรณ์ ── */
+.sn-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+.sn-card{padding:20px 22px}
+.sn-st{display:flex;gap:14px;align-items:center;margin:6px 0 14px}
+.sn-dot{width:14px;height:14px;border-radius:50%;flex:none;background:var(--c);box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 22%,transparent),0 0 18px var(--c)}
+.sn-st b{font:600 18px 'Kanit',sans-serif;display:block}.sn-st span{color:var(--tx2);font-size:13px}
+.sn-kv{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0 16px}
+.sn-kv div{background:var(--gl);border:1px solid var(--ln);border-radius:14px;padding:10px 12px}
+.sn-kv b{display:block;font:600 20px 'Kanit',sans-serif;color:var(--neo)}.sn-kv span{font-size:12px;color:var(--tx3)}
+.sn-act{display:flex;flex-wrap:wrap;gap:8px}
+.sn-bar{height:8px;border-radius:9px;background:var(--gl);overflow:hidden;margin:14px 0 6px;display:none}
+.sn-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#12a36f,#3cf0b0);transition:width .3s}
+.sn-msg{font-size:13px;color:var(--tx2);min-height:20px}
+.sn-tok{display:flex;gap:8px;margin-top:10px}.sn-tok input{flex:1;min-width:0;font:inherit;font-size:13px;padding:9px 12px;border-radius:12px;border:1px solid var(--ln);background:rgba(0,0,0,.25);color:var(--tx)}
+.sn-steps{margin:6px 0 0;padding-left:20px;color:var(--tx2);font-size:13.5px;line-height:1.75}.sn-steps b{color:var(--tx)}
+.sn-steps code{background:rgba(0,0,0,.3);padding:1px 6px;border-radius:6px;font-size:12px;color:var(--gold)}
+.sn-how{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.sn-how div{border:1px solid var(--ln);border-radius:14px;padding:12px;background:var(--gl);font-size:12.5px;color:var(--tx2)}
+.sn-how b{display:block;color:var(--tx);font-size:13.5px;margin-bottom:3px}
+@media(max-width:900px){.sn-grid,.sn-how{grid-template-columns:1fr}.sn-kv{grid-template-columns:1fr 1fr 1fr}}
 </style>
 </head>
 <body>
 <div id="tip" class="tip"></div>
 <div class="cc-top"><div class="cc-in">
-  <a class="cc-brand" href="index.html"><span class="cc-lg"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v6.5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V5.5M4.5 12v6.5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V12"/></svg></span>
+  <a class="cc-brand" href="index.html"><span class="cc-logos"><img src="assets/logo-nbl.png" alt="ตราจังหวัดหนองบัวลำภู"><i></i><img src="assets/logo-gd.png" alt="GD Catalog"></span>
     <span><b>ศูนย์ควบคุมแหล่งข้อมูล</b><small>ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู</small></span></a>
   <span class="cc-live"><i></i>LIVE</span>
   <span class="cc-sp"></span>
@@ -217,8 +383,51 @@ table.ds tr{transition:background .15s}table.ds tbody tr:hover{background:rgba(6
 </div></div>
 
 <div class="cc-wrap">
+  <section class="gp" id="gdcPromo"><div class="gp-in">
+    <div class="gp-bg" id="gpBg"></div><canvas class="gp-cv" id="gpCv"></canvas>
+    <div class="gp-l">
+      <div class="gp-lock">
+        <span class="gp-logo nbl"><img src="assets/logo-nbl.png" alt="ตราจังหวัดหนองบัวลำภู"></span>
+        <span class="gp-x">×</span>
+        <span class="gp-logo gd"><img src="assets/logo-gd.png" alt="Government Data Catalog"></span>
+        <span class="gp-lt"><b>จังหวัดหนองบัวลำภู</b><span>ระบบบัญชีข้อมูลจังหวัด · Government Data Catalog</span></span>
+      </div>
+      <span class="gp-badge"><i></i>เปิดให้บริการ · เชื่อมต่อแบบเรียลไทม์</span>
+      <h2>ข้อมูลจังหวัด <em>เปิดให้ใช้</em><br>เชื่อมต่อได้ทันทีผ่าน API</h2>
+      <p>แหล่งรวมชุดข้อมูลจากทุกหน่วยงานในจังหวัด ค้นหา ดาวน์โหลด และดึงเข้าระบบของคุณได้ฟรี
+        หน่วยงานนำข้อมูลเข้าระบบครั้งเดียว แดชบอร์ดนี้และทุกระบบที่เชื่อม API จะอัปเดตตามอัตโนมัติ</p>
+      <div class="gp-acts">
+        <a class="gp-btn pri" href="https://nongbualamphu.gdcatalog.go.th/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>เข้าสู่ระบบบัญชีข้อมูล</a>
+        <button class="gp-btn" type="button" id="gpFind"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>ค้นหาชุดข้อมูล</button>
+        <a class="gp-btn gold" href="https://nongbualamphu.gdcatalog.go.th/user/login" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 16V4m0 0l-4 4m4-4l4 4M5 20h14"/></svg>นำข้อมูลเข้าระบบ (หน่วยงาน)</a>
+        <button class="gp-btn" type="button" id="gpApi"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg>คัดลอกตัวอย่าง API</button>
+      </div>
+      <div class="gp-stats">
+        <div class="gp-st" style="--c:#3cf0b0"><b id="gpN1">—</b><span>ชุดข้อมูลบนระบบ</span></div>
+        <div class="gp-st" style="--c:#6aa8ff"><b id="gpN2">—</b><span>หน่วยงานที่เผยแพร่</span></div>
+        <div class="gp-st" style="--c:#f0d79a"><b id="gpN3">—</b><span>ตาราง CSV พร้อม API</span></div>
+        <div class="gp-st" style="--c:#ff7ad1"><b id="gpN4">—</b><span>อัปเดตใน 7 วันล่าสุด</span></div>
+      </div>
+      <div class="gp-perks">
+        <span class="gp-perk"><img src="assets/icons/ic-database.png" alt="" onerror="this.remove()">เปิดเผย ใช้ฟรี ไม่ต้องขออนุญาต</span>
+        <span class="gp-perk"><img src="assets/icons/ic-network.png" alt="" onerror="this.remove()">เชื่อม API แบบเรียลไทม์</span>
+        <span class="gp-perk"><img src="assets/icons/ic-history.png" alt="" onerror="this.remove()">อัปเดตครั้งเดียว ทุกระบบเปลี่ยนตาม</span>
+      </div>
+    </div>
+    <div class="gp-r">
+      <div class="gp-term"><div class="gp-th"><i></i><i></i><i></i>nongbualamphu.gdcatalog.go.th / api / 3<span class="live">LIVE</span></div>
+        <pre class="gp-code" id="gpCode"></pre></div>
+      <div class="gp-qr"><div class="q" id="gpQr"></div><div><b>สแกนเข้าระบบบัญชีข้อมูล</b>
+        <span>เปิดดูชุดข้อมูลจากมือถือ หรือแชร์ให้หน่วยงานและประชาชนใช้ต่อ</span>
+        <a href="https://nongbualamphu.gdcatalog.go.th/" target="_blank" rel="noopener">nongbualamphu.gdcatalog.go.th</a></div></div>
+    </div>
+    <div class="gp-tk"><span class="lab">อัปเดตล่าสุดบนระบบ</span><div class="rail"><div class="mv" id="gpTick"><a>กำลังโหลดรายการอัปเดตจากระบบบัญชีข้อมูล…</a></div></div></div>
+  </div></section>
   <div class="cc-hero">
     <div class="cc-glass cc-h-l">
+      <div class="cc-hbg" id="heroBg"></div>
+      <svg class="cc-flow" viewBox="0 0 360 250" aria-hidden="true"><defs><radialGradient id="coreg"><stop offset="0" stop-color="#b8ffe2"/><stop offset=".55" stop-color="#3cf0b0"/><stop offset="1" stop-color="#0d6f52"/></radialGradient></defs>
+        <g id="flowG"></g></svg>
       <div class="cc-eyebrow">Data Source Control Center</div>
       <h1>ทุกตัวเลขบนแดชบอร์ด<br>มาจากไหน สดแค่ไหน</h1>
       <p>เชื่อมกับระบบบัญชีข้อมูลจังหวัดหนองบัวลำภูแบบสด ตรวจการเชื่อมต่อทุกชุด ดูวันที่หน่วยงานปรับปรุงข้อมูล
@@ -250,12 +459,13 @@ table.ds tr{transition:background .15s}table.ds tbody tr:hover{background:rgba(6
   </div>
 
   <div class="cc-tabs cc-glass" id="tabs">
-    <button data-p="pages" class="cc-on">รายหน้าแดชบอร์ด</button>
-    <button data-p="find">ค้นหาชุดข้อมูลในระบบ</button>
-    <button data-p="list">ทะเบียนชุดข้อมูล<b id="nList"></b></button>
-    <button data-p="agency">หน่วยงาน<b id="nAg"></b></button>
-    <button data-p="hist">ประวัติการอัปเดต<b id="nHist"></b></button>
-    <button data-p="qa">คุณภาพข้อมูล<b id="nQa"></b></button>
+    <button data-p="pages" class="cc-on"><img src="assets/icons/ic-table.png" alt="" onerror="this.remove()">รายหน้าแดชบอร์ด</button>
+    <button data-p="find"><img src="assets/icons/ic-source.png" alt="" onerror="this.remove()">ค้นหาชุดข้อมูลในระบบ</button>
+    <button data-p="list"><img src="assets/icons/ic-catalog.png" alt="" onerror="this.remove()">ทะเบียนชุดข้อมูล<b id="nList"></b></button>
+    <button data-p="agency"><img src="assets/icons/ic-institution.png" alt="" onerror="this.remove()">หน่วยงาน<b id="nAg"></b></button>
+    <button data-p="hist"><img src="assets/icons/ic-history.png" alt="" onerror="this.remove()">ประวัติการอัปเดต<b id="nHist"></b></button>
+    <button data-p="qa"><img src="assets/icons/ic-datastatus.png" alt="" onerror="this.remove()">คุณภาพข้อมูล<b id="nQa"></b></button>
+    <button data-p="snap"><img src="assets/icons/ic-database.png" alt="" onerror="this.remove()">สำเนาสำหรับทุกอุปกรณ์</button>
   </div>
   <div class="cc-pane cc-on" id="p-pages"><div class="cc-pgrid" id="pgrid"></div></div>
   <div class="cc-pane" id="p-find">
@@ -278,6 +488,35 @@ table.ds tr{transition:background .15s}table.ds tbody tr:hover{background:rgba(6
   <div class="cc-pane" id="p-agency"><div class="cc-agrid" id="agrid"></div></div>
   <div class="cc-pane" id="p-hist"><div class="cc-glass cc-tl" id="tl"></div></div>
   <div class="cc-pane" id="p-qa"><div id="qaBox"></div></div>
+  <div class="cc-pane" id="p-snap">
+    <div class="sn-grid">
+      <div class="cc-glass sn-card">
+        <div class="cc-sec-h"><h3>สำเนาข้อมูล API สำหรับ iPad · มือถือ · ทุกอุปกรณ์</h3></div>
+        <div class="sn-st" id="snSt"></div>
+        <div class="sn-kv" id="snKv"></div>
+        <div class="sn-act">
+          <button class="cc-ib cc-pri" id="snRun">สร้างสำเนาใหม่และส่งขึ้นเว็บ</button>
+          <button class="cc-ib" id="snDl">ดาวน์โหลดสำเนา (.zip)</button>
+        </div>
+        <div class="sn-bar" id="snBar"><i></i></div><div class="sn-msg" id="snMsg"></div>
+        <div class="sn-how">
+          <div><b>1 · เครื่องเข้า API ได้</b>คอมพิวเตอร์ในสำนักงานดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัดตามปกติ</div>
+          <div><b>2 · บันทึกเป็นสำเนา</b>ระบบส่งไฟล์ในโฟลเดอร์ data/gdc/ ขึ้นเว็บ เฉพาะชุดที่หน่วยงานปรับปรุง</div>
+          <div><b>3 · ทุกอุปกรณ์ใช้ได้</b>iPad/มือถือที่เข้า API ไม่ได้ จะแสดงสำเนานี้แทนอัตโนมัติ</div>
+        </div>
+      </div>
+      <div class="cc-glass sn-card">
+        <div class="cc-sec-h"><h3>ตั้งค่าให้อัปเดตอัตโนมัติ</h3></div>
+        <ol class="sn-steps">
+          <li><b>แบบเปิดแดชบอร์ด</b> · ใส่โทเคน GitHub ด้านล่างบนคอมพิวเตอร์ในสำนักงาน เครื่องนี้จะตรวจทุก 3 ชั่วโมงขณะเปิดแดชบอร์ด และส่งสำเนาใหม่เมื่อหน่วยงานปรับปรุงข้อมูล</li>
+          <li><b>แบบตั้งเวลา (แนะนำ)</b> · ดับเบิลคลิก <code>tools/install-auto-update.bat</code> บนคอมพิวเตอร์ในสำนักงาน ระบบจะดึงข้อมูลวันละ 4 ครั้งแม้ไม่ได้เปิดแดชบอร์ด</li>
+          <li>โทเคน: GitHub › Settings › Developer settings › Fine-grained tokens › เลือกเฉพาะ repo นี้ › สิทธิ์ <b>Contents: Read and write</b> เท่านั้น</li>
+        </ol>
+        <div class="sn-tok"><input type="password" id="snTok" placeholder="github_pat_… (เก็บในเครื่องนี้เท่านั้น)" autocomplete="off"><button class="cc-ib" id="snSave">บันทึก</button></div>
+        <div class="sn-msg" id="snTokMsg" style="margin-top:6px"></div>
+      </div>
+    </div>
+  </div>
   <div class="cc-foot">วันที่ปรับปรุงมาจากระบบบัญชีข้อมูลจังหวัดโดยตรง · ระบบตรวจหาอัปเดตทุก 15 นาทีขณะเปิดแดชบอร์ด และแจ้งที่กระดิ่ง ·
     ประวัติการดึงมาใช้เก็บไว้ในเครื่องนี้ · ชุดที่เป็น "ข้อมูลจำลอง" ใช้แสดงรูปแบบเท่านั้น ห้ามนำไปอ้างอิง</div>
 </div>
@@ -289,6 +528,14 @@ const PAGES={index:'หน้าปกจังหวัด',overview:'ภาพ
   industry:'อุตสาหกรรมและการผลิต',trade:'การค้าและค่าครองชีพ',consume:'การบริโภคและพลังงาน',tourism:'ภาคการท่องเที่ยว',
   otop:'OTOP และเศรษฐกิจชุมชน',labor:'ตลาดแรงงาน',household:'ครัวเรือนและความเหลื่อมล้ำ',population:'ประชากรและโครงสร้างอายุ',area:'ข้อมูลเชิงพื้นที่'};
 const TORD=['api','link','avail','gas','file','ext','sim'];
+const PICO={index:'summary',overview:'analysis'}, PBAN={index:'assets/cover-city.jpg'};
+/* ภาพพื้นหลังส่วนหัว (ใส่ไฟล์ assets/api-hero.jpg เมื่อพร้อม · ยังไม่มีไฟล์ก็แสดงลายเส้นตามเดิม) */
+(function(){const im=new Image();im.onload=()=>{const b=document.getElementById('heroBg');if(b){b.style.backgroundImage="url('assets/api-hero.jpg')";b.classList.add('on');b.parentNode.classList.add('hasimg')}};im.src='assets/api-hero.jpg'})();
+/* ภาพเคลื่อนไหวข้อมูลไหลจากหน่วยงานเข้าสู่แดชบอร์ด */
+(function(){const g=document.getElementById('flowG');if(!g)return;const cx=250,cy=140,N=[[40,40],[30,120],[60,205],[150,232],[140,22],[330,40],[340,215]];
+  g.innerHTML=N.map((n,i)=>{const d=`M${n[0]} ${n[1]} Q ${(n[0]+cx)/2} ${(n[1]+cy)/2-30} ${cx} ${cy}`;
+    return `<path class="ln" d="${d}"/><path class="pk" d="${d}" style="animation-delay:${(i*0.45).toFixed(2)}s"/><circle class="nd" cx="${n[0]}" cy="${n[1]}" r="7"/>`}).join('')+
+    `<circle class="core" cx="${cx}" cy="${cy}" r="20"/><circle cx="${cx}" cy="${cy}" r="30" fill="none" stroke="rgba(60,240,176,.35)" stroke-width="1.2"><animate attributeName="r" values="22;40;22" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values=".8;0;.8" dur="3s" repeatCount="indefinite"/></circle>`})();
 const TC={api:'#3ce0a0',link:'#f0c45a',avail:'#6aa8ff',gas:'#b48cff',file:'#8fb5a8',ext:'#49d4e8',sim:'#ff7a6a'};
 const INV=srcInventory(), APILIVE={}, APIMETA={};
 const esc=x=>String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -317,7 +564,8 @@ function drawTop(){
     [c.link,'กำลังเชื่อมข้อมูล','#f0c45a','มีบนระบบ รอเปิด API','link'],[c.gas+c.file+c.ext,'ไฟล์และระบบกรอก','#b48cff','กรอก '+c.gas+' · ไฟล์ '+(c.file+c.ext),'gas'],
     [c.sim,'ข้อมูลจำลอง','#ff7a6a','รอหน่วยงานส่งข้อมูลจริง','sim'],[ags.size,'หน่วยงานที่ส่ง API','#6aa8ff',ids.length+' resource ที่เฝ้าดู','']];
   const box=document.getElementById('kpis');
-  if(!box.children.length)box.innerHTML=K.map((k,i)=>`<div class="cc-glass cc-kp" style="--c:${k[2]}" data-ft="${k[4]}"><b id="kv${i}">0</b><span>${k[1]}</span><small id="ks${i}"></small></div>`).join('');
+  if(!box.children.length)box.innerHTML=K.map((k,i)=>`<div class="cc-glass cc-kp" style="--c:${k[2]}" data-ft="${k[4]}"><b id="kv${i}">0</b><span>${k[1]}</span><small id="ks${i}"></small>
+    <img class="cc-ki" src="assets/icons/ic-${['catalog','database','network','excel','datagap','institution'][i]}.png" alt="" onerror="this.remove()"></div>`).join('');
   K.forEach((k,i)=>{countUp(document.getElementById('kv'+i),k[0]);document.getElementById('ks'+i).textContent=k[3]});
   const mb=document.getElementById('mixBar');
   if(!mb.children.length){mb.innerHTML=TORD.filter(t=>t!=='avail'&&c[t]).map(t=>`<i style="background:${TC[t]};box-shadow:0 0 12px ${TC[t]}" data-w="${c[t]/S.length*100}" data-tip2="${SRC_TYPE[t][0]}|${c[t]} ชุด · ${(c[t]/S.length*100).toFixed(0)}% ของข้อมูลบนแดชบอร์ด"></i>`).join('');
@@ -345,8 +593,10 @@ function drawPages(){
   document.getElementById('pgrid').innerHTML=Object.keys(PAGES).filter(p=>g[p]).map(p=>{
     const L=g[p].slice().sort((a,b)=>TORD.indexOf(a.type)-TORD.indexOf(b.type)),S=L.filter(x=>x.type!=='avail'),a=S.filter(x=>x.type==='api').length,pc=S.length?a/S.length:0;
     const col=pc===1?'#3ce0a0':pc>0?'#f0c45a':'#8fb5a8';
-    return `<div class="cc-glass cc-pc" id="pg-${p}"><div class="cc-ph"><span class="cc-ring">${ring(pc,col)}<b>${Math.round(pc*100)}%</b></span>
-      <div><h4><a href="${p}.html">${PAGES[p]}</a></h4><div class="cc-sub">${a}/${S.length} ชุดดึงจาก API</div></div></div>
+    return `<div class="cc-glass cc-pc" id="pg-${p}"><div class="cc-pban" style="background-image:url('${PBAN[p]||'assets/h-'+p+'.jpg'}')">
+        <span class="cc-pico"><img src="assets/icons/ic-${PICO[p]||p}.png" alt="" onerror="this.remove()"></span>
+        <span class="cc-ring">${ring(pc,col)}<b>${Math.round(pc*100)}%</b></span></div>
+      <div class="cc-ph"><div><h4><a href="${p}.html">${PAGES[p]}</a></h4><div class="cc-sub">${a}/${S.length} ชุดดึงจาก API</div></div></div>
       <ul>${L.map(x=>`<li>${tp(x.type)}<span>${esc(x.n)}${x.type!=='api'&&x.note?` <small>(${esc(x.note)})</small>`:''}</span></li>`).join('')}</ul></div>`}).join('');
 }
 function drawList(){
@@ -364,11 +614,13 @@ function drawList(){
         <td>${x.id?`<a class="cc-ab" href="${m&&m.url||GDC.base+'/dataset/?q='+x.id}" target="_blank" rel="noopener">เปิดในระบบ ↗</a>`:''}</td></tr>`}).join('')
       :'<tr><td colspan="8" class="cc-empty">ไม่พบในทะเบียนของแดชบอร์ด · <a href="#find" data-gofind="1" style="color:#3ce0a0">ค้นหาในระบบบัญชีข้อมูลจังหวัด</a></td></tr>')+'</tbody>';
 }
+/* โลโก้หน่วยงานที่อัปโหลดไว้แล้วใน assets/agency/ (ชื่อไฟล์ ag-<รหัส>.png) · ใส่รหัสเพิ่มเมื่อมีไฟล์ จะได้ไม่เรียกไฟล์ที่ยังไม่มี */
+const AG_LOGO=[];
 function drawAgency(){
   const g={};INV.forEach(x=>(g[x.agency]=g[x.agency]||[]).push(x));
   const K=Object.keys(g).sort((a,b)=>g[b].filter(x=>x.type==='api').length-g[a].filter(x=>x.type==='api').length||g[b].length-g[a].length);
   document.getElementById('agrid').innerHTML=K.map(a=>{const L=g[a],S=L.filter(x=>x.type!=='avail'),api=S.filter(x=>x.type==='api').length,p=S.length?api/S.length:0;
-    return `<div class="cc-glass cc-ag"><div class="cc-ah"><span class="cc-ring">${ring(p,p===1?'#3ce0a0':p>0?'#f0c45a':'#8fb5a8')}<b>${api}/${S.length}</b></span>
+    return `<div class="cc-glass cc-ag"><div class="cc-ah">${AG_LOGO.indexOf(a)>=0?`<img class="cc-agl" src="assets/agency/ag-${a}.png" alt="" onerror="this.onerror=()=>this.remove();this.classList.remove('cc-agl');this.src='assets/icons/ic-institution.png'">`:'<img src="assets/icons/ic-institution.png" alt="" onerror="this.remove()">'}<span class="cc-ring">${ring(p,p===1?'#3ce0a0':p>0?'#f0c45a':'#8fb5a8')}<b>${api}/${S.length}</b></span>
       <div><h4>${esc(agN(a))}</h4><div class="cc-sub">${api} ชุดดึงจาก API</div></div></div>
       <ul>${L.map(x=>`<li>${esc(x.n)} <span style="color:${TC[x.type]}">(${SRC_TYPE[x.type][0]})</span></li>`).join('')}</ul></div>`}).join('');
 }
@@ -454,7 +706,7 @@ async function check(fresh){
   const prog=()=>{done++;document.getElementById('chkBar').style.width=(done/ids.length*100)+'%';
     document.getElementById('chk').textContent=done<ids.length?'กำลังตรวจ '+done+'/'+ids.length+' ชุด…':'ตรวจครบ '+ids.length+' ชุด เมื่อ '+new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})+' น.'};
   const w=async()=>{while(i<ids.length){const id=ids[i++];
-    try{const v=fresh?await GDC.all(id,{fresh:true}):await GDC.peek(id);APILIVE[id]={ok:true,total:v.total,fields:v.fields.length,sample:v.records,fl:v.fields}}catch(e){APILIVE[id]={err:e.message}}
+    try{const v=fresh?await GDC.all(id,{fresh:true}):await GDC.peek(id);APILIVE[id]={ok:!v.snap,snap:v.snap,err:v.snap?'อุปกรณ์นี้เข้า API ไม่ได้ · ใช้สำเนา':undefined,total:v.total,fields:v.fields.length,sample:v.records,fl:v.fields}}catch(e){APILIVE[id]={err:e.message}}
     try{APIMETA[id]=await GDC.meta(id,fresh)}catch(e){}
     prog();drawTop();drawList();}};
   await Promise.all([w(),w(),w(),w(),w()]);
@@ -474,11 +726,91 @@ document.getElementById('btnCopy').onclick=async()=>{
   try{await navigator.clipboard.writeText(JSON.stringify(out,null,1));toast('คัดลอกโครงสร้าง '+out.length+' ชุดแล้ว')}catch(e){toast('คัดลอกไม่ได้ในเบราว์เซอร์นี้','err')}};
 initTip();
 drawAll();
+
+/* ══ บล็อกส่งเสริมการใช้ระบบบัญชีข้อมูลจังหวัด · ตัวเลขดึงสดจากระบบ ══ */
+(function(){
+  const CAT=GDC.base;
+  const im=new Image();im.onload=()=>{const b=document.getElementById('gpBg');b.style.backgroundImage="url('assets/gdc-promo.jpg')";b.classList.add('on')};im.src='assets/gdc-promo.jpg';
+  const cnt=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)countUp(el,v)};
+  GDC.call('package_search',{rows:0,'facet.field':'["organization","res_format"]','facet.limit':200}).then(r=>{
+    cnt('gpN1',r.count);cnt('gpN2',Object.keys((r.facets||{}).organization||{}).length);cnt('gpN3',((r.facets||{}).res_format||{}).CSV||0)}).catch(()=>{});
+  const wk=new Date(Date.now()-7*864e5).toISOString().slice(0,19)+'Z';
+  GDC.call('package_search',{rows:0,fq:'metadata_modified:['+wk+' TO NOW]'}).then(r=>cnt('gpN4',r.count)).catch(()=>{});
+  GDC.call('package_search',{rows:14,sort:'metadata_modified desc'}).then(r=>{
+    const L=(r.results||[]).map(p=>`<a href="${CAT}/dataset/${encodeURIComponent(p.name)}" target="_blank" rel="noopener">● ${esc(p.title||p.name)}<small>${esc(p.organization?p.organization.title:'')}</small><em>${ago(p.metadata_modified)}</em></a>`).join('');
+    if(L)document.getElementById('gpTick').innerHTML=L+L}).catch(()=>{document.getElementById('gpTick').innerHTML='<a href="'+CAT+'" target="_blank" rel="noopener">เปิดระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู ↗</a>'});
+  /* QR ไปยังระบบบัญชีข้อมูล */
+  if(typeof qrSvg==='function')qrSvg(CAT+'/',4).then(sv=>{document.getElementById('gpQr').innerHTML=sv}).catch(()=>{document.querySelector('.gp-qr .q').style.display='none'});
+  /* หน้าต่างโค้ดพิมพ์ตัวอย่างการเรียก API แล้วแสดงผลจริงจากระบบ */
+  const code=document.getElementById('gpCode');
+  const RID=(GDC.RES.find(x=>x.id&&x.state==='api'&&/ผู้เยี่ยมเยือน รายเดือน/.test(x.n))||GDC.RES.find(x=>x.id&&x.state==='api')||{}).id||'';
+  const req=[['c','// ดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัด\n'],['k','GET '],['t','/api/3/action/'],['n','datastore_search'],['t','\n  ?resource_id='],['s',RID.slice(0,18)+'…'],['t','&limit=3\n\n']];
+  let html='',i=0,j=0,stop=false;
+  const span=(c,t)=>c==='t'?esc(t):`<span class="tk-${c}">${esc(t)}</span>`;
+  function type(){if(stop)return;if(i>=req.length){code.innerHTML=html+'<span class="tk-c">// กำลังรอผลตอบกลับ…</span><span class="cur"></span>';fetchLive();return}
+    const [c,t]=req[i];j++;const part=t.replace(/\\n/g,'\n').slice(0,j);code.innerHTML=html+span(c,part)+'<span class="cur"></span>';code.scrollTop=code.scrollHeight;
+    if(j>=t.replace(/\\n/g,'\n').length){html+=span(c,t.replace(/\\n/g,'\n'));i++;j=0}setTimeout(type,i<2?40:18)}
+  function fetchLive(){
+    if(!RID){show(null);return}
+    GDC._jsonp({resource_id:RID,limit:3}).then(r=>show(r)).catch(()=>show(null))}
+  function show(r){
+    let out='<span class="tk-c">// 200 OK · ตอบกลับจริงจากระบบ</span>\n{ <span class="tk-k">"success"</span>: <span class="tk-n">true</span>, <span class="tk-k">"total"</span>: <span class="tk-n">'+(r&&r.total!=null?r.total:'…')+'</span>,\n  <span class="tk-k">"records"</span>: [\n';
+    const rec=(r&&r.records||[]).slice(0,3).map(x=>{const k=Object.keys(x).filter(k=>k!=='_id'&&!/จังหวัด|หน่วย|ที่มา/.test(k)).slice(0,3);
+      return '    { '+k.map(q=>'<span class="tk-k">"'+esc(q.trim())+'"</span>: <span class="tk-s">"'+esc(String(x[q]).trim())+'"</span>').join(', ')+' }'}).join(',\n');
+    out+=(rec||'    …')+'\n  ] }<span class="cur"></span>';
+    code.innerHTML=html+out;code.scrollTop=0;setTimeout(()=>{html='';i=0;j=0;type()},9000)}
+  type();
+  document.getElementById('gpFind').addEventListener('click',()=>{showTab('find');const t=document.getElementById('tabs');t.scrollIntoView({behavior:'smooth'});setTimeout(()=>document.getElementById('fq').focus(),500)});
+  document.getElementById('gpApi').addEventListener('click',e=>{
+    const sn="// ตัวอย่างดึงข้อมูลจากระบบบัญชีข้อมูลจังหวัดหนองบัวลำภู (JSONP ใช้ได้จากทุกเว็บ)\n$.ajax({\n  url: '"+CAT+"/api/3/action/datastore_search',\n  data: { resource_id: '"+RID+"', limit: 100 },\n  dataType: 'jsonp',\n  success: d => console.log(d.result.records)\n});";
+    navigator.clipboard&&navigator.clipboard.writeText(sn);const b=e.currentTarget,o=b.innerHTML;b.innerHTML='คัดลอกแล้ว ✓';setTimeout(()=>b.innerHTML=o,1600)});
+  /* อนุภาคข้อมูลลอยเบา ๆ ในพื้นหลัง */
+  const cv=document.getElementById('gpCv');if(!cv||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const cx=cv.getContext('2d');let W,H,P=[];
+  function rs(){const r=cv.getBoundingClientRect();W=cv.width=r.width*devicePixelRatio;H=cv.height=r.height*devicePixelRatio;
+    P=Array.from({length:Math.round(r.width/22)},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35*devicePixelRatio,vy:(Math.random()-.5)*.35*devicePixelRatio}))}
+  rs();addEventListener('resize',rs);
+  (function loop(){cx.clearRect(0,0,W,H);const D=120*devicePixelRatio;
+    for(const p of P){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1}
+    for(let a=0;a<P.length;a++){for(let b=a+1;b<P.length;b++){const dx=P[a].x-P[b].x,dy=P[a].y-P[b].y,d=Math.hypot(dx,dy);
+      if(d<D){cx.strokeStyle='rgba(60,240,176,'+(.16*(1-d/D))+')';cx.lineWidth=devicePixelRatio;cx.beginPath();cx.moveTo(P[a].x,P[a].y);cx.lineTo(P[b].x,P[b].y);cx.stroke()}}
+      cx.fillStyle='rgba(140,255,210,.55)';cx.beginPath();cx.arc(P[a].x,P[a].y,1.6*devicePixelRatio,0,7);cx.fill()}
+    requestAnimationFrame(loop)})();
+})();
 const h=location.hash.slice(1);
-if(['pages','find','list','agency','hist','qa'].indexOf(h)>=0)showTab(h);
+if(['pages','find','list','agency','hist','qa','snap'].indexOf(h)>=0)showTab(h);
 else if(h&&PAGES[h]){setTimeout(()=>{const el=document.getElementById('pg-'+h);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.boxShadow='0 0 0 2px #3cf0b0,0 0 40px -10px #3cf0b0'}},400)}
 check(false).then(()=>GDC.watchUpdates().then(()=>{updateBell();drawFeed();drawTop();drawHist()}));
 setInterval(()=>{drawFeed()},60e3);
+
+/* ── สำเนาข้อมูลสำหรับทุกอุปกรณ์ ── */
+(function(){
+  const $=id=>document.getElementById(id);let last=null;
+  async function draw(){
+    const s=await GDC.snap();const ok=await GDC.call('resource_show',{id:GDC.snapIds()[0]},0).then(()=>true).catch(()=>false);
+    const age=s?(Date.now()-new Date(s.at))/3600e3:null;
+    const c=!s?'#e0523e':age<30?'#12a36f':'#d4a017';
+    $('snSt').innerHTML=`<i class="sn-dot" style="--c:${c}"></i><div><b>${!s?'ยังไม่มีสำเนาบนเว็บ':age<30?'สำเนาเป็นปัจจุบัน':'สำเนาเก่ากว่า 1 วัน'}</b>
+      <span>${s?'บันทึกเมื่อ '+thDT(s.at)+' '+new Date(s.at).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})+' น. · '+(s.by==='browser'?'จากแดชบอร์ด':'จากสคริปต์ตั้งเวลา'):'อุปกรณ์ที่เข้า API ไม่ได้จะใช้ข้อมูลสำรองจากไฟล์ไปก่อน'}</span></div>`;
+    $('snKv').innerHTML=`<div><b>${s?s.n:0}</b><span>ชุดข้อมูลในสำเนา</span></div><div><b>${GDC.snapIds().length}</b><span>ชุดที่ลงทะเบียนไว้</span></div>
+      <div><b style="color:${ok?'#3cf0b0':'#ff8a7a'}">${ok?'ได้':'ไม่ได้'}</b><span>เครื่องนี้เข้า API</span></div>`;
+    $('snRun').disabled=!ok;$('snRun').style.opacity=ok?1:.45;
+    if(!ok)$('snMsg').textContent='เครื่องนี้เข้าระบบบัญชีข้อมูลไม่ได้ จึงสร้างสำเนาไม่ได้ · ใช้คอมพิวเตอร์ในสำนักงานแทน';
+    $('snTokMsg').textContent=GDC.ghToken()?'บันทึกโทเคนไว้ในเครื่องนี้แล้ว · อัปเดตอัตโนมัติทำงาน':'ยังไม่ได้ใส่โทเคน · สร้างสำเนาได้แต่ต้องอัปโหลดเอง';
+  }
+  const prog=(n,t)=>{$('snBar').style.display='block';$('snBar').firstChild.style.width=(n/t*100)+'%';$('snMsg').textContent='กำลังดึงข้อมูล '+n+'/'+t+' ชุด…'};
+  $('snRun').onclick=async()=>{const b=$('snRun');b.disabled=true;
+    try{const r=await GDC.refreshSnapshot({prog,force:true});last=r.build;const I=r.build.index;
+      $('snMsg').textContent=r.pushed?'ส่งสำเนาใหม่แล้ว '+r.sent+' ชุด (ทั้งหมด '+I.n+' ชุด) · iPad/มือถือเห็นข้อมูลใหม่ภายในไม่กี่นาที'
+        :r.same?'ข้อมูลตรงกับสำเนาบนเว็บแล้ว ('+I.n+' ชุด) · ไม่ต้องส่ง'
+        :'สร้างสำเนาแล้ว '+I.n+' ชุด · ยังไม่มีโทเคน จึงดาวน์โหลดเป็น zip ให้ (แตกไฟล์แล้วอัปโหลดโฟลเดอร์ data ขึ้น GitHub)';
+      if(!r.pushed&&!r.same)dl(r.build);GDC._snapP=null;draw()}
+    catch(e){$('snMsg').textContent='ไม่สำเร็จ: '+e.message}b.disabled=false};
+  function dl(B){const a=document.createElement('a');a.href=URL.createObjectURL(GDC.zip(B.files));a.download='gdc-snapshot-'+B.index.at.slice(0,10)+'.zip';a.click()}
+  $('snDl').onclick=async()=>{if(last)return dl(last);$('snMsg').textContent='กด "สร้างสำเนาใหม่" ก่อน แล้วจึงดาวน์โหลด'};
+  $('snSave').onclick=()=>{const v=$('snTok').value.trim();try{v?localStorage.setItem('gdc-gh-token',v):localStorage.removeItem('gdc-gh-token')}catch(e){}$('snTok').value='';draw()};
+  draw();
+})();
 </script>
 </body>
 </html>
