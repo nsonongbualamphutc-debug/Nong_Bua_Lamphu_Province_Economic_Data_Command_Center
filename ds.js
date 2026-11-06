@@ -3371,7 +3371,7 @@ GDC.meta=async function(id,fresh){
    อุปกรณ์โหลดเฉพาะชุดที่หน้านั้นใช้ · แถวเก็บเป็นอาร์เรย์ตามลำดับคอลัมน์เพื่อลดขนาด
    ปรับปรุงอัตโนมัติจากเครื่องในสำนักงานที่เข้า API ได้ (ตั้งโทเคนในหน้า API หรือสคริปต์ตั้งเวลา tools/gdc-snapshot.ps1) */
 GDC.SNAP_DIR='data/gdc/';
-GDC.REPO={owner:'nsonongbualamphutc-debug',repo:'Nong_Bua_Lamphu_Province_Economic_Data_Command_Center',branch:'Patch-1.2'};
+GDC.REPO={owner:'nsonongbualamphutc-debug',repo:'Nong_Bua_Lamphu_Province_Economic_Data_Command_Center',branch:'main'};
 GDC.AG_IDS=['95537e06-3fbd-48ed-b64a-f7ff75b8a85b','5d8b0bd9-9f5a-4385-a63e-16a300cd7a5e','94c6b113-e8f7-4aca-bb8c-4fbea3454b70','e7795256-a7e4-46d1-86d8-c58cd22023db'];
 GDC.snap=function(){
   if(!GDC._snapP)GDC._snapP=fetch(GDC.SNAP_DIR+'index.json?v='+Math.floor(Date.now()/600e3),{cache:'no-cache'})
