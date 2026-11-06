@@ -385,7 +385,7 @@ function renderFiscalTab(){
     chip:`<span class="chip2"><span class="chip ${r.rank<=5?'up':'fl'}" data-tip2="${tipOf({t:'อันดับการเบิกจ่าย'+r.k+'ของประเทศ',
             d:'เทียบกับทุกจังหวัดทั่วประเทศ จากร้อยละการเบิกจ่ายสะสมของปีงบประมาณ',
             calc:'จังหวัดหนองบัวลำภูอยู่อันดับ '+r.rank+' ด้วยร้อยละ '+f(r.pct,2)+'% · อันดับ 1 คือเบิกจ่ายได้สัดส่วนสูงที่สุดในประเทศ',
-            src:'spend',when:'ปีงบประมาณ 2569 · ข้อมูล ณ '+CFG.asof})}">อันดับ ${r.rank} <em>ของประเทศ</em></span>`+
+            src:'spend',when:'ปีงบประมาณ '+(F.fy||2569)+' · ข้อมูล ณ '+(F.asof||CFG.asof)})}">อันดับ ${r.rank} <em>ของประเทศ</em></span>`+
          (r.over!=null?`<span class="chip ${r.over>=0?'up':'dn'}" data-tip2="${tipOf({t:'เทียบเป้าหมายการเบิกจ่าย'+r.k,
             d:'เป้าหมายตามมาตรการเร่งรัดการเบิกจ่ายของกรมบัญชีกลาง ณ งวดเดียวกัน',
             calc:'ร้อยละที่เบิกได้จริง − ร้อยละเป้าหมาย = '+f(r.pct,2)+'% − '+f(r.pct-r.over,2)+'% = '+(r.over>0?'+':'')+f(r.over,2)+' จุด',
@@ -397,7 +397,7 @@ function renderFiscalTab(){
       d:'ยอดสะสมตั้งแต่ต้นปีงบประมาณ ไม่ใช่ยอดรายเดือน · อันดับ '+r.rank+' ของประเทศ',
       calc:'(เบิกจ่ายสะสม ÷ งบที่ได้รับจัดสรร) × 100 = ('+f_num(r.val)+' ÷ '+f_num(r.alloc)+') × 100 = '+f(r.pct,2)+'%'+
         (r.over!=null?' · สูงกว่าเป้าหมาย '+f(r.over,2)+' จุด':''),
-      src:'spend',when:'ปีงบประมาณ 2569'})})).join('');
+      src:'spend',when:'ปีงบประมาณ '+(F.fy||2569)})})).join('');
 
   killChart('cMac');
   document.getElementById('cMac-chart').innerHTML=
@@ -408,14 +408,14 @@ function renderFiscalTab(){
   /* แถบความคืบหน้าอ่านง่ายกว่ากราฟเมื่อเป็นยอดสะสม */
   document.getElementById('fisBar').innerHTML=dis.map(r=>`
     <div class="fsrow" data-tip2="${tipOf({t:'เบิกจ่าย'+r.k,d:'สะสม '+f(r.val,2)+' ลบ. จากงบ '+f(r.alloc,2)+' ลบ.',
-      calc:'คงเหลือรอเบิก '+f_num(r.alloc-r.val)+' ล้านบาท',src:'spend',when:'ปีงบประมาณ 2569'})}">
+      calc:'คงเหลือรอเบิก '+f_num(r.alloc-r.val)+' ล้านบาท',src:'spend',when:'ปีงบประมาณ '+(F.fy||2569)})}">
       <span class="fs-n">${r.k}</span>
       <span class="fs-tr"><i style="width:${Math.min(100,r.pct).toFixed(1)}%;background:${cv(col[r.k])}"></i>
         <b style="left:90%"></b></span>
       <span class="fs-v">${f(r.pct,2)}%</span></div>`).join('')+
     `<div class="fsrow" data-tip2="${tipOf({t:'เงินกันไว้เบิกเหลื่อมปี 2568',d:'งบปีก่อนที่ยกมาเบิกในปีนี้',
       calc:'เบิกแล้ว '+f_num(C.dis)+' จาก '+f_num(C.alloc)+' ล้านบาท คงเหลือ '+f_num(C.left),
-      src:'spend',when:'ปีงบประมาณ 2569'})}">
+      src:'spend',when:'ปีงบประมาณ '+(F.fy||2569)})}">
       <span class="fs-n">เงินกันเหลื่อมปี ${C.year||2568}</span>
       <span class="fs-tr"><i style="width:${Math.min(100,C.pct).toFixed(1)}%;background:${cv('--plum')}"></i></span>
       <span class="fs-v">${f(C.pct,2)}%</span></div>
