@@ -1,0 +1,22 @@
+{
+  "name": "ศูนย์บัญชาการข้อมูลเศรษฐกิจ จังหวัดหนองบัวลำภู",
+  "short_name": "เศรษฐกิจหนองบัวลำภู",
+  "description": "แดชบอร์ดข้อมูลเศรษฐกิจจังหวัดหนองบัวลำภู เชื่อมข้อมูลอัตโนมัติจากระบบบัญชีข้อมูลจังหวัด (GD Catalog)",
+  "lang": "th",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#05231d",
+  "theme_color": "#0b3c32",
+  "icons": [
+    {"src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "shortcuts": [
+    {"name": "ภาพรวมเศรษฐกิจ", "url": "./overview.html", "icons": [{"src": "assets/icon-192.png", "sizes": "192x192"}]},
+    {"name": "การคลังภาครัฐ", "url": "./fiscal.html", "icons": [{"src": "assets/icon-192.png", "sizes": "192x192"}]},
+    {"name": "ศูนย์ควบคุมแหล่งข้อมูล (API)", "url": "./apistatus.html", "icons": [{"src": "assets/icon-192.png", "sizes": "192x192"}]}
+  ]
+}
